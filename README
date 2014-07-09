@@ -1,0 +1,22 @@
+/**************************************************************************//**
+    diOS - Copyright (C) 2013 - 2014 Alexander (PheeL) Filyanov. 
+    https://github.com/PheeL79/diOS
+******************************************************************************/
+
+// Introduction ---------------------------------------------------------------
+diOS (aka "digital integration OS") is the open source project that aim to provide
+to developer a handy tool to create an embedded software solutions with RTOS power.
+It's wraps and expands OS engine API with bunch of the new useful functions.
+This project uses a universal directory structure that allows you easily to add, remove or
+switch between versions of the software and hardware support packages. This really helps out
+when you need to port the solution to the various hardware platforms.
+
+// Trademarks -----------------------------------------------------------------
+Project is based on the following software:
+- FreeRTOS by Richard Barry (Real Time Engineers Ltd.) (http://www.freertos.org/);
+- FatFs by ChaN (http://elm-chan.org/fsw/ff/00index_e.html);
+- minIni by CompuPhase (http://www.compuphase.com);
+- Unity Project by Mike Karlesky, Mark VanderVoord, and Greg Williams (https://github.com/ThrowTheSwitch/Unity);
+- CMSIS Library by ARM Ltd. (http://www.arm.com);
+- Standart Peripheral Library by STMicroelectronics (http://www.st.com);
+- USB On-The-Go Host and Device Library by STMicroelectronics (http://www.st.com);

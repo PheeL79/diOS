@@ -1,0 +1,14 @@
+# Standard project configuration
+@INCLUDE = cfg.inc
+
+# Project configuration
+PROJECT_NAME           = "diOS API Reference Manual."
+PROJECT_NUMBER         = "0.1"
+INPUT                  = ../../inc ../../src ../../src/target
+EXCLUDE                = ../../inc/host ../../src/host ../../src/target
+
+FILE_PATTERNS          = *.c *.h
+EXCLUDE_PATTERNS       = usb_*.* usbd_*.*
+
+#output = .doxy file name
+OUTPUT_DIRECTORY       = out/diOS_RM_API_EN
