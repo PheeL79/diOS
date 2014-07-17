@@ -149,12 +149,12 @@ typedef struct {
 /// @brief   Application version.
 PACKED(PACK_VAL_PROTO,
 typedef struct {
-    U16 maj;                    ///< Major revision.
-    U16 min;                    ///< Minor revision.
+    U8  maj;                    ///< Major version.
+    U8  min;                    ///< Minor version.
     U16 bld;                    ///< Build number.
-    U16 rev;                    ///< Revision number.
-    U16 lbl;                    ///< Label.
-} VersionApp);
+    Str rev[11];                ///< Revision hash.
+    U8  lbl;                    ///< Label.
+} Version);
 
 /// @brief   Motherboard description.
 PACKED(PACK_VAL_PROTO,
@@ -165,7 +165,7 @@ typedef struct {
 /// @brief   Device description.
 PACKED(PACK_VAL_PROTO,
 typedef struct {
-    VersionApp      version;    ///< Application version.
+    Version         version;    ///< Application version.
     MbDesc          mb;         ///< Motherboard description.
 } DeviceDesc);
 

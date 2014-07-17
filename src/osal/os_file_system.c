@@ -535,7 +535,7 @@ FILINFO file_info;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     Status s = FResultTranslate(f_readdir(dhd, &file_info));
     IF_STATUS_OK(s) {
-        memcpy(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
+        OS_MemCpy8(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
         file_stats_p->size          = file_info.fsize;
         file_stats_p->date_time     = FDateTimeTranslate(file_info.fdate, file_info.ftime);
         file_stats_p->attrs         = FAttributeTranslate(file_info.fattrib);

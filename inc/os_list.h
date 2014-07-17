@@ -47,6 +47,12 @@ typedef MiniListItem_t OS_ListItemLight;
 /// @return     None.
 void            OS_ListInit(OS_List* list_p);
 
+/// @brief      Clear the list.
+/// @param[in]  list_p          List.
+/// @return     None.
+/// @note       Removes all items from the list and destroy them.
+void            OS_ListClear(OS_List* list_p);
+
 /// @brief      Create and initialize the list item.
 /// @return     List item.
 OS_ListItem*    OS_ListItemCreate(void);

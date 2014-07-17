@@ -108,6 +108,7 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 TaskArgs* task_args_p = (TaskArgs*)args_p;
     sv_stdin_qhd = OS_TaskStdIoGet(OS_THIS_TASK, OS_STDIO_IN);
     OS_ASSERT(S_OK == OS_StartupApplication());
+    OS_ASSERT(S_OK == OS_StartupDeInit());
 	for(;;) {
         MessagesHandler(task_args_p);
     }
@@ -413,6 +414,7 @@ void Reboot(TaskArgs* task_args_p)
         printf(" ...%d", i);
         OS_TaskDelay(1000);
     }
+    OS_SchedulerSuspend();
     OS_CriticalSectionEnter(); // Make sure that no exceptions are to occur until reset.
     NVIC_SystemReset();
 }
@@ -422,6 +424,7 @@ void Shutdown(TaskArgs* task_args_p) {
     OS_LOG(D_INFO, "Shutdown system");
     //Prepare system to shutdown.
     OS_TaskPower(task_args_p, PWR_SHUTDOWN);
+    OS_SchedulerSuspend();
     OS_CriticalSectionEnter(); // Make sure that no exceptions are to occur until power off.
     //HAL_PowerOff();
 }

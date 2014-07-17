@@ -8,6 +8,8 @@ extern "C" {
 #include "common.h"
 #include "os_config.h"
 #include "FreeRTOS.h"
+#include "semphr.h"
+#include "timers.h"
 #include "task.h"
 
 //------------------------------------------------------------------------------

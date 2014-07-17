@@ -5,9 +5,7 @@
 *******************************************************************************/
 #include <string.h>
 #include "stm32f4xx_rtc.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "common.h"
+#include "os_common.h"
 #include "os_environment.h"
 #include "os_supervise.h"
 #include "os_mutex.h"

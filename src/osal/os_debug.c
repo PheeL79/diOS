@@ -5,7 +5,6 @@
 *******************************************************************************/
 #include <stdarg.h>
 #include "printf-stdarg.h"
-#include "FreeRTOS.h"
 #include "hal.h"
 #include "osal.h"
 #include "os_supervise.h"

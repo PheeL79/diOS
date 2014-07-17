@@ -57,15 +57,15 @@ Status          OS_MutexUnlock(const OS_MutexHd mhd);
 /// @return     #Status.
 Status          OS_MutexRecursiveUnlock(const OS_MutexHd mhd);
 
-/// @brief      Check mutex state.
+/// @brief      Test mutex state.
 /// @param[in]  mhd             Mutex handle.
 /// @return     Mutex state.
-OS_MutexState   OS_MutexCheck(const OS_MutexHd mhd);
+OS_MutexState   OS_MutexTest(const OS_MutexHd mhd);
 
-/// @brief      Check recursive mutex state.
+/// @brief      Test recursive mutex state.
 /// @param[in]  mhd             Mutex handle.
 /// @return     Mutex state.
-OS_MutexState   OS_MutexRecursiveCheck(const OS_MutexHd mhd);
+OS_MutexState   OS_MutexRecursiveTest(const OS_MutexHd mhd);
 
 /// @brief      Get mutex parent.
 /// @param[in]  mhd             Mutex handle.
@@ -87,10 +87,10 @@ Status          OS_ISR_MutexLock(const OS_MutexHd mhd);
 /// @return     #Status.
 Status          OS_ISR_MutexUnlock(const OS_MutexHd mhd);
 
-/// @brief      Check mutex state.
+/// @brief      Test mutex state.
 /// @param[in]  mhd             Mutex handle.
 /// @return     Mutex state.
-OS_MutexState   OS_ISR_MutexCheck(const OS_MutexHd mhd);
+OS_MutexState   OS_ISR_MutexTest(const OS_MutexHd mhd);
 
 /**@}*/ //OS_ISR_Mutex
 

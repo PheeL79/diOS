@@ -40,7 +40,7 @@ extern Status   LED_Init_(void);
 /*****************************************************************************/
 Status HAL_Init(void)
 {
-const VersionApp* ver_p = &device_state.description.device_description.version;
+const Version* ver_p = &device_state.description.device_description.version;
 Status s = S_OK;
     // Disable interrupts.
     CRITICAL_ENTER();
@@ -61,12 +61,12 @@ Status s = S_OK;
     // Init and open STDIO stream.
     HAL_StdIoCls();
     D_LOG(D_INFO, "-------------------------------");
-    D_LOG(D_INFO, "diOS: v%d.%d.%d.%d%s",
+    D_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
                    ver_p->maj,
                    ver_p->min,
                    ver_p->bld,
-                   ver_p->rev,
-                   ver_lbl[ver_p->lbl]);
+                   ver_lbl[ver_p->lbl],
+                   ver_p->rev);
     D_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
     D_LOG(D_INFO, "-------------------------------");
     D_LOG(D_INFO, "HAL init...");
@@ -111,17 +111,11 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-static Status HAL_DeviceDescriptionInit(void)
+Status HAL_DeviceDescriptionInit(void)
 {
-VersionApp* ver_p = &device_state.description.device_description.version;
-
     memset((void*)&device_state, 0x0, sizeof(device_state));
     // Static info description.
-    ver_p->maj = VERSION_MAJ;
-    ver_p->min = VERSION_MIN;
-    ver_p->bld = VERSION_BLD;
-    ver_p->rev = VERSION_REV;
-    ver_p->lbl = VERSION_LBL;
+    device_state.description.device_description.version = version;
     return S_OK;
 }
 

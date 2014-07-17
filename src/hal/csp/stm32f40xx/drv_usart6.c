@@ -207,7 +207,7 @@ void USART6_IRQHandler(void)
 extern OS_QueueHd stdio_qhd;
 
     if (RESET != USART_GetITStatus(USART6, USART_IT_RXNE)) {
-        const U32 signal = OS_SIGNAL_CREATE(OS_SIG_STDIN, USART_ReceiveData(USART6));
+        const U32 signal = OS_ISR_SIGNAL_CREATE(OS_SIG_STDIN, USART_ReceiveData(USART6));
         if (1 == OS_ISR_SIGNAL_EMIT(stdio_qhd, signal, OS_MSG_PRIO_NORMAL)) {
             OS_ContextSwitchForce();
         }

@@ -13,13 +13,23 @@
 * @{
 */
 //------------------------------------------------------------------------------
+/// @brief      Init startup.
+/// @return     #Status.
+Status          OS_StartupInit(void);
+
+/// @brief      Deinit startup.
+/// @return     #Status.
+Status          OS_StartupDeInit(void);
+
 /// @brief      System tasks startup.
 /// @return     #Status.
-Status OS_StartupSystem(void);
+Status          OS_StartupSystem(void);
 
 /// @brief      Application tasks startup.
 /// @return     #Status.
-Status OS_StartupApplication(void);
+Status          OS_StartupApplication(void);
+
+Status          OS_StartupTaskAdd(const OS_TaskConfig* task_cfg_p);
 
 /**@}*/ //OS_Startup
 

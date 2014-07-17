@@ -3,7 +3,6 @@
 * @brief   OS Event.
 * @author  A. Filyanov
 *******************************************************************************/
-#include "common.h"
 #include "os_common.h"
 #include "os_memory.h"
 #include "os_mutex.h"

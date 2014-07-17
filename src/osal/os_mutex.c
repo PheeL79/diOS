@@ -3,8 +3,7 @@
 * @brief   OS Mutex.
 * @author  A. Filyanov
 *******************************************************************************/
-#include "FreeRTOS.h"
-#include "semphr.h"
+#include "os_common.h"
 #include "os_mutex.h"
 
 /******************************************************************************/
@@ -34,10 +33,7 @@ Status OS_MutexLock(const OS_MutexHd mhd, const TimeMs timeout)
 /******************************************************************************/
 Status OS_MutexRecursiveLock(const OS_MutexHd mhd, const TimeMs timeout)
 {
-    if (pdTRUE != xSemaphoreTakeRecursive(mhd, timeout)) {
-        return S_TIMEOUT;
-    }
-    return S_OK;
+    return OS_SemaphoreRecursiveLock(mhd, timeout);
 }
 
 /******************************************************************************/
@@ -49,25 +45,19 @@ Status OS_MutexUnlock(const OS_MutexHd mhd)
 /******************************************************************************/
 Status OS_MutexRecursiveUnlock(const OS_MutexHd mhd)
 {
-    if (pdTRUE != xSemaphoreGiveRecursive(mhd)) {
-        return S_OVERFLOW;
-    }
-    return S_OK;
+    return OS_SemaphoreRecursiveUnlock(mhd);
 }
 
 /******************************************************************************/
-OS_MutexState OS_MutexCheck(const OS_MutexHd mhd)
+OS_MutexState OS_MutexTest(const OS_MutexHd mhd)
 {
-    return OS_SemaphoreCheck(mhd);
+    return OS_SemaphoreTest(mhd);
 }
 
 /******************************************************************************/
-OS_MutexState OS_MutexRecursiveCheck(const OS_MutexHd mhd)
+OS_MutexState OS_MutexRecursiveTest(const OS_MutexHd mhd)
 {
-    IF_STATUS(OS_MutexRecursiveLock(mhd, OS_NO_BLOCK)) {
-        return LOCKED;
-    }
-    return UNLOCKED;
+    return OS_SemaphoreRecursiveTest(mhd);
 }
 
 /******************************************************************************/
@@ -92,7 +82,7 @@ Status OS_ISR_MutexUnlock(const OS_MutexHd mhd)
 }
 
 /******************************************************************************/
-OS_MutexState OS_ISR_MutexCheck(const OS_MutexHd mhd)
+OS_MutexState OS_ISR_MutexTest(const OS_MutexHd mhd)
 {
-    return OS_ISR_SemaphoreCheck(mhd);
+    return OS_ISR_SemaphoreTest(mhd);
 }

@@ -14,7 +14,7 @@ typedef U16         OS_SignalData;
 
 #define OS_SIGNAL_TOKEN         BIT(BIT_SIZE(OS_Signal) - 1)
 #define OS_SIGNAL_ID_MASK       BIT_MASK(BIT_SIZE(OS_SignalId) - 1)
-#define OS_SIGNAL_SRC_MASK      BIT_MASK(BIT_SIZE(U8))
+#define OS_SIGNAL_SRC_MASK      BIT_MASK(BIT_SIZE(OS_TaskId))
 #define OS_SIGNAL_DATA_MASK     BIT_MASK(BIT_SIZE(OS_SignalData))
 
 enum {
@@ -45,12 +45,16 @@ enum {
                                                                 (((OS_Signal)(OS_TaskIdGet(OS_THIS_TASK)) & OS_SIGNAL_SRC_MASK) << 16) | \
                                                                 ((OS_Signal)(data) & OS_SIGNAL_DATA_MASK)))
 #define OS_SIGNAL_EMIT(qhd, signal, prio)                       OS_MessageSend(qhd, (OS_Message *)signal, OS_NO_BLOCK, prio)
-#define OS_SIGNAL_MULTICAST_EMIT(recivers_qhd_v, signal, prio)  OS_MessageMulticastSend(recivers_qhd_v, (OS_Message *)signal, OS_NO_BLOCK, prio)
+#define OS_SIGNAL_MULTICAST_EMIT(receivers_qhd_v, signal, prio) OS_MessageMulticastSend(receivers_qhd_v, (OS_Message *)signal, OS_NO_BLOCK, prio)
 #define OS_SIGNAL_IS(msg)                                       (OS_SIGNAL_TOKEN == ((OS_Signal)(msg) & OS_SIGNAL_TOKEN))
 #define OS_SIGNAL_ID_GET(signal)                                ((OS_SignalId)(((OS_Signal)(signal) >> 24) & OS_SIGNAL_ID_MASK))
 #define OS_SIGNAL_SRC_GET(signal)                               ((OS_TaskId)(((OS_Signal)(signal) >> 16) & OS_SIGNAL_SRC_MASK))
 #define OS_SIGNAL_DATA_GET(signal)                              ((OS_SignalData)(((OS_Signal)(signal)) & OS_SIGNAL_DATA_MASK))
 
+#define OS_ISR_SIGNAL_CREATE(id, data)                          (OS_SIGNAL_TOKEN | \
+                                                                ((((OS_Signal)(id) & OS_SIGNAL_ID_MASK) << 24) | \
+                                                                (((OS_Signal)(0) & OS_SIGNAL_SRC_MASK) << 16) | \
+                                                                ((OS_Signal)(data) & OS_SIGNAL_DATA_MASK)))
 #define OS_ISR_SIGNAL_EMIT(qhd, signal, prio)                   OS_ISR_MessageSend(qhd, (OS_Message *)signal, prio)
 
 #ifdef __cplusplus

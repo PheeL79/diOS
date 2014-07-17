@@ -4,10 +4,9 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <string.h>
-#include "FreeRTOS.h"
-#include "task.h"
 #include "tlsf.h"
 #include "hal.h"
+#include "os_common.h"
 #include "os_supervise.h"
 #include "os_mutex.h"
 #include "os_memory.h"
@@ -171,13 +170,27 @@ void OS_MemCacheFlush(void)
 /******************************************************************************/
 void OS_MemCpy8(void* dst_p, const void* src_p, SIZE size8)
 {
-    DMA_MemCpy8(dst_p, src_p, size8);
+    memcpy(dst_p, src_p, size8);
+    //DMA_MemCpy8(dst_p, src_p, size8);
 }
 
 /******************************************************************************/
 void OS_MemCpy32(void* dst_p, const void* src_p, SIZE size32)
 {
-    DMA_MemCpy32(dst_p, src_p, size32);
+    memcpy(dst_p, src_p, (size32 * sizeof(U32)));
+    //DMA_MemCpy32(dst_p, src_p, size32);
+}
+
+/******************************************************************************/
+void OS_MemMove8(void* dst_p, const void* src_p, SIZE size8)
+{
+    memmove(dst_p, src_p, size8);
+}
+
+/******************************************************************************/
+void OS_MemMove32(void* dst_p, const void* src_p, SIZE size32)
+{
+    memmove(dst_p, src_p, (size32 * sizeof(U32)));
 }
 
 /******************************************************************************/
@@ -212,7 +225,7 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
         }
         ++memory_cfg_p;
     }
-    memcpy((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
+    OS_MemCpy8((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
     mem_stat_p->used = get_used_size((void*)mem_stat_p->desc.addr);
     mem_stat_p->free = mem_stat_p->desc.size - mem_stat_p->used;
     return S_OK;

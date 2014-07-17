@@ -228,7 +228,8 @@ U32 uptime;
     if (0 >= uptime) { goto error; } //Avoid divide by zero errors.
     task_stats_p = (OS_TaskStats*)&run_stats_buf_p[0];
     while (tasks_count--) {
-        const OS_TaskHd thd = (OS_TaskHd)task_stats_p->xHandle;
+        extern OS_TaskHd OS_TaskHdByHandleGet(const TaskHandle_t task_hd);
+        const OS_TaskHd thd = OS_TaskHdByHandleGet(task_stats_p->xHandle);
         const OS_TaskHd par_thd = OS_TaskHdParentByHdGet(thd);
         const U32 par_id = (OS_NULL == par_thd) ? 0 : OS_TaskIdGet(par_thd);
         const OS_TaskConfig* cfg_p = OS_TaskConfigGet(thd);
@@ -240,7 +241,7 @@ U32 uptime;
         }
         printf("\n%-12s %-3d %-4d %-3d %-4d %-7s %-10s %-4s %-5d %-4d %-3d %-3d",
                task_stats_p->pcTaskName,
-               task_stats_p->xTaskNumber,
+               OS_TaskIdGet(thd),
                par_id,
                task_stats_p->uxCurrentPriority,
                cfg_p->prio_power,
@@ -341,22 +342,24 @@ void OS_ShellCmdStHandlerEvHelper(void)
 {
 OS_EventHd ehd = OS_NULL;
 
-    printf("\n%-8s %-5s %-3s %-8s %-10s %-12s %-4s",
-           "Name", "TimId", "Act", "Options", "Period", "Slot", "STId");
+    printf("\n%-8s %-5s %-3s %-8s %-10s %-12s %-4s %-5s %-4s",
+           "Name", "TimId", "Act", "Options", "Period", "Slot", "STId", "State", "Item");
     while (OS_NULL != (ehd = OS_EventNextGet(ehd))) {
         OS_EventStats event_stats;
         IF_STATUS(OS_EventStatsGet(ehd, &event_stats)) { return; }
         const OS_TimerStats* timer_stats_p = &event_stats.timer_stats;
         const OS_TimerHd timer_hd = OS_TimerByIdGet(timer_stats_p->id);
         if (OS_NULL == timer_hd) { return; }
-        printf("\n%-8s %-5d %-3s %-8d %-10d %-12s %-4d",
+        printf("\n%-8s %-5d %-3s %-8d %-10d %-12s %-4d %-5d 0x%-8x",
                timer_stats_p->name_p,
                timer_stats_p->id,
                (OS_TRUE == OS_TimerIsActive(timer_hd) ? "on" : "off"),
                timer_stats_p->options,
                timer_stats_p->period,
                OS_TaskNameGet(timer_stats_p->slot),
-               OS_TaskIdGet(timer_stats_p->slot));
+               OS_TaskIdGet(timer_stats_p->slot),
+               event_stats.state,
+               event_stats.item_p);
     }
 }
 

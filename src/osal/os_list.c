@@ -14,6 +14,38 @@ void OS_ListInit(OS_List* list_p)
 }
 
 /******************************************************************************/
+void OS_ListInsert(OS_List* list_p, OS_ListItem* new_item_l_p)
+{
+    vListInsert(list_p, new_item_l_p);
+}
+
+/******************************************************************************/
+void OS_ListAppend(OS_List* list_p, OS_ListItem* new_item_l_p)
+{
+    vListInsertEnd(list_p, new_item_l_p);
+}
+
+/******************************************************************************/
+U32 OS_ListRemove(OS_ListItem* item_l_p)
+{
+    return uxListRemove(item_l_p);
+}
+
+/******************************************************************************/
+void OS_ListClear(OS_List* list_p)
+{
+OS_ListItem* iter_li_p;
+
+    if (OS_NULL == list_p) { return; }
+    if (OS_LIST_IS_EMPTY(list_p)) { return; }
+    for (iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
+         OS_DELAY_MAX != (OS_Value)OS_LIST_ITEM_VALUE_GET(iter_li_p);
+         iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p)) {
+        OS_ListItemDelete(iter_li_p);
+    }
+}
+
+/******************************************************************************/
 OS_ListItem* OS_ListItemCreate(void)
 {
 OS_ListItem* item_l_p = OS_Malloc(sizeof(OS_ListItem));
@@ -38,31 +70,13 @@ void OS_ListItemInit(OS_ListItem* item_l_p)
 }
 
 /******************************************************************************/
-void OS_ListInsert(OS_List* list_p, OS_ListItem* new_item_l_p)
-{
-    vListInsert(list_p, new_item_l_p);
-}
-
-/******************************************************************************/
-void OS_ListAppend(OS_List* list_p, OS_ListItem* new_item_l_p)
-{
-    vListInsertEnd(list_p, new_item_l_p);
-}
-
-/******************************************************************************/
-U32 OS_ListRemove(OS_ListItem* item_l_p)
-{
-    return uxListRemove(item_l_p);
-}
-
-/******************************************************************************/
 OS_ListItem* OS_ListItemByValueFind(OS_List* list_p, const OS_Value value)
 {
 OS_ListItem* iter_li_p;
 
     if (OS_NULL == list_p) { return OS_NULL; }
     if (OS_LIST_IS_EMPTY(list_p)) { return OS_NULL; }
-    for (iter_li_p = (OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p);
+    for (iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
          value != (OS_Value)OS_LIST_ITEM_VALUE_GET(iter_li_p);
          iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p)) {
         if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) { return OS_NULL; }
@@ -77,7 +91,7 @@ OS_ListItem* iter_li_p;
 
     if (OS_NULL == list_p) { return OS_NULL; }
     if (OS_LIST_IS_EMPTY(list_p)) { return OS_NULL; }
-    for (iter_li_p = (OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p);
+    for (iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
          owner != (OS_Owner*)OS_LIST_ITEM_OWNER_GET(iter_li_p);
          iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p)) {
         if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) { return OS_NULL; }

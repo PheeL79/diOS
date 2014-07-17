@@ -3,9 +3,8 @@
 * @brief   OS Semaphore.
 * @author  A. Filyanov
 *******************************************************************************/
-#include "FreeRTOS.h"
-#include "semphr.h"
 #include "os_common.h"
+#include "os_supervise.h"
 #include "os_semaphore.h"
 
 /******************************************************************************/
@@ -36,6 +35,15 @@ Status OS_SemaphoreLock(const OS_SemaphoreHd shd, const TimeMs timeout)
 }
 
 /******************************************************************************/
+Status OS_SemaphoreRecursiveLock(const OS_SemaphoreHd shd, const TimeMs timeout)
+{
+    if (pdTRUE != xSemaphoreTakeRecursive(shd, OS_MS_TO_TICKS(timeout))) {
+        return S_TIMEOUT;
+    }
+    return S_OK;
+}
+
+/******************************************************************************/
 Status OS_SemaphoreUnlock(const OS_SemaphoreHd shd)
 {
     if (pdTRUE != xSemaphoreGive(shd)) {
@@ -45,12 +53,44 @@ Status OS_SemaphoreUnlock(const OS_SemaphoreHd shd)
 }
 
 /******************************************************************************/
-OS_SemaphoreState OS_SemaphoreCheck(const OS_SemaphoreHd shd)
+Status OS_SemaphoreRecursiveUnlock(const OS_SemaphoreHd shd)
 {
-    IF_STATUS(OS_SemaphoreLock(shd, OS_NO_BLOCK)) {
-        return LOCKED;
+    if (pdTRUE != xSemaphoreGiveRecursive(shd)) {
+        return S_OVERFLOW;
     }
-    return UNLOCKED;
+    return S_OK;
+}
+
+/******************************************************************************/
+OS_SemaphoreState OS_SemaphoreTest(const OS_SemaphoreHd shd)
+{
+OS_SemaphoreState state = UNLOCKED;
+    OS_CriticalSectionEnter(); {
+        IF_STATUS(OS_SemaphoreLock(shd, OS_NO_BLOCK)) {
+            state = LOCKED;
+            goto exit;
+        }
+        OS_SemaphoreUnlock(shd);
+    }
+exit:
+    OS_CriticalSectionExit();
+    return state;
+}
+
+/******************************************************************************/
+OS_SemaphoreState OS_SemaphoreRecursiveTest(const OS_SemaphoreHd shd)
+{
+OS_SemaphoreState state = UNLOCKED;
+    OS_CriticalSectionEnter(); {
+        IF_STATUS(OS_SemaphoreRecursiveLock(shd, OS_NO_BLOCK)) {
+            state = LOCKED;
+            goto exit;
+        }
+        OS_SemaphoreRecursiveUnlock(shd);
+    }
+exit:
+    OS_CriticalSectionExit();
+    return state;
 }
 
 //------------------------------------------------------------------------------
@@ -85,10 +125,17 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 }
 
 /******************************************************************************/
-OS_SemaphoreState OS_ISR_SemaphoreCheck(const OS_SemaphoreHd shd)
+OS_SemaphoreState OS_ISR_SemaphoreTest(const OS_SemaphoreHd shd)
 {
-    IF_STATUS(OS_ISR_SemaphoreLock(shd)) {
-        return LOCKED;
+OS_SemaphoreState state = UNLOCKED;
+    OS_CriticalSectionEnter(); {
+        IF_STATUS(OS_ISR_SemaphoreLock(shd)) {
+            state = LOCKED;
+            goto exit;
+        }
+        OS_ISR_SemaphoreUnlock(shd);
     }
-    return UNLOCKED;
+exit:
+    OS_CriticalSectionExit();
+    return state;
 }

@@ -13,8 +13,7 @@
 
 //------------------------------------------------------------------------------
 // debug macros
-#if defined(QT_VERSION)
-#elif defined(CM4F) || defined(STM32F40XX)
+#if defined(CM4F) || defined(STM32F40XX)
     #include <stdio.h>
     #include <assert.h>
 

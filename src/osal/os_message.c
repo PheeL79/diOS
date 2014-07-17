@@ -4,7 +4,7 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <string.h>
-#include "common.h"
+#include "os_common.h"
 #include "os_debug.h"
 #include "os_task.h"
 #include "os_memory.h"
@@ -20,7 +20,7 @@ OS_Message* OS_MessageCreate(const OS_MessageId id, const U16 size, const TimeMs
 OS_Message* msg_p = OS_Malloc(size + sizeof(OS_Message));
 
     if (msg_p) {
-        memcpy(msg_p->data, data_p, size);
+        OS_MemCpy8(msg_p->data, data_p, size);
         msg_p->id   = id;
         msg_p->size = size;
         msg_p->src  = OS_TaskHdGet();

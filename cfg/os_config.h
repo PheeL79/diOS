@@ -11,9 +11,6 @@
 #include "olimex_stm32_p407/hal_config.h"
 
 //------------------------------------------------------------------------------
-#define OS_ENGINE                   FreeRTOS
-#define OS_ENGINE_VER               800
-
 #define OS_IS_PREEMPTIVE            1
 #define OS_MPU_ENABLED              0
 #define OS_STATS_ENABLED            1

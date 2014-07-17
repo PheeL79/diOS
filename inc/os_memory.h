@@ -88,6 +88,20 @@ void            OS_MemCpy8(void* dst_p, const void* src_p, SIZE size8);
 /// @return     None.
 void            OS_MemCpy32(void* dst_p, const void* src_p, SIZE size32);
 
+/// @brief      Copy memory in bytes.
+/// @param[out] dst_p           Destination address.
+/// @param[in]  src_p           Source address.
+/// @param[in]  size8           Size to copy (bytes).
+/// @return     None.
+void            OS_MemMove8(void* dst_p, const void* src_p, SIZE size8);
+
+/// @brief      Copy memory in words.
+/// @param[out] dst_p           Destination address.
+/// @param[in]  src_p           Source address.
+/// @param[in]  size32          Size to copy (words).
+/// @return     None.
+void            OS_MemMove32(void* dst_p, const void* src_p, SIZE size32);
+
 /// @brief      Get the next memory heap type.
 /// @param[in]  mem_type        Memory type.
 /// @return     Memory type.

@@ -3,8 +3,6 @@
 * @brief   Shell and log\trace\dump task definitions.
 * @author  A. Filyanov
 *******************************************************************************/
-#ifndef NDEBUG
-
 #include <stdlib.h>
 #include <string.h>
 #include "os_environment.h"
@@ -46,9 +44,6 @@ Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 Status s = S_OK;
     D_LOG(D_INFO, "Init");
-    IF_STATUS(s = OS_TaskCreate(&task_shell_cfg, OS_NULL)) {
-        OS_ASSERT(OS_FALSE);
-    }
     return s;
 }
 
@@ -117,5 +112,3 @@ Status s = S_OK;
     s = OS_QueueFlush(OS_TaskStdIoGet(OS_THIS_TASK, OS_STDIO_IN));
     return s;
 }
-
-#endif // NDEBUG

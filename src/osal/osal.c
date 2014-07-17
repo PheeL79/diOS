@@ -4,6 +4,8 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <string.h>
+#include "hal.h"
+#include "osal.h"
 #include "os_common.h"
 #include "os_supervise.h"
 #include "os_driver.h"
@@ -16,8 +18,6 @@
 #include "os_file_system.h"
 #include "os_environment.h"
 #include "os_startup.h"
-#include "hal.h"
-#include "osal.h"
 #include "task_sv.h"
 #include "task_shell.h"
 
@@ -81,7 +81,8 @@ Status s;
     const OS_PowerState power = PWR_STARTUP;
     os_env.hal_env_p->power = power;
     //Create and start system tasks.
-    IF_STATUS(s = OS_StartupSystem()) { return s; }
+    IF_STATUS(s = OS_StartupInit())     { return s; }
+    IF_STATUS(s = OS_StartupSystem())   { return s; }
     D_LOG(D_INFO, "-------------------------------");
     return s;
 }
@@ -102,10 +103,12 @@ Status s;
     return s;
 }
 
+/******************************************************************************/
 void OS_SystemTickStart(void)
 {
 }
 
+/******************************************************************************/
 void OS_SystemTickStop(void)
 {
 }
@@ -246,6 +249,7 @@ Status OS_StorageItemDelete(OS_StorageItem* item_p)
     if (0 == --(item_p->owners)) {
         OS_MutexDelete(item_p->mutex);
         OS_Free(item_p->data_p);
+        OS_Free(item_p);
     }
     return S_OK;
 }

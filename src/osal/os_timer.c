@@ -4,10 +4,8 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <string.h>
-#include "FreeRTOS.h"
 #include "hal.h"
-#include "timers.h"
-#include "common.h"
+#include "os_common.h"
 #include "os_memory.h"
 #include "os_mutex.h"
 #include "os_debug.h"
@@ -109,7 +107,8 @@ Status s = S_OK;
     IF_STATUS_OK(s = OS_MutexLock(os_timer_mutex, timeout)) {    // os_list protection;
         item_l_p = OS_ListItemByOwnerFind(&os_timers_list, (OS_Owner)timer_hd);
         if (OS_NULL == item_l_p) { s = S_INVALID_REF; goto error; }
-        cfg_dyn_p = (OS_TimerConfigDyn*)timer_hd;
+        cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
+        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_REF; goto error; }
         OS_ListItemDelete(item_l_p);
         OS_Free(cfg_dyn_p);
     }

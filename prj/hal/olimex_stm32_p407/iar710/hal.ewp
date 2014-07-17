@@ -638,7 +638,7 @@
       <name>BUILDACTION</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <prebuild></prebuild>
+        <prebuild>$PROJ_DIR$\..\..\..\..\tls\revision_update.bat $PROJ_DIR$\..\..\..\..\src</prebuild>
         <postbuild></postbuild>
       </data>
     </settings>
@@ -1589,7 +1589,7 @@
       <name>BUILDACTION</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <prebuild></prebuild>
+        <prebuild>$PROJ_DIR$\..\..\..\..\tls\revision_update.bat $PROJ_DIR$\..\..\..\..\src</prebuild>
         <postbuild></postbuild>
       </data>
     </settings>
@@ -2547,7 +2547,7 @@
       <name>BUILDACTION</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <prebuild></prebuild>
+        <prebuild>$PROJ_DIR$\..\..\..\..\tls\revision_update.bat $PROJ_DIR$\..\..\..\..\src</prebuild>
         <postbuild></postbuild>
       </data>
     </settings>
@@ -3499,7 +3499,7 @@
       <name>BUILDACTION</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <prebuild></prebuild>
+        <prebuild>$PROJ_DIR$\..\..\..\..\tls\revision_update.bat $PROJ_DIR$\..\..\..\..\src</prebuild>
         <postbuild></postbuild>
       </data>
     </settings>

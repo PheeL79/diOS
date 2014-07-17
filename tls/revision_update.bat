@@ -1,8 +1,19 @@
+@ECHO ON
+@ECHO Revision update.
 @ECHO OFF
 SETLOCAL
-SET SVN_REP=%~dp0\..
-SET SVN_DIR=D:\Develop\TortoiseSVN\bin
-SET SVN_VER=SubWCRev.exe
-
-%SVN_DIR%\%SVN_VER% %SVN_REP% %~dp0\revision.svn %1\revision.h
+PUSHD
+CD /D %~dp0
+CALL set_env.bat
+POPD
+CD /D %1
+FOR /F %%R in ('git describe --always') DO SET REPO_REVISION=%%R
+SET REVISION_H=%1\revision.h
+DEL /Q /F %REVISION_H%
+ECHO #ifndef _REVISION_H_ >> %REVISION_H%
+ECHO #define _REVISION_H_ >> %REVISION_H%
+ECHO. >> %REVISION_H%
+ECHO #define REVISION "%REPO_REVISION%" >> %REVISION_H%
+ECHO. >> %REVISION_H%
+ECHO #endif // _REVISION_H_ >> %REVISION_H%
 ENDLOCAL

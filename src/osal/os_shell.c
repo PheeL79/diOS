@@ -110,7 +110,7 @@ Status s = S_OK;
     if (OS_NULL == cmd_cfg_p) { s = S_INVALID_REF;  goto error; }
     if ((OS_NULL == item_l_p) || (OS_NULL == cmd_cfg_dyn_p)) { s = S_NO_MEMORY; goto error; }
     IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
-        memcpy(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
+        OS_MemCpy8(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
         OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cmd_cfg_dyn_p);
         OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskHdGet());
         OS_ListAppend(&os_commands_list, item_l_p);

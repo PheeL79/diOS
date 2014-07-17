@@ -69,8 +69,7 @@ typedef U32             TimeS;
 #pragma inline
 static inline U32 OS_MS_TO_TICKS(const TimeMs ms)
 {
-U32 ticks = ((ms * configTICK_RATE_HZ) / 1000UL);
-    return ((0 == ticks) ? 1 : ticks);
+    return ((ms * configTICK_RATE_HZ) / 1000UL);
 }
 
 //------------------------------------------------------------------------------

@@ -14,7 +14,7 @@
 /// @return     #Status.
 Status          NVIC_Init_(void);
 
-static Status NVIC__Init(void);
+static Status   NVIC__Init(void);
 
 //-----------------------------------------------------------------------------
 HAL_DriverItf* drv_nvic_v[DRV_ID_NVIC_LAST];
