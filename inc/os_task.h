@@ -148,21 +148,21 @@ OS_TaskId       OS_TaskIdGet(const OS_TaskHd thd);
 /// @brief      Get current task handle.
 /// @param[in]  thd             Task handle.
 /// @return     Task handle.
-OS_TaskHd       OS_TaskHdGet(void);
+OS_TaskHd       OS_TaskGet(void);
 
 /// @brief      Get task handle by it's id.
 /// @param[in]  tid             Task id.
 /// @return     Task handle.
-OS_TaskHd       OS_TaskHdByIdGet(const OS_TaskId tid);
+OS_TaskHd       OS_TaskByIdGet(const OS_TaskId tid);
 
 /// @brief      Get current task parent's handle.
 /// @return     Task handle.
-OS_TaskHd       OS_TaskHdParentGet(void);
+OS_TaskHd       OS_TaskParentGet(void);
 
 /// @brief      Get parent's task by task handle.
 /// @param[in]  thd             Task handle.
 /// @return     Task handle.
-OS_TaskHd       OS_TaskHdParentByHdGet(const OS_TaskHd thd);
+OS_TaskHd       OS_TaskParentByHdGet(const OS_TaskHd thd);
 
 /// @brief      Get tasks count.
 /// @return     Tasks count.

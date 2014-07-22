@@ -9,6 +9,7 @@
 //Ensure that is only used by the compiler, and not the assembler.
 #ifdef __ICCARM__
 #include "olimex_stm32_p407/hal_config.h"
+#include "os_memory.h"
 
 //------------------------------------------------------------------------------
 #define OS_IS_PREEMPTIVE            1
@@ -36,10 +37,30 @@
 
 #ifdef __ICCARM__
 //Memory
+/// @brief   Memory type.
+enum {
+    OS_MEM_RAM_INT_SRAM,
+    OS_MEM_RAM_INT_CCM,
+    OS_MEM_RAM_EXT_SRAM,
+    OS_MEM_LAST,
+    OS_MEM_UNDEF
+};
 #define OS_MEM_HEAP_SYS             OS_MEM_RAM_EXT_SRAM
 #define OS_MEM_HEAP_APP             OS_MEM_RAM_EXT_SRAM
 #define OS_STACK_SIZE_MIN           200
 #define OS_HEAP_SIZE                20 * 1024
+
+__no_init static U8 heap_int_sram[OS_HEAP_SIZE];// @ RAM_region;
+__no_init static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
+__no_init static U8 heap_ext_sram[MEM_EXT_SRAM_SIZE]        @ MEM_EXT_SRAM_BASE_ADDRESS;
+
+/// @brief   Memory config vector.
+static const OS_MemoryDesc memory_cfg_v[] = {
+    { (U32)&heap_int_sram,      sizeof(heap_int_sram),      MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_SRAM,    "SRAM Int." },
+    { (U32)&heap_int_ccm,       sizeof(heap_int_ccm),       MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_CCM,     "CCM"       },
+    { (U32)&heap_ext_sram,      sizeof(heap_ext_sram),      MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_EXT_SRAM,    "SRAM Ext." },
+    { 0,                        0,                          0,                      OS_MEM_LAST,            ""          }
+};
 
 #define OS_TIMERS_ENABLED           1
 #define OS_TIMERS_TASK_PRIO         2

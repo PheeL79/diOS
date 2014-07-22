@@ -167,9 +167,6 @@ U32 value_idx = 1;
         s = OS_StdIoSet(argv[value_idx]);
     } else if (!strcmp("log_level", (char const*)argv[0])) {
         s = OS_LogLevelSet(argv[value_idx]);
-    } else if (!strcmp(OS_ENV_POWER_STR, (char const*)argv[0])) {
-        s = OS_PowerSet(argv[value_idx]); // Set in SV task.
-        return s;
     }
     IF_STATUS(s) { return s; }
     return OS_EnvVariableSet(argv[0], argv[value_idx]);
@@ -216,42 +213,57 @@ void OS_ShellCmdStHandlerTskHelper(void)
 const U32 task_inf_approx_mem_size = sizeof(OS_TaskStats);
 register U32 tasks_count = OS_TasksCountGet();
 OS_TaskStats* run_stats_buf_p = (OS_TaskStats*)OS_Malloc(task_inf_approx_mem_size * tasks_count);
-const OS_TaskConfig cfg = { 0 };
 OS_TaskStats* task_stats_p;
 U32 uptime;
 
     if (OS_NULL == run_stats_buf_p) { return; }
     printf("\n%-12s %-3s %-4s %-3s %-4s %-7s %-10s %-4s %-5s %-4s %-3s %-3s",
-           "Name", "TId", "PtId", "Pri", "PriP", "Power", "State", "CPU", "Stack", "Free", "In", "Out");
+           "Name", "TId", "PTId", "Pri", "PriP", "Power", "State", "CPU", "Stack", "Free", "In", "Out");
     if (tasks_count != OS_TasksStatsGet(run_stats_buf_p, tasks_count, &uptime)) { goto error; }
     uptime /= 100UL; //For percentage calculations.
     if (0 >= uptime) { goto error; } //Avoid divide by zero errors.
     task_stats_p = (OS_TaskStats*)&run_stats_buf_p[0];
     while (tasks_count--) {
-        extern OS_TaskHd OS_TaskHdByHandleGet(const TaskHandle_t task_hd);
-        const OS_TaskHd thd = OS_TaskHdByHandleGet(task_stats_p->xHandle);
-        const OS_TaskHd par_thd = OS_TaskHdParentByHdGet(thd);
-        const U32 par_id = (OS_NULL == par_thd) ? 0 : OS_TaskIdGet(par_thd);
+        extern OS_TaskHd OS_TaskByHandleGet(const TaskHandle_t task_hd);
+        extern OS_TaskState OS_TaskStateTranslate(const eTaskState e_state);
+
+        const OS_TaskHd thd = OS_TaskByHandleGet(task_stats_p->xHandle);
+        const OS_TaskHd par_thd = OS_TaskParentByHdGet(thd);
         const OS_TaskConfig* cfg_p = OS_TaskConfigGet(thd);
+        const OS_TaskState task_state = OS_TaskStateTranslate(task_stats_p->eCurrentState);
+
+        OS_TaskId tid = OS_TaskIdGet(thd);
+        OS_TaskId par_id = (OS_NULL == par_thd) ? 0 : OS_TaskIdGet(par_thd);
+        OS_PowerPrio power_prio = cfg_p->prio_power;
+        OS_PowerState power_state = OS_TaskPowerStateGet(thd);
+        U16 stack_size = cfg_p->stack_size;
+        U8 stdin_len = cfg_p->stdin_len;
+        U8 stdout_len = cfg_p->stdout_len;
+        if (OS_NULL == thd) { // OS Engine tasks.
+            tid         = 0;
+            par_id      = 0;
+            power_prio  = 0;
+            power_state = 0;
+            stack_size  = 0;
+            stdin_len   = 0;
+            stdout_len  = 0;
+        }
         StrPtr cpu_str_buf[5];
         //TODO(A. Filyanov) Check for timer counter overflow! Otherwise -> wrong cpu usage value!
         snprintf((char*)&cpu_str_buf, sizeof(cpu_str_buf), "%d%%", (U32)(task_stats_p->ulRunTimeCounter / uptime));
-        if (OS_NULL == cfg_p) {
-            cfg_p = &cfg;
-        }
         printf("\n%-12s %-3d %-4d %-3d %-4d %-7s %-10s %-4s %-5d %-4d %-3d %-3d",
                task_stats_p->pcTaskName,
-               OS_TaskIdGet(thd),
+               tid,
                par_id,
                task_stats_p->uxCurrentPriority,
-               cfg_p->prio_power,
-               OS_PowerStateNameGet(OS_TaskPowerStateGet(thd)),
-               OS_TaskStateNameGet(OS_TaskStateGet(thd)),
+               power_prio,
+               OS_PowerStateNameGet(power_state),
+               OS_TaskStateNameGet(task_state),
                (const char*)cpu_str_buf,
-               cfg_p->stack_size,
+               stack_size,
                task_stats_p->usStackHighWaterMark,
-               cfg_p->stdin_len,
-               cfg_p->stdout_len);
+               stdin_len,
+               stdout_len);
         ++task_stats_p;
     }
 error:
@@ -266,7 +278,7 @@ OS_TaskHd thd;
 OS_QueueHd qhd = OS_NULL;
 
     printf("\n%-12s %-4s %-4s %-4s %-6s %-6s %-12s %-12s",
-           "Parent", "PtId", "Dir", "Len", "ISize", "Items", "Sended", "Received");
+           "Parent", "PTId", "Dir", "Len", "ISize", "Items", "Sended", "Received");
     while (OS_NULL != (qhd = OS_QueueNextGet(qhd))) {
         OS_QueueConfig que_config;
         OS_QueueStats que_stats;
@@ -406,7 +418,7 @@ Status s = S_OK;
     if (0 > tid) { return S_INVALID_REF; }
 
     const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_PWR, PWR_SHUTDOWN);
-    const OS_TaskHd dst_thd = OS_TaskHdByIdGet(tid);
+    const OS_TaskHd dst_thd = OS_TaskByIdGet(tid);
     if (OS_NULL != dst_thd) {
         const OS_QueueHd dst_stdin_qhd = OS_TaskStdIoGet(dst_thd, OS_STDIO_IN);
         if (OS_NULL != dst_stdin_qhd) {
@@ -509,7 +521,7 @@ static Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrPtr argv[])
 {
 const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_REBOOT, 0);
-const OS_QueueHd sv_stdin_qhd = OS_TaskStdIoGet(OS_TaskHdParentGet(), OS_STDIO_IN);
+const OS_QueueHd sv_stdin_qhd = OS_TaskStdIoGet(OS_TaskParentGet(), OS_STDIO_IN);
 
     OS_SIGNAL_EMIT(OS_TaskSvcStdInGet(), signal, OS_MSG_PRIO_HIGH);
     return S_OK;
@@ -523,7 +535,7 @@ static Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrPtr argv[])
 {
 const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_SHUTDOWN, 0);
-const OS_QueueHd sv_stdin_qhd = OS_TaskStdIoGet(OS_TaskHdParentGet(), OS_STDIO_IN);
+const OS_QueueHd sv_stdin_qhd = OS_TaskStdIoGet(OS_TaskParentGet(), OS_STDIO_IN);
 
     OS_SIGNAL_EMIT(OS_TaskSvcStdInGet(), signal, OS_MSG_PRIO_HIGH);
     return S_OK;

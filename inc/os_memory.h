@@ -10,7 +10,6 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
 #include "typedefs.h"
 
 /**
@@ -18,14 +17,6 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
-/// @brief   Memory type.
-enum {
-    OS_MEM_RAM_INT_SRAM,
-    OS_MEM_RAM_INT_CCM,
-    OS_MEM_RAM_EXT_SRAM,
-    OS_MEM_LAST,
-    OS_MEM_UNDEF
-};
 typedef U32 OS_MemoryType;
 
 /// @brief   Memory description.
@@ -101,6 +92,13 @@ void            OS_MemMove8(void* dst_p, const void* src_p, SIZE size8);
 /// @param[in]  size32          Size to copy (words).
 /// @return     None.
 void            OS_MemMove32(void* dst_p, const void* src_p, SIZE size32);
+
+/// @brief      Set memory by value.
+/// @param[out] dst_p           Destination address.
+/// @param[in]  value           Value.
+/// @param[in]  size            Size to set(bytes).
+/// @return     None.
+void            OS_MemSet(void* dst_p, const U8 value, SIZE size);
 
 /// @brief      Get the next memory heap type.
 /// @param[in]  mem_type        Memory type.

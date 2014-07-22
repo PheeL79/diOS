@@ -50,8 +50,8 @@ void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
             va_end(args);
             const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_STDOUT, 0);
             OS_SIGNAL_EMIT(stdio_qhd, signal, OS_MSG_PRIO_NORMAL);
+            OS_MutexUnlock(print_mut);
         }
-        OS_MutexUnlock(print_mut);
     }
 }
 

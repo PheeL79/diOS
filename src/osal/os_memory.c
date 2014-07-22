@@ -12,18 +12,6 @@
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
-__no_init static U8 heap_int_sram[configTOTAL_HEAP_SIZE];// @ RAM_region;
-__no_init static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
-__no_init static U8 heap_ext_sram[MEM_EXT_SRAM_SIZE]        @ MEM_EXT_SRAM_BASE_ADDRESS;
-
-/// @brief   Memory config vector.
-const OS_MemoryDesc memory_cfg_v[] = {
-    { (U32)&heap_int_sram,      sizeof(heap_int_sram),      MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_SRAM,    "SRAM Int." },
-    { (U32)&heap_int_ccm,       sizeof(heap_int_ccm),       MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_CCM,     "CCM"       },
-    { (U32)&heap_ext_sram,      sizeof(heap_ext_sram),      MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_EXT_SRAM,    "SRAM Ext." },
-    { 0,                        0,                          0,                      OS_MEM_LAST,            ""          }
-};
-
 static OS_MutexHd os_mem_mutex;
 
 /******************************************************************************/
@@ -63,6 +51,7 @@ void vPortFree(void* pv)
 	if (pv)	{
         OS_SchedulerSuspend(); {
 		    tlsf_free(pv);
+            OS_MutexUnlock(os_mem_mutex);
             //OS_LOG(D_DEBUG, "heap: %5d; free  : 0x%X\r\n", get_used_size(&heap), pv);
         } OS_SchedulerResume();
 	}
@@ -110,7 +99,8 @@ void* p = OS_NULL;
 //    } while (OS_MEM_LAST != (++mem_desc_p)->type);
     IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         p = malloc_ex(size, (void*)mem_desc_p->addr);
-    } OS_MutexUnlock(os_mem_mutex);
+        OS_MutexUnlock(os_mem_mutex);
+    }
     return p;
 }
 
@@ -122,7 +112,8 @@ void* p = OS_NULL;
     if (mem_desc_p) {
         IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
             p = malloc_ex(size, (void*)mem_desc_p->addr);
-        } OS_MutexUnlock(os_mem_mutex);
+            OS_MutexUnlock(os_mem_mutex);
+        }
     }
     return p;
 }
@@ -138,7 +129,8 @@ void OS_Free(void* addr_p)
     if (addr_p) {
         IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
             tlsf_free(addr_p);
-        } OS_MutexUnlock(os_mem_mutex);
+            OS_MutexUnlock(os_mem_mutex);
+        }
     }
 }
 
@@ -150,7 +142,8 @@ const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
         if (addr_p) {
             IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
                 free_ex(addr_p, (void*)mem_desc_p->addr);
-            } OS_MutexUnlock(os_mem_mutex);
+                OS_MutexUnlock(os_mem_mutex);
+            }
         }
     } else {
         //OS_LOG(D_DEBUG, "ERROR: Unknown memory type!");
@@ -191,6 +184,12 @@ void OS_MemMove8(void* dst_p, const void* src_p, SIZE size8)
 void OS_MemMove32(void* dst_p, const void* src_p, SIZE size32)
 {
     memmove(dst_p, src_p, (size32 * sizeof(U32)));
+}
+
+/******************************************************************************/
+void OS_MemSet(void* dst_p, const U8 value, SIZE size)
+{
+    memset(dst_p, value, size);
 }
 
 /******************************************************************************/

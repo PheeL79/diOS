@@ -112,7 +112,7 @@ Status s = S_OK;
     IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
         OS_MemCpy8(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
         OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cmd_cfg_dyn_p);
-        OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskHdGet());
+        OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskGet());
         OS_ListAppend(&os_commands_list, item_l_p);
     }
 error:

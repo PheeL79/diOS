@@ -1,1 +1,14 @@
 *.a
+*.wsdt
+*.wspos
+*.pbi
+*.cout
+*.pbd
+*.browse
+*.tmp
+*.lst
+*.o
+*.dep
+*.dbgdt
+*.dni
+*.cspy.bat

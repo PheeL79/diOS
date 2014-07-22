@@ -40,10 +40,12 @@ enum {
 };
 
 //------------------------------------------------------------------------------
-#define OS_SIGNAL_CREATE(id, data)                              (OS_SIGNAL_TOKEN | \
+#define OS_SIGNAL_CREATE_(tid, id, data)                        (OS_SIGNAL_TOKEN | \
                                                                 ((((OS_Signal)(id) & OS_SIGNAL_ID_MASK) << 24) | \
-                                                                (((OS_Signal)(OS_TaskIdGet(OS_THIS_TASK)) & OS_SIGNAL_SRC_MASK) << 16) | \
+                                                                (((OS_Signal)(tid) & OS_SIGNAL_SRC_MASK) << 16) | \
                                                                 ((OS_Signal)(data) & OS_SIGNAL_DATA_MASK)))
+
+#define OS_SIGNAL_CREATE(id, data)                              OS_SIGNAL_CREATE_(OS_TaskIdGet(OS_THIS_TASK), id, data)
 #define OS_SIGNAL_EMIT(qhd, signal, prio)                       OS_MessageSend(qhd, (OS_Message *)signal, OS_NO_BLOCK, prio)
 #define OS_SIGNAL_MULTICAST_EMIT(receivers_qhd_v, signal, prio) OS_MessageMulticastSend(receivers_qhd_v, (OS_Message *)signal, OS_NO_BLOCK, prio)
 #define OS_SIGNAL_IS(msg)                                       (OS_SIGNAL_TOKEN == ((OS_Signal)(msg) & OS_SIGNAL_TOKEN))
@@ -51,10 +53,8 @@ enum {
 #define OS_SIGNAL_SRC_GET(signal)                               ((OS_TaskId)(((OS_Signal)(signal) >> 16) & OS_SIGNAL_SRC_MASK))
 #define OS_SIGNAL_DATA_GET(signal)                              ((OS_SignalData)(((OS_Signal)(signal)) & OS_SIGNAL_DATA_MASK))
 
-#define OS_ISR_SIGNAL_CREATE(id, data)                          (OS_SIGNAL_TOKEN | \
-                                                                ((((OS_Signal)(id) & OS_SIGNAL_ID_MASK) << 24) | \
-                                                                (((OS_Signal)(0) & OS_SIGNAL_SRC_MASK) << 16) | \
-                                                                ((OS_Signal)(data) & OS_SIGNAL_DATA_MASK)))
+#define OS_ISR_SIGNAL_CREATE(id, data)                          OS_SIGNAL_CREATE_(0, id, data)
+
 #define OS_ISR_SIGNAL_EMIT(qhd, signal, prio)                   OS_ISR_MessageSend(qhd, (OS_Message *)signal, prio)
 
 #ifdef __cplusplus

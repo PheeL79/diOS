@@ -40,20 +40,19 @@ Status OS_QueueInit(void)
 /******************************************************************************/
 Status OS_QueueCreate(const OS_QueueConfig* cfg_p, OS_TaskHd parent_thd, OS_QueueHd* qhd_p)
 {
-OS_ListItem* item_l_p       = OS_ListItemCreate();
-OS_QueueConfigDyn* cfg_dyn_p= OS_Malloc(sizeof(OS_QueueConfigDyn));
 Status s = S_OK;
-
-    if ((OS_NULL == item_l_p) || (OS_NULL == cfg_dyn_p)) { s = S_NO_MEMORY; goto error; }
-    if (OS_NULL == qhd_p) { s = S_INVALID_REF;  goto error; }
-    if ((DIR_IN > cfg_p->dir) || (DIR_OUT < cfg_p->dir)) { s = S_INVALID_VALUE;  goto error; }
+    if (OS_NULL == qhd_p) { return S_INVALID_REF; }
+    if ((DIR_IN > cfg_p->dir) || (DIR_OUT < cfg_p->dir)) { return S_INVALID_VALUE; }
+    OS_ListItem* item_l_p = OS_ListItemCreate();
+    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    OS_QueueConfigDyn* cfg_dyn_p= OS_Malloc(sizeof(OS_QueueConfigDyn));
+    if (OS_NULL == cfg_dyn_p) {
+        OS_ListItemDelete(item_l_p);
+        return S_NO_MEMORY;
+    }
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         const QueueHandle_t queue_hd = xQueueCreate(cfg_p->len, cfg_p->item_size);
-        if (OS_NULL == queue_hd) {
-            OS_MutexRecursiveUnlock(os_queue_mutex);
-            s = S_UNDEF_QUEUE;
-            goto error;
-        }
+        if (OS_NULL == queue_hd) { s = S_UNDEF_QUEUE; goto error; }
         *qhd_p                          = (OS_QueueHd)item_l_p;
         cfg_dyn_p->parent_thd           = parent_thd;
         cfg_dyn_p->cfg.dir              = cfg_p->dir;
@@ -65,12 +64,12 @@ Status s = S_OK;
         OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)queue_hd);
         OS_ListAppend(&os_queues_list, item_l_p);
         ++queues_count;
-        OS_MutexRecursiveUnlock(os_queue_mutex);
-    }
 error:
-    IF_STATUS(s) {
-        OS_Free(cfg_dyn_p);
-        OS_ListItemDelete(item_l_p);
+        IF_STATUS(s) {
+            OS_Free(cfg_dyn_p);
+            OS_ListItemDelete(item_l_p);
+        }
+        OS_MutexRecursiveUnlock(os_queue_mutex);
     }
     return s;
 }
@@ -78,13 +77,12 @@ error:
 /******************************************************************************/
 Status OS_QueueDelete(const OS_QueueHd qhd)
 {
-OS_ListItem* item_l_p = (OS_ListItem*)qhd;
-OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
 Status s = S_OK;
 
     if (OS_NULL == qhd) { return S_UNDEF_QUEUE; }
-    if ((OS_NULL == cfg_dyn_p) || (OS_DELAY_MAX == (OS_Value)cfg_dyn_p)) { return S_INVALID_REF; }
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        OS_ListItem* item_l_p = (OS_ListItem*)qhd;
+        OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
         vQueueDelete((QueueHandle_t)OS_LIST_ITEM_OWNER_GET(item_l_p));
         OS_ListItemDelete(item_l_p);
         OS_Free(cfg_dyn_p);
@@ -198,18 +196,21 @@ OS_QueueHd OS_QueueNextGet(const OS_QueueHd qhd)
 {
 OS_ListItem* iter_li_p = (OS_ListItem*)qhd;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
-        if (OS_NULL == qhd) {
+        if (OS_NULL == iter_li_p) {
             iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_queues_list));
-            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { goto error; }
-            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+                iter_li_p = OS_NULL;
+            }
         } else {
-            if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) {
+            if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
                 iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+                if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+                    iter_li_p = OS_NULL;
+                }
             } else {
                 iter_li_p = OS_NULL;
             }
         }
-error:
         OS_MutexRecursiveUnlock(os_queue_mutex);
     } else {
         iter_li_p = OS_NULL;

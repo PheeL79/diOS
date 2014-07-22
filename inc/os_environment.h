@@ -19,8 +19,6 @@ extern "C" {
 * \defgroup OS_Environment OS_Environment
 * @{
 */
-//------------------------------------------------------------------------------
-#define OS_ENV_POWER_STR    "power"
 
 //------------------------------------------------------------------------------
 // System environment variables access functions.
@@ -37,11 +35,6 @@ Locale          OS_LocaleGet(void);
 /// @param[in]  locale_p        Locale.
 /// @return     #Status.
 Status          OS_LocaleSet(ConstStrPtr locale_p);
-
-/// @brief      Set the current system power mode.
-/// @param[in]  power_p         Power mode.
-/// @return     #Status.
-Status          OS_PowerSet(ConstStrPtr power_p);
 
 /// @brief      Get system input/output driver interface.
 /// @return     Driver interface.

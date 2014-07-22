@@ -23,7 +23,7 @@ OS_Message* msg_p = OS_Malloc(size + sizeof(OS_Message));
         OS_MemCpy8(msg_p->data, data_p, size);
         msg_p->id   = id;
         msg_p->size = size;
-        msg_p->src  = OS_TaskHdGet();
+        msg_p->src  = OS_TaskGet();
     }
     return msg_p;
 }
@@ -66,7 +66,7 @@ signal_filter: //Prevent recursion calls.
                 SignalEmit(OS_SIGNAL_SRC_GET(msg_p), s, OS_SIG_PULSE_ACK);
                 goto signal_filter;
             } else if (OS_SIG_PWR == signal_id) {
-                const OS_TaskHd thd = OS_TaskHdGet();
+                const OS_TaskHd thd = OS_TaskGet();
                 //OS_SchedulerSuspend();
                 if (OS_NULL != thd) {
                     const OS_PowerState state =
@@ -92,7 +92,7 @@ signal_filter: //Prevent recursion calls.
 void SignalEmit(const OS_TaskId src_tid, const Status status, const OS_SignalId signal_id)
 {
     if (0 != src_tid) {
-        const OS_TaskHd src_thd = OS_TaskHdByIdGet(src_tid);
+        const OS_TaskHd src_thd = OS_TaskByIdGet(src_tid);
         const OS_QueueHd src_stdin_qhd = OS_TaskStdIoGet(src_thd, OS_STDIO_IN);
         if (OS_NULL != src_stdin_qhd) {
             const OS_Signal signal = OS_SIGNAL_CREATE(signal_id, (OS_SignalData)status);

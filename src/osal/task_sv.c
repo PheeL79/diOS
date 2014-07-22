@@ -43,7 +43,7 @@ static void     MessagesHandler(TaskArgs* task_args_p);
 static Status   SystemPowerStateSet(TaskArgs* task_args_p, const OS_PowerState state);
 static Status   SystemPowerStateForTasksSet(const OS_PowerState state);
 static Status   SystemPowerStateForDriversSet(const OS_PowerState state);
-static Status   TaskDeadLockFind(void);
+static Status   TaskDeadLockTest(void);
 static Status   TaskDeadLockAction(void);
 static void     Reboot(TaskArgs* task_args_p);
 static void     Shutdown(TaskArgs* task_args_p);
@@ -149,8 +149,6 @@ Status s;
             IF_STATUS_OK(s = SystemPowerStateForDriversSet(state)) {
                 IF_STATUS_OK(s = SystemPowerStateForTasksSet(state)) {
                     os_env.hal_env_p->power = state;
-                    IF_STATUS(s = OS_EnvVariableSet(OS_ENV_POWER_STR, OS_PowerStateNameGet(os_env.hal_env_p->power))) {
-                    }
                     OS_LOG(D_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
                 }
             }
@@ -159,8 +157,6 @@ Status s;
         IF_STATUS_OK(s = SystemPowerStateForTasksSet(state)) {
             IF_STATUS_OK(s = SystemPowerStateForDriversSet(state)) {
                 os_env.hal_env_p->power = state;
-                IF_STATUS(s = OS_EnvVariableSet(OS_ENV_POWER_STR, OS_PowerStateNameGet(os_env.hal_env_p->power))) {
-                }
                 OS_LOG(D_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
                 //Direct call to IoCtl func bypass OS_Driver interface.
                 //(no API func calls are allowed with the suspended scheduler).
@@ -179,7 +175,7 @@ Status SystemPowerStateForTasksSet(const OS_PowerState state)
 extern Status OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state);
 extern void   OS_TaskPowerPrioritySort(const SortDirection sort_dir);
 const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_PWR, state);
-const OS_TaskHd sv_thd = OS_TaskHdGet();
+const OS_TaskHd sv_thd = OS_TaskGet();
 OS_TaskHd thd;
 OS_TaskHd next_thd = OS_NULL;
 Status s = S_OK; //!
@@ -188,7 +184,7 @@ Status s = S_OK; //!
     OS_TaskPowerPrioritySort(sort_dir);
     thd = OS_TaskNextGet(next_thd); //first task in the list.
     while (OS_NULL != thd) {
-        const OS_TaskHd par_thd = OS_TaskHdParentByHdGet(thd);
+        const OS_TaskHd par_thd = OS_TaskParentByHdGet(thd);
         next_thd = OS_TaskNextGet(thd);
         if ((par_thd != OS_NULL) && (sv_thd != thd)) { //ignore OS system tasks.
             const OS_QueueHd stdin_qhd = OS_TaskStdIoGet(thd, OS_STDIO_IN);
@@ -297,7 +293,7 @@ OS_Message* msg_p;
 
     if (OS_TRUE != is_idle) {
         Status s;
-        IF_STATUS_OK(s = TaskDeadLockFind()) {
+        IF_STATUS_OK(s = TaskDeadLockTest()) {
             IF_STATUS_OK(s = TaskDeadLockAction()) {
             } else { OS_LOG_S(D_WARNING, s); }
         } else { OS_LOG_S(D_WARNING, s); }
@@ -312,7 +308,7 @@ OS_Message* msg_p;
 }
 
 /******************************************************************************/
-Status TaskDeadLockFind(void)
+Status TaskDeadLockTest(void)
 {
 const U32 task_inf_approx_mem_size = sizeof(OS_TaskStats);
 register U32 tasks_count_old = OS_TasksCountGet();
@@ -350,7 +346,7 @@ Status s = S_OK;
         //Find the most CPU intensive task between measures.
         while (tasks_count_new--) {
             register U32 tasks_count_old_tmp = tasks_count_old;
-            OS_TaskHd task_curr_thd = OS_NULL;
+            TaskHandle_t task_curr_thd = OS_NULL;
             task_stats_old_p = (OS_TaskStats*)&run_stats_old_buf_p[0];
             while (tasks_count_old_tmp--) {
                 if (task_stats_new_p->xHandle == task_stats_old_p->xHandle) {
@@ -362,9 +358,11 @@ Status s = S_OK;
             if (OS_NULL != task_curr_thd) {
                 const U32 cpu_time_delta = task_stats_new_p->ulRunTimeCounter - task_stats_old_p->ulRunTimeCounter;
                 if (cpu_time_top < cpu_time_delta) {
-                    if (OS_TaskHdGet() != task_curr_thd) { //Exclude this SV task!
+                    extern OS_TaskHd OS_TaskHdGet(const TaskHandle_t task_hd);
+                    const OS_TaskHd thd = OS_TaskHdGet(task_curr_thd);
+                    if (OS_TaskGet() != thd) { //Exclude this SV task!
                         cpu_time_top = cpu_time_delta;
-                        deadlock_thd = task_curr_thd;
+                        deadlock_thd = thd;
                     }
                 }
             }

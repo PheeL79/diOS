@@ -72,7 +72,6 @@ Status s;
     IF_STATUS(s = OS_LogLevelSet(OS_LOG_LEVEL_DEFAULT))                     { return s; }
     //Create environment variables.
     IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT))              { return s; }
-    IF_STATUS(s = OS_EnvVariableSet("power", "on"))                         { return s; }
     IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6"))                     { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT))     { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH))          { return s; }
@@ -113,7 +112,7 @@ void OS_SystemTickStop(void)
 {
 }
 
-/******************************************************************************/
+///******************************************************************************/
 OS_PowerState OS_PowerStateGet(void)
 {
     return os_env.hal_env_p->power;
@@ -141,19 +140,6 @@ Status OS_LocaleSet(ConstStrPtr locale_p)
         os_env.hal_env_p->locale = LOC_RU;
     } else { return S_INVALID_VALUE; }
     return S_OK;
-}
-
-/******************************************************************************/
-Status OS_PowerSet(ConstStrPtr power_p)
-{
-    if (OS_NULL == power_p) { return S_INVALID_REF; }
-    SIZE state = PWR_LAST;
-    while (state--) {
-        if (!strcmp((const char*)OS_PowerStateNameGet(state), (char const*)power_p)) {
-            return OS_PowerStateSet(state);
-        }
-    }
-    return S_INVALID_VALUE;
 }
 
 /******************************************************************************/

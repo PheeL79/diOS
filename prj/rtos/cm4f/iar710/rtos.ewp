@@ -303,6 +303,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
+          <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos_plus\800\Source\FreeRTOS-Plus-CLI</state>
