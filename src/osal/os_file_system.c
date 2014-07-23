@@ -50,7 +50,8 @@ static OS_DriverHd drv_media_v[OS_FILE_SYSTEM_VOLUMES_MAX];
 static OS_FileSystemHd fshd_v[OS_FILE_SYSTEM_VOLUMES_MAX];
 static OS_FileSystemMediaLabel media_label_v[OS_FILE_SYSTEM_VOLUMES_MAX] = {
     { "0:", "ATA"       },
-    { "1:", "SD Card"   }
+    { "1:", "SD Card"   },
+    { "2:", "USB"       }
 };
 
 const StatusItem status_fs_v[] = {

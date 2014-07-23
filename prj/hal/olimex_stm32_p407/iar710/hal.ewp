@@ -304,7 +304,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\CMSIS\Include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
@@ -315,7 +315,7 @@
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10a\cm4f</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
         </option>
@@ -2213,7 +2213,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\CMSIS\Include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
@@ -2224,7 +2224,7 @@
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10a\cm4f</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
         </option>

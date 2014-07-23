@@ -309,7 +309,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\Common</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\STM3240_41_G_EVAL</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
@@ -320,7 +320,7 @@
           <state>$PROJ_DIR$\..\..\..\..\src\osal\min_ini</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10a\cm4f</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
         </option>
         <option>
@@ -1915,20 +1915,20 @@
     <group>
       <name>option</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src\option\ccsbcs.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\option\ccsbcs.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs\syscall.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src\option\unicode.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\option\unicode.c</name>
       </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs\diskio.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src\ff.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\ff.c</name>
       <configuration>
         <name>Debug</name>
         <settings>
@@ -2078,14 +2078,14 @@
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\src</state>
               <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
               <state>$PROJ_DIR$\..\..\..\..\src\osal\mem_mng\tlsf\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10a\cm4f</state>
+              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg</state>
             </option>
@@ -2364,7 +2364,7 @@
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\STM3240_41_G_EVAL</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10a\src</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
@@ -2374,7 +2374,7 @@
               <state>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs</state>
               <state>$PROJ_DIR$\..\..\..\..\src\osal\min_ini</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10a\cm4f</state>
+              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg</state>
             </option>

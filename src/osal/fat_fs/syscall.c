@@ -24,7 +24,7 @@ int ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create due to any erro
 )
 {
     int ret;
-    static _SYNC_t sem[_VOLUMES];	/* FreeRTOS */
+//    static _SYNC_t sem[_VOLUMES];	/* FreeRTOS */
 
 //	*sobj = CreateMutex(NULL, FALSE, NULL);		/* Win32 */
 //	ret = (int)(*sobj != INVALID_HANDLE_VALUE);
@@ -35,11 +35,12 @@ int ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create due to any erro
 //	*sobj = OSMutexCreate(0, &err);	/* uC/OS-II */
 //	ret = (int)(err == OS_NO_ERR);
 
-  if (!sem[vol])					/* FreeRTOS */
-        sem[vol] = OS_MutexCreate();
-    *sobj = sem[vol];
-    ret = (*sobj != NULL);
+//  if (!sem[vol])					/* FreeRTOS */
+//        sem[vol] = OS_MutexCreate();
+//    *sobj = sem[vol];
 
+    *sobj = OS_MutexCreate();
+    ret = (*sobj != NULL);
     return ret;
 }
 
@@ -98,7 +99,7 @@ int ff_req_grant (	/* TRUE:Got a grant to access the volume, FALSE:Could not get
 //	ret = (int)(err == OS_NO_ERR);
 
 //	ret = (int)(xSemaphoreTake(sobj, _FS_TIMEOUT) == pdTRUE);	/* FreeRTOS */
-    
+
     IF_STATUS(OS_MutexLock(sobj, _FS_TIMEOUT)) {
         ret = 0;
     } else {
