@@ -133,9 +133,9 @@ MutexState TIMER10_MutexGet(void)
 /*****************************************************************************/
 void TIMER10_MutexSet(const MutexState state)
 {
-    CRITICAL_ENTER(); {
+    HAL_CRITICAL_SECTION_ENTER(); {
         mutex_timer_milestone = state;
-    } CRITICAL_EXIT();
+    } HAL_CRITICAL_SECTION_EXIT();
 }
 
 /*****************************************************************************/

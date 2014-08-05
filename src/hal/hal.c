@@ -26,95 +26,52 @@ static Status   HAL_DeviceDescriptionInit(void);
 
 static void     SystemClock_Config(void);
 
-extern Status   DMA_Init_(void);
-extern Status   RTC_Init_(void);
-extern Status   NVIC_Init_(void);
-extern Status   GPIO_Init_(void);
-extern Status   SDIO_Init_(void);
-extern Status   TIMER_Init_(void);
-extern Status   USART_Init_(void);
-extern Status   POWER_Init_(void);
-
-extern Status   MEM_EXT_Init_(void);
-extern Status   BUTTON_Init_(void);
-extern Status   LED_Init_(void);
-
 /*****************************************************************************/
 Status HAL_Init_(void)
 {
+extern Status USART_Init_(void);
 const Version* ver_p = &device_state.description.device_description.version;
 Status s = S_OK;
     // Disable interrupts.
-    CRITICAL_ENTER();
-    SystemInit();
-    if (HAL_OK != HAL_Init()) { return S_HARDWARE_FAULT; }
-    SystemClock_Config();
-    SystemCoreClockKHz  = SystemCoreClock / KHZ;
-    SystemCoreClockMHz  = SystemCoreClockKHz / KHZ;
-    TIMER_DWT_Init(); // HAL_LOG depends on this init.
-    // HAL environment init
-    hal_env.locale      = LOC_EN;
-    hal_env.power       = PWR_ON;
-    hal_env.log_level   = HAL_LOG_LEVEL_DEFAULT;
-    IF_STATUS(s = USART_Init_()) { return s; }
-    hal_env.stdio_p = drv_stdio_p;
-    HAL_ASSERT(S_OK == hal_env.stdio_p->Init());
-    HAL_ASSERT(S_OK == hal_env.stdio_p->Open(OS_NULL));
-    // Init device description.
-    IF_STATUS(HAL_DeviceDescriptionInit()) { return S_MODULE; }
-    // Init and open STDIO stream.
-    HAL_StdIoCls();
-    HAL_LOG(D_INFO, "-------------------------------");
-    HAL_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
-                   ver_p->maj,
-                   ver_p->min,
-                   ver_p->bld,
-                   ver_lbl[ver_p->lbl],
-                   ver_p->rev);
-    HAL_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
-    HAL_LOG(D_INFO, "-------------------------------");
-    HAL_LOG(D_INFO, "HAL init...");
-    HAL_LOG(D_INFO, "-------------------------------");
-
-    //TODO(A. Filyanov) HAL_CSP_Init(); HAL_MSP_Init()?; HAL_BSP_Init();
-
-    // Low-level drivers init.
-    IF_STATUS(s = GPIO_Init_()) { return s; }
-    IF_STATUS(s = drv_gpio_v[DRV_ID_GPIOC]->Init()) { return s; }
-    IF_STATUS(s = drv_gpio_v[DRV_ID_GPIOF]->Init()) { return s; }
-    IF_STATUS(s = NVIC_Init_()) { return s; }
-    IF_STATUS(s = drv_nvic_v[DRV_ID_NVIC]->Init()) { return s; }
-    IF_STATUS(s = DMA_Init_()) { return s; }
-    IF_STATUS(s = drv_dma_v[DRV_ID_DMA2]->Init()) { return s; }
-    IF_STATUS(s = RTC_Init_()) { return s; }
-    //IF_STATUS(s = drv_rtc[DRV_ID_RTC]->Init()) { return s; }
-    IF_STATUS(s = POWER_Init_()) { return s; }
-#ifdef DATA_IN_ExtSRAM
-    IF_STATUS(s = MEM_EXT_Init_()) { return s; }
-    IF_STATUS(s = drv_mem_ext_v[DRV_ID_MEM_EXT_SRAM512K]->Init()) { return s; }
-#endif // DATA_IN_ExtSRAM
-    IF_STATUS(s = TIMER_Init_()) { return s; }
-    IF_STATUS(s = drv_timer_v[DRV_ID_TIMER5]->Init()) { return s; }
-    IF_STATUS(s = drv_timer_v[DRV_ID_TIMER10]->Init()) { return s; }
-//#ifdef FILE_SYSTEM_ENABLED
-    IF_STATUS(s = SDIO_Init_()) { return s; }
-//#endif // FILE_SYSTEM_ENABLED
-    // High-level drivers init.
-    IF_STATUS(s = LED_Init_()) { return s; }
-//    IF_STATUS(s = drv_led[DRV_ID_LED_PULSE]->Init()) { return s; }
-//    IF_STATUS(s = drv_led[DRV_ID_LED_FS]->Init()) { return s; }
-    IF_STATUS(s = drv_led_v[DRV_ID_LED_ASSERT]->Init()) { return s; }
-    IF_STATUS(s = drv_led_v[DRV_ID_LED_USER]->Init()) { return s; }
-    IF_STATUS(s = BUTTON_Init_()) { return s; }
-    IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_WAKEUP]->Init()) { return s; }
-    IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_TAMPER]->Init()) { return s; }
-    // Enable interrupts.
-    HAL_LOG(D_INFO, "-------------------------------");
-    // Close and deinit STDIO stream(for init HAL output).
-    // Stream will be open back again in OSAL init.
-    HAL_ASSERT(S_OK == hal_env.stdio_p->Close());
-    HAL_ASSERT(S_OK == hal_env.stdio_p->DeInit());
-    CRITICAL_EXIT();
+    HAL_CRITICAL_SECTION_ENTER(); {
+        SystemInit();
+        if (HAL_OK != HAL_Init()) { return S_HARDWARE_FAULT; }
+        SystemClock_Config();
+        SystemCoreClockKHz  = SystemCoreClock / KHZ;
+        SystemCoreClockMHz  = SystemCoreClockKHz / KHZ;
+        TIMER_DWT_Init(); // HAL_LOG depends on this init.
+        // HAL environment init
+        hal_env.locale      = LOC_EN;
+        hal_env.power       = PWR_ON;
+        hal_env.log_level   = HAL_LOG_LEVEL_DEFAULT;
+        IF_STATUS(s = USART_Init_()) { return s; }
+        hal_env.stdio_p = drv_stdio_p;
+        HAL_ASSERT(S_OK == hal_env.stdio_p->Init());
+        HAL_ASSERT(S_OK == hal_env.stdio_p->Open(OS_NULL));
+        // Init device description.
+        IF_STATUS(HAL_DeviceDescriptionInit()) { return S_MODULE; }
+        // Init and open STDIO stream.
+        HAL_StdIoCls();
+        HAL_LOG(D_INFO, "-------------------------------");
+        HAL_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
+                       ver_p->maj,
+                       ver_p->min,
+                       ver_p->bld,
+                       ver_lbl[ver_p->lbl],
+                       ver_p->rev);
+        HAL_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
+        HAL_LOG(D_INFO, "-------------------------------");
+        HAL_LOG(D_INFO, "HAL init...");
+        HAL_LOG(D_INFO, "-------------------------------");
+        //TODO(A. Filyanov) HAL_CSP_Init(); HAL_MSP_Init()?; HAL_BSP_Init();
+        IF_STATUS(s = HAL_BSP_Init()) { return s; }
+        // Enable interrupts.
+        HAL_LOG(D_INFO, "-------------------------------");
+        // Close and deinit STDIO stream(for init HAL output).
+        // Stream will be open back again in OSAL init.
+        HAL_ASSERT(S_OK == hal_env.stdio_p->Close());
+        HAL_ASSERT(S_OK == hal_env.stdio_p->DeInit());
+    } HAL_CRITICAL_SECTION_EXIT();
     return s;
 }
 

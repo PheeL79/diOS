@@ -3845,7 +3845,6 @@
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\hal_olimex_stm32_p407.c</name>
         <excluded>
           <configuration>Debug FLASH</configuration>
-          <configuration>Debug SRAM</configuration>
         </excluded>
       </file>
       <file>
@@ -4073,6 +4072,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_gpio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_iwdg.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_nvic.c</name>

@@ -26,6 +26,9 @@
 //Task arguments
 typedef struct {
 //    OS_DriverHd drv_power;
+#ifdef IWDG_ENABLED
+    OS_DriverHd drv_iwdg;
+#endif // IWDG_ENABLED
     OS_DriverHd drv_led_pulse;
 } TaskArgs;
 
@@ -75,6 +78,18 @@ Status s;
 //        IF_STATUS(s = OS_DriverOpen(task_args.drv_power, OS_NULL)) { return s; }
 //    }
 
+#ifdef IWDG_ENABLED
+    {
+        const OS_DriverConfig drv_cfg = {
+            .name       = "IWDG",
+            .itf_p      = drv_iwdg_v[DRV_ID_IWDG],
+            .prio_power = OS_PWR_PRIO_DEFAULT
+        };
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&task_args.drv_iwdg)) { return s; }
+        IF_STATUS(s = OS_DriverInit(task_args.drv_iwdg)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(task_args.drv_iwdg, OS_NULL)) { return s; }
+    }
+#endif // IWDG_ENABLED
     {
         const OS_DriverConfig drv_cfg = {
             .name       = "LED_PLS",
@@ -274,7 +289,9 @@ OS_Message* msg_p;
             OS_MessageDelete(msg_p); // free message allocated memory
         }
     }
-//    HAL_WATCHDOG_RESET();
+#ifdef IWDG_ENABLED
+    OS_DriverWrite(task_args_p->drv_iwdg, OS_NULL, 0, OS_NULL);
+#endif // IWDG_ENABLED
     led_state = (ON == led_state) ? OFF : ON;
     OS_DriverWrite(task_args_p->drv_led_pulse, (void*)&led_state, 1, OS_NULL);
 

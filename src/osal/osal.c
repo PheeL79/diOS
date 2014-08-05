@@ -50,7 +50,7 @@ extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
 Status s;
     //Init OSAL.
-    CRITICAL_ENTER();
+    HAL_CRITICAL_SECTION_ENTER();
     is_idle = OS_FALSE;
     // uxCriticalNesting = 0; !!! Variables are created before OS Engine scheduler is started! Affects on divers interrupts!
     IF_STATUS(s = OS_MemoryInit())      { return s; }
@@ -66,7 +66,7 @@ Status s;
     IF_STATUS(s = OS_SettingsInit())    { return s; }
     IF_STATUS(s = OS_PowerInit())       { return s; }
     IF_STATUS(s = OSAL_DriversCreate()) { return s; }
-    CRITICAL_EXIT();
+    HAL_CRITICAL_SECTION_EXIT();
     HAL_LOG(D_INFO, "OSAL init...");
     HAL_LOG(D_INFO, "-------------------------------");
 #if (1 == OS_FILE_SYSTEM_ENABLED)

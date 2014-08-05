@@ -94,16 +94,16 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                 case PWR_SLEEP:
                     /* Suspend Tick increment to prevent wakeup by Systick interrupt.
                      Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base) */
-                    SYSTICK_STOP();
+                    HAL_SYSTICK_STOP();
                     /* Request to enter SLEEP mode */
                     HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
                     /* Resume Tick interrupt if disabled prior to sleep mode entry */
-                    SYSTICK_START();
+                    HAL_SYSTICK_START();
                     break;
                 case PWR_STOP:
                     OS_CriticalSectionEnter(); {
                         OS_SchedulerSuspend();
-                        SYSTICK_STOP();
+                        HAL_SYSTICK_STOP();
                         /* FLASH Deep Power Down Mode enabled */
                         HAL_PWREx_EnableFlashPowerDown();
                         __SEV(); /* Set event to bring the event register bit into a known state (1) */
@@ -134,7 +134,7 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                             HAL_ASSERT(OS_FALSE);
                         }
 //                        HAL_PWREx_DisableFlashPowerDown();
-                        SYSTICK_START();
+                        HAL_SYSTICK_START();
                         OS_SchedulerResume();
                     } OS_CriticalSectionExit();
                     break;

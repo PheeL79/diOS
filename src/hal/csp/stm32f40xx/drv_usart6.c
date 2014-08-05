@@ -328,6 +328,12 @@ Status s = S_OK;
                 case PWR_ON:
                     break;
                 case PWR_OFF:
+                case PWR_SLEEP:
+                case PWR_STOP:
+                case PWR_STANDBY:
+                case PWR_HIBERNATE:
+                case PWR_SHUTDOWN:
+                    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_handle)) {};
                     break;
                 default:
                     break;

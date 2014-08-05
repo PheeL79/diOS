@@ -12,6 +12,7 @@
 //CSP
 #include "drv_dma.h"
 #include "drv_rtc.h"
+#include "drv_iwdg.h"
 #include "drv_gpio.h"
 #include "drv_nvic.h"
 #include "drv_sdio.h"
@@ -24,11 +25,11 @@
 #include "drv_led.h"
 
 //-----------------------------------------------------------------------------
-#define CRITICAL_ENTER()                __disable_irq()
-#define CRITICAL_EXIT()                 __enable_irq()
+#define HAL_CRITICAL_SECTION_ENTER()    __disable_irq()
+#define HAL_CRITICAL_SECTION_EXIT()     __enable_irq()
 
-#define SYSTICK_START()                 HAL_ResumeTick()
-#define SYSTICK_STOP()                  HAL_SuspendTick()
+#define HAL_SYSTICK_START()             HAL_ResumeTick()
+#define HAL_SYSTICK_STOP()              HAL_SuspendTick()
 
 //#define HAL_DEBUG_PIN_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 //#define HAL_DEBUG_PIN                   GPIO_PIN_5
@@ -52,9 +53,9 @@
 extern int cycles_diff;
 extern int cycles_last;
 
-#define CORE_CYCLES                     DWT_CYCCNT
-#define DWT_STOPWATCH_START             { cycles_last = CORE_CYCLES; }
-#define DWT_STOPWATCH_STOP              { cycles_diff = CORE_CYCLES - cycles_last; }
+#define HAL_CORE_CYCLES                 DWT_CYCCNT
+#define HAL_DWT_STOPWATCH_START         { cycles_last = HAL_CORE_CYCLES; }
+#define HAL_DWT_STOPWATCH_STOP          { cycles_diff = HAL_CORE_CYCLES - cycles_last; }
 
 extern U32 SystemCoreClockKHz;
 ///@brief
@@ -72,10 +73,9 @@ typedef volatile U32 HAL_IO_Reg;
 /// @return     #Status.
 Status          HAL_Init_(void);
 
-/// @brief      Delay (us).
-/// @param[in]  delay_us        Delay value (us).
-/// @return     None.
-void            HAL_DelayUs(U32 delay_us);
+/// @brief      Init HAL BSP.
+/// @return     #Status.
+Status          HAL_BSP_Init(void);
 
 /// @brief      Delay (ms).
 /// @param[in]  delay_ms        Delay value (ms).

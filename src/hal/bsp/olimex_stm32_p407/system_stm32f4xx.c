@@ -174,27 +174,6 @@
   */
 void SystemInit(void)
 {
-#ifdef USE_IWDT
-    /* Enable the LSI oscillator *********************************************/
-    RCC_LSICmd(ENABLE);
-    /* Wait till LSI is ready */
-    while (RESET == RCC_GetFlagStatus(RCC_FLAG_LSIRDY)) {};
-    /* IWDG timeout equal to 250 ms (the timeout may varies due to LSI frequency dispersion) */
-    /* Enable write access to IWDG_PR and IWDG_RLR registers */
-    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-    /* IWDG counter clock: LSI/32 */
-    IWDG_SetPrescaler(IWDG_Prescaler_32);
-    /* Set counter reload value to obtain 250ms IWDG TimeOut.
-       Counter Reload Value = 250ms/IWDG counter clock period
-                            = 250ms / (LSI / 32)
-                            = 0.25s / (LsiFreq / 32)
-                            = 250 */
-    IWDG_SetReload(HAL_WATCHDOG_TIMEOUT);
-    /* Reload IWDG counter */
-    HAL_WATCHDOG_RESET;
-    /* Enable IWDG (LSI oscillator will be enabled by hardware) */
-    IWDG_Enable();
-#endif // USE_IWDT
   /* FPU settings ------------------------------------------------------------*/
   #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
     SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */

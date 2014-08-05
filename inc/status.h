@@ -52,7 +52,7 @@
 //    #ifndef NDEBUG
 //        #define HAL_ASSERT(c)                 assert(c)
 //    #else
-        #define HAL_ASSERT(c)               if (!(c)) { CRITICAL_ENTER(); HAL_ASSERT_PIN_UP; while(1) {}; }
+        #define HAL_ASSERT(c)               if (!(c)) { HAL_CRITICAL_SECTION_ENTER(); HAL_ASSERT_PIN_UP; while(1) {}; }
 //    #endif // HAL_ASSERT
 #else
     #error "status.h: Undefined compiler"

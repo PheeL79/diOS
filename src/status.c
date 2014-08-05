@@ -109,8 +109,8 @@ void LogPrint(const LogLevel level, ConstStrPtr mdl_name_p, ConstStrPtr format_s
 void LogVaListPrint(const LogLevel level, ConstStrPtr mdl_name_p, ConstStrPtr format_str_p, va_list args)
 {
 static U32 log_cycles_last;
-    U32 op_time_ms = CYCLES_TO_MS(CORE_CYCLES - log_cycles_last);
-    log_cycles_last = CORE_CYCLES;
+    U32 op_time_ms  = CYCLES_TO_MS(HAL_CORE_CYCLES - log_cycles_last);
+    log_cycles_last = HAL_CORE_CYCLES;
     // Reset timer value if exec time was more than OS_LOG_TIMER_STEP(ms)!
     if (OS_LOG_TIMER_STEP < op_time_ms) {
         op_time_ms = 0;

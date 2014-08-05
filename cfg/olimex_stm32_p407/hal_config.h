@@ -25,10 +25,9 @@
 // Buttons
 #define BUTTON_WAKEUP_PIN               GPIO_PIN_0
 
-// IWDT
-//#define USE_IWDT
+// IWDG
+//#define IWDG_ENABLED
 #define HAL_WATCHDOG_TIMEOUT            3000
-#define HAL_WATCHDOG_RESET()            __HAL_IWDG_RELOAD_COUNTER
 
 // DEBUG
 #define HAL_LOG_LEVEL_DEFAULT           D_DEBUG

@@ -40,5 +40,5 @@ void TIMER_DWT_Init(void)
 /*****************************************************************************/
 LNG TIMER_DWT_Get(void)
 {
-    return (LNG)CORE_CYCLES;
+    return (LNG)HAL_CORE_CYCLES;
 }

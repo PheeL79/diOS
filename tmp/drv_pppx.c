@@ -126,7 +126,7 @@ Status PPPX_IoCtl(const U32 request_id, void* args_p)
 Status s = S_OK;
     switch (request_id) {
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;

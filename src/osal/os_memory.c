@@ -18,18 +18,16 @@ static OS_MutexHd os_mem_mutex;
 void vPortMemoryInit(void);
 void vPortMemoryInit(void)
 {
-    CRITICAL_ENTER(); {
-        OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];
-        do {
-            if ((OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS] != mem_desc_p) { //init system pool last!
-                init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
-                //OS_LOG(D_DEBUG, "heap: %5d; tlsf: %d\r\n", get_used_size((void*)mem_desc_p->addr), get_max_size((void*)mem_desc_p->addr));
-            }
-        } while (OS_MEM_LAST != (++mem_desc_p)->type);
-        // Init system mempool
-        mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS];
-        init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
-    } CRITICAL_EXIT();
+    OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];
+    do {
+        if ((OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS] != mem_desc_p) { //init system pool last!
+            init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
+            //OS_LOG(D_DEBUG, "heap: %5d; tlsf: %d\r\n", get_used_size((void*)mem_desc_p->addr), get_max_size((void*)mem_desc_p->addr));
+        }
+    } while (OS_MEM_LAST != (++mem_desc_p)->type);
+    // Init system mempool
+    mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS];
+    init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
 }
 
 /******************************************************************************/
