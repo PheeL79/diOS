@@ -18,7 +18,7 @@ static OS_MutexHd os_mem_mutex;
 void vPortMemoryInit(void);
 void vPortMemoryInit(void)
 {
-    OS_CriticalSectionEnter(); {
+    CRITICAL_ENTER(); {
         OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];
         do {
             if ((OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS] != mem_desc_p) { //init system pool last!
@@ -29,7 +29,7 @@ void vPortMemoryInit(void)
         // Init system mempool
         mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS];
         init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
-    } OS_CriticalSectionExit();
+    } CRITICAL_EXIT();
 }
 
 /******************************************************************************/
@@ -51,7 +51,7 @@ void vPortFree(void* pv)
 	if (pv)	{
         OS_SchedulerSuspend(); {
 		    tlsf_free(pv);
-            OS_MutexUnlock(os_mem_mutex);
+//            OS_MutexUnlock(os_mem_mutex);
             //OS_LOG(D_DEBUG, "heap: %5d; free  : 0x%X\r\n", get_used_size(&heap), pv);
         } OS_SchedulerResume();
 	}
@@ -68,8 +68,8 @@ Status OS_MemoryInit(void)
 }
 
 /******************************************************************************/
-static OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type);
 #pragma inline
+static OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type);
 OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type)
 {
 register OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];

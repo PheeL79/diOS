@@ -6,7 +6,7 @@
 #ifndef _HAL_OLIMEX_STM32_P407_H_
 #define _HAL_OLIMEX_STM32_P407_H_
 
-#include "stm32f4xx.h"
+#include "stm32f4xx_hal.h"
 #include "common.h"
 
 //CSP
@@ -27,20 +27,22 @@
 #define CRITICAL_ENTER()                __disable_irq()
 #define CRITICAL_EXIT()                 __enable_irq()
 
-#define SYSTICK_START()                 { SysTick->CTRL |=  SysTick_CTRL_ENABLE_Msk; }
-#define SYSTICK_STOP()                  { SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk; }
+#define SYSTICK_START()                 HAL_ResumeTick()
+#define SYSTICK_STOP()                  HAL_SuspendTick()
 
-//#define HAL_DEBUG_PIN                   GPIO_Pin_5
+//#define HAL_DEBUG_PIN_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
+//#define HAL_DEBUG_PIN                   GPIO_PIN_5
 //#define HAL_DEBUG_PIN_PORT              GPIOC
-//#define HAL_DEBUG_PIN_UP                GPIO_SetBits(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN)
-//#define HAL_DEBUG_PIN_DOWN              GPIO_ResetBits(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN)
-//#define HAL_DEBUG_PIN_TOGGLE            GPIO_ToggleBits(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN)
+//#define HAL_DEBUG_PIN_UP                HAL_GPIO_WritePin(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN, GPIO_PIN_SET)
+//#define HAL_DEBUG_PIN_DOWN              HAL_GPIO_WritePin(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN, GPIO_PIN_RESET)
+//#define HAL_DEBUG_PIN_TOGGLE            HAL_GPIO_TogglePin(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN)
 
-#define HAL_ASSERT_PIN                  GPIO_Pin_8
+#define HAL_ASSERT_PIN_CLK_ENABLE()     __GPIOF_CLK_ENABLE()
+#define HAL_ASSERT_PIN                  GPIO_PIN_8
 #define HAL_ASSERT_PIN_PORT             GPIOF
-#define HAL_ASSERT_PIN_UP               GPIO_SetBits(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN)
-#define HAL_ASSERT_PIN_DOWN             GPIO_ResetBits(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN)
-#define HAL_ASSERT_PIN_TOGGLE           GPIO_ToggleBits(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN)
+#define HAL_ASSERT_PIN_UP               HAL_GPIO_WritePin(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN, GPIO_PIN_SET)
+#define HAL_ASSERT_PIN_DOWN             HAL_GPIO_WritePin(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN, GPIO_PIN_RESET)
+#define HAL_ASSERT_PIN_TOGGLE           HAL_GPIO_TogglePin(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN)
 
 // Joseph Yiu's method
 // From http://forums.arm.com/index.php?showtopic=13949
@@ -66,14 +68,9 @@ extern U32 SystemCoreClockKHz;
 typedef volatile U32 HAL_IO_Reg;
 
 //-----------------------------------------------------------------------------
-/// @brief      Init NVIC struct.
-/// @return     None.
-void            NVIC_StructInit(NVIC_InitTypeDef* nvic_init_struct_p);
-
-//-----------------------------------------------------------------------------
 /// @brief      Init HAL.
 /// @return     #Status.
-Status          HAL_Init(void);
+Status          HAL_Init_(void);
 
 /// @brief      Delay (us).
 /// @param[in]  delay_us        Delay value (us).

@@ -99,7 +99,7 @@ Status OS_EnvVariableSet(ConstStrPtr variable_name_p, ConstStrPtr variable_value
 {
 Status s = S_OK;
     if ((OS_NULL == variable_name_p) || (OS_NULL == variable_value_p)) { return S_INVALID_REF; }
-    D_LOG(D_DEBUG, "Env var set: %s, %s", variable_name_p, variable_value_p);
+    HAL_LOG(D_DEBUG, "Env var set: %s, %s", variable_name_p, variable_value_p);
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_env_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
         OS_EnvVariable* env_var_p;

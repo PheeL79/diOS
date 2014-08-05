@@ -13,13 +13,25 @@
 /// @brief      GPIO initialize.
 /// @return     #Status.
 Status          GPIO_Init_(void);
+static Status   GPIOC_Init(void);
 static Status   GPIOF_Init(void);
+static void     GPIO_AssertPinInit(void);
 static void     GPIO_DebugPinInit(void);
 
 //-----------------------------------------------------------------------------
 HAL_DriverItf* drv_gpio_v[DRV_ID_GPIO_LAST];
 
 //-----------------------------------------------------------------------------
+static HAL_DriverItf drv_gpioc = {
+    .Init   = GPIOC_Init,
+    .DeInit = OS_NULL,
+    .Open   = OS_NULL,
+    .Close  = OS_NULL,
+    .Read   = OS_NULL,
+    .Write  = OS_NULL,
+    .IoCtl  = OS_NULL
+};
+
 static HAL_DriverItf drv_gpiof = {
     .Init   = GPIOF_Init,
     .DeInit = OS_NULL,
@@ -34,32 +46,55 @@ static HAL_DriverItf drv_gpiof = {
 Status GPIO_Init_(void)
 {
     memset(drv_gpio_v, 0x0, sizeof(drv_gpio_v));
+    drv_gpio_v[DRV_ID_GPIOC] = &drv_gpioc;
     drv_gpio_v[DRV_ID_GPIOF] = &drv_gpiof;
     return S_OK;
 }
 
 /*****************************************************************************/
+Status GPIOC_Init(void)
+{
+    HAL_LOG(D_INFO, "Init: ");
+    GPIO_AssertPinInit();
+    HAL_TRACE_S(D_INFO, S_OK);
+    return S_OK;
+}
+
+/*****************************************************************************/
+void GPIO_AssertPinInit(void)
+{
+GPIO_InitTypeDef GPIO_InitStruct;
+
+    HAL_ASSERT_PIN_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin         = HAL_ASSERT_PIN;
+    GPIO_InitStruct.Mode        = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull        = GPIO_NOPULL;
+    GPIO_InitStruct.Speed       = GPIO_SPEED_LOW;
+
+    HAL_GPIO_Init(HAL_ASSERT_PIN_PORT, &GPIO_InitStruct);
+}
+
+/*****************************************************************************/
 Status GPIOF_Init(void)
 {
-    D_LOG(D_INFO, "Init: ");
+    HAL_LOG(D_INFO, "Init: ");
     GPIO_DebugPinInit();
-    D_TRACE_S(D_INFO, S_OK);
+    HAL_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
 /*****************************************************************************/
 void GPIO_DebugPinInit(void)
 {
-//GPIO_InitTypeDef GPIO_InitStructure;
+//GPIO_InitTypeDef GPIO_InitStruct;
+
+//    HAL_DEBUG_PIN_CLK_ENABLE();
+
+//    GPIO_InitStruct.Pin         = HAL_DEBUG_PIN;
+//    GPIO_InitStruct.Mode        = GPIO_MODE_OUTPUT_PP;
+//    GPIO_InitStruct.Pull        = GPIO_NOPULL;
+//    GPIO_InitStruct.Speed       = GPIO_SPEED_LOW;
 //
-//    GPIO_StructInit(&GPIO_InitStructure);
-//    /* Enable the GPIOC clock */
-//    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
-//
-//    GPIO_InitStructure.GPIO_Pin     = HAL_DEBUG_PIN;
-//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-//    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_100MHz;
-//    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-//    GPIO_Init(HAL_DEBUG_PIN_PORT, &GPIO_InitStructure);
+//    HAL_GPIO_Init(HAL_DEBUG_PIN_PORT, &GPIO_InitStruct);
 }

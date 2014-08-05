@@ -5,9 +5,6 @@
 * @warning Do _NOT_ use HardwareFlowControl due 2.9.1 SDIO HW flow control errata.
 ******************************************************************************/
 #include <string.h>
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_sdio.h"
-#include "stm324xg_eval_sdio_sd.h"
 #include "hal.h"
 #include "diskio.h"
 #include "os_debug.h"
@@ -278,22 +275,20 @@ Status SDIO_Init_(void)
 Status SDIO__Init(void)
 {
 Status s;
-    D_LOG(D_INFO, "Init: ");
-    OS_CriticalSectionEnter(); {
-        const SD_Error sd_err = SD_Init();
-        if (SD_OK == sd_err) {
-            s = SDIO_NVIC_Init();
-            D_TRACE_S(D_INFO, s);
-        } else {
-            if (SD_CMD_RSP_TIMEOUT == sd_err) {
-                s = S_TIMEOUT;
-                D_TRACE(D_INFO, "Timeout (no media?)");
-            } else {
-                s = S_HARDWARE_FAULT;
-                D_TRACE_S(D_INFO, s);
-            }
-        }
-    } OS_CriticalSectionExit();
+    HAL_LOG(D_INFO, "Init: ");
+//        const SD_Error sd_err = SD_Init();
+//        if (SD_OK == sd_err) {
+//            s = SDIO_NVIC_Init();
+//            HAL_TRACE_S(D_INFO, s);
+//        } else {
+//            if (SD_CMD_RSP_TIMEOUT == sd_err) {
+//                s = S_TIMEOUT;
+//                HAL_TRACE(D_INFO, "Timeout (no media?)");
+//            } else {
+//                s = S_HARDWARE_FAULT;
+//                HAL_TRACE_S(D_INFO, s);
+//            }
+//        }
     return s;
 }
 
@@ -303,9 +298,9 @@ void SD_LowLevel_Init(void)
 {
 GPIO_InitTypeDef    GPIO_InitStructure;
     // GPIO enable clock
-    RCC_AHB1PeriphClockCmd(/*SD_CP_CLK | SD_WP_CLK |*/ SD_CMD_CLK | SD_CLK_CLK | \
-                           SD_D0_CLK | SD_D1_CLK | SD_D2_CLK | SD_D3_CLK, ENABLE);
-    GPIO_StructInit(&GPIO_InitStructure);
+//    RCC_AHB1PeriphClockCmd(/*SD_CP_CLK | SD_WP_CLK |*/ SD_CMD_CLK | SD_CLK_CLK | \
+//                           SD_D0_CLK | SD_D1_CLK | SD_D2_CLK | SD_D3_CLK, ENABLE);
+//    GPIO_StructInit(&GPIO_InitStructure);
 #ifndef OLIMEX_STM32_P407
     //THESE ARE NOT PRESENT OPN THE OLIMEX BOARD!!!
     // Init CP pin
@@ -326,59 +321,59 @@ GPIO_InitTypeDef    GPIO_InitStructure;
 #endif // OLIMEX_STM32_P407
 
     // Configure PC.08, PC.09, PC.10, PC.11, PC.12 pin: D0, D1, D2, D3, CLK pin
-    GPIO_InitStructure.GPIO_Pin     = SD_D0_PIN | SD_D1_PIN | SD_D2_PIN | SD_D3_PIN | SD_CLK_PIN;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-    // Configure PD.02 CMD line
-    GPIO_InitStructure.GPIO_Pin     = SD_CMD_PIN;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    //GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(SD_CMD_PORT, &GPIO_InitStructure);
-
-    GPIO_PinAFConfig(SD_CMD_PORT, SD_CMD_SOURCE, GPIO_AF_SDIO);
-    GPIO_PinAFConfig(SD_CLK_PORT, SD_CLK_SOURCE, GPIO_AF_SDIO);
-    GPIO_PinAFConfig(SD_D0_PORT, SD_D0_SOURCE, GPIO_AF_SDIO);
-    GPIO_PinAFConfig(SD_D1_PORT, SD_D1_SOURCE, GPIO_AF_SDIO);
-    GPIO_PinAFConfig(SD_D2_PORT, SD_D2_SOURCE, GPIO_AF_SDIO);
-    GPIO_PinAFConfig(SD_D3_PORT, SD_D3_SOURCE, GPIO_AF_SDIO);
-
-    /* Enable the SDIO AHB Clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, ENABLE);
-
-    // Enable the DMA2 Clock
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+//    GPIO_InitStructure.GPIO_Pin     = SD_D0_PIN | SD_D1_PIN | SD_D2_PIN | SD_D3_PIN | SD_CLK_PIN;
+//    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
+//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
+//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+//    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+//    GPIO_Init(GPIOC, &GPIO_InitStructure);
+//
+//    // Configure PD.02 CMD line
+//    GPIO_InitStructure.GPIO_Pin     = SD_CMD_PIN;
+//    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
+//    //GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
+//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
+//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+//    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
+//    GPIO_Init(SD_CMD_PORT, &GPIO_InitStructure);
+//
+//    GPIO_PinAFConfig(SD_CMD_PORT, SD_CMD_SOURCE, GPIO_AF_SDIO);
+//    GPIO_PinAFConfig(SD_CLK_PORT, SD_CLK_SOURCE, GPIO_AF_SDIO);
+//    GPIO_PinAFConfig(SD_D0_PORT, SD_D0_SOURCE, GPIO_AF_SDIO);
+//    GPIO_PinAFConfig(SD_D1_PORT, SD_D1_SOURCE, GPIO_AF_SDIO);
+//    GPIO_PinAFConfig(SD_D2_PORT, SD_D2_SOURCE, GPIO_AF_SDIO);
+//    GPIO_PinAFConfig(SD_D3_PORT, SD_D3_SOURCE, GPIO_AF_SDIO);
+//
+//    /* Enable the SDIO AHB Clock */
+//    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, ENABLE);
+//
+//    // Enable the DMA2 Clock
+//    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
 }
 
 /*****************************************************************************/
 Status SDIO_NVIC_Init(void)
 {
-NVIC_InitTypeDef NVIC_InitStructure;
-
-    NVIC_StructInit(&NVIC_InitStructure);
-    // SDIO Interrupt ENABLE
-    NVIC_InitStructure.NVIC_IRQChannel                      = SDIO_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = SD_SDIO_IRQ_PRIO;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority           = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd                   = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-    // DMA2 STREAMx Interrupt ENABLE
-    NVIC_InitStructure.NVIC_IRQChannel                      = SD_SDIO_DMA_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = SD_SDIO_DMA_IRQ_PRIO;
-    NVIC_Init(&NVIC_InitStructure);
+//NVIC_InitTypeDef NVIC_InitStructure;
+//
+//    NVIC_StructInit(&NVIC_InitStructure);
+//    // SDIO Interrupt ENABLE
+//    NVIC_InitStructure.NVIC_IRQChannel                      = SDIO_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = SD_SDIO_IRQ_PRIO;
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority           = 0;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd                   = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+//    // DMA2 STREAMx Interrupt ENABLE
+//    NVIC_InitStructure.NVIC_IRQChannel                      = SD_SDIO_DMA_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = SD_SDIO_DMA_IRQ_PRIO;
+//    NVIC_Init(&NVIC_InitStructure);
     return S_OK;
 }
 
 /*****************************************************************************/
 Status SDIO__DeInit(void)
 {
-    SD_DeInit();
+//    SD_DeInit();
     return S_OK;
 }
 
@@ -386,32 +381,32 @@ Status SDIO__DeInit(void)
 void SD_LowLevel_DeInit(void);
 void SD_LowLevel_DeInit(void)
 {
-GPIO_InitTypeDef GPIO_InitStructure;
-    /*!< Disable SDIO Clock */
-    SDIO_ClockCmd(DISABLE);
-    /*!< Set Power State to OFF */
-    SDIO_SetPowerState(SDIO_PowerState_OFF);
-    /*!< DeInitializes the SDIO peripheral */
-    SDIO_DeInit();
-    /* Disable the SDIO APB2 Clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, DISABLE);
-
-    GPIO_PinAFConfig(SD_CMD_PORT, SD_CMD_SOURCE, GPIO_AF_MCO);
-    GPIO_PinAFConfig(SD_CLK_PORT, SD_CLK_SOURCE, GPIO_AF_MCO);
-    GPIO_PinAFConfig(SD_D0_PORT, SD_D0_SOURCE, GPIO_AF_MCO);
-    GPIO_PinAFConfig(SD_D1_PORT, SD_D1_SOURCE, GPIO_AF_MCO);
-    GPIO_PinAFConfig(SD_D2_PORT, SD_D2_SOURCE, GPIO_AF_MCO);
-    GPIO_PinAFConfig(SD_D3_PORT, SD_D3_SOURCE, GPIO_AF_MCO);
-
-    /* Configure PC.08, PC.09, PC.10, PC.11 pins: D0, D1, D2, D3 pins */
-    GPIO_InitStructure.GPIO_Pin     = SD_D0_PIN | SD_D1_PIN | SD_D2_PIN | SD_D3_PIN | SD_CLK_PIN;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-    /* Configure PD.02 CMD line */
-    GPIO_InitStructure.GPIO_Pin = SD_CMD_PIN;
-    GPIO_Init(SD_CMD_PORT, &GPIO_InitStructure);
+//GPIO_InitTypeDef GPIO_InitStructure;
+//    /*!< Disable SDIO Clock */
+//    SDIO_ClockCmd(DISABLE);
+//    /*!< Set Power State to OFF */
+//    SDIO_SetPowerState(SDIO_PowerState_OFF);
+//    /*!< DeInitializes the SDIO peripheral */
+//    SDIO_DeInit();
+//    /* Disable the SDIO APB2 Clock */
+//    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, DISABLE);
+//
+//    GPIO_PinAFConfig(SD_CMD_PORT, SD_CMD_SOURCE, GPIO_AF_MCO);
+//    GPIO_PinAFConfig(SD_CLK_PORT, SD_CLK_SOURCE, GPIO_AF_MCO);
+//    GPIO_PinAFConfig(SD_D0_PORT, SD_D0_SOURCE, GPIO_AF_MCO);
+//    GPIO_PinAFConfig(SD_D1_PORT, SD_D1_SOURCE, GPIO_AF_MCO);
+//    GPIO_PinAFConfig(SD_D2_PORT, SD_D2_SOURCE, GPIO_AF_MCO);
+//    GPIO_PinAFConfig(SD_D3_PORT, SD_D3_SOURCE, GPIO_AF_MCO);
+//
+//    /* Configure PC.08, PC.09, PC.10, PC.11 pins: D0, D1, D2, D3 pins */
+//    GPIO_InitStructure.GPIO_Pin     = SD_D0_PIN | SD_D1_PIN | SD_D2_PIN | SD_D3_PIN | SD_CLK_PIN;
+//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_IN;
+//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
+//    GPIO_Init(GPIOC, &GPIO_InitStructure);
+//
+//    /* Configure PD.02 CMD line */
+//    GPIO_InitStructure.GPIO_Pin = SD_CMD_PIN;
+//    GPIO_Init(SD_CMD_PORT, &GPIO_InitStructure);
 }
 
 /*****************************************************************************/
@@ -432,15 +427,15 @@ Status SDIO_Close(void)
 Status SDIO_Read(U8* data_in_p, U32 size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-SD_Error sd_status;
+//SD_Error sd_status;
 State state = ON;
 Status s = S_OK;
 
     OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
-    if (SD_PRESENT != SD_Detect()) {
-        s = S_FS_NOT_READY;
-        return s;
-    }
+//    if (SD_PRESENT != SD_Detect()) {
+//        s = S_FS_NOT_READY;
+//        return s;
+//    }
     OS_DriverWrite(drv_led_sd, &state, 1, OS_NULL);
     if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
         U32* scratch_p = (U32*)OS_Malloc(SD_SDIO_BLOCK_SIZE); // Alignment assured
@@ -456,24 +451,24 @@ Status s = S_OK;
         return s;
     }
 
-    sd_status = SD_ReadMultiBlocks(data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
-    if (SD_OK == sd_status) {
-        SDTransferState transf_state;
-        OS_ContextSwitchForce();
-        sd_status = SD_WaitReadOperation(); // Check if the Transfer is finished
-        if (SD_OK == sd_status) {
-            while (SD_TRANSFER_BUSY == (transf_state = SD_GetStatus())) {
-                OS_ContextSwitchForce();
-            } // BUSY, OK (DONE), ERROR (FAIL)
-            if (SD_TRANSFER_ERROR == transf_state) {
-                s = S_FS_TRANSFER_FAIL;
-            }
-        } else {
-            s = S_FS_TRANSFER_FAIL;
-        }
-    } else {
-        s = S_FS_TRANSFER_FAIL;
-    }
+//    sd_status = SD_ReadMultiBlocks(data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
+//    if (SD_OK == sd_status) {
+//        SDTransferState transf_state;
+//        OS_ContextSwitchForce();
+//        sd_status = SD_WaitReadOperation(); // Check if the Transfer is finished
+//        if (SD_OK == sd_status) {
+//            while (SD_TRANSFER_BUSY == (transf_state = SD_GetStatus())) {
+//                OS_ContextSwitchForce();
+//            } // BUSY, OK (DONE), ERROR (FAIL)
+//            if (SD_TRANSFER_ERROR == transf_state) {
+//                s = S_FS_TRANSFER_FAIL;
+//            }
+//        } else {
+//            s = S_FS_TRANSFER_FAIL;
+//        }
+//    } else {
+//        s = S_FS_TRANSFER_FAIL;
+//    }
     state = OFF;
     OS_DriverWrite(drv_led_sd, &state, 1, OS_NULL);
     return s;
@@ -483,15 +478,15 @@ Status s = S_OK;
 Status SDIO_Write(U8* data_out_p, U32 size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-SD_Error sd_status;
+//SD_Error sd_status;
 State state = ON;
 Status s = S_OK;
 
     OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
-    if (SD_PRESENT != SD_Detect()) {
-        s = S_FS_NOT_READY;
-        return s;
-    }
+//    if (SD_PRESENT != SD_Detect()) {
+//        s = S_FS_NOT_READY;
+//        return s;
+//    }
     OS_DriverWrite(drv_led_sd, &state, 1, OS_NULL);
     if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
         U32* scratch_p = (U32*)OS_Malloc(SD_SDIO_BLOCK_SIZE); // Alignment assured
@@ -507,24 +502,24 @@ Status s = S_OK;
         return s;
     }
 
-    sd_status = SD_WriteMultiBlocks(data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
-    if (SD_OK == sd_status) {
-        SDTransferState transf_state;
-        OS_ContextSwitchForce();
-        sd_status = SD_WaitWriteOperation(); // Check if the Transfer is finished
-        if (SD_OK == sd_status) {
-            while (SD_TRANSFER_BUSY == (transf_state = SD_GetStatus())) {
-                OS_ContextSwitchForce();
-            } // BUSY, OK (DONE), ERROR (FAIL)
-            if (SD_TRANSFER_ERROR == transf_state) {
-                s = S_FS_TRANSFER_FAIL;
-            }
-        } else {
-            s = S_FS_TRANSFER_FAIL;
-        }
-    } else {
-        s = S_FS_TRANSFER_FAIL;
-    }
+//    sd_status = SD_WriteMultiBlocks(data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
+//    if (SD_OK == sd_status) {
+//        SDTransferState transf_state;
+//        OS_ContextSwitchForce();
+//        sd_status = SD_WaitWriteOperation(); // Check if the Transfer is finished
+//        if (SD_OK == sd_status) {
+//            while (SD_TRANSFER_BUSY == (transf_state = SD_GetStatus())) {
+//                OS_ContextSwitchForce();
+//            } // BUSY, OK (DONE), ERROR (FAIL)
+//            if (SD_TRANSFER_ERROR == transf_state) {
+//                s = S_FS_TRANSFER_FAIL;
+//            }
+//        } else {
+//            s = S_FS_TRANSFER_FAIL;
+//        }
+//    } else {
+//        s = S_FS_TRANSFER_FAIL;
+//    }
     state = OFF;
     OS_DriverWrite(drv_led_sd, &state, 1, OS_NULL);
     return s;
@@ -535,63 +530,63 @@ Status SDIO_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-        case DRV_REQ_STD_POWER: {
-            SD_Error sd_status = SD_OK;
-            switch (*(OS_PowerState*)args_p) {
-                case PWR_ON:
-                    if (SDIO_PowerState_OFF == SDIO_GetPowerState()) {
-                        sd_status = SD_PowerON();
-                    }
-                    break;
-                case PWR_OFF: {
-                    const U32 SDIO_PowerState_UP = 0x2;
-                    if (SDIO_PowerState_ON == SDIO_GetPowerState()) {
-                        sd_status = SD_PowerOFF();
-                    } else if (SDIO_PowerState_UP == SDIO_GetPowerState()) {
-                        while (SDIO_PowerState_ON != SDIO_GetPowerState()) {
-                            OS_ContextSwitchForce();
-                        }
-                        sd_status = SD_PowerOFF();
-                    }
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (SD_OK != sd_status) { s = S_FS_UNDEF; }
-            }
-            break;
-        case CTRL_POWER: {
-            SD_Error sd_status = SD_OK;
-            //Power Get
-            //....
-            //Power Set
-            const U8 power_state = (*(U8*)args_p) & 0xFF;
-                switch (power_state) {
-                    case PWR_ON:
-                        sd_status = SD_PowerON();
-                        break;
-                    case PWR_OFF:
-                        sd_status = SD_PowerOFF();
-                        break;
-                    default:
-                        break;
-                }
-                if (SD_OK != sd_status) { s = S_FS_UNDEF; }
-            }
-            break;
+//        case DRV_REQ_STD_POWER: {
+//            SD_Error sd_status = SD_OK;
+//            switch (*(OS_PowerState*)args_p) {
+//                case PWR_ON:
+//                    if (SDIO_PowerState_OFF == SDIO_GetPowerState()) {
+//                        sd_status = SD_PowerON();
+//                    }
+//                    break;
+//                case PWR_OFF: {
+//                    const U32 SDIO_PowerState_UP = 0x2;
+//                    if (SDIO_PowerState_ON == SDIO_GetPowerState()) {
+//                        sd_status = SD_PowerOFF();
+//                    } else if (SDIO_PowerState_UP == SDIO_GetPowerState()) {
+//                        while (SDIO_PowerState_ON != SDIO_GetPowerState()) {
+//                            OS_ContextSwitchForce();
+//                        }
+//                        sd_status = SD_PowerOFF();
+//                    }
+//                    }
+//                    break;
+//                default:
+//                    break;
+//            }
+//            if (SD_OK != sd_status) { s = S_FS_UNDEF; }
+//            }
+//            break;
+//        case CTRL_POWER: {
+//            SD_Error sd_status = SD_OK;
+//            //Power Get
+//            //....
+//            //Power Set
+//            const U8 power_state = (*(U8*)args_p) & 0xFF;
+//                switch (power_state) {
+//                    case PWR_ON:
+//                        sd_status = SD_PowerON();
+//                        break;
+//                    case PWR_OFF:
+//                        sd_status = SD_PowerOFF();
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                if (SD_OK != sd_status) { s = S_FS_UNDEF; }
+//            }
+//            break;
         case DRV_REQ_STD_SYNC:
         case CTRL_SYNC:
-            while (SD_TRANSFER_OK != SD_GetStatus());
+//            while (SD_TRANSFER_OK != SD_GetStatus());
             break;
         case GET_SECTOR_COUNT: {
-            SD_CardInfo card_info;
-
-            if (SD_OK == SD_GetCardInfo(&card_info)) {
-                *(U32*)args_p = card_info.CardCapacity / SD_SDIO_BLOCK_SIZE;
-            } else {
-                *(U32*)args_p = 0;
-            }
+//            SD_CardInfo card_info;
+//
+//            if (SD_OK == SD_GetCardInfo(&card_info)) {
+//                *(U32*)args_p = card_info.CardCapacity / SD_SDIO_BLOCK_SIZE;
+//            } else {
+//                *(U32*)args_p = 0;
+//            }
             }
             break;
         case GET_SECTOR_SIZE:
@@ -604,9 +599,9 @@ Status s = S_OK;
             //TODO(A. Filyanov) Check SDHC capability!
             U32 start_sector= ((U32*)args_p)[0] * SD_CARD_SECTOR_SIZE;
             U32 end_sector  = ((U32*)args_p)[1] * SD_CARD_SECTOR_SIZE;
-            if (SD_OK != SD_Erase(start_sector, end_sector)) {
-                s = S_FS_UNDEF;
-            }
+//            if (SD_OK != SD_Erase(start_sector, end_sector)) {
+//                s = S_FS_UNDEF;
+//            }
             }
             break;
         default:
@@ -628,33 +623,33 @@ void SD_LowLevel_DMA_TxConfig(uint32_t* BufferSRC, uint32_t BufferSize)
 {
 DMA_InitTypeDef SDDMA_InitStructure;
 
-    DMA_ClearFlag(SD_SDIO_DMA_STREAM, SD_SDIO_DMA_FLAG_FEIF | SD_SDIO_DMA_FLAG_DMEIF |\
-                  SD_SDIO_DMA_FLAG_TEIF | SD_SDIO_DMA_FLAG_HTIF | SD_SDIO_DMA_FLAG_TCIF);
-    /* DMA2 Stream3  or Stream6 disable */
-    DMA_Cmd(SD_SDIO_DMA_STREAM, DISABLE);
-    /* DMA2 Stream3  or Stream6 Config */
-    DMA_DeInit(SD_SDIO_DMA_STREAM);
-
-    SDDMA_InitStructure.DMA_Channel = SD_SDIO_DMA_CHANNEL;
-    SDDMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)SDIO_FIFO_ADDRESS;
-    SDDMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)BufferSRC;
-    SDDMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    SDDMA_InitStructure.DMA_BufferSize = BufferSize;
-    SDDMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    SDDMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    SDDMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
-    SDDMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
-    SDDMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-    SDDMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
-    SDDMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    SDDMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-    SDDMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC4;
-    SDDMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_INC4;
-    DMA_Init(SD_SDIO_DMA_STREAM, &SDDMA_InitStructure);
-    DMA_ITConfig(SD_SDIO_DMA_STREAM, DMA_IT_TC, ENABLE);
-    DMA_FlowControllerConfig(SD_SDIO_DMA_STREAM, DMA_FlowCtrl_Peripheral);
-    /* DMA2 Stream3  or Stream6 enable */
-    DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
+//    DMA_ClearFlag(SD_SDIO_DMA_STREAM, SD_SDIO_DMA_FLAG_FEIF | SD_SDIO_DMA_FLAG_DMEIF |\
+//                  SD_SDIO_DMA_FLAG_TEIF | SD_SDIO_DMA_FLAG_HTIF | SD_SDIO_DMA_FLAG_TCIF);
+//    /* DMA2 Stream3  or Stream6 disable */
+//    DMA_Cmd(SD_SDIO_DMA_STREAM, DISABLE);
+//    /* DMA2 Stream3  or Stream6 Config */
+//    DMA_DeInit(SD_SDIO_DMA_STREAM);
+//
+//    SDDMA_InitStructure.DMA_Channel = SD_SDIO_DMA_CHANNEL;
+//    SDDMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)SDIO_FIFO_ADDRESS;
+//    SDDMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)BufferSRC;
+//    SDDMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+//    SDDMA_InitStructure.DMA_BufferSize = BufferSize;
+//    SDDMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+//    SDDMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+//    SDDMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
+//    SDDMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
+//    SDDMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+//    SDDMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+//    SDDMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
+//    SDDMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+//    SDDMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC4;
+//    SDDMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_INC4;
+//    DMA_Init(SD_SDIO_DMA_STREAM, &SDDMA_InitStructure);
+//    DMA_ITConfig(SD_SDIO_DMA_STREAM, DMA_IT_TC, ENABLE);
+//    DMA_FlowControllerConfig(SD_SDIO_DMA_STREAM, DMA_FlowCtrl_Peripheral);
+//    /* DMA2 Stream3  or Stream6 enable */
+//    DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
 }
 
 /**
@@ -669,33 +664,33 @@ void SD_LowLevel_DMA_RxConfig(uint32_t* BufferDST, uint32_t BufferSize)
 {
 DMA_InitTypeDef SDDMA_InitStructure;
 
-    DMA_ClearFlag(SD_SDIO_DMA_STREAM, SD_SDIO_DMA_FLAG_FEIF | SD_SDIO_DMA_FLAG_DMEIF |\
-                  SD_SDIO_DMA_FLAG_TEIF | SD_SDIO_DMA_FLAG_HTIF | SD_SDIO_DMA_FLAG_TCIF);
-    /* DMA2 Stream3  or Stream6 disable */
-    DMA_Cmd(SD_SDIO_DMA_STREAM, DISABLE);
-    /* DMA2 Stream3 or Stream6 Config */
-    DMA_DeInit(SD_SDIO_DMA_STREAM);
-
-    SDDMA_InitStructure.DMA_Channel = SD_SDIO_DMA_CHANNEL;
-    SDDMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)SDIO_FIFO_ADDRESS;
-    SDDMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)BufferDST;
-    SDDMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
-    SDDMA_InitStructure.DMA_BufferSize = BufferSize;
-    SDDMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    SDDMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    SDDMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
-    SDDMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
-    SDDMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-    SDDMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
-    SDDMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    SDDMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-    SDDMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC4;
-    SDDMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_INC4;
-    DMA_Init(SD_SDIO_DMA_STREAM, &SDDMA_InitStructure);
-    DMA_ITConfig(SD_SDIO_DMA_STREAM, DMA_IT_TC, ENABLE);
-    DMA_FlowControllerConfig(SD_SDIO_DMA_STREAM, DMA_FlowCtrl_Peripheral);
-    /* DMA2 Stream3 or Stream6 enable */
-    DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
+//    DMA_ClearFlag(SD_SDIO_DMA_STREAM, SD_SDIO_DMA_FLAG_FEIF | SD_SDIO_DMA_FLAG_DMEIF |\
+//                  SD_SDIO_DMA_FLAG_TEIF | SD_SDIO_DMA_FLAG_HTIF | SD_SDIO_DMA_FLAG_TCIF);
+//    /* DMA2 Stream3  or Stream6 disable */
+//    DMA_Cmd(SD_SDIO_DMA_STREAM, DISABLE);
+//    /* DMA2 Stream3 or Stream6 Config */
+//    DMA_DeInit(SD_SDIO_DMA_STREAM);
+//
+//    SDDMA_InitStructure.DMA_Channel = SD_SDIO_DMA_CHANNEL;
+//    SDDMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)SDIO_FIFO_ADDRESS;
+//    SDDMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)BufferDST;
+//    SDDMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+//    SDDMA_InitStructure.DMA_BufferSize = BufferSize;
+//    SDDMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+//    SDDMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+//    SDDMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
+//    SDDMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
+//    SDDMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+//    SDDMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+//    SDDMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
+//    SDDMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+//    SDDMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC4;
+//    SDDMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_INC4;
+//    DMA_Init(SD_SDIO_DMA_STREAM, &SDDMA_InitStructure);
+//    DMA_ITConfig(SD_SDIO_DMA_STREAM, DMA_IT_TC, ENABLE);
+//    DMA_FlowControllerConfig(SD_SDIO_DMA_STREAM, DMA_FlowCtrl_Peripheral);
+//    /* DMA2 Stream3 or Stream6 enable */
+//    DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
 }
 
 // SDIO IRQ handlers -----------------------------------------------------------
@@ -704,7 +699,7 @@ void SDIO_IRQHandler(void);
 void SDIO_IRQHandler(void)
 {
     /* Process All SDIO Interrupt Sources */
-    SD_ProcessIRQSrc();
+//    SD_ProcessIRQSrc();
 }
 
 /*****************************************************************************/
@@ -712,5 +707,5 @@ void SD_SDIO_DMA_IRQHANDLER(void);
 void SD_SDIO_DMA_IRQHANDLER(void)
 {
     /* Process DMA2 Stream3 or DMA2 Stream6 Interrupt Sources */
-    SD_ProcessDMAIRQ();
+//    SD_ProcessDMAIRQ();
 }

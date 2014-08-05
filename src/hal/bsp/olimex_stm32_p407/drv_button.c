@@ -31,6 +31,8 @@ static Status BUTTON_TamperClose(void);
 static Status BUTTON_TamperIoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
+extern RTC_HandleTypeDef rtc_handle;
+
 HAL_DriverItf* drv_button_v[DRV_ID_BUTTON_LAST];
 
 static HAL_IrqCallbackFunc wakeup_irq_callback_func = OS_NULL;
@@ -73,61 +75,44 @@ Status BUTTON_WakeupInit(void)
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
 
-    D_LOG(D_INFO, "Wakeup init: ");
-    OS_CriticalSectionEnter(); {
-        GPIO_StructInit(&GPIO_InitStructure);
-        /* Enable the GPIOA clock */
-        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-        GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_0;
-        GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_IN;
-        GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_2MHz;
-        GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-        GPIO_Init(GPIOA, &GPIO_InitStructure);
-        SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource0);
-        s = BUTTON_NVIC_WakeupInit();
-    } OS_CriticalSectionExit();
-    D_TRACE_S(D_INFO, s);
+    HAL_LOG(D_INFO, "Wakeup init: ");
+    /* Disable all used wakeup sources: Pin1(PA.0) */
+    HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
+    /* Clear all related wakeup flags */
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+    __GPIOA_CLK_ENABLE();
+    GPIO_InitStructure.Pin      = BUTTON_WAKEUP_PIN;
+    GPIO_InitStructure.Mode     = GPIO_MODE_IT_RISING_FALLING | GPIO_MODE_EVT_RISING;
+    GPIO_InitStructure.Pull     = GPIO_NOPULL;
+    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+    s = BUTTON_NVIC_WakeupInit();
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+    HAL_TRACE_S(D_INFO, s);
     return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_NVIC_WakeupInit(void)
 {
-EXTI_InitTypeDef EXTI_InitStructure;
-NVIC_InitTypeDef NVIC_InitStructure;
-
-    D_LOG(D_INFO, "NVIC Wakeup Init: ");
-    EXTI_StructInit(&EXTI_InitStructure);
-    /* Enable The external line0 interrupt */
-    EXTI_InitStructure.EXTI_Line    = EXTI_Line0;
-    EXTI_InitStructure.EXTI_Mode    = EXTI_Mode_Interrupt;
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
-    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    EXTI_Init(&EXTI_InitStructure);
-
-    NVIC_StructInit(&NVIC_InitStructure);
-    // EXTI line 0 IRQ channel configuration
-    NVIC_InitStructure.NVIC_IRQChannel                  = EXTI0_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MIN;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    EXTI_ClearITPendingBit(EXTI_Line0);
+    HAL_LOG(D_INFO, "NVIC Wakeup Init: ");
+//    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_IMR_MR0);
+//    __HAL_GPIO_EXTI_CLEAR_IT(EXTI_IMR_MR0);
+    HAL_NVIC_SetPriority(EXTI0_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
     return S_OK;
 }
 
 /*****************************************************************************/
 Status BUTTON_WakeupDeInit(void)
 {
+    HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
     return S_OK;
 }
 
 /*****************************************************************************/
 Status BUTTON_WakeupOpen(void* args_p)
 {
-    PWR_WakeUpPinCmd(ENABLE);
     wakeup_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
     return S_OK;
 }
@@ -135,7 +120,6 @@ Status BUTTON_WakeupOpen(void* args_p)
 /*****************************************************************************/
 Status BUTTON_WakeupClose(void)
 {
-    PWR_WakeUpPinCmd(DISABLE);
     wakeup_irq_callback_func = OS_NULL;
     return S_OK;
 }
@@ -145,14 +129,14 @@ Status BUTTON_WakeupIoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 default:
                     break;
             }
             break;
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;
@@ -164,59 +148,43 @@ Status BUTTON_TamperInit(void)
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
 
-    D_LOG(D_INFO, "Tamper init: ");
-    OS_CriticalSectionEnter(); {
-        GPIO_StructInit(&GPIO_InitStructure);
-        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
-        GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_13;
-        GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
-        GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_2MHz;
-        GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-        GPIO_Init(GPIOC, &GPIO_InitStructure);
-        GPIO_PinAFConfig(GPIOC, GPIO_PinSource13, GPIO_AF_TAMPER);
-        s = BUTTON_NVIC_TamperInit();
-        /* Disable the Tamper 1 detection */
-        RTC_TamperCmd(RTC_Tamper_1, DISABLE);
-        /* Configure the Tamper 1 Trigger */
-        RTC_TamperTriggerConfig(RTC_Tamper_1, RTC_TamperTrigger_RisingEdge);
-        /* Enable the Tamper interrupt */
-        RTC_ITConfig(RTC_IT_TAMP, ENABLE);
-        /* Clear Tamper 1 pin Event(TAMP1F) pending flag */
-        RTC_ClearFlag(RTC_FLAG_TAMP1F);
-        /* Clear Tamper 1 pin interrupt pending bit */
-        EXTI_ClearITPendingBit(EXTI_Line13);
-        EXTI_ClearITPendingBit(EXTI_Line21);
-        RTC_ClearITPendingBit(RTC_IT_TAMP1);
-        /* Enable the Tamper 1 detection */
-        RTC_TamperCmd(RTC_Tamper_1, ENABLE);
-    } OS_CriticalSectionExit();
-    D_TRACE_S(D_INFO, s);
+    HAL_LOG(D_INFO, "Tamper init: ");
+    RTC_TamperTypeDef stamperstructure;
+
+    __GPIOC_CLK_ENABLE();
+    GPIO_InitStructure.Pin      = GPIO_PIN_13;
+    GPIO_InitStructure.Mode     = GPIO_MODE_IT_RISING_FALLING;
+    GPIO_InitStructure.Pull     = GPIO_NOPULL;
+    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
+    GPIO_InitStructure.Alternate= GPIO_AF0_TAMPER;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+    /* Use PC13 as Tamper 1 with interrupt mode */
+    stamperstructure.Filter                     = RTC_TAMPERFILTER_DISABLE;
+    stamperstructure.PinSelection               = RTC_TAMPERPIN_PC13;
+    stamperstructure.Tamper                     = RTC_TAMPER_1;
+    stamperstructure.Trigger                    = RTC_TAMPERTRIGGER_RISINGEDGE;
+    stamperstructure.SamplingFrequency          = RTC_TAMPERSAMPLINGFREQ_RTCCLK_DIV256;
+    stamperstructure.PrechargeDuration          = RTC_TAMPERPRECHARGEDURATION_1RTCCLK;
+    stamperstructure.TamperPullUp               = RTC_TAMPER_PULLUP_DISABLE;
+    stamperstructure.TimeStampOnTamperDetection = RTC_TIMESTAMPONTAMPERDETECTION_DISABLE;
+
+    /* Clear the Tamper Flag */
+    __HAL_RTC_TAMPER_CLEAR_FLAG(&rtc_handle, RTC_FLAG_TAMP1F);
+    IF_STATUS(s = BUTTON_NVIC_TamperInit())     { return s; }
+    if (HAL_OK != HAL_RTCEx_SetTamper_IT(&rtc_handle, &stamperstructure))   { return s = S_HARDWARE_FAULT; }
+    HAL_TRACE_S(D_INFO, s);
     return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_NVIC_TamperInit(void)
 {
-EXTI_InitTypeDef  EXTI_InitStructure;
-NVIC_InitTypeDef NVIC_InitStructure;
-
-    D_LOG(D_INFO, "NVIC Tamper Init: ");
-    /* Enable The external line21 interrupt */
-    EXTI_StructInit(&EXTI_InitStructure);
-    EXTI_InitStructure.EXTI_Line    = EXTI_Line21;
-    EXTI_InitStructure.EXTI_Mode    = EXTI_Mode_Interrupt;
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    EXTI_Init(&EXTI_InitStructure);
-
-    NVIC_StructInit(&NVIC_InitStructure);
-    // RTC Tamper IRQ channel configuration
-    NVIC_InitStructure.NVIC_IRQChannel                  = TAMP_STAMP_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MIN;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    HAL_LOG(D_INFO, "NVIC Wakeup Init: ");
+    __HAL_GPIO_EXTI_CLEAR_FLAG(RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT);
+    __HAL_GPIO_EXTI_CLEAR_IT(RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT);
+    HAL_NVIC_SetPriority(TAMP_STAMP_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_EnableIRQ(TAMP_STAMP_IRQn);
     return S_OK;
 }
 
@@ -229,15 +197,17 @@ Status BUTTON_TamperDeInit(void)
 /*****************************************************************************/
 Status BUTTON_TamperOpen(void* args_p)
 {
+Status s = S_OK;
     tamper_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_TamperClose(void)
 {
+Status s = S_OK;
     tamper_irq_callback_func = OS_NULL;
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -245,26 +215,29 @@ Status BUTTON_TamperIoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 default:
                     break;
             }
             break;
+        case DRV_REQ_BUTTON_TAMPER_ENABLE:
+            s = BUTTON_TamperInit();
+            break;
+        case DRV_REQ_BUTTON_TAMPER_DISABLE:
+            if (HAL_OK != HAL_RTCEx_DeactivateTamper(&rtc_handle, RTC_TAMPER_1))   { s = S_HARDWARE_FAULT; }
+            break;
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;
 }
 
-// Buttons IRQ handlers --------------------------------------------------------
 /******************************************************************************/
-void EXTI0_IRQHandler(void);
-void EXTI0_IRQHandler(void)
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (RESET != EXTI_GetITStatus(EXTI_Line0)) {
-        EXTI_ClearITPendingBit(EXTI_Line0);
+    if (BUTTON_WAKEUP_PIN == GPIO_Pin) {
         if (OS_NULL != wakeup_irq_callback_func) {
             wakeup_irq_callback_func();
         }
@@ -272,16 +245,24 @@ void EXTI0_IRQHandler(void)
 }
 
 /******************************************************************************/
+void HAL_RTCEx_Tamper1EventCallback(RTC_HandleTypeDef *hrtc)
+{
+    if (OS_NULL != tamper_irq_callback_func) {
+        tamper_irq_callback_func();
+    }
+}
+
+// Buttons IRQ handlers --------------------------------------------------------
+/******************************************************************************/
+void EXTI0_IRQHandler(void);
+void EXTI0_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(BUTTON_WAKEUP_PIN);
+}
+
+/******************************************************************************/
 void TAMP_STAMP_IRQHandler(void);
 void TAMP_STAMP_IRQHandler(void)
 {
-    if (RESET != RTC_GetFlagStatus(RTC_FLAG_TAMP1F)) {
-        /* Clear Tamper 1 pin Event pending flag */
-        RTC_ClearFlag(RTC_FLAG_TAMP1F);
-        EXTI_ClearITPendingBit(EXTI_Line21);
-        RTC_ClearITPendingBit(RTC_IT_TAMP1);
-        if (OS_NULL != tamper_irq_callback_func) {
-            tamper_irq_callback_func();
-        }
-    }
+    HAL_RTCEx_TamperTimeStampIRQHandler(&rtc_handle);
 }

@@ -18,5 +18,5 @@ Project is based on the following software:
 - minIni by CompuPhase (http://www.compuphase.com);
 - Unity Project by Mike Karlesky, Mark VanderVoord, and Greg Williams (https://github.com/ThrowTheSwitch/Unity);
 - CMSIS Library by ARM Ltd. (http://www.arm.com);
-- Standart Peripheral Library by STMicroelectronics (http://www.st.com);
-- USB On-The-Go Host and Device Library by STMicroelectronics (http://www.st.com);
+- STM32F4xx HAL Driver by STMicroelectronics (http://www.st.com);
+- STM32 USB Host and Device Library by STMicroelectronics (http://www.st.com);

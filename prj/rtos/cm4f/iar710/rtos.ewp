@@ -172,7 +172,8 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>CM4F</state>
+          <state>STM32F407xx</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -306,7 +307,6 @@
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\freertos_plus\800\Source\FreeRTOS-Plus-CLI</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>

@@ -17,7 +17,7 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
-#define OS_ASSERT(a)        D_ASSERT(a)
+#define OS_ASSERT(a)        HAL_ASSERT(a)
 #define OS_LOG(level, ...)  OS_Log(level, __VA_ARGS__)
 
 /// @brief Common status items array.

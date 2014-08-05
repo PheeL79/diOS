@@ -238,8 +238,8 @@ Status s;
                stats.date_time.year,
                stats.date_time.day,
                stats.date_time.month,
-               stats.date_time.hour,
-               stats.date_time.min,
+               stats.date_time.hours,
+               stats.date_time.minutes,
                stats.size,
                stats.name);
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
@@ -359,10 +359,10 @@ Status s;
     OS_DateTime date = OS_DateStringParse(argv[0]);
     if (OS_TRUE != OS_DateIsValid(date.year, date.month, date.day)) { return S_INVALID_VALUE; }
     OS_DateTime time = OS_TimeStringParse(argv[1]);
-    date.hour = time.hour;
-    date.min  = time.min;
-    date.sec  = time.sec;
-    if (OS_TRUE != OS_TimeIsValid(date.hour, date.min, date.sec)) { return S_INVALID_VALUE; }
+    date.hours  = time.hours;
+    date.minutes= time.minutes;
+    date.seconds= time.seconds;
+    if (OS_TRUE != OS_TimeIsValid(date.hours, date.minutes, date.seconds)) { return S_INVALID_VALUE; }
     IF_STATUS(s = OS_FileDateTimeSet(argv[2], date)) {
         OS_LOG_S(D_WARNING, s);
     }

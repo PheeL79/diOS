@@ -34,14 +34,13 @@ U32 OS_ListRemove(OS_ListItem* item_l_p)
 /******************************************************************************/
 void OS_ListClear(OS_List* list_p)
 {
-OS_ListItem* iter_li_p;
-
     if (OS_NULL == list_p) { return; }
     if (OS_LIST_IS_EMPTY(list_p)) { return; }
-    for (iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
-         OS_DELAY_MAX != (OS_Value)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-         iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p)) {
-        OS_ListItemDelete(iter_li_p);
+    OS_ListItem* iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
+    while (OS_DELAY_MAX != (OS_Value)OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+        OS_ListItem* iter_li_tmp_p = iter_li_p;
+        iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+        OS_ListItemDelete(iter_li_tmp_p);
     }
 }
 

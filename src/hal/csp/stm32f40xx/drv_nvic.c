@@ -41,20 +41,11 @@ Status NVIC_Init_(void)
 /*****************************************************************************/
 Status NVIC__Init(void)
 {
-    D_LOG(D_INFO, "Init: ");
-    NVIC_SetPriorityGrouping(0); //By FreeRTOS request.
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4); //By FreeRTOS request.
+    HAL_LOG(D_INFO, "Init: ");
+    HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4); //By FreeRTOS request.
     /* Set Priority for SysTick Interrupts */
-    NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0)); // highest priority
-    NVIC_SystemLPConfig(NVIC_LP_SEVONPEND, ENABLE);
-    D_TRACE_S(D_INFO, S_OK);
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0); // highest priority
+    //HAL_NVIC_SystemLPConfig(NVIC_LP_SEVONPEND, ENABLE);
+    HAL_TRACE_S(D_INFO, S_OK);
     return S_OK;
-}
-
-// Exception handlers ----------------------------------------------------------
-/******************************************************************************/
-void HardFault_Handler(void);
-void HardFault_Handler(void)
-{
-    D_ASSERT(OS_FALSE);
 }

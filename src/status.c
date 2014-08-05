@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include "printf-stdarg.h"
 #include "hal.h"
+#include "os_config.h"
 
 void TraceVaListPrint(ConstStrPtr format_str_p, va_list args);
 void LogVaListPrint(const LogLevel level, ConstStrPtr mdl_name_p, ConstStrPtr format_str_p, va_list args);

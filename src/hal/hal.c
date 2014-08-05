@@ -51,32 +51,36 @@ Status s = S_OK;
     SystemClock_Config();
     SystemCoreClockKHz  = SystemCoreClock / KHZ;
     SystemCoreClockMHz  = SystemCoreClockKHz / KHZ;
-    TIMER_DWT_Init(); // D_LOG depends of this init.
+    TIMER_DWT_Init(); // HAL_LOG depends on this init.
     // HAL environment init
     hal_env.locale      = LOC_EN;
     hal_env.power       = PWR_ON;
-    hal_env.log_level   = D_LOG_LEVEL_DEFAULT;
+    hal_env.log_level   = HAL_LOG_LEVEL_DEFAULT;
     IF_STATUS(s = USART_Init_()) { return s; }
     hal_env.stdio_p = drv_stdio_p;
-    D_ASSERT(S_OK == hal_env.stdio_p->Init());
-    D_ASSERT(S_OK == hal_env.stdio_p->Open(OS_NULL));
+    HAL_ASSERT(S_OK == hal_env.stdio_p->Init());
+    HAL_ASSERT(S_OK == hal_env.stdio_p->Open(OS_NULL));
     // Init device description.
     IF_STATUS(HAL_DeviceDescriptionInit()) { return S_MODULE; }
     // Init and open STDIO stream.
     HAL_StdIoCls();
-    D_LOG(D_INFO, "-------------------------------");
-    D_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
+    HAL_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
                    ver_p->maj,
                    ver_p->min,
                    ver_p->bld,
                    ver_lbl[ver_p->lbl],
                    ver_p->rev);
-    D_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
-    D_LOG(D_INFO, "-------------------------------");
-    D_LOG(D_INFO, "HAL init...");
-    D_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
+    HAL_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(D_INFO, "HAL init...");
+    HAL_LOG(D_INFO, "-------------------------------");
+
+    //TODO(A. Filyanov) HAL_CSP_Init(); HAL_MSP_Init()?; HAL_BSP_Init();
+
     // Low-level drivers init.
     IF_STATUS(s = GPIO_Init_()) { return s; }
+    IF_STATUS(s = drv_gpio_v[DRV_ID_GPIOC]->Init()) { return s; }
     IF_STATUS(s = drv_gpio_v[DRV_ID_GPIOF]->Init()) { return s; }
     IF_STATUS(s = NVIC_Init_()) { return s; }
     IF_STATUS(s = drv_nvic_v[DRV_ID_NVIC]->Init()) { return s; }
@@ -102,14 +106,14 @@ Status s = S_OK;
     IF_STATUS(s = drv_led_v[DRV_ID_LED_ASSERT]->Init()) { return s; }
     IF_STATUS(s = drv_led_v[DRV_ID_LED_USER]->Init()) { return s; }
     IF_STATUS(s = BUTTON_Init_()) { return s; }
-    //IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_WAKEUP]->Init()) { return s; }
-    //IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_TAMPER]->Init()) { return s; }
+    IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_WAKEUP]->Init()) { return s; }
+    IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_TAMPER]->Init()) { return s; }
     // Enable interrupts.
-    D_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(D_INFO, "-------------------------------");
     // Close and deinit STDIO stream(for init HAL output).
-    // Stream will be open again in OSAL init.
-    D_ASSERT(S_OK == hal_env.stdio_p->Close());
-    D_ASSERT(S_OK == hal_env.stdio_p->DeInit());
+    // Stream will be open back again in OSAL init.
+    HAL_ASSERT(S_OK == hal_env.stdio_p->Close());
+    HAL_ASSERT(S_OK == hal_env.stdio_p->DeInit());
     CRITICAL_EXIT();
     return s;
 }
@@ -139,28 +143,10 @@ Status HAL_DeviceDescriptionGet(DeviceDesc* dev_desc_p, const U16 size)
     return S_OK;
 }
 
-/* задержка в микросекундах
- * диапазон значений от 0x00000001 до 0x00FFFFFF/multiplier
- * работает на прерывании */
-/*****************************************************************************/
-void HAL_DelayUs(U32 delay_us)
-{
-extern volatile MutexState mutex_systick;
-    mutex_systick = LOCKED;
-//    SysTick->LOAD  = ((delay_us * SystemCoreClockMHz) & SysTick_LOAD_RELOAD_Msk) - 1;  /* set reload register */
-//    SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
-//    SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
-//                     SysTick_CTRL_TICKINT_Msk   |
-//                     SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
-    while (LOCKED == mutex_systick) {};
-}
-
 /*****************************************************************************/
 void HAL_DelayMs(U32 delay_ms)
 {
-    do {
-        HAL_DelayUs(1000);
-    } while (--delay_ms);
+    HAL_Delay(delay_ms);
 }
 
 /*****************************************************************************/
@@ -228,7 +214,7 @@ U32 HAL_SystemCoreClockGet(void)
 /******************************************************************************/
 void HAL_StdIoCls(void)
 {
-    for (register int i = 0; i < D_STDIO_TERM_HEIGHT; ++i) {
+    for (register int i = 0; i < HAL_STDIO_TERM_HEIGHT; ++i) {
         if (EOF == putchar('\n')) { break; }
     }
 }
@@ -290,7 +276,7 @@ RCC_OscInitTypeDef RCC_OscInitStruct;
     RCC_OscInitStruct.PLL.PLLQ = 7;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         /* Initialization Error */
-        D_ASSERT(OS_FALSE);
+        HAL_ASSERT(OS_FALSE);
     }
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
      clocks dividers */

@@ -53,7 +53,7 @@ Status DMA_Init_(void)
 Status DMA2_Init(void)
 {
 Status s;
-    D_LOG(D_INFO, "Init");
+    HAL_LOG(D_INFO, "Init");
     IF_STATUS(s = DMA2_MEM_Init())    { return s; }
     IF_STATUS(s = DMA2_NVIC_Init())   { return s; }
     return s;
@@ -62,26 +62,26 @@ Status s;
 /*****************************************************************************/
 Status DMA2_NVIC_Init(void)
 {
-NVIC_InitTypeDef NVIC_InitStructure;
-
-    D_LOG(D_INFO, "NVIC Init: ");
-    NVIC_StructInit(&NVIC_InitStructure);
-    // MEM_2_MEM_32_DMA2_Stream1 enable the interrupt in the NVIC
-    NVIC_InitStructure.NVIC_IRQChannel                  = DMA2_Stream1_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-    // MEM_2_MEM_8_DMA2_Stream7 enable the interrupt in the NVIC
-    NVIC_InitStructure.NVIC_IRQChannel                  = DMA2_Stream7_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    DMA_ITConfig(DMA2_Stream1, DMA_IT_TE | DMA_IT_TC, ENABLE);
-    DMA_ITConfig(DMA2_Stream7, DMA_IT_TE | DMA_IT_TC, ENABLE);
-    D_TRACE_S(D_INFO, S_OK);
+//NVIC_InitTypeDef NVIC_InitStructure;
+//
+//    HAL_LOG(D_INFO, "NVIC Init: ");
+//    NVIC_StructInit(&NVIC_InitStructure);
+//    // MEM_2_MEM_32_DMA2_Stream1 enable the interrupt in the NVIC
+//    NVIC_InitStructure.NVIC_IRQChannel                  = DMA2_Stream1_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+//    // MEM_2_MEM_8_DMA2_Stream7 enable the interrupt in the NVIC
+//    NVIC_InitStructure.NVIC_IRQChannel                  = DMA2_Stream7_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+//
+//    DMA_ITConfig(DMA2_Stream1, DMA_IT_TE | DMA_IT_TC, ENABLE);
+//    DMA_ITConfig(DMA2_Stream7, DMA_IT_TE | DMA_IT_TC, ENABLE);
+//    D_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
@@ -89,39 +89,39 @@ NVIC_InitTypeDef NVIC_InitStructure;
 /*****************************************************************************/
 Status DMA2_MEM_Init(void)
 {
-DMA_InitTypeDef DMA_InitStructure;
-
-    D_LOG(D_INFO, "MEM Init: ");
-    DMA_StructInit(&DMA_InitStructure);
-    // Set up the DMA
-    // first enable the clock
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-    // start with a blank DMA configuration just to be sure
-    DMA_DeInit(DMA_STREAM_MEM2MEM8);
-    DMA_DeInit(DMA_STREAM_MEM2MEM32);
-    // MEM_2_MEM_8_DMA_Channel configuration ---------------------------------
-    DMA_InitStructure.DMA_PeripheralBaseAddr= (U32)OS_NULL;
-    DMA_InitStructure.DMA_Memory0BaseAddr   = (U32)OS_NULL;
-    DMA_InitStructure.DMA_BufferSize        = (U32)1;
-    DMA_InitStructure.DMA_DIR               = DMA_DIR_MemoryToMemory;
-    DMA_InitStructure.DMA_PeripheralInc     = DMA_PeripheralInc_Enable;
-    DMA_InitStructure.DMA_MemoryInc         = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize= DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize    = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode              = DMA_Mode_Normal;
-    DMA_InitStructure.DMA_Priority          = DMA_Priority_High;
-    DMA_InitStructure.DMA_Channel           = DMA_CHANNEL_MEM2MEM8;
-    DMA_InitStructure.DMA_FIFOMode          = DMA_FIFOMode_Disable;
-    DMA_InitStructure.DMA_FIFOThreshold     = DMA_FIFOThreshold_Full;
-    DMA_InitStructure.DMA_MemoryBurst       = DMA_MemoryBurst_Single;
-    DMA_InitStructure.DMA_PeripheralBurst   = DMA_PeripheralBurst_Single;
-    DMA_Init(DMA_STREAM_MEM2MEM8, &DMA_InitStructure);
-    // MEM_2_MEM_32_DMA_Channel configuration ---------------------------------
-    DMA_InitStructure.DMA_PeripheralDataSize= DMA_PeripheralDataSize_Word;
-    DMA_InitStructure.DMA_MemoryDataSize    = DMA_MemoryDataSize_Word;
-    DMA_InitStructure.DMA_Channel           = DMA_CHANNEL_MEM2MEM32;
-    DMA_Init(DMA_STREAM_MEM2MEM32, &DMA_InitStructure);
-    D_TRACE_S(D_INFO, S_OK);
+//DMA_InitTypeDef DMA_InitStructure;
+//
+//    HAL_LOG(D_INFO, "MEM Init: ");
+//    DMA_StructInit(&DMA_InitStructure);
+//    // Set up the DMA
+//    // first enable the clock
+//    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+//    // start with a blank DMA configuration just to be sure
+//    DMA_DeInit(DMA_STREAM_MEM2MEM8);
+//    DMA_DeInit(DMA_STREAM_MEM2MEM32);
+//    // MEM_2_MEM_8_DMA_Channel configuration ---------------------------------
+//    DMA_InitStructure.DMA_PeripheralBaseAddr= (U32)OS_NULL;
+//    DMA_InitStructure.DMA_Memory0BaseAddr   = (U32)OS_NULL;
+//    DMA_InitStructure.DMA_BufferSize        = (U32)1;
+//    DMA_InitStructure.DMA_DIR               = DMA_DIR_MemoryToMemory;
+//    DMA_InitStructure.DMA_PeripheralInc     = DMA_PeripheralInc_Enable;
+//    DMA_InitStructure.DMA_MemoryInc         = DMA_MemoryInc_Enable;
+//    DMA_InitStructure.DMA_PeripheralDataSize= DMA_PeripheralDataSize_Byte;
+//    DMA_InitStructure.DMA_MemoryDataSize    = DMA_MemoryDataSize_Byte;
+//    DMA_InitStructure.DMA_Mode              = DMA_Mode_Normal;
+//    DMA_InitStructure.DMA_Priority          = DMA_Priority_High;
+//    DMA_InitStructure.DMA_Channel           = DMA_CHANNEL_MEM2MEM8;
+//    DMA_InitStructure.DMA_FIFOMode          = DMA_FIFOMode_Disable;
+//    DMA_InitStructure.DMA_FIFOThreshold     = DMA_FIFOThreshold_Full;
+//    DMA_InitStructure.DMA_MemoryBurst       = DMA_MemoryBurst_Single;
+//    DMA_InitStructure.DMA_PeripheralBurst   = DMA_PeripheralBurst_Single;
+//    DMA_Init(DMA_STREAM_MEM2MEM8, &DMA_InitStructure);
+//    // MEM_2_MEM_32_DMA_Channel configuration ---------------------------------
+//    DMA_InitStructure.DMA_PeripheralDataSize= DMA_PeripheralDataSize_Word;
+//    DMA_InitStructure.DMA_MemoryDataSize    = DMA_MemoryDataSize_Word;
+//    DMA_InitStructure.DMA_Channel           = DMA_CHANNEL_MEM2MEM32;
+//    DMA_Init(DMA_STREAM_MEM2MEM32, &DMA_InitStructure);
+//    D_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
@@ -129,20 +129,20 @@ DMA_InitTypeDef DMA_InitStructure;
 #pragma inline
 void DMA_MemCpy8IsDoneWait(void)
 {
-    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM8)) {};
+//    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM8)) {};
 }
 
 /*****************************************************************************/
 #pragma inline
 void DMA_MemCpy8Async(void* dst_p, const void* src_p, SIZE size8)
 {
-    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM8)) {};
-    DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8);
-    DMA_STREAM_MEM2MEM8->PAR    = (U32)src_p;
-    DMA_STREAM_MEM2MEM8->M0AR   = (U32)dst_p;
-    DMA_STREAM_MEM2MEM8->NDTR   = (U32)size8;
-    /* DMA Stream enable */
-    DMA_Cmd(DMA_STREAM_MEM2MEM8, ENABLE);
+//    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM8)) {};
+//    DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8);
+//    DMA_STREAM_MEM2MEM8->PAR    = (U32)src_p;
+//    DMA_STREAM_MEM2MEM8->M0AR   = (U32)dst_p;
+//    DMA_STREAM_MEM2MEM8->NDTR   = (U32)size8;
+//    /* DMA Stream enable */
+//    DMA_Cmd(DMA_STREAM_MEM2MEM8, ENABLE);
 }
 
 /*****************************************************************************/
@@ -156,20 +156,20 @@ void DMA_MemCpy8(void* dst_p, const void* src_p, SIZE size8)
 #pragma inline
 void DMA_MemCpy32IsDoneWait(void)
 {
-    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM32)) {};
+//    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM32)) {};
 }
 
 /*****************************************************************************/
 #pragma inline
 void DMA_MemCpy32Async(void* dst_p, const void* src_p, SIZE size32)
 {
-    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM32)) {};
-    DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32);
-    DMA_STREAM_MEM2MEM32->PAR   = (U32)src_p;
-    DMA_STREAM_MEM2MEM32->M0AR  = (U32)dst_p;
-    DMA_STREAM_MEM2MEM32->NDTR  = (U32)size32;
-    /* DMA Stream enable */
-    DMA_Cmd(DMA_STREAM_MEM2MEM32, ENABLE);
+//    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM32)) {};
+//    DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32);
+//    DMA_STREAM_MEM2MEM32->PAR   = (U32)src_p;
+//    DMA_STREAM_MEM2MEM32->M0AR  = (U32)dst_p;
+//    DMA_STREAM_MEM2MEM32->NDTR  = (U32)size32;
+//    /* DMA Stream enable */
+//    DMA_Cmd(DMA_STREAM_MEM2MEM32, ENABLE);
 }
 
 /*****************************************************************************/
@@ -181,34 +181,34 @@ void DMA_MemCpy32(void* dst_p, const void* src_p, SIZE size32)
 
 /*****************************************************************************/
 // MEM 2 MEM 8 DMA Stream interrupt handler
-void DMA2_Stream7_IRQHandler(void);
-void DMA2_Stream7_IRQHandler(void)
-{
-    /* Test on DMA Stream Transfer Complete interrupt */
-    if (DMA_GetITStatus(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8)) {
-        /* Clear DMA Stream Transfer Complete interrupt pending bit */
-        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8);
-    } else if (DMA_GetITStatus(DMA_STREAM_MEM2MEM8, DMA_IT_TEIF_MEM2MEM8)) {
-        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TEIF_MEM2MEM8);
-        D_LOG(D_WARNING, "DMA2 Str7 IRQ err!");
-    } else {
-        D_ASSERT(OS_FALSE);
-    }
-}
+//void DMA2_Stream7_IRQHandler(void);
+//void DMA2_Stream7_IRQHandler(void)
+//{
+//    /* Test on DMA Stream Transfer Complete interrupt */
+//    if (DMA_GetITStatus(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8)) {
+//        /* Clear DMA Stream Transfer Complete interrupt pending bit */
+//        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8);
+//    } else if (DMA_GetITStatus(DMA_STREAM_MEM2MEM8, DMA_IT_TEIF_MEM2MEM8)) {
+//        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TEIF_MEM2MEM8);
+//        HAL_LOG(D_WARNING, "DMA2 Str7 IRQ err!");
+//    } else {
+//        D_ASSERT(OS_FALSE);
+//    }
+//}
 
 /*****************************************************************************/
 // MEM 2 MEM 32 DMA Stream interrupt handler
 void DMA2_Stream1_IRQHandler(void);
 void DMA2_Stream1_IRQHandler(void)
 {
-    /* Test on DMA Stream Transfer Complete interrupt */
-    if (DMA_GetITStatus(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32)) {
-        /* Clear DMA Stream Transfer Complete interrupt pending bit */
-        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32);
-    } else if (DMA_GetITStatus(DMA_STREAM_MEM2MEM32, DMA_IT_TEIF_MEM2MEM32)) {
-        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TEIF_MEM2MEM32);
-        D_LOG(D_WARNING, "DMA2 Str1 IRQ err!");
-    } else {
-        D_ASSERT(OS_FALSE);
-    }
+//    /* Test on DMA Stream Transfer Complete interrupt */
+//    if (DMA_GetITStatus(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32)) {
+//        /* Clear DMA Stream Transfer Complete interrupt pending bit */
+//        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32);
+//    } else if (DMA_GetITStatus(DMA_STREAM_MEM2MEM32, DMA_IT_TEIF_MEM2MEM32)) {
+//        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TEIF_MEM2MEM32);
+//        HAL_LOG(D_WARNING, "DMA2 Str1 IRQ err!");
+//    } else {
+//        D_ASSERT(OS_FALSE);
+//    }
 }

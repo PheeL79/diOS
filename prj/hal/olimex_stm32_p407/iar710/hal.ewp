@@ -173,6 +173,7 @@
         <option>
           <name>CCDefines</name>
           <state>CM4F</state>
+          <state>STM32F407xx</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -305,11 +306,11 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\CMSIS\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\Common</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\STM3240_41_G_EVAL</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
@@ -1262,9 +1263,9 @@
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
@@ -2081,6 +2082,7 @@
         <option>
           <name>CCDefines</name>
           <state>CM4F</state>
+          <state>STM32F407xx</state>
           <state>VECT_TAB_SRAM</state>
         </option>
         <option>
@@ -2214,11 +2216,11 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\CMSIS\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\Common</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\STM3240_41_G_EVAL</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
@@ -3172,9 +3174,9 @@
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
@@ -3841,9 +3843,23 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\hal_olimex_stm32_p407.c</name>
+        <excluded>
+          <configuration>Debug FLASH</configuration>
+          <configuration>Debug SRAM</configuration>
+        </excluded>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\system_stm32f4xx_olimex_stm32_p407.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\stm32f4xx_hal_msp.c</name>
+        <excluded>
+          <configuration>Debug FLASH</configuration>
+          <configuration>Debug SRAM</configuration>
+        </excluded>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\stm32f4xx_it.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\system_stm32f4xx.c</name>
       </file>
     </group>
   </group>
@@ -3852,109 +3868,204 @@
     <group>
       <name>cmsis</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\400\Device\ST\STM32F4xx\Source\Templates\iar\startup_stm32f40xx.s</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Source\Templates\iar\startup_stm32f407xx.s</name>
       </file>
     </group>
     <group>
-      <name>stm32_usb_host_device_lib</name>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB-Host-Device_Lib\210\Utilities\STM32_EVAL\STM3240_41_G_EVAL\stm324xg_eval_sdio_sd.c</name>
-      </file>
+      <name>stm32_usb_device_library</name>
+      <excluded>
+        <configuration>Debug FLASH</configuration>
+        <configuration>Debug SRAM</configuration>
+      </excluded>
+      <group>
+        <name>class</name>
+      </group>
+      <group>
+        <name>core</name>
+      </group>
+      <group>
+        <name>driver</name>
+      </group>
     </group>
     <group>
-      <name>stm32f4xx_stdperiph_driver</name>
+      <name>stm32_usb_host_library</name>
+      <excluded>
+        <configuration>Debug FLASH</configuration>
+        <configuration>Debug SRAM</configuration>
+      </excluded>
+      <group>
+        <name>class</name>
+        <group>
+          <name>msc</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Src\usbh_msc.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Src\usbh_msc_bot.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Src\usbh_msc_scsi.c</name>
+          </file>
+        </group>
+      </group>
+      <group>
+        <name>core</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Src\usbh_core.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Src\usbh_ctlreq.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Src\usbh_ioreq.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Src\usbh_pipes.c</name>
+        </file>
+      </group>
+    </group>
+    <group>
+      <name>stm32f4xx_hal_driver</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\misc.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_adc.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_adc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_can.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_adc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_crc.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_can.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_cryp.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_cortex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_cryp_aes.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_crc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_cryp_des.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_dac.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_cryp_tdes.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_dac_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_dac.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_dcmi.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_dbgmcu.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_dma.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_dcmi.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_dma_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_dma.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_eth.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_exti.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_flash.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_flash.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_flash_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_fsmc.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_flash_ramfunc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_gpio.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_gpio.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_hash.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_hash.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_hash_md5.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_hash_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_hash_sha1.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_hcd.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_i2c.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_i2c.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_iwdg.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_i2c_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_pwr.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_i2s.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_rcc.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_i2s_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_rng.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_iwdg.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_rtc.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_ltdc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_sdio.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_pcd.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_spi.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_pcd_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_syscfg.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_pwr.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_tim.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_pwr_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_usart.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_rcc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_StdPeriph_Driver\110\src\stm32f4xx_wwdg.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_rcc_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_rng.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_rtc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_rtc_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_sai.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_sd.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_sdram.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_spi.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_sram.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_tim.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_tim_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_uart.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_usart.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_hal_wwdg.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_ll_fsmc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_ll_sdmmc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Src\stm32f4xx_ll_usb.c</name>
       </file>
     </group>
     <file>
@@ -3990,7 +4101,17 @@
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usart6.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc\stm324xg_eval_sdio_sd.c</name>
+      <excluded>
+        <configuration>Debug FLASH</configuration>
+        <configuration>Debug SRAM</configuration>
+      </excluded>
+    </file>
   </group>
+  <file>
+    <name>$PROJ_DIR$\..\..\..\..\src\hal\hal.c</name>
+  </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\printf-stdarg.c</name>
   </file>

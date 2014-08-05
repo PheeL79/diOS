@@ -13,7 +13,7 @@
 
 //------------------------------------------------------------------------------
 // debug macros
-#if defined(CM4F) || defined(STM32F40XX)
+#if defined(CM4F) || defined(STM32F407xx)
     #include <stdio.h>
     #include <assert.h>
 
@@ -43,17 +43,17 @@
     #define STATUS_ITEMS_COMMON             &status_items_v[0]
     #define MDL_STATUS_ITEMS STATUS_ITEMS_COMMON
     /// @brief   Writes debug string to the log.
-    #define D_LOG(level, ...)               LogPrint(level, MDL_NAME, __VA_ARGS__)
-    #define D_LOG_S(level, status, ...)     D_LOG(level, StatusStringGet(status, MDL_STATUS_ITEMS))
+    #define HAL_LOG(level, ...)             LogPrint(level, MDL_NAME, __VA_ARGS__)
+    #define HAL_LOG_S(level, status, ...)   HAL_LOG(level, StatusStringGet(status, MDL_STATUS_ITEMS))
 
-    #define D_TRACE(level, ...)             TracePrint(level, __VA_ARGS__)
-    #define D_TRACE_S(level, status)        D_TRACE(level, StatusStringGet(status, MDL_STATUS_ITEMS))
+    #define HAL_TRACE(level, ...)           TracePrint(level, __VA_ARGS__)
+    #define HAL_TRACE_S(level, status)      HAL_TRACE(level, StatusStringGet(status, MDL_STATUS_ITEMS))
 //#undef MDL_STATUS_ITEMS
 //    #ifndef NDEBUG
-//        #define D_ASSERT(c)                 assert(c)
+//        #define HAL_ASSERT(c)                 assert(c)
 //    #else
-        #define D_ASSERT(c)                 if (!(c)) { CRITICAL_ENTER(); HAL_ASSERT_PIN_UP; while(1) {}; }
-//    #endif // D_ASSERT
+        #define HAL_ASSERT(c)               if (!(c)) { CRITICAL_ENTER(); HAL_ASSERT_PIN_UP; while(1) {}; }
+//    #endif // HAL_ASSERT
 #else
     #error "status.h: Undefined compiler"
 #endif // debug version

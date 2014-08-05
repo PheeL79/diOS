@@ -31,7 +31,11 @@
 #include "printf-stdarg.h"
 #include "hal.h"
 
-char out_buf[D_STDIO_BUFF_LEN];
+__ALIGN_BEGIN
+static char out_buf1[HAL_STDIO_BUFF_LEN];
+static char out_buf2[HAL_STDIO_BUFF_LEN];
+__ALIGN_END
+static char*out_buf_curr_p = out_buf1;
 
 static void printchar(char **str, int c)
 {
@@ -185,7 +189,7 @@ static int print( char **out, const char *format, va_list args )
 			++pc;
 		}
         if (out) {
-            if (D_STDIO_BUFF_LEN < (pc + PRINT_BUF_LEN)) { break; }
+            if (HAL_STDIO_BUFF_LEN < (pc + PRINT_BUF_LEN)) { break; }
         }
 	}
 	if (out) **out = '\0';
@@ -198,9 +202,11 @@ int vprintf(const char *format, va_list args)
 extern volatile HAL_Env hal_env;
     // Wait for complete send output buffer.
     //hal_env.stdio_p->IoCtl(DRV_REQ_STD_SYNC, NULL);
-    char *out_p = &out_buf[0];
-    const int r = print( &out_p, format, args );
-    hal_env.stdio_p->Write((U8 *)&out_buf[0], r, NULL);
+
+    out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
+    char* out_buf_tmp_p = out_buf_curr_p;
+    const int r = print(&out_buf_tmp_p, format, args );
+    hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
     return r;
 }
 
@@ -212,9 +218,11 @@ extern volatile HAL_Env hal_env;
     va_start( args, format );
     // Wait for complete send output buffer.
     //hal_env.stdio_p->IoCtl(DRV_REQ_STD_SYNC, NULL);
-    char *out_p = &out_buf[0];
-    const int r = print( &out_p, format, args );
-    hal_env.stdio_p->Write((U8 *)&out_buf[0], r, NULL);
+
+    out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
+    char* out_buf_tmp_p = out_buf_curr_p;
+    const int r = print(&out_buf_tmp_p, format, args);
+    hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
     return r;
 }
 

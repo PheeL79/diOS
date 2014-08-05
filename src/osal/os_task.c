@@ -6,6 +6,7 @@
 #include <string.h>
 #include "osal.h"
 #include "os_common.h"
+#include "os_supervise.h"
 #include "os_list.h"
 #include "os_mutex.h"
 #include "os_memory.h"
@@ -119,11 +120,6 @@ Status s = S_OK;
     while (OS_NULL != OS_TaskByIdGet(id_curr)) {
         (0 == ++id_curr) ? ++id_curr : id_curr; // except zero id.
     }
-    if (pdPASS != xTaskCreate(cfg_p->func_main, cfg_p->name, cfg_p->stack_size, cfg_p->args_p, cfg_p->prio_init, &task_hd)) {
-        s = S_MODULE;
-        goto error;
-    }
-    vTaskSetApplicationTaskTag(task_hd, (TaskHookFunction_t)thd);
     // Creating StdIo task queues.
     OS_QueueConfig que_cfg;
     que_cfg.dir = DIR_IN;
@@ -145,9 +141,17 @@ Status s = S_OK;
     cfg_dyn_p->id       = id_curr;
     cfg_dyn_p->parent   = OS_TaskGet();
     cfg_dyn_p->timeout  = cfg_dyn_p->cfg_p->timeout;
-    OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
-    OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)task_hd);
-    OS_ListAppend(&os_tasks_list, item_l_p);
+    OS_CriticalSectionEnter(); { // Atomic section to prevent context switch right after task creation by OS Engine.
+        if (pdPASS != xTaskCreate(cfg_p->func_main, cfg_p->name, cfg_p->stack_size, cfg_p->args_p, cfg_p->prio_init, &task_hd)) {
+            OS_CriticalSectionExit();
+            s = S_MODULE;
+            goto error;
+        }
+        vTaskSetApplicationTaskTag(task_hd, (TaskHookFunction_t)thd);
+        OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
+        OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)task_hd);
+        OS_ListAppend(&os_tasks_list, item_l_p);
+    } OS_CriticalSectionExit();
     if (OS_NULL != thd_p) {
         *thd_p = thd;
     }
@@ -240,6 +244,7 @@ OS_TaskHd OS_TaskByHandleGet(const TaskHandle_t task_hd)
 OS_TaskHd OS_TaskGet(void)
 {
 const TaskHandle_t task_hd = xTaskGetCurrentTaskHandle();
+    if (OS_NULL == task_hd) { return OS_NULL; }
     return OS_TaskByHandleGet(task_hd);
 }
 

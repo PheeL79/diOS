@@ -43,7 +43,7 @@ const OS_TaskConfig task_shell_cfg = {
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 Status s = S_OK;
-    D_LOG(D_INFO, "Init");
+    HAL_LOG(D_INFO, "Init");
     return s;
 }
 

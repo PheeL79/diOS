@@ -83,7 +83,7 @@ Status POWER_IoCtl(const U32 request_id, void* args_p)
 Status s = S_OK;
 const OS_PowerState state = *(OS_PowerState*)args_p;
     switch (request_id) {
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (state) {
                 case PWR_STARTUP:
                     break;
@@ -92,32 +92,51 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                 case PWR_ON:
                     break;
                 case PWR_SLEEP:
-                    __WFI();
+                    /* Suspend Tick increment to prevent wakeup by Systick interrupt.
+                     Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base) */
+                    SYSTICK_STOP();
+                    /* Request to enter SLEEP mode */
+                    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+                    /* Resume Tick interrupt if disabled prior to sleep mode entry */
+                    SYSTICK_START();
                     break;
                 case PWR_STOP:
-                    OS_SchedulerSuspend();
-                    SYSTICK_STOP();
                     OS_CriticalSectionEnter(); {
+                        OS_SchedulerSuspend();
+                        SYSTICK_STOP();
+                        /* FLASH Deep Power Down Mode enabled */
+                        HAL_PWREx_EnableFlashPowerDown();
                         __SEV(); /* Set event to bring the event register bit into a known state (1) */
                         __WFE(); /* This will clear the event register and immediately continue to the next instruction and make you ready to go to sleep using WFE */
                         /* Enter Stop Mode */
-                        PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFE);
-                        /* After wake-up from STOP reconfigure the system clock */
-                        /* Enable HSE */
-                        RCC_HSEConfig(RCC_HSE_ON);
-                        /* Wait till HSE is ready */
-                        while (RESET == RCC_GetFlagStatus(RCC_FLAG_HSERDY)) {};
-                        /* Enable PLL */
-                        RCC_PLLCmd(ENABLE);
-                        /* Wait till PLL is ready */
-                        while (RESET == RCC_GetFlagStatus(RCC_FLAG_PLLRDY)) {};
-                        /* Select PLL as system clock source */
-                        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-                        /* Wait till PLL is used as system clock source */
-                        while (0x08 != RCC_GetSYSCLKSource()) {};
+                        HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFE);
+                        /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
+                        PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+                        RCC_ClkInitTypeDef RCC_ClkInitStruct;
+                        RCC_OscInitTypeDef RCC_OscInitStruct;
+                        uint32_t pFLatency = 0;
+                        /* Get the Oscillators configuration according to the internal RCC registers */
+                        HAL_RCC_GetOscConfig(&RCC_OscInitStruct);
+                        /* After wake-up from STOP reconfigure the system clock: Enable HSE and PLL */
+                        RCC_OscInitStruct.OscillatorType= RCC_OSCILLATORTYPE_HSE;
+                        RCC_OscInitStruct.HSEState      = RCC_HSE_ON;
+                        RCC_OscInitStruct.PLL.PLLState  = RCC_PLL_ON;
+                        if (HAL_OK != HAL_RCC_OscConfig(&RCC_OscInitStruct)) {
+                            HAL_ASSERT(OS_FALSE);
+                        }
+                        /* Get the Clocks configuration according to the internal RCC registers */
+                        HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, &pFLatency);
+                        /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+                         clocks dividers */
+                        RCC_ClkInitStruct.ClockType     = RCC_CLOCKTYPE_SYSCLK;
+                        RCC_ClkInitStruct.SYSCLKSource  = RCC_SYSCLKSOURCE_PLLCLK;
+                        if (HAL_OK != HAL_RCC_ClockConfig(&RCC_ClkInitStruct, pFLatency)) {
+                            HAL_ASSERT(OS_FALSE);
+                        }
+//                        HAL_PWREx_DisableFlashPowerDown();
+                        SYSTICK_START();
+                        OS_SchedulerResume();
                     } OS_CriticalSectionExit();
-                    SYSTICK_START();
-                    OS_SchedulerResume();
                     break;
                 case PWR_STANDBY:
                     break;

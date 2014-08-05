@@ -29,6 +29,7 @@ extern volatile HAL_Env hal_env;
 volatile OS_Env os_env = {
     .hal_env_p      = &hal_env,
     .drv_stdio      = OS_NULL,
+    .drv_rtc        = OS_NULL
 };
 volatile BL is_idle;
 
@@ -49,7 +50,9 @@ extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
 Status s;
     //Init OSAL.
+    CRITICAL_ENTER();
     is_idle = OS_FALSE;
+    // uxCriticalNesting = 0; !!! Variables are created before OS Engine scheduler is started! Affects on divers interrupts!
     IF_STATUS(s = OS_MemoryInit())      { return s; }
     IF_STATUS(s = OS_TimerInit())       { return s; }
     IF_STATUS(s = OS_TimeInit())        { return s; }
@@ -63,8 +66,9 @@ Status s;
     IF_STATUS(s = OS_SettingsInit())    { return s; }
     IF_STATUS(s = OS_PowerInit())       { return s; }
     IF_STATUS(s = OSAL_DriversCreate()) { return s; }
-    D_LOG(D_INFO, "OSAL init...");
-    D_LOG(D_INFO, "-------------------------------");
+    CRITICAL_EXIT();
+    HAL_LOG(D_INFO, "OSAL init...");
+    HAL_LOG(D_INFO, "-------------------------------");
 #if (1 == OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_FileSystemInit())  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
@@ -82,7 +86,7 @@ Status s;
     //Create and start system tasks.
     IF_STATUS(s = OS_StartupInit())     { return s; }
     IF_STATUS(s = OS_StartupSystem())   { return s; }
-    D_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(D_INFO, "-------------------------------");
     return s;
 }
 
@@ -91,14 +95,29 @@ Status OSAL_DriversCreate(void)
 {
 Status s;
     //Create, init and open system drivers;
-    const OS_DriverConfig drv_cfg = {
-        .name       = "USART6",
-        .itf_p      = drv_stdio_p,
-        .prio_power = OS_PWR_PRIO_MAX - 1
-    };
-    IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_stdio)) { return s; }
-    IF_STATUS(s = OS_DriverInit(os_env.drv_stdio)) { return s; }
-    IF_STATUS(s = OS_DriverOpen(os_env.drv_stdio, OS_NULL)) { return s; }
+    {
+        const OS_DriverConfig drv_cfg = {
+            .name       = "USART6",
+            .itf_p      = drv_stdio_p,
+            .prio_power = OS_PWR_PRIO_MAX - 1
+        };
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_stdio)) { return s; }
+        IF_STATUS(s = OS_DriverInit(os_env.drv_stdio)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(os_env.drv_stdio, OS_NULL)) { return s; }
+        const HAL_DriverModeIo mode_io = DRV_MODE_IO_USER;
+        IF_STATUS(s = OS_DriverIoCtl(os_env.drv_stdio, DRV_REQ_STD_MODE_IO_SET, (void*)&mode_io)) { return s; }
+    }
+
+    {
+        const OS_DriverConfig drv_cfg = {
+            .name       = "RTC",
+            .itf_p      = drv_rtc_v[DRV_ID_RTC],
+            .prio_power = OS_PWR_PRIO_DEFAULT
+        };
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_rtc)) { return s; }
+        IF_STATUS(s = OS_DriverInit(os_env.drv_rtc)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(os_env.drv_rtc, OS_NULL)) { return s; }
+    }
     return s;
 }
 
@@ -122,6 +141,12 @@ OS_PowerState OS_PowerStateGet(void)
 OS_DriverHd OS_DriverStdIoGet(void)
 {
     return os_env.drv_stdio;
+}
+
+/******************************************************************************/
+OS_DriverHd OS_DriverRtcGet(void)
+{
+    return os_env.drv_rtc;
 }
 
 /******************************************************************************/

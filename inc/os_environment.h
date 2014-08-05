@@ -27,6 +27,10 @@ extern "C" {
 /// @return     Driver handle.
 OS_DriverHd     OS_DriverStdIoGet(void);
 
+/// @brief      Get system realtime clock driver.
+/// @return     Driver handle.
+OS_DriverHd     OS_DriverRtcGet(void);
+
 /// @brief      Get current system locale.
 /// @return     Locale.
 Locale          OS_LocaleGet(void);

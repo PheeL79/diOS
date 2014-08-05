@@ -98,19 +98,15 @@ Status LED_PulseInit(void)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
-    D_LOG(D_INFO, "LED Pulse Init: ");
-    GPIO_StructInit(&GPIO_InitStructure);
-    /* Enable the GPIOF clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_6;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOF, &GPIO_InitStructure);
-    GPIO_ResetBits(GPIOF, GPIO_Pin_6);
-    D_TRACE_S(D_INFO, S_OK);
+    HAL_LOG(D_INFO, "LED Pulse Init: ");
+    __GPIOF_CLK_ENABLE();
+    GPIO_InitStructure.Pin      = GPIO_PIN_6;
+    GPIO_InitStructure.Mode     = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull     = GPIO_NOPULL;
+    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
+    HAL_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
@@ -136,12 +132,10 @@ Status LED_PulseClose(void)
 Status LED_PulseWrite(U8* data_out_p, U32 size, void* args_p)
 {
 Status s = S_OK;
-    while (size--) {
-        if (ON == *data_out_p) {
-            GPIO_SetBits(GPIOF, GPIO_Pin_6);
-        } else {
-            GPIO_ResetBits(GPIOF, GPIO_Pin_6);
-        }
+    if (ON == *data_out_p) {
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
+    } else {
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
     }
     return s;
 }
@@ -151,7 +145,7 @@ Status LED_PulseIoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
                     break;
@@ -168,7 +162,7 @@ Status s = S_OK;
             }
             break;
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;
@@ -179,19 +173,15 @@ Status LED_FsInit(void)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
-    D_LOG(D_INFO, "LED FS Init: ");
-    GPIO_StructInit(&GPIO_InitStructure);
-    /* Enable the GPIOF clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_7;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOF, &GPIO_InitStructure);
-    GPIO_ResetBits(GPIOF, GPIO_Pin_7);
-    D_TRACE_S(D_INFO, S_OK);
+    HAL_LOG(D_INFO, "LED FS Init: ");
+    __GPIOF_CLK_ENABLE();
+    GPIO_InitStructure.Pin      = GPIO_PIN_7;
+    GPIO_InitStructure.Mode     = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull     = GPIO_NOPULL;
+    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
+    HAL_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
@@ -217,12 +207,10 @@ Status LED_FsClose(void)
 Status LED_FsWrite(U8* data_out_p, U32 size, void* args_p)
 {
 Status s = S_OK;
-    while (size--) {
-        if (ON == *data_out_p) {
-            GPIO_SetBits(GPIOF, GPIO_Pin_7);
-        } else {
-            GPIO_ResetBits(GPIOF, GPIO_Pin_7);
-        }
+    if (ON == *data_out_p) {
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_SET);
+    } else {
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
     }
     return s;
 }
@@ -232,7 +220,7 @@ Status LED_FsIoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
                     break;
@@ -249,7 +237,7 @@ Status s = S_OK;
             }
             break;
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;
@@ -260,19 +248,15 @@ Status LED_AssertInit(void)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
-    D_LOG(D_INFO, "LED Assert Init: ");
-    GPIO_StructInit(&GPIO_InitStructure);
-    /* Enable the GPIOF clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_8;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOF, &GPIO_InitStructure);
-    GPIO_ResetBits(GPIOF, GPIO_Pin_8);
-    D_TRACE_S(D_INFO, S_OK);
+    HAL_LOG(D_INFO, "LED Assert Init: ");
+    __GPIOF_CLK_ENABLE();
+    GPIO_InitStructure.Pin      = GPIO_PIN_8;
+    GPIO_InitStructure.Mode     = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull     = GPIO_NOPULL;
+    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8, GPIO_PIN_RESET);
+    HAL_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
@@ -281,19 +265,15 @@ Status LED_UserInit(void)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
-    D_LOG(D_INFO, "LED User Init: ");
-    GPIO_StructInit(&GPIO_InitStructure);
-    /* Enable the GPIOF clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin     = GPIO_Pin_9;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOF, &GPIO_InitStructure);
-    GPIO_ResetBits(GPIOF, GPIO_Pin_9);
-    D_TRACE_S(D_INFO, S_OK);
+    HAL_LOG(D_INFO, "LED User Init: ");
+    __GPIOF_CLK_ENABLE();
+    GPIO_InitStructure.Pin      = GPIO_PIN_9;
+    GPIO_InitStructure.Mode     = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull     = GPIO_NOPULL;
+    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
+    HAL_TRACE_S(D_INFO, S_OK);
     return S_OK;
 }
 
@@ -319,12 +299,10 @@ Status LED_UserClose(void)
 Status LED_UserWrite(U8* data_out_p, U32 size, void* args_p)
 {
 Status s = S_OK;
-    while (size--) {
-        if (ON == *data_out_p) {
-            GPIO_SetBits(GPIOF, GPIO_Pin_9);
-        } else {
-            GPIO_ResetBits(GPIOF, GPIO_Pin_9);
-        }
+    if (ON == *data_out_p) {
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_SET);
+    } else {
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
     }
     return s;
 }
@@ -334,7 +312,7 @@ Status LED_UserIoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
                     break;
@@ -351,7 +329,7 @@ Status s = S_OK;
             }
             break;
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;

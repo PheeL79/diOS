@@ -20,11 +20,12 @@
 // Timeouts.
 #define OS_TIMEOUT_DEFAULT          1000U
 #define OS_TIMEOUT_POWER            5000U
+#define OS_TIMEOUT_DRIVER           HAL_TIMEOUT_DRIVER
 #define OS_TIMEOUT_MUTEX_LOCK       1000U
 #define OS_TIMEOUT_FS               1000U
 
 // Ticks.
-#define OS_TICK_RATE                10000U
+#define OS_TICK_RATE                1000U
 #define OS_PULSE_RATE               1000U
 #define OS_IDLE_TICKLESS_ENABLED    1
 #define OS_IDLE_TICKS_TO_SLEEP      1000U
@@ -48,7 +49,7 @@ enum {
 #define OS_MEM_HEAP_SYS             OS_MEM_RAM_EXT_SRAM
 #define OS_MEM_HEAP_APP             OS_MEM_RAM_EXT_SRAM
 #define OS_STACK_SIZE_MIN           200
-#define OS_HEAP_SIZE                20 * 1024
+#define OS_HEAP_SIZE                1 * 1024
 
 __no_init static U8 heap_int_sram[OS_HEAP_SIZE];// @ RAM_region;
 __no_init static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
@@ -113,8 +114,8 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_SETTINGS_FILE_PATH       "1:config.ini"
 
 //Shell
-#define OS_SHELL_HEIGHT             D_STDIO_TERM_HEIGHT
-#define OS_SHELL_WIDTH              D_STDIO_TERM_WIDTH
+#define OS_SHELL_HEIGHT             HAL_STDIO_TERM_HEIGHT
+#define OS_SHELL_WIDTH              HAL_STDIO_TERM_WIDTH
 #define OS_SHELL_PROMPT_ROOT        #
 #define OS_SHELL_PROMPT_USER        $
 #define OS_SHELL_PROMPT             OS_SHELL_PROMPT_ROOT

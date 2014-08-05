@@ -476,9 +476,11 @@ Status s = S_OK;
         OS_DateTime time;
         s = OS_TimeGet(OS_TIME_LOCAL, &time);
         if (LOC_RU == locale) {
-            printf("\n%02d" OS_LOCALE_TIME_DELIM_RU "%02d" OS_LOCALE_TIME_DELIM_RU "%02d", time.hour, time.min, time.sec);
+            printf("\n%02d" OS_LOCALE_TIME_DELIM_RU "%02d" OS_LOCALE_TIME_DELIM_RU "%02d",
+                   time.hours, time.minutes, time.seconds);
         } else {
-            printf("\n%02d" OS_LOCALE_TIME_DELIM_EN "%02d" OS_LOCALE_TIME_DELIM_EN "%02d", time.hour, time.min, time.sec);
+            printf("\n%02d" OS_LOCALE_TIME_DELIM_EN "%02d" OS_LOCALE_TIME_DELIM_EN "%02d",
+                   time.hours, time.minutes, time.seconds);
         }
     }
     return s;
@@ -502,11 +504,11 @@ Status s = S_OK;
         s = OS_DateGet(OS_DATE_UNDEF, &date);
         if (LOC_RU == locale) {
             printf("\n%-10s %02d" OS_LOCALE_DATE_DELIM_RU "%02d" OS_LOCALE_DATE_DELIM_RU "%04d",
-                   OS_TimeNameDayOfWeekGet((OS_TimeWeekDay)date.wday, locale),
+                   OS_TimeNameDayOfWeekGet((OS_TimeWeekDay)date.weekday, locale),
                    date.day, date.month, date.year);
         } else {
             printf("\n%-10s %02d" OS_LOCALE_DATE_DELIM_EN "%02d" OS_LOCALE_DATE_DELIM_EN "%04d",
-                   OS_TimeNameDayOfWeekGet((OS_TimeWeekDay)date.wday, locale),
+                   OS_TimeNameDayOfWeekGet((OS_TimeWeekDay)date.weekday, locale),
                    date.month, date.day, date.year);
         }
     }

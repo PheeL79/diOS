@@ -51,10 +51,18 @@ typedef enum {
 
 typedef enum {
     OS_TIME_DAYLIGHT_UNDEF,
+    OS_TIME_DAYLIGHT_NONE,
     OS_TIME_DAYLIGHT_SUMMER,
     OS_TIME_DAYLIGHT_WINTER,
     OS_TIME_DAYLIGHT_LAST
 } OS_TimeDayLight;
+
+typedef enum {
+    OS_TIME_HOUR_FORMAT_UNDEF,
+    OS_TIME_HOUR_FORMAT_AM,
+    OS_TIME_HOUR_FORMAT_PM,
+    OS_TIME_HOUR_FORMAT_LAST
+} OS_TimeHourFormat;
 
 typedef Time            OS_DateTime;
 //typedef RTC_AlarmTypeDef OS_Alarm;
@@ -63,13 +71,13 @@ typedef U32             TimeMs;
 typedef U32             TimeS;
 
 /// Converts from RTOS ticks to milliseconds.
-#define OS_TICKS_TO_MS(ticks)       ((U32)(((ticks) * 1000UL) / configTICK_RATE_HZ))
+#define OS_TICKS_TO_MS(ticks)       ((U32)(((ticks) * KHZ) / configTICK_RATE_HZ))
 
 /// Converts from milliseconds to RTOS ticks, value is always > 0.
 #pragma inline
 static inline U32 OS_MS_TO_TICKS(const TimeMs ms)
 {
-    return ((ms * configTICK_RATE_HZ) / 1000UL);
+    return ((ms * configTICK_RATE_HZ) / KHZ);
 }
 
 //------------------------------------------------------------------------------
@@ -101,12 +109,12 @@ Status          OS_DateSet(const OS_DateFormat format, OS_DateTime* os_date_p);
 //Status        OS_AlarmSet(const OS_AlarmFormat format, /*const OS_AlarmEvent event,*/ OS_Alarm* os_alarm_p);
 
 /// @brief      Time validation.
-/// @param[in]  hour            Hour.
-/// @param[in]  min             Minute.
-/// @param[in]  sec             Second.
+/// @param[in]  hours           Hours.
+/// @param[in]  minutes         Minutes.
+/// @param[in]  seconds         Seconds.
 /// @return     Bool.
 /// @warning    Currently only for 24H mode!
-BL              OS_TimeIsValid(const U8 hour, const U8 min, const U8 sec);
+BL              OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds);
 
 /// @brief      Date validation.
 /// @param[in]  year            Year.
@@ -127,15 +135,6 @@ OS_TimeWeekDay  OS_DateWeekDayGet(const U16 year, const U8 month, const U8 day);
 /// @param[in]  locale          Locale.
 /// @return     Day of the week string.
 ConstStrPtr     OS_TimeNameDayOfWeekGet(const OS_TimeWeekDay week_day, const Locale locale);
-
-/// @brief      Get the current daylight savings.
-/// @return     Daylight savings.
-OS_TimeDayLight OS_TimeDayLightSavingsGet(void);
-
-/// @brief      Set the daylight savings.
-/// @param[in]  savings         Daylight savings.
-/// @return     #Status.
-Status          OS_TimeDayLightSavingsSet(const OS_TimeDayLight savings);
 
 /// @brief      Get tick count.
 /// @return     Tick count.

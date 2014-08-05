@@ -5,14 +5,24 @@
 ******************************************************************************/
 #include <string.h>
 #include "hal.h"
-#include "stm32f4xx_rtc.h"
 #include "os_supervise.h"
 #include "os_power.h"
+#include "os_time.h"
 
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "drv_rtc"
+#define MDL_NAME                "drv_rtc"
 
-#define RTC_STAMP           0xC01DC0FEUL
+#define RTC_STAMP               0xC01DC0FEUL
+
+#ifdef RTC_CLOCK_SOURCE_LSI
+#   define RTC_ASYNCH_PREDIV    0x7F
+#   define RTC_SYNCH_PREDIV     0x0130
+#endif
+
+#ifdef RTC_CLOCK_SOURCE_LSE
+#   define RTC_ASYNCH_PREDIV    0x7F
+#   define RTC_SYNCH_PREDIV     0x00FF
+#endif
 
 //-----------------------------------------------------------------------------
 /// @brief   RTC initialize.
@@ -40,14 +50,17 @@ static void     RTC_SRAM_BackupReset(void);
 static void     RTC_CalendarReset(void);
 
 //-----------------------------------------------------------------------------
+RTC_HandleTypeDef rtc_handle;
+__IO FlagStatus TamperStatus = RESET;
+
 const U32 rtc_backup_regs[RTC_BACKUP_REGS_MAX] = {
-    RTC_BKP_DR0, RTC_BKP_DR1, RTC_BKP_DR2,
-    RTC_BKP_DR3, RTC_BKP_DR4, RTC_BKP_DR5,
-    RTC_BKP_DR6, RTC_BKP_DR7, RTC_BKP_DR8,
-    RTC_BKP_DR9, RTC_BKP_DR10, RTC_BKP_DR11,
+    RTC_BKP_DR0,  RTC_BKP_DR1,  RTC_BKP_DR2,
+    RTC_BKP_DR3,  RTC_BKP_DR4,  RTC_BKP_DR5,
+    RTC_BKP_DR6,  RTC_BKP_DR7,  RTC_BKP_DR8,
+    RTC_BKP_DR9,  RTC_BKP_DR10, RTC_BKP_DR11,
     RTC_BKP_DR12, RTC_BKP_DR13, RTC_BKP_DR14,
     RTC_BKP_DR15, RTC_BKP_DR16, RTC_BKP_DR17,
-    RTC_BKP_DR18,  RTC_BKP_DR19
+    RTC_BKP_DR18, RTC_BKP_DR19
 };
 
 //-----------------------------------------------------------------------------
@@ -75,85 +88,83 @@ Status RTC_Init_(void)
 /*****************************************************************************/
 Status RTC__Init(void)
 {
-    //D_LOG(D_INFO, "Init");
-    OS_CriticalSectionEnter(); {
-        /* Enable the PWR APB1 Clock Interface */
-        RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
-        if (RTC_STAMP != RTC_ReadBackupRegister(rtc_backup_regs[HAL_RTC_BKUP_REG_IS_VALID])) {
-            RTC_Reset();
-        } else {
-            RTC_LowLevelInit();
-        }
-        //Readout time and date values from shadow register to fill it with the actual ones.
-        RTC->TR;
-        RTC->DR;
-        RTC_AlarmInit();
-        RTC_WakeupInit();
-        RTC_NVIC_Init();
-        //RTC_BypassShadowCmd(ENABLE);
-    } OS_CriticalSectionExit();
-    //D_TRACE(D_INFO, S_STRING_GET(S_OK));
+    //HAL_LOG(D_INFO, "Init");
+    RTC_LowLevelInit();
+    /*##-2- Check if Data stored in BackUp register0: No Need to reconfigure RTC#*/
+    /* Read the Back Up Register 0 Data */
+    if (RTC_STAMP != HAL_RTCEx_BKUPRead(&rtc_handle, HAL_RTC_BKUP_REG_IS_VALID)) {
+        /* Configure RTC Calendar */
+        RTC_Reset();
+    }
+    RTC_WakeupInit();
+    //HAL_TRACE(D_INFO, S_STRING_GET(S_OK));
     return S_OK;
 }
 
 /******************************************************************************/
 void RTC_NVIC_Init(void)
 {
-NVIC_InitTypeDef NVIC_InitStructure;
-    //D_LOG(D_INFO, "NVIC Init: ");
-    NVIC_StructInit(&NVIC_InitStructure);
-    // RTC Alarm IRQ channel configuration
-    NVIC_InitStructure.NVIC_IRQChannel                  = RTC_Alarm_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MIN;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    // Configure interrupts for RTC.
-    RTC_ITConfig(RTC_IT_ALRA, ENABLE);
-    RTC_ClearITPendingBit(RTC_IT_ALRA);
-    RTC_ClearITPendingBit(RTC_IT_ALRB);
-    //D_TRACE_S(D_INFO, S_OK);
+//NVIC_InitTypeDef NVIC_InitStructure;
+//    //HAL_LOG(D_INFO, "NVIC Init: ");
+//    NVIC_StructInit(&NVIC_InitStructure);
+//    // RTC Alarm IRQ channel configuration
+//    NVIC_InitStructure.NVIC_IRQChannel                  = RTC_Alarm_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MIN;
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+//
+//    // Configure interrupts for RTC.
+//    RTC_ITConfig(RTC_IT_ALRA, ENABLE);
+//    RTC_ClearITPendingBit(RTC_IT_ALRA);
+//    RTC_ClearITPendingBit(RTC_IT_ALRB);
+//    //HAL_TRACE_S(D_INFO, S_OK);
 }
 
 /******************************************************************************/
 void RTC_LowLevelInit(void)
 {
-    /* Enable the PWR APB1 Clock Interface */
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
-    /* Allow access to BKP Domain */
-    PWR_BackupAccessCmd(ENABLE);
-#ifdef RTC_LSI
-    /* The RTC Clock may varies due to LSI frequency dispersion. */
-    /* Enable the LSI OSC */
-    RCC_LSICmd(ENABLE);
-    /* Wait till LSI is ready */
-    while (RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET) {};
-    /* Select the RTC Clock Source */
-    RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
-#elif RTC_LSE
-    /* Enable the LSE OSC */
-    RCC_LSEConfig(RCC_LSE_ON);
-    /* Wait till LSE is ready */
-    while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) {};
-    /* Select the RTC Clock Source */
-    RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
-#else
-#   error "drv_rtc.c: Please select the RTC Clock source!"
-#endif // RTC_CLOCK_SOURCE
-    /* ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)*/
-    __IO U32 uwSynchPrediv = 0xFF;
-    __IO U32 uwAsynchPrediv= 0x7F;
-    /* Enable the RTC Clock */
-    RCC_RTCCLKCmd(ENABLE);
-    /* Wait for RTC APB registers synchronisation */
-    RTC_WaitForSynchro();
-    RTC_InitTypeDef RTC_InitStructure;
-    RTC_InitStructure.RTC_AsynchPrediv  = uwAsynchPrediv;
-    RTC_InitStructure.RTC_SynchPrediv   = uwSynchPrediv;
-    RTC_InitStructure.RTC_HourFormat    = RTC_HourFormat_24;
-    RTC_Init(&RTC_InitStructure);
+RCC_OscInitTypeDef        RCC_OscInitStruct;
+RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
+    /* To change the source clock of the RTC feature (LSE, LSI), You have to:
+     - Enable the power clock using __PWR_CLK_ENABLE()
+     - Enable write access using HAL_PWR_EnableBkUpAccess() function before to
+       configure the RTC clock source (to be done once after reset).
+     - Reset the Back up Domain using __HAL_RCC_BACKUPRESET_FORCE() and
+       __HAL_RCC_BACKUPRESET_RELEASE().
+     - Configure the needed RTc clock source */
+    /*##-1- Configue LSE as RTC clock soucre ###################################*/
+    RCC_OscInitStruct.OscillatorType        = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.PLL.PLLState          = RCC_PLL_NONE;
+    RCC_OscInitStruct.LSEState              = RCC_LSE_ON;
+    RCC_OscInitStruct.LSIState              = RCC_LSI_OFF;
+    if (HAL_OK != HAL_RCC_OscConfig(&RCC_OscInitStruct)) {
+        HAL_ASSERT(OS_FALSE);
+    }
+    PeriphClkInitStruct.PeriphClockSelection= RCC_PERIPHCLK_RTC;
+    PeriphClkInitStruct.RTCClockSelection   = RCC_RTCCLKSOURCE_LSE;
+    if (HAL_OK != HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct)) {
+        HAL_ASSERT(OS_FALSE);
+    }
+    /*##-2- Enable RTC peripheral Clocks #######################################*/
+    /* Enable RTC Clock */
+    __HAL_RCC_RTC_ENABLE();
+
+    rtc_handle.Instance             = RTC;
+    rtc_handle.Init.HourFormat      = RTC_HOURFORMAT_24;
+    rtc_handle.Init.AsynchPrediv    = RTC_ASYNCH_PREDIV;
+    rtc_handle.Init.SynchPrediv     = RTC_SYNCH_PREDIV;
+    rtc_handle.Init.OutPut          = RTC_OUTPUT_DISABLE;
+    rtc_handle.Init.OutPutPolarity  = RTC_OUTPUT_POLARITY_HIGH;
+    rtc_handle.Init.OutPutType      = RTC_OUTPUT_TYPE_OPENDRAIN;
+
+    if (HAL_OK != HAL_RTC_Init(&rtc_handle)) {
+        HAL_ASSERT(OS_FALSE);
+    }
     RTC_SRAM_BACKUP_Init();
+    if (HAL_OK != HAL_RTCEx_EnableBypassShadow(&rtc_handle)) {
+        HAL_ASSERT(OS_FALSE);
+    }
 }
 
 /******************************************************************************/
@@ -162,14 +173,20 @@ void RTC_Reset(void)
     RTC_SRAM_RegistersReset();
     RTC_SRAM_BackupReset();
     RTC_CalendarReset();
-    RTC_WriteBackupRegister(rtc_backup_regs[HAL_RTC_BKUP_REG_IS_VALID], RTC_STAMP);
+    HAL_RTCEx_BKUPWrite(&rtc_handle, rtc_backup_regs[HAL_RTC_BKUP_REG_IS_VALID], RTC_STAMP);
 }
 
 /******************************************************************************/
 void RTC_SRAM_RegistersReset(void)
 {
-    RCC_BackupResetCmd(ENABLE);
-    RCC_BackupResetCmd(DISABLE);
+    /* Store the content of BDCR register before the reset of Backup Domain */
+    U32 tmpreg = (RCC->BDCR & ~(RCC_BDCR_RTCSEL));
+    /* RTC Clock selection can be changed only if the Backup Domain is reset */
+    __HAL_RCC_BACKUPRESET_FORCE();
+    __HAL_RCC_BACKUPRESET_RELEASE();
+    /* Restore the Content of BDCR register */
+    RCC->BDCR = tmpreg;
+
     RTC_LowLevelInit();
 }
 
@@ -180,69 +197,69 @@ U32 uwIndex, uwErrorIndex = 0;
     /* Write to Backup SRAM with 32-Bit Data */
     for (uwIndex = 0x0; uwIndex < 0x1000; uwIndex += 4) {
         *(__IO U32*) (BKPSRAM_BASE + uwIndex) = (U32)U32_MAX;
-        //OS_ContextSwitchForce();
     }
     /* Check the written Data */
     for (uwIndex = 0x0; uwIndex < 0x1000; uwIndex += 4) {
         if ((*(__IO U32*) (BKPSRAM_BASE + uwIndex)) != (U32)U32_MAX) {
             uwErrorIndex++;
         }
-        //OS_ContextSwitchForce();
     }
 
     if (uwErrorIndex) {
-        D_TRACE(D_WARNING, "\nBackup SRAM errors = %d", uwErrorIndex);
+        HAL_TRACE(D_WARNING, "\nBackup SRAM errors = %d", uwErrorIndex);
     }
 }
 
 /******************************************************************************/
 void RTC_CalendarReset(void)
 {
-RTC_TimeTypeDef RTC_TimeStructure;
-RTC_DateTypeDef RTC_DateStructure;
-    /* Set the Time */
-    RTC_TimeStructure.RTC_Hours         = 0x00;
-    RTC_TimeStructure.RTC_Minutes       = 0x00;
-    RTC_TimeStructure.RTC_Seconds       = 0x00;
-    /* Set the Date */
-    /* Set the date: Friday January 11th 2013 */
-    RTC_DateStructure.RTC_Month         = RTC_Month_January;
-    RTC_DateStructure.RTC_Date          = 0x01;
-    RTC_DateStructure.RTC_Year          = 0x00;
-    RTC_DateStructure.RTC_WeekDay       = RTC_Weekday_Saturday;
-    /* Calendar Configuration */
-    /* Set Current Time and Date */
-    RTC_SetTime(RTC_Format_BCD, &RTC_TimeStructure);
-    RTC_SetDate(RTC_Format_BCD, &RTC_DateStructure);
-    //Reset the daylight savings.
-    RTC_DayLightSavingConfig(RTC_DayLightSaving_ADD1H, RTC_StoreOperation_Set);
-    RTC_DayLightSavingConfig(RTC_DayLightSaving_SUB1H, RTC_StoreOperation_Set);
+RTC_DateTypeDef date;
+RTC_TimeTypeDef time;
+    /*##-1- Configure the Date #################################################*/
+    date.Year             = 0x00;
+    date.Month            = RTC_MONTH_JANUARY;
+    date.Date             = 0x00;
+    date.WeekDay          = RTC_WEEKDAY_SATURDAY;
+
+    if (HAL_OK != HAL_RTC_SetDate(&rtc_handle, &date, FORMAT_BCD)) {
+        HAL_ASSERT(OS_FALSE);
+    }
+    /*##-2- Configure the Time #################################################*/
+    time.Hours            = 0x00;
+    time.Minutes          = 0x00;
+    time.Seconds          = 0x00;
+    time.TimeFormat       = RTC_HOURFORMAT12_AM;
+    time.DayLightSaving   = RTC_DAYLIGHTSAVING_NONE;
+    time.StoreOperation   = RTC_STOREOPERATION_RESET;
+
+    if (HAL_OK != HAL_RTC_SetTime(&rtc_handle, &time, FORMAT_BCD)) {
+        HAL_ASSERT(OS_FALSE);
+    }
 }
 
 /******************************************************************************/
 void RTC_SRAM_BACKUP_Init(void)
 {
-    /* Enable BKPRAM Clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
-    /* Enable the Backup SRAM low power Regulator to retain it's content in VBAT mode */
-    PWR_BackupRegulatorCmd(ENABLE);
-    /* Wait until the Backup SRAM low power Regulator is ready */
-    while (PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET) {};
+    __BKPSRAM_CLK_ENABLE();
+    __BKPSRAM_CLK_SLEEP_ENABLE();
+    if (HAL_OK != HAL_PWREx_EnableBkUpReg()) {
+        HAL_ASSERT(OS_FALSE);
+    }
 }
 
 /*****************************************************************************/
 Status RTC_AlarmInit(void)
 {
 Status s = S_OK;
-    RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
-    RTC_AlarmCmd(RTC_Alarm_B, DISABLE);
-    /* Enable alarm A interrupt */
-    RTC_ITConfig(RTC_IT_ALRA, DISABLE);
-    RTC_ITConfig(RTC_IT_ALRB, DISABLE);
-    RTC_ClearITPendingBit(RTC_IT_ALRA);
-    RTC_ClearITPendingBit(RTC_IT_ALRB);
-    RTC_ClearFlag(RTC_FLAG_ALRAF);
-    RTC_ClearFlag(RTC_FLAG_ALRBF);
+//    RTC_AlarmCmd(RTC_Alarm_A, DISABLE);
+//    RTC_AlarmCmd(RTC_Alarm_B, DISABLE);
+//    /* Enable alarm A interrupt */
+//    RTC_ITConfig(RTC_IT_ALRA, DISABLE);
+//    RTC_ITConfig(RTC_IT_ALRB, DISABLE);
+//    RTC_ClearITPendingBit(RTC_IT_ALRA);
+//    RTC_ClearITPendingBit(RTC_IT_ALRB);
+//    RTC_ClearFlag(RTC_FLAG_ALRAF);
+//    RTC_ClearFlag(RTC_FLAG_ALRBF);
     return s;
 }
 
@@ -251,50 +268,44 @@ Status RTC_WakeupInit(void)
 {
 Status s = S_OK;
 
-    //D_LOG(D_INFO, "Wakeup init: ");
-//    /* Disable the Wakeup detection */
-    RTC_WakeUpCmd(DISABLE);
-    RTC_ClearFlag(RTC_FLAG_WUTF);
-//    /* Configure the RTC Wakeup Clock source and Counter (Wakeup event each 1 second) */
-//    RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div16);
-//    RTC_SetWakeUpCounter(0x7FF);
     s = RTC_NVIC_WakeupInit();
-//    /* Enable the Wakeup detection */
-//    RTC_WakeUpCmd(ENABLE);
-    //D_TRACE_S(D_INFO, s);
+
+//    //HAL_LOG(D_INFO, "Wakeup init: ");
+////    /* Disable the Wakeup detection */
+//    RTC_WakeUpCmd(DISABLE);
+//    RTC_ClearFlag(RTC_FLAG_WUTF);
+////    /* Configure the RTC Wakeup Clock source and Counter (Wakeup event each 1 second) */
+////    RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div16);
+////    RTC_SetWakeUpCounter(0x7FF);
+//    s = RTC_NVIC_WakeupInit();
+////    /* Enable the Wakeup detection */
+////    RTC_WakeUpCmd(ENABLE);
+//    //HAL_TRACE_S(D_INFO, s);
     return s;
 }
 
 /*****************************************************************************/
 Status RTC_NVIC_WakeupInit(void)
 {
-EXTI_InitTypeDef EXTI_InitStructure;
-NVIC_InitTypeDef NVIC_InitStructure;
-
-    //D_LOG(D_INFO, "NVIC Wakeup Init: ");
-//    EXTI_StructInit(&EXTI_InitStructure);
-//    EXTI_InitStructure.EXTI_Line    = EXTI_Line13;
-//    EXTI_InitStructure.EXTI_Mode    = EXTI_Mode_Event;
-//    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-//    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-//    EXTI_Init(&EXTI_InitStructure);
-
-    NVIC_StructInit(&NVIC_InitStructure);
-    // RTC Wakeup IRQ channel configuration
-    NVIC_InitStructure.NVIC_IRQChannel                  = RTC_WKUP_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    /* Clear Wakeup pin Event(WUTF) pending flag */
-    RTC_ClearFlag(RTC_FLAG_WUTF);
-    /* Enable the Wakeup interrupt */
-    RTC_ITConfig(RTC_IT_WUT, ENABLE);
-    /* Enable The external line22 interrupt */
-    EXTI_ClearITPendingBit(EXTI_Line22);
-    /* Clear Wakeup pin interrupt pending bit */
-    RTC_ClearITPendingBit(RTC_IT_WUT);
+//EXTI_InitTypeDef EXTI_InitStructure;
+//NVIC_InitTypeDef NVIC_InitStructure;
+//
+//    NVIC_StructInit(&NVIC_InitStructure);
+//    // RTC Wakeup IRQ channel configuration
+//    NVIC_InitStructure.NVIC_IRQChannel                  = RTC_WKUP_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+//
+//    /* Clear Wakeup pin Event(WUTF) pending flag */
+//    RTC_ClearFlag(RTC_FLAG_WUTF);
+//    /* Enable the Wakeup interrupt */
+//    RTC_ITConfig(RTC_IT_WUT, ENABLE);
+//    /* Enable The external line22 interrupt */
+//    EXTI_ClearITPendingBit(EXTI_Line22);
+//    /* Clear Wakeup pin interrupt pending bit */
+//    RTC_ClearITPendingBit(RTC_IT_WUT);
     return S_OK;
 }
 
@@ -302,11 +313,12 @@ NVIC_InitTypeDef NVIC_InitStructure;
 Status RTC__DeInit(void)
 {
 Status s = S_OK;
-    D_LOG(D_INFO, "DeInit: ");
-    if (ERROR == RTC_DeInit()) {
+    HAL_LOG(D_INFO, "DeInit: ");
+    if (HAL_OK != HAL_RTC_DeInit(&rtc_handle)) {
         s = S_HARDWARE_FAULT;
     }
-    D_TRACE_S(D_INFO, s);
+    __HAL_RCC_RTC_DISABLE();
+    HAL_TRACE_S(D_INFO, s);
     return s;
 }
 
@@ -368,15 +380,15 @@ Status s = S_OK;
             HAL_RTC_BackupRegRead* io_args_p = (HAL_RTC_BackupRegRead*)args_p;
             const U32 reg   = rtc_backup_regs[io_args_p->reg];
             U32* val_p      = io_args_p->val_p;
-            *val_p = RTC_ReadBackupRegister(reg);
+            *val_p          = HAL_RTCEx_BKUPRead(&rtc_handle, reg);
             }
             break;
         case DRV_REQ_RTC_BKUP_REG_WRITE: {
             HAL_RTC_BackupRegWrite* io_args_p = (HAL_RTC_BackupRegWrite*)args_p;
             const U32 reg = rtc_backup_regs[io_args_p->reg];
             const U32 val = io_args_p->val;
-            RTC_WriteBackupRegister(reg, val);
-            if (val != RTC_ReadBackupRegister(reg)) { s = S_HARDWARE_FAULT; }
+            HAL_RTCEx_BKUPWrite(&rtc_handle, reg, val);
+            if (val != HAL_RTCEx_BKUPRead(&rtc_handle, reg)) { s = S_HARDWARE_FAULT; }
             }
             break;
         case DRV_REQ_RTC_BKUP_REGS_READ:
@@ -387,15 +399,64 @@ Status s = S_OK;
             break;
         case DRV_REQ_RTC_ALARM_B_SET:
             break;
-        case DRV_REQ_RTC_TIME_GET:
+        case DRV_REQ_RTC_TIME_GET: {
+            RTC_TimeTypeDef time;
+            if (HAL_OK == HAL_RTC_GetTime(&rtc_handle, &time, FORMAT_BIN)) {
+                OS_DateTime* os_time_p = (OS_DateTime*)args_p;
+                if (OS_NULL != os_time_p) {
+                    os_time_p->hours        = time.Hours;
+                    os_time_p->minutes      = time.Minutes;
+                    os_time_p->seconds      = time.Seconds;
+                    os_time_p->daylight     = time.DayLightSaving;
+                    os_time_p->hourformat   = time.TimeFormat;
+                } else { s = S_INVALID_REF; }
+            } else { s = S_HARDWARE_FAULT; }
+            }
             break;
-        case DRV_REQ_RTC_TIME_SET:
+        case DRV_REQ_RTC_TIME_SET: {
+            OS_DateTime* os_time_p = (OS_DateTime*)args_p;
+            if (OS_NULL != os_time_p) {
+                RTC_TimeTypeDef time;
+                memset((void*)&time, 0, sizeof(time));
+                time.Hours          = os_time_p->hours;
+                time.Minutes        = os_time_p->minutes;
+                time.Seconds        = os_time_p->seconds;
+                time.DayLightSaving = os_time_p->daylight;
+                time.TimeFormat     = os_time_p->hourformat;
+                time.StoreOperation = RTC_STOREOPERATION_SET;
+                if (HAL_OK == HAL_RTC_SetTime(&rtc_handle, &time, FORMAT_BIN)) {
+                } else { s = S_HARDWARE_FAULT; }
+            } else { s = S_INVALID_REF; }
+            }
             break;
-        case DRV_REQ_RTC_DATE_GET:
+        case DRV_REQ_RTC_DATE_GET: {
+            RTC_DateTypeDef date;
+            if (HAL_OK == HAL_RTC_GetDate(&rtc_handle, &date, FORMAT_BIN)) {
+                OS_DateTime* os_date_p = (OS_DateTime*)args_p;
+                if (OS_NULL != os_date_p) {
+                    os_date_p->year     = date.Year + RTC_YEAR_BASE;
+                    os_date_p->month    = date.Month;
+                    os_date_p->weekday  = date.WeekDay;
+                    os_date_p->day      = date.Date;
+                } else { s = S_INVALID_REF; }
+            } else { s = S_HARDWARE_FAULT; }
+            }
             break;
-        case DRV_REQ_RTC_DATE_SET:
+        case DRV_REQ_RTC_DATE_SET: {
+            OS_DateTime* os_date_p = (OS_DateTime*)args_p;
+            if (OS_NULL != os_date_p) {
+                RTC_DateTypeDef date;
+                memset((void*)&date, 0, sizeof(date));
+                date.Year           = os_date_p->year - RTC_YEAR_BASE;
+                date.Month          = os_date_p->month;
+                date.WeekDay        = os_date_p->weekday;
+                date.Date           = os_date_p->day;
+                if (HAL_OK == HAL_RTC_SetDate(&rtc_handle, &date, FORMAT_BIN)) {
+                } else { s = S_HARDWARE_FAULT; }
+            } else { s = S_INVALID_REF; }
+            }
             break;
-        case DRV_REQ_STD_POWER:
+        case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
                     break;
@@ -406,7 +467,7 @@ Status s = S_OK;
             }
             break;
         default:
-            D_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
             break;
     }
     return s;
@@ -414,31 +475,3 @@ Status s = S_OK;
 
 // RTC IRQ handlers ------------------------------------------------------------
 /******************************************************************************/
-void RTC_WKUP_IRQHandler(void);
-void RTC_WKUP_IRQHandler(void)
-{
-    EXTI_ClearITPendingBit(EXTI_Line22);
-    if (RESET != RTC_GetFlagStatus(RTC_FLAG_WUTF)) {
-        RTC_ClearITPendingBit(RTC_IT_WUT);
-        /* Clear Wakeup pin Event pending flag */
-        RTC_ClearFlag(RTC_FLAG_WUTF);
-        /* Disable Wakeup pin */
-        RTC_WakeUpCmd(DISABLE);
-        /* Enable Wakeup pin */
-        RTC_WakeUpCmd(ENABLE);
-//        if (NULL != wakeup_irq_callback_func) {
-//            wakeup_irq_callback_func();
-//        }
-    }
-}
-
-/******************************************************************************/
-void RTC_Alarm_IRQHandler(void);
-void RTC_Alarm_IRQHandler(void)
-{
-    if (RESET != RTC_GetITStatus(RTC_IT_ALRA)) {
-        RTC_ClearITPendingBit(RTC_IT_ALRA);
-    } else if (RESET != RTC_GetITStatus(RTC_IT_ALRB)) {
-        RTC_ClearITPendingBit(RTC_IT_ALRB);
-    }
-}

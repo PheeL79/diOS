@@ -4,8 +4,7 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <string.h>
-#include "stm32f4xx_rtc.h"
-#include "os_common.h"
+#include "osal.h"
 #include "os_environment.h"
 #include "os_supervise.h"
 #include "os_mutex.h"
@@ -17,6 +16,7 @@ static BL OS_DateYearIsLeap(const U16 year);
 static BL OS_DateIsWeekDay(const U8 week_day);
 
 //------------------------------------------------------------------------------
+extern volatile OS_Env os_env;
 static OS_MutexHd os_time_mutex;
 
 /******************************************************************************/
@@ -32,16 +32,9 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_TimeGet(const OS_TimeFormat format, OS_DateTime* os_time_p)
 {
-RTC_TimeTypeDef time;
 Status s;
     if (OS_NULL == os_time_p) { return S_INVALID_REF; }
-    IF_STATUS_OK(s = OS_MutexLock(os_time_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        /* Get the current Time */
-        RTC_GetTime(RTC_Format_BIN, &time);
-    } OS_MutexUnlock(os_time_mutex);
-    os_time_p->hour = time.RTC_Hours;
-    os_time_p->min  = time.RTC_Minutes;
-    os_time_p->sec  = time.RTC_Seconds;
+    IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_TIME_GET, (void*)os_time_p)) { return s; }
     //Convert time to specified format.
     switch (format) {
         case OS_TIME_UNDEF:
@@ -60,75 +53,45 @@ Status s;
 /******************************************************************************/
 Status OS_TimeSet(const OS_TimeFormat format, OS_DateTime* os_time_p)
 {
-RTC_TimeTypeDef RTC_TimeStruct;
 Status s;
     if (OS_NULL == os_time_p) { return S_INVALID_REF; }
-    if (OS_TRUE != OS_TimeIsValid(os_time_p->hour, os_time_p->min, os_time_p->sec)) {
+    if (OS_TRUE != OS_TimeIsValid(os_time_p->hours, os_time_p->minutes, os_time_p->seconds)) {
         return S_INVALID_VALUE;
     }
-    RTC_TimeStructInit(&RTC_TimeStruct);
-    RTC_TimeStruct.RTC_Hours    = os_time_p->hour;
-    RTC_TimeStruct.RTC_Minutes  = os_time_p->min;
-    RTC_TimeStruct.RTC_Seconds  = os_time_p->sec;
-    IF_STATUS_OK(s = OS_MutexLock(os_time_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        if (ERROR == RTC_SetTime(RTC_Format_BIN, &RTC_TimeStruct)) { return S_HARDWARE_FAULT; }
-        RTC_GetTime(RTC_Format_BIN, &RTC_TimeStruct); //update value in shadow register.
-    } OS_MutexUnlock(os_time_mutex);
+    IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_TIME_SET, (void*)os_time_p)) { return s; }
     return s;
 }
 
 /******************************************************************************/
-BL OS_TimeIsValid(const U8 hour, const U8 min, const U8 sec)
+BL OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds)
 {
     //WARNING!!! Currently only for 24H mode!
-    if (24 < hour)  { return OS_FALSE; }
-    if (60 < min)   { return OS_FALSE; }
-    if (60 < sec)   { return OS_FALSE; }
+    if (24 < hours)     { return OS_FALSE; }
+    if (60 < minutes)   { return OS_FALSE; }
+    if (60 < seconds)   { return OS_FALSE; }
     return OS_TRUE;
 }
 
 /******************************************************************************/
 Status OS_DateGet(const OS_DateFormat format, OS_DateTime* os_date_p)
 {
-RTC_DateTypeDef date;
 Status s;
     if (OS_NULL == os_date_p) { return S_INVALID_REF; }
-    IF_STATUS_OK(s = OS_MutexLock(os_time_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        /* Get the current Date */
-        RTC_GetDate(RTC_Format_BIN, &date);
-    } OS_MutexUnlock(os_time_mutex);
-    os_date_p->year     = date.RTC_Year + RTC_YEAR_BASE;
-    os_date_p->month    = date.RTC_Month;
-    os_date_p->wday     = date.RTC_WeekDay;
-    os_date_p->day      = date.RTC_Date;
+    IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_DATE_GET, (void*)os_date_p)) { return s; }
     return s;
 }
 
 /******************************************************************************/
 Status OS_DateSet(const OS_DateFormat format, OS_DateTime* os_date_p)
 {
-RTC_DateTypeDef RTC_DateStruct;
 Status s = S_OK;
     if (OS_NULL == os_date_p) { return S_INVALID_REF; }
     if (OS_TRUE != OS_DateIsValid(os_date_p->year, os_date_p->month, os_date_p->day)) {
         return S_INVALID_VALUE;
     }
-    os_date_p->wday = OS_DateWeekDayGet(os_date_p->year, os_date_p->month, os_date_p->day);
-    if (OS_TRUE != OS_DateIsWeekDay(os_date_p->wday)) { return S_INVALID_VALUE; }
-    RTC_DateStructInit(&RTC_DateStruct);
-    RTC_DateStruct.RTC_Year     = os_date_p->year - RTC_YEAR_BASE;
-    RTC_DateStruct.RTC_Month    = os_date_p->month;
-    RTC_DateStruct.RTC_WeekDay  = os_date_p->wday;
-    RTC_DateStruct.RTC_Date     = os_date_p->day;
-    IF_STATUS_OK(s = OS_MutexLock(os_time_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        if (ERROR == RTC_SetDate(RTC_Format_BIN, &RTC_DateStruct)) {
-            s = S_HARDWARE_FAULT;
-            goto error;
-        }
-        RTC_GetDate(RTC_Format_BIN, &RTC_DateStruct); //update value in shadow register.
-    }
-error:
-    OS_MutexUnlock(os_time_mutex);
+    os_date_p->weekday = OS_DateWeekDayGet(os_date_p->year, os_date_p->month, os_date_p->day);
+    if (OS_TRUE != OS_DateIsWeekDay(os_date_p->weekday)) { return S_INVALID_VALUE; }
+    IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_DATE_SET, (void*)os_date_p)) { return s; }
     return s;
 }
 
@@ -220,32 +183,6 @@ const LocaleString week_days[] = {
 }
 
 /******************************************************************************/
-OS_TimeDayLight OS_TimeDayLightSavingsGet(void)
-{
-    return (OS_TimeDayLight)(RTC_GetStoreOperation() + (U32)OS_TIME_DAYLIGHT_SUMMER);
-}
-
-/******************************************************************************/
-Status OS_TimeDayLightSavingsSet(const OS_TimeDayLight savings)
-{
-U32 mode, bck_bit;
-Status s;
-    if (OS_TIME_DAYLIGHT_SUMMER == savings) {
-        mode    = RTC_DayLightSaving_ADD1H;
-        bck_bit = RTC_StoreOperation_Set;
-    } else if (OS_TIME_DAYLIGHT_WINTER == savings) {
-        mode    = RTC_DayLightSaving_SUB1H;
-        bck_bit = RTC_StoreOperation_Reset;
-    } else {
-        return S_INVALID_VALUE;
-    }
-    IF_STATUS_OK(s = OS_MutexLock(os_time_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        RTC_DayLightSavingConfig(mode, bck_bit);
-    } OS_MutexUnlock(os_time_mutex);
-    return s;
-}
-
-/******************************************************************************/
 OS_Tick OS_TickCountGet(void)
 {
     return xTaskGetTickCount();
@@ -269,9 +206,11 @@ OS_DateTime time;
             time_val[i] = strtol((const char*)time_item_p, OS_NULL, 10);
             time_item_p = strtok(OS_NULL, delim_str);
         }
-        time.hour   = (U8)time_val[0];
-        time.min    = (U8)time_val[1];
-        time.sec    = (U8)time_val[2];
+        time.hours      = (U8)time_val[0];
+        time.minutes    = (U8)time_val[1];
+        time.seconds    = (U8)time_val[2];
+        time.daylight   = OS_TIME_DAYLIGHT_NONE;        //TODO(A. Filyanov) Parse a value!
+        time.hourformat = OS_TIME_HOUR_FORMAT_UNDEF;    //TODO(A. Filyanov) Parse a value!
     }
     return time;
 }

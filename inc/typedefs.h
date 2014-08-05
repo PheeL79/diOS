@@ -128,11 +128,13 @@ PACKED(PACK_VAL_PROTO,
 typedef struct {
     U16 year;
     U8  month;
-    U8  wday;
+    U8  weekday;
     U8  day;
-    U8  hour;
-    U8  min;
-    U8  sec;
+    U8  daylight;
+    U8  hours;
+    U8  minutes;
+    U8  seconds;
+    U8  hourformat;
 } Time);
 
 typedef struct {

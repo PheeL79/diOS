@@ -7,6 +7,11 @@
 #include <string.h>
 #include "hal.h"
 
+#include "os_supervise.h"
+#include "os_time.h"
+#include "os_signal.h"
+#include "os_message.h"
+
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_usart"
 
@@ -26,4 +31,34 @@ Status USART_Init_(void)
     memset(drv_usart_v, 0x0, sizeof(drv_usart_v));
     drv_usart_v[DRV_ID_USART6] = &drv_usart6;
     return S_OK;
+}
+
+/******************************************************************************/
+/**
+  * @brief  Tx Transfer completed callback
+  * @param  huart: UART handle.
+  * @note   This example shows a simple way to report end of DMA Tx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+}
+
+/******************************************************************************/
+/**
+  * @brief  Rx Transfer completed callback
+  * @param  huart: UART handle
+  * @note   This example shows a simple way to report end of DMA Rx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+}
+
+/******************************************************************************/
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    HAL_ASSERT(OS_FALSE);
 }

@@ -7,7 +7,7 @@
 #include "ff.h"
 #include "diskio.h"
 #include "sdcard.h"
-#include "stm324xg_eval_sdio_sd.h"
+//#include "stm324xg_eval_sdio_sd.h"
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_driver.h"
@@ -86,7 +86,7 @@ const StatusItem status_fs_v[] = {
 Status OS_FileSystemInit(void)
 {
 Status s;
-    D_LOG(D_INFO, "Init");
+    HAL_LOG(D_INFO, "Init");
     memset(&drv_media_v[0], 0, sizeof(drv_media_v));
     //Led SD Init/Open
     const OS_DriverConfig drv_cfg = {
@@ -558,21 +558,21 @@ Status OS_DirectoryRename(ConstStrPtr name_old_p, ConstStrPtr name_new_p)
 /******************************************************************************/
 int MMC_disk_initialize(OS_DriverHd* drv_sdio_sd_p)
 {
-SD_CardInfo card_info;
+//SD_CardInfo card_info;
 DSTATUS dstatus = 0;
 
-    *drv_sdio_sd_p = drv_media_v[MMC];
-    if (SD_Detect() != SD_PRESENT) {
-        BIT_SET(dstatus, STA_NODISK);
-    } else {
-        if (SD_OK == SD_GetCardInfo(&card_info)) {
-            if (card_info.SD_csd.PermWrProtect) {
-                BIT_SET(dstatus, STA_PROTECT);
-            }
-        } else {
-            BIT_SET(dstatus, STA_NOINIT);
-        }
-    }
+//    *drv_sdio_sd_p = drv_media_v[MMC];
+//    if (SD_Detect() != SD_PRESENT) {
+//        BIT_SET(dstatus, STA_NODISK);
+//    } else {
+//        if (SD_OK == SD_GetCardInfo(&card_info)) {
+//            if (card_info.SD_csd.PermWrProtect) {
+//                BIT_SET(dstatus, STA_PROTECT);
+//            }
+//        } else {
+//            BIT_SET(dstatus, STA_NOINIT);
+//        }
+//    }
     return dstatus;
 }
 
@@ -580,9 +580,9 @@ DSTATUS dstatus = 0;
 int MMC_disk_status(void)
 {
 DSTATUS dstatus = 0;
-    if (SD_Detect() != SD_PRESENT) {
-        BIT_SET(dstatus, STA_NODISK);
-    }
+//    if (SD_Detect() != SD_PRESENT) {
+//        BIT_SET(dstatus, STA_NODISK);
+//    }
     return dstatus;
 }
 
@@ -601,13 +601,13 @@ OS_DateTime date_time;
 OS_DateTime FDateTimeTranslate(const WORD date, const WORD time)
 {
 OS_DateTime time_date;
-    time_date.year  = BF_GET(date, 9,  BIT_MASK(7)) + OS_FILE_SYSTEM_YEAR_BASE;
-    time_date.month = BF_GET(date, 5,  BIT_MASK(4));
-    time_date.day   = BF_GET(date, 0,  BIT_MASK(4));
+    time_date.year      = BF_GET(date, 9,  BIT_MASK(7)) + OS_FILE_SYSTEM_YEAR_BASE;
+    time_date.month     = BF_GET(date, 5,  BIT_MASK(4));
+    time_date.day       = BF_GET(date, 0,  BIT_MASK(4));
 
-    time_date.hour  = BF_GET(time, 11, BIT_MASK(5));
-    time_date.min   = BF_GET(time, 5,  BIT_MASK(6));
-    time_date.sec   = BF_GET(time, 0,  BIT_MASK(4));
+    time_date.hours     = BF_GET(time, 11, BIT_MASK(5));
+    time_date.minutes   = BF_GET(time, 5,  BIT_MASK(6));
+    time_date.seconds   = BF_GET(time, 0,  BIT_MASK(4));
     return time_date;
 }
 
@@ -620,9 +620,9 @@ DWORD fattime;
     fattime |= (((U32)date_time.month   & 0x0F) << 21);
     fattime |= (((U32)date_time.day     & 0x1F) << 16);
 
-    fattime |= (((U32)date_time.hour    & 0x1F) << 11);
-    fattime |= (((U32)date_time.min     & 0x3F) << 5);
-    fattime |= (date_time.sec           & 0x1F);
+    fattime |= (((U32)date_time.hours   & 0x1F) << 11);
+    fattime |= (((U32)date_time.minutes & 0x3F) << 5);
+    fattime |= (date_time.seconds       & 0x1F);
     return fattime;
 }
 

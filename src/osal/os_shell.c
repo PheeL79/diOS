@@ -103,23 +103,27 @@ Status s = S_OK;
 Status OS_ShellCommandCreate(const OS_ShellCommandConfig* cmd_cfg_p)
 {
 const U32 cfg_size = sizeof(OS_ShellCommandConfig);
-OS_ListItem* item_l_p = OS_ListItemCreate();
-OS_ShellCommandConfig* cmd_cfg_dyn_p = (OS_ShellCommandConfig*)OS_Malloc(cfg_size);
 Status s = S_OK;
 
-    if (OS_NULL == cmd_cfg_p) { s = S_INVALID_REF;  goto error; }
-    if ((OS_NULL == item_l_p) || (OS_NULL == cmd_cfg_dyn_p)) { s = S_NO_MEMORY; goto error; }
+    if (OS_NULL == cmd_cfg_p) { return S_INVALID_REF; }
+    OS_ListItem* item_l_p = OS_ListItemCreate();
+    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    OS_ShellCommandConfig* cmd_cfg_dyn_p = (OS_ShellCommandConfig*)OS_Malloc(cfg_size);
+    if (OS_NULL == cmd_cfg_dyn_p) {
+        OS_ListItemDelete(item_l_p);
+        return S_NO_MEMORY;
+    }
     IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
         OS_MemCpy8(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
         OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cmd_cfg_dyn_p);
         OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskGet());
         OS_ListAppend(&os_commands_list, item_l_p);
+        IF_STATUS(s) {
+            OS_Free(cmd_cfg_dyn_p);
+            OS_ListItemDelete(item_l_p);
+        }
+        OS_MutexUnlock(os_shell_mutex);
     }
-error:
-    IF_STATUS(s) {
-        OS_Free(cmd_cfg_dyn_p);
-        OS_ListItemDelete(item_l_p);
-    } OS_MutexUnlock(os_shell_mutex);
     return s;
 }
 
@@ -134,7 +138,8 @@ Status s = S_OK;
     IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
         OS_ListItemDelete(item_l_p);
         OS_Free(cmd_cfg_p);
-    } OS_MutexUnlock(os_shell_mutex);
+        OS_MutexUnlock(os_shell_mutex);
+    }
     return s;
 }
 

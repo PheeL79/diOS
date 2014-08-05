@@ -4,7 +4,6 @@
 * @author  Aleksandar Mitev
 ******************************************************************************/
 #include <string.h>
-#include "stm32f4xx_fsmc.h"
 #include "hal.h"
 
 //-----------------------------------------------------------------------------
@@ -24,6 +23,9 @@ static Status MEM_EXT_SRAM512K_Init(void);
 static Status MEM_EXT_SRAM512K_DeInit(void);
 
 //-----------------------------------------------------------------------------
+static SRAM_HandleTypeDef hsram1;
+static volatile BL fsmc_is_initialized = OS_FALSE;
+
 HAL_DriverItf* drv_mem_ext_v[DRV_ID_MEM_EXT_LAST];
 
 //-----------------------------------------------------------------------------
@@ -48,133 +50,137 @@ Status MEM_EXT_Init_(void)
 /*****************************************************************************/
 Status MEM_EXT_SRAM512K_Init(void)
 {
-FSMC_NORSRAMInitTypeDef FSMC_NORSRAMInitStructure;
-FSMC_NORSRAMTimingInitTypeDef p;
-GPIO_InitTypeDef GPIO_InitStructure;
+GPIO_InitTypeDef GPIO_InitStruct;
 Status s = S_OK;
 
-    D_LOG(D_INFO, "Init: ");
-	/* Enable the FSMC Clock */
-	RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FSMC, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_GPIOG | RCC_AHB1Periph_GPIOE | RCC_AHB1Periph_GPIOF, ENABLE);
+    HAL_LOG(D_INFO, "Init: ");
+    /* GPIO Ports Clock Enable */
+    __GPIOF_CLK_ENABLE();
+    __GPIOG_CLK_ENABLE();
+    __GPIOE_CLK_ENABLE();
+    __GPIOD_CLK_ENABLE();
 
-	/*-- GPIO Configuration ------------------------------------------------------*/
-	/* SRAM Data lines configuration */
-	GPIO_InitStructure.GPIO_Pin =	GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 |
-									GPIO_Pin_10 | GPIO_Pin_14 | GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource10, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource14, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource15, GPIO_AF_FSMC);
+    if (OS_FALSE != fsmc_is_initialized) {
+        return S_INIT;
+    }
+    /* Peripheral clock enable */
+    __FSMC_CLK_ENABLE();
+    /** FSMC GPIO Configuration
+    PF0   ------> FSMC_A0
+    PF1   ------> FSMC_A1
+    PF2   ------> FSMC_A2
+    PF3   ------> FSMC_A3
+    PF4   ------> FSMC_A4
+    PF5   ------> FSMC_A5
+    PF12   ------> FSMC_A6
+    PF13   ------> FSMC_A7
+    PF14   ------> FSMC_A8
+    PF15   ------> FSMC_A9
+    PG0   ------> FSMC_A10
+    PG1   ------> FSMC_A11
+    PE7   ------> FSMC_D4
+    PE8   ------> FSMC_D5
+    PE9   ------> FSMC_D6
+    PE10   ------> FSMC_D7
+    PE11   ------> FSMC_D8
+    PE12   ------> FSMC_D9
+    PE13   ------> FSMC_D10
+    PE14   ------> FSMC_D11
+    PE15   ------> FSMC_D12
+    PD8   ------> FSMC_D13
+    PD9   ------> FSMC_D14
+    PD10   ------> FSMC_D15
+    PD14   ------> FSMC_D0
+    PD15   ------> FSMC_D1
+    PG2   ------> FSMC_A12
+    PG3   ------> FSMC_A13
+    PG4   ------> FSMC_A14
+    PG5   ------> FSMC_A15
+    PD0   ------> FSMC_D2
+    PD1   ------> FSMC_D3
+    PD4   ------> FSMC_NOE
+    PD5   ------> FSMC_NWE
+    PD7   ------> FSMC_NE1
+    PE0   ------> FSMC_NBL0
+    PE1   ------> FSMC_NBL1
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_12|GPIO_PIN_13
+                          |GPIO_PIN_14|GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_FSMC;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-	GPIO_InitStructure.GPIO_Pin =	GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |
-									GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 |
-									GPIO_Pin_15;
-	GPIO_Init(GPIOE, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource7, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource8, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource9, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource10, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource11, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource12, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource13, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource14, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource15, GPIO_AF_FSMC);
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_FSMC;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-	/* SRAM Address lines configuration */
-	GPIO_InitStructure.GPIO_Pin =	GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 |
-									GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_12 | GPIO_Pin_13 |
-									GPIO_Pin_14 | GPIO_Pin_15;
-	GPIO_Init(GPIOF, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource0, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource1, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource2, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource3, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource4, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource5, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource12, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource13, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource14, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOF, GPIO_PinSource15, GPIO_AF_FSMC);
+    GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_FSMC;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-	GPIO_InitStructure.GPIO_Pin =	GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 |
-									GPIO_Pin_4 | GPIO_Pin_5;
-	GPIO_Init(GPIOG, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource0, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource1, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource2, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource3, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource4, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource5, GPIO_AF_FSMC);
+    GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4
+                          |GPIO_PIN_5|GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_FSMC;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-	GPIO_InitStructure.GPIO_Pin =	GPIO_Pin_11 | GPIO_Pin_12;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource11, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource12, GPIO_AF_FSMC);
+    FSMC_NORSRAM_TimingTypeDef Timing;
 
-	/* NOE and NWE configuration */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 |GPIO_Pin_5;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource4, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_FSMC);
+    /** Perform the SRAM1 memory initialization sequence
+    */
+    hsram1.Instance                 = FSMC_NORSRAM_DEVICE;
+    hsram1.Extended                 = FSMC_NORSRAM_EXTENDED_DEVICE;
+    /* hsram1.Init */
+    hsram1.Init.NSBank              = FSMC_NORSRAM_BANK1;
+    hsram1.Init.DataAddressMux      = FSMC_DATA_ADDRESS_MUX_DISABLE;
+    hsram1.Init.MemoryType          = FSMC_MEMORY_TYPE_SRAM;
+    hsram1.Init.MemoryDataWidth     = FSMC_NORSRAM_MEM_BUS_WIDTH_16;
+    hsram1.Init.BurstAccessMode     = FSMC_BURST_ACCESS_MODE_DISABLE;
+    hsram1.Init.WaitSignalPolarity  = FSMC_WAIT_SIGNAL_POLARITY_LOW;
+    hsram1.Init.WrapMode            = FSMC_WRAP_MODE_DISABLE;
+    hsram1.Init.WaitSignalActive    = FSMC_WAIT_TIMING_BEFORE_WS;
+    hsram1.Init.WriteOperation      = FSMC_WRITE_OPERATION_ENABLE;
+    hsram1.Init.WaitSignal          = FSMC_WAIT_SIGNAL_DISABLE;
+    hsram1.Init.ExtendedMode        = FSMC_EXTENDED_MODE_DISABLE;
+    hsram1.Init.AsynchronousWait    = FSMC_ASYNCHRONOUS_WAIT_DISABLE;
+    hsram1.Init.WriteBurst          = FSMC_WRITE_BURST_DISABLE;
+    /* Timing */
+    Timing.AddressSetupTime         = 0;
+    Timing.AddressHoldTime          = 0;
+    Timing.DataSetupTime            = 4;
+    Timing.BusTurnAroundDuration    = 1;
+    Timing.CLKDivision              = 0;
+    Timing.DataLatency              = 0;
+    Timing.AccessMode               = FSMC_ACCESS_MODE_A;
+    /* ExtTiming */
 
-	/* NE1 configuration */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource7, GPIO_AF_FSMC);
+    HAL_SRAM_Init(&hsram1, &Timing, NULL);
 
-	/* NBL0, NBL1 configuration */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-	GPIO_Init(GPIOE, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource0, GPIO_AF_FSMC);
-	GPIO_PinAFConfig(GPIOE, GPIO_PinSource1, GPIO_AF_FSMC);
+    fsmc_is_initialized = OS_TRUE;
 
-	/*-- FSMC Configuration ------------------------------------------------------*/
-	p.FSMC_AddressSetupTime = 0;
-	p.FSMC_AddressHoldTime = 0;
-	p.FSMC_DataSetupTime = 4;
-	p.FSMC_BusTurnAroundDuration = 1;
-	p.FSMC_CLKDivision = 0;
-	p.FSMC_DataLatency = 0;
-	p.FSMC_AccessMode = FSMC_AccessMode_A;
-
-	FSMC_NORSRAMInitStructure.FSMC_Bank = FSMC_Bank1_NORSRAM1;
-	FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_MemoryType = FSMC_MemoryType_SRAM;
-	FSMC_NORSRAMInitStructure.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;
-	FSMC_NORSRAMInitStructure.FSMC_BurstAccessMode = FSMC_BurstAccessMode_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;
-	FSMC_NORSRAMInitStructure.FSMC_WrapMode = FSMC_WrapMode_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;
-	FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;
-	FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_AsynchronousWait = FSMC_AsynchronousWait_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;
-	FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &p;
-	FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &p;
-
-	FSMC_NORSRAMInit(&FSMC_NORSRAMInitStructure);
-
-	/* Enable FSMC Bank1_SRAM Bank */
-	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM1 , ENABLE);
-
-    D_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(D_INFO, s);
 	//Memory test
-    D_LOG(D_INFO, "Test: ");
+    HAL_LOG(D_INFO, "Test: ");
     IF_STATUS(s = MEM_EXT_Test()) {
-        D_TRACE(D_INFO, "Failed!");
+        HAL_TRACE(D_INFO, "Failed!");
         return s;
     }
-    D_TRACE(D_INFO, "Passed");
+    HAL_TRACE(D_INFO, "Passed");
 	memset((void*)MEM_EXT_SRAM_BASE_ADDRESS, 0x00, MEM_EXT_SRAM_SIZE);
     return S_OK;
 }
@@ -182,8 +188,68 @@ Status s = S_OK;
 /*****************************************************************************/
 Status MEM_EXT_SRAM512K_DeInit(void)
 {
-	FSMC_NORSRAMDeInit(FSMC_Bank1_NORSRAM1);
-	RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FSMC, DISABLE);
+    if (OS_TRUE != fsmc_is_initialized) {
+        return S_INIT;
+    }
+    /* Peripheral clock enable */
+    __FSMC_CLK_DISABLE();
+
+    /** FSMC GPIO Configuration
+    PF0   ------> FSMC_A0
+    PF1   ------> FSMC_A1
+    PF2   ------> FSMC_A2
+    PF3   ------> FSMC_A3
+    PF4   ------> FSMC_A4
+    PF5   ------> FSMC_A5
+    PF12   ------> FSMC_A6
+    PF13   ------> FSMC_A7
+    PF14   ------> FSMC_A8
+    PF15   ------> FSMC_A9
+    PG0   ------> FSMC_A10
+    PG1   ------> FSMC_A11
+    PE7   ------> FSMC_D4
+    PE8   ------> FSMC_D5
+    PE9   ------> FSMC_D6
+    PE10   ------> FSMC_D7
+    PE11   ------> FSMC_D8
+    PE12   ------> FSMC_D9
+    PE13   ------> FSMC_D10
+    PE14   ------> FSMC_D11
+    PE15   ------> FSMC_D12
+    PD8   ------> FSMC_D13
+    PD9   ------> FSMC_D14
+    PD10   ------> FSMC_D15
+    PD14   ------> FSMC_D0
+    PD15   ------> FSMC_D1
+    PG2   ------> FSMC_A12
+    PG3   ------> FSMC_A13
+    PG4   ------> FSMC_A14
+    PG5   ------> FSMC_A15
+    PD0   ------> FSMC_D2
+    PD1   ------> FSMC_D3
+    PD4   ------> FSMC_NOE
+    PD5   ------> FSMC_NWE
+    PD7   ------> FSMC_NE1
+    PE0   ------> FSMC_NBL0
+    PE1   ------> FSMC_NBL1
+    */
+    HAL_GPIO_DeInit(GPIOF, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_12|GPIO_PIN_13
+                          |GPIO_PIN_14|GPIO_PIN_15);
+
+    HAL_GPIO_DeInit(GPIOG, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5);
+
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1);
+
+    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4
+                          |GPIO_PIN_5|GPIO_PIN_7);
+
+    fsmc_is_initialized = OS_FALSE;
+
     return S_OK;
 }
 

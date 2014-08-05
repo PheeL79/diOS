@@ -195,7 +195,7 @@ Status s;
                 if (OS_NULL != itf_p->IoCtl) {
                     const OS_PowerState state = PWR_ON;
                     if (state != cfg_dyn_p->stats.power) {
-                        IF_STATUS_OK(s = itf_p->IoCtl(DRV_REQ_STD_POWER, (void*)&state)) {
+                        IF_STATUS_OK(s = itf_p->IoCtl(DRV_REQ_STD_POWER_SET, (void*)&state)) {
                             cfg_dyn_p->stats.power = state;
                         } else {
                             cfg_dyn_p->stats.power = PWR_UNDEF;
@@ -227,7 +227,7 @@ Status s;
                 if (OS_NULL != itf_p->IoCtl) {
                     const OS_PowerState state = PWR_OFF;
                     if (state != cfg_dyn_p->stats.power) {
-                        IF_STATUS_OK(s = itf_p->IoCtl(DRV_REQ_STD_POWER, (void*)&state)) {
+                        IF_STATUS_OK(s = itf_p->IoCtl(DRV_REQ_STD_POWER_SET, (void*)&state)) {
                             cfg_dyn_p->stats.power = state;
                         } else {
                             cfg_dyn_p->stats.power = PWR_UNDEF;
@@ -295,7 +295,7 @@ Status s = S_OK;
     if (OS_TRUE != BIT_TEST(cfg_dyn_p->stats.state, BIT(OS_DRV_STATE_IS_OPEN))) { return S_ISNT_OPENED; }
     if (OS_NULL != itf_p->IoCtl) {
         IF_STATUS_OK(s = OS_MutexLock(cfg_dyn_p->mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-            if (DRV_REQ_STD_POWER == request_id) {
+            if (DRV_REQ_STD_POWER_SET == request_id) {
                 const OS_PowerState state = *(OS_PowerState*)args_p;
                 if (state != cfg_dyn_p->stats.power) {
                     IF_STATUS(s = itf_p->IoCtl(request_id, args_p)) {
@@ -329,7 +329,7 @@ Status s;
     if (OS_TRUE != BIT_TEST(cfg_dyn_p->stats.state, BIT(OS_DRV_STATE_IS_OPEN))) { return S_ISNT_OPENED; }
     if (OS_NULL != itf_p->IoCtl) {
         IF_STATUS_OK(s = OS_ISR_MutexLock(cfg_dyn_p->mutex)) {
-            if (DRV_REQ_STD_POWER == request_id) {
+            if (DRV_REQ_STD_POWER_SET == request_id) {
                 const OS_PowerState state = *(OS_PowerState*)args_p;
                 if (state != cfg_dyn_p->stats.power) {
                     IF_STATUS(s = itf_p->IoCtl(request_id, args_p)) {
