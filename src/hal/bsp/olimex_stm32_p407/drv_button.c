@@ -63,7 +63,7 @@ static HAL_DriverItf drv_button_tamper = {
 Status BUTTON_Init_(void)
 {
 Status s = S_OK;
-    memset(drv_button_v, 0x0, sizeof(drv_button_v));
+    HAL_MEMSET(drv_button_v, 0x0, sizeof(drv_button_v));
     drv_button_v[DRV_ID_BUTTON_WAKEUP] = &drv_button_wakeup;
     drv_button_v[DRV_ID_BUTTON_TAMPER] = &drv_button_tamper;
     return s;

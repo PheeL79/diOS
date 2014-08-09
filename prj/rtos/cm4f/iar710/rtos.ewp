@@ -1034,7 +1034,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.50.3.4744</state>
+          <state>7.10.3.6927</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1050,7 +1050,7 @@
         </option>
         <option>
           <name>GenLowLevelInterface</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GEndianModeBE</name>

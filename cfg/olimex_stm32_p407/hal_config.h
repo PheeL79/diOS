@@ -40,8 +40,12 @@
 #define HAL_TIMEOUT_DRIVER              1000U
 #define HAL_TIMEOUT_TIMER_MILESTONE     20
 
+//U(S)ART
+#define UART_MODE_IO                    DRV_MODE_IO_USER
+
 //SD CARD
 #define SD_SDIO_ENABLED                 1
+#define SD_SDIO_MODE_IO                 DRV_MODE_IO_DMA
 #define SD_SDIO_DMA_STREAM3             3
 //#define SD_SDIO_DMA_STREAM6             6
 #define SD_SDIO_IRQ_PRIO                1
@@ -60,6 +64,19 @@
 #define DATA_IN_ExtSRAM
 
 // APP ------------------------------------------------------------------------
+// cstdlib redefenitions
+// Memory
+#define HAL_MEMSET(dst_p, value, size)  memset(dst_p, value, size)
+#define HAL_MEMCPY(dst_p, src_p, size)  memcpy(dst_p, src_p, size)
+#define HAL_MEMMOV(dst_p, src_p, size)  memmove(dst_p, src_p, size)
+// String
+#define HAL_STRLEN(str_p)               strlen(str_p)
+#define HAL_STRCHR(str_p, c)            strchr(str_p, c)
+#define HAL_STRCPY(dst_p, src_p)        strcpy(dst_p, src_p)
+#define HAL_STRCAT(dst_p, src_p)        strcat(dst_p, src_p)
+#define HAL_STRNCPY(dst_p, src_p, size) strncpy(dst_p, src_p, size)
+
+// Locale
 #define LOCALE_STRING_EN                "en"
 #define LOCALE_STRING_RU                "ru"
 #define LOCALE_DEFAULT                  LOCALE_STRING_EN

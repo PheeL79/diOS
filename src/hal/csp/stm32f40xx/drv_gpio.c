@@ -45,7 +45,7 @@ static HAL_DriverItf drv_gpiof = {
 /*****************************************************************************/
 Status GPIO_Init_(void)
 {
-    memset(drv_gpio_v, 0x0, sizeof(drv_gpio_v));
+    HAL_MEMSET(drv_gpio_v, 0x0, sizeof(drv_gpio_v));
     drv_gpio_v[DRV_ID_GPIOC] = &drv_gpioc;
     drv_gpio_v[DRV_ID_GPIOF] = &drv_gpiof;
     return S_OK;

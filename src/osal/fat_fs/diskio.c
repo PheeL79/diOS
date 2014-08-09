@@ -9,18 +9,9 @@
 
 #include "ffconf.h"
 #include "diskio.h"		/* FatFs lower layer API */
-//#include "usbdisk.h"	/* Example: USB drive control */
-//#include "atadrive.h"	/* Example: ATA drive control */
-#include "sdcard.h"		/* Example: MMC/SDC contorl */
-#include "common.h"
-#include "os_driver.h"
+#include "os_file_system.h"
 
-/* Definitions of physical drive number for each media */
-#define ATA		0
-#define MMC		1
-#define USB		2
-
-static OS_DriverHd drv_sdio_sd;
+extern OS_DriverHd fs_media_dhd_v[];
 
 /*-----------------------------------------------------------------------*/
 /* Inidialize a Drive                                                    */
@@ -30,31 +21,7 @@ DSTATUS disk_initialize (
     BYTE pdrv				/* Physical drive nmuber (0..) */
 )
 {
-    DSTATUS stat;
-    int result;
-
-    switch (pdrv) {
-    case ATA :
-        //result = ATA_disk_initialize();
-
-        // translate the reslut code here
-        stat = 0;
-        return stat;
-
-    case MMC :
-        result = MMC_disk_initialize(&drv_sdio_sd);
-
-        // translate the reslut code here
-        stat = (DSTATUS)result;
-        return stat;
-
-    case USB :
-        //result = USB_disk_initialize();
-
-        // translate the reslut code here
-
-        return stat;
-    }
+    IF_STATUS_OK(OS_FileSystemMediaInit(OS_FileSystemMediaByVolumeGet(pdrv))) { return 0; }
     return STA_NOINIT;
 }
 
@@ -68,32 +35,8 @@ DSTATUS disk_status (
     BYTE pdrv		/* Physical drive nmuber (0..) */
 )
 {
-    DSTATUS stat;
-    int result;
-
-    switch (pdrv) {
-    case ATA :
-        //result = ATA_disk_status();
-
-        // translate the reslut code here
-        stat = 0;
-        return stat;
-
-    case MMC :
-        result = MMC_disk_status();
-
-        // translate the reslut code here
-        stat = (DSTATUS)result;
-        return stat;
-
-    case USB :
-        //result = USB_disk_status();
-
-        // translate the reslut code here
-
-        return stat;
-    }
-    return STA_NOINIT;
+    //TODO(A. Filyanov) Media disk status.
+    return 0;//STA_NOINIT;
 }
 
 
@@ -109,42 +52,13 @@ DRESULT disk_read (
     UINT count		/* Number of sectors to read (1..128) */
 )
 {
-    DRESULT res;
-    int result;
-
-    switch (pdrv) {
-    case ATA :
-        // translate the arguments here
-
-        //result = ATA_disk_read(buff, sector, count);
-
-        // translate the reslut code here
+DRESULT res;
+    IF_STATUS_OK(OS_DriverRead(fs_media_dhd_v[pdrv], buff, count, &sector)) {
+        res = RES_OK;
+    } else {
         res = RES_ERROR;
-        return res;
-
-    case MMC : {
-        // translate the arguments here
-        Status s = OS_DriverRead(drv_sdio_sd, buff, count, &sector);
-
-        // translate the reslut code here
-        IF_STATUS(s) {
-            res = RES_ERROR;
-        } else {
-            res = RES_OK;
-        }
-        }
-        return res;
-
-    case USB :
-        // translate the arguments here
-
-        //result = USB_disk_read(buff, sector, count);
-
-        // translate the reslut code here
-
-        return res;
     }
-    return RES_PARERR;
+    return res;
 }
 
 
@@ -161,42 +75,13 @@ DRESULT disk_write (
     UINT count			/* Number of sectors to write (1..128) */
 )
 {
-    DRESULT res;
-    int result;
-
-    switch (pdrv) {
-    case ATA :
-        // translate the arguments here
-
-        //result = ATA_disk_write(buff, sector, count);
-
-        // translate the reslut code here
+DRESULT res;
+    IF_STATUS_OK(OS_DriverWrite(fs_media_dhd_v[pdrv], (void *)buff, count, &sector)) {
+        res = RES_OK;
+    } else {
         res = RES_ERROR;
-        return res;
-
-    case MMC : {
-        // translate the arguments here
-        Status s = OS_DriverWrite(drv_sdio_sd, (void *)buff, count, &sector);
-
-        // translate the reslut code here
-        IF_STATUS(s) {
-            res = RES_ERROR;
-        } else {
-            res = RES_OK;
-        }
-        }
-        return res;
-
-    case USB :
-        // translate the arguments here
-
-        //result = USB_disk_write(buff, sector, count);
-
-        // translate the reslut code here
-
-        return res;
     }
-    return RES_PARERR;
+    return res;
 }
 #endif
 
@@ -212,41 +97,12 @@ DRESULT disk_ioctl (
     void *buff		/* Buffer to send/receive control data */
 )
 {
-    DRESULT res;
-//	int result;
-
-    switch (pdrv) {
-    case ATA :
-        // pre-process here
-
-        //result = ATA_disk_ioctl(cmd, buff);
-
-        // post-process here
+DRESULT res;
+    IF_STATUS_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], cmd, buff)) {
+        res = RES_OK;
+    } else {
         res = RES_ERROR;
-        return res;
-
-    case MMC : {
-        // translate the arguments here
-        Status s = OS_DriverIoCtl(drv_sdio_sd, cmd, buff);
-
-        // translate the reslut code here
-        IF_STATUS(s) {
-            res = RES_ERROR;
-        } else {
-            res = RES_OK;
-        }
-        }
-        return res;
-
-    case USB :
-        // pre-process here
-
-        //result = USB_disk_ioctl(cmd, buff);
-
-        // post-process here
-
-        return res;
     }
-    return RES_PARERR;
+    return res;
 }
 #endif

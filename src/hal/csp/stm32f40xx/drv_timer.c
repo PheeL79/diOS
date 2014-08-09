@@ -23,7 +23,7 @@ HAL_DriverItf* drv_timer_v[DRV_ID_TIMER_LAST];
 /*****************************************************************************/
 Status TIMER_Init_(void)
 {
-    memset(drv_timer_v, 0x0, sizeof(drv_timer_v));
+    HAL_MEMSET(drv_timer_v, 0x0, sizeof(drv_timer_v));
     drv_timer_v[DRV_ID_TIMER5]  = &drv_timer5;
     drv_timer_v[DRV_ID_TIMER10] = &drv_timer10;
     return S_OK;

@@ -84,17 +84,17 @@ void            OS_ListAppend(OS_List* list_p, OS_ListItem* new_item_l_p);
 /// @return     The number of items that remain in the list.
 U32             OS_ListRemove(OS_ListItem* item_l_p);
 
-/// @brief      Find list item by it's value.
+/// @brief      Get list item by it's value.
 /// @param[in]  list_p          List.
 /// @param[in]  value           Value.
 /// @return     List item.
-OS_ListItem*    OS_ListItemByValueFind(OS_List* list_p, const OS_Value value);
+OS_ListItem*    OS_ListItemByValueGet(OS_List* list_p, const OS_Value value);
 
-/// @brief      Find list item by it's owner.
+/// @brief      Get list item by it's owner.
 /// @param[in]  list_p          List.
 /// @param[in]  owner           Owner.
 /// @return     List item.
-OS_ListItem*    OS_ListItemByOwnerFind(OS_List* list_p, const OS_Owner owner);
+OS_ListItem*    OS_ListItemByOwnerGet(OS_List* list_p, const OS_Owner owner);
 
 /// @brief      Swap list items.
 /// @param[in]  item_1_p        List item first.

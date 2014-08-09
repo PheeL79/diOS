@@ -71,6 +71,7 @@ Status s;
 //        const OS_DriverConfig drv_cfg = {
 //            .name       = "POWER",
 //            .itf_p      = drv_power_v[DRV_ID_POWER],
+//            .mode_io    = DRV_MODE_IO_DEFAULT,
 //            .prio_power = OS_PWR_PRIO_MAX
 //        };
 //        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&task_args.drv_power)) { return s; }
@@ -83,6 +84,7 @@ Status s;
         const OS_DriverConfig drv_cfg = {
             .name       = "IWDG",
             .itf_p      = drv_iwdg_v[DRV_ID_IWDG],
+            .mode_io    = DRV_MODE_IO_DEFAULT,
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&task_args.drv_iwdg)) { return s; }
@@ -94,6 +96,7 @@ Status s;
         const OS_DriverConfig drv_cfg = {
             .name       = "LED_PLS",
             .itf_p      = drv_led_v[DRV_ID_LED_PULSE],
+            .mode_io    = DRV_MODE_IO_DEFAULT,
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&task_args.drv_led_pulse)) { return s; }

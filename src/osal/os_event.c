@@ -218,7 +218,7 @@ OS_EventItem* OS_EventItemByTimerIdGet(const OS_TimerId timer_id)
 {
 OS_EventItem* item_p = OS_NULL;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_event_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
-        const OS_ListItem* item_l_p = OS_ListItemByOwnerFind(&os_events_list, (OS_Owner)timer_id);
+        const OS_ListItem* item_l_p = OS_ListItemByOwnerGet(&os_events_list, (OS_Owner)timer_id);
         if (OS_NULL != item_l_p) {
             const OS_EventConfigDyn* cfg_dyn_p = (OS_EventConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
             item_p = cfg_dyn_p->item_p;

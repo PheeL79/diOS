@@ -7,232 +7,51 @@
 #include <string.h>
 #include "hal.h"
 #include "diskio.h"
+#include "os_common.h"
 #include "os_debug.h"
 #include "os_driver.h"
 #include "os_memory.h"
-#include "os_supervise.h"
 #include "os_file_system.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_sdio"
 
 //-----------------------------------------------------------------------------
-#define SDIO_FIFO_ADDRESS               ((uint32_t)0x40012C80)
-/**
-  * @brief  SDIO Intialization Frequency (400KHz max)
+#if (1 == SD_SDIO_ENABLED)
+/** @defgroup STM324xG_EVAL_SD_Exported_Constants
+  * @{
   */
-#define SDIO_INIT_CLK_DIV               ((uint8_t)0x76)
-/**
-  * @brief  SDIO Data Transfer Frequency (25MHz max)
-  */
-#define SDIO_TRANSFER_CLK_DIV           ((uint8_t)0x0)
+#define HAL_TIMEOUT_SD_TRANSFER         ((uint32_t)100000000)
 
-#ifndef OLIMEX_STM32_P407
-// THESE ARE NOT PRESENT ON THE OLIMEX BOARD!!!
-#define SD_CP_PIN                       GPIO_Pin_3
-#define SD_CP_PORT                      GPIOD
-#define SD_CP_CLK                       RCC_AHB1Periph_GPIOD
-#define SD_CP_SOURCE                    GPIO_PinSource3
+#define SD_PRESENT                      ((uint8_t)0x01)
+#define SD_NOT_PRESENT                  ((uint8_t)0x00)
 
-#define SD_WP_PIN                       GPIO_Pin_4
-#define SD_WP_PORT                      GPIOE
-#define SD_WP_CLK                       RCC_AHB1Periph_GPIOE
-#define SD_WP_SOURCE                    GPIO_PinSource4
+#define SD_POWER_STATE_OFF              0x00
+#define SD_POWER_STATE_UP               0x02
+#define SD_POWER_STATE_ON               0x03
+
+/* DMA definitions for SD DMA transfer */
+#define SD_NVIC_IRQ_PRIORITY            (OS_PRIORITY_MIN + 1)
+#define SD_NVIC_DMA_IRQ_PRIORITY        (OS_PRIORITY_MIN + 2)
+#define __DMAx_TxRx_CLK_ENABLE          __DMA2_CLK_ENABLE
+#define SD_DMAx_Tx_CHANNEL              DMA_CHANNEL_4
+#define SD_DMAx_Rx_CHANNEL              DMA_CHANNEL_4
+#define SD_DMAx_Tx_STREAM               DMA2_Stream6
+#define SD_DMAx_Rx_STREAM               DMA2_Stream3
+#define SD_DMAx_Tx_IRQn                 DMA2_Stream6_IRQn
+#define SD_DMAx_Rx_IRQn                 DMA2_Stream3_IRQn
+#define SD_DMAx_Tx_IRQHandler           DMA2_Stream6_IRQHandler
+#define SD_DMAx_Rx_IRQHandler           DMA2_Stream3_IRQHandler
+
+#ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
+#define SD_DETECT_PIN                   GPIO_PIN_13
+#define SD_DETECT_GPIO_PORT             GPIOH
+#define __SD_DETECT_GPIO_CLK_ENABLE()   __GPIOH_CLK_ENABLE()
+#define SD_DETECT_IRQn                  EXTI15_10_IRQn
+#define SD_DetectIRQHandler()           HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13)
 #endif // OLIMEX_STM32_P407
-
-#ifdef OLIMEX_STM32_P407
-#if (1 == SD_SDIO_ENABLED) // MMC mode
-
-#define SD_CMD_PIN                      GPIO_Pin_2
-#define SD_CMD_PORT                     GPIOD
-#define SD_CMD_CLK                      RCC_AHB1Periph_GPIOD
-#define SD_CMD_SOURCE                   GPIO_PinSource2
-
-#define SD_D0_PIN                       GPIO_Pin_8
-#define SD_D0_PORT                      GPIOC
-#define SD_D0_CLK                       RCC_AHB1Periph_GPIOC
-#define SD_D0_SOURCE                    GPIO_PinSource8
-
-#define SD_D1_PIN                       GPIO_Pin_9
-#define SD_D1_PORT                      GPIOC
-#define SD_D1_CLK                       RCC_AHB1Periph_GPIOC
-#define SD_D1_SOURCE                    GPIO_PinSource9
-
-#define SD_D2_PIN                       GPIO_Pin_10
-#define SD_D2_PORT                      GPIOC
-#define SD_D2_CLK                       RCC_AHB1Periph_GPIOC
-#define SD_D2_SOURCE                    GPIO_PinSource10
-
-#define SD_D3_PIN                       GPIO_Pin_11
-#define SD_D3_PORT                      GPIOC
-#define SD_D3_CLK                       RCC_AHB1Periph_GPIOC
-#define SD_D3_SOURCE                    GPIO_PinSource11
-
-#define SD_CLK_PIN                      GPIO_Pin_12
-#define SD_CLK_PORT                     GPIOC
-#define SD_CLK_CLK                      RCC_AHB1Periph_GPIOC
-#define SD_CLK_SOURCE                   GPIO_PinSource12
-
-#define SD_SDIO_DMA                     DMA2
-#define SD_SDIO_DMA_CLK                 RCC_AHB1Periph_DMA2
-
-#ifdef SD_SDIO_DMA_STREAM3
-#   define SD_SDIO_DMA_STREAM           DMA2_Stream3
-#   define SD_SDIO_DMA_CHANNEL          DMA_Channel_4
-#   define SD_SDIO_DMA_FLAG_FEIF        DMA_FLAG_FEIF3
-#   define SD_SDIO_DMA_FLAG_DMEIF       DMA_FLAG_DMEIF3
-#   define SD_SDIO_DMA_FLAG_TEIF        DMA_FLAG_TEIF3
-#   define SD_SDIO_DMA_FLAG_HTIF        DMA_FLAG_HTIF3
-#   define SD_SDIO_DMA_FLAG_TCIF        DMA_FLAG_TCIF3
-#   define SD_SDIO_DMA_IRQn             DMA2_Stream3_IRQn
-#   define SD_SDIO_DMA_IRQHANDLER       DMA2_Stream3_IRQHandler
-#elif defined SD_SDIO_DMA_STREAM6
-#   define SD_SDIO_DMA_STREAM           DMA2_Stream6
-#   define SD_SDIO_DMA_CHANNEL          DMA_Channel_4
-#   define SD_SDIO_DMA_FLAG_FEIF        DMA_FLAG_FEIF6
-#   define SD_SDIO_DMA_FLAG_DMEIF       DMA_FLAG_DMEIF6
-#   define SD_SDIO_DMA_FLAG_TEIF        DMA_FLAG_TEIF6
-#   define SD_SDIO_DMA_FLAG_HTIF        DMA_FLAG_HTIF6
-#   define SD_SDIO_DMA_FLAG_TCIF        DMA_FLAG_TCIF6
-#   define SD_SDIO_DMA_IRQn             DMA2_Stream6_IRQn
-#   define SD_SDIO_DMA_IRQHANDLER       DMA2_Stream6_IRQHandler
-#endif /* SD_SDIO_DMA_STREAM3 */
-
-#else // SPI mode
-
-/**
- * @brief MMC/SD Card Card chip select
- */
-#define MMC_CS_PORT                     GPIOD
-#define MMC_CS_CLK                      RCC_AHB1Periph_GPIOD
-#define MMC_CS_PIN                      GPIO_Pin_2
-#define MMC_CS_EXTI_LINE                EXTI_Line2
-#define MMC_CS_PORT_SOURCE              GPIO_PortSourceGPIOD
-#define MMC_CS_PIN_SOURCE               GPIO_PinSource2
-#define MMC_CS_IRQn                     EXTI2_IRQn
-
-/**
- * @brief MMC/SD Card SPI
- */
-#define MMC_SPI                         SPI3   /* SPI pins are remapped by software */
-#define MMC_SPI_CLK                     RCC_APB1Periph_SPI3
-#define MMC_SPI_GPIO                    GPIOC
-#define MMC_SPI_GPIO_CLK                RCC_AHB1Periph_GPIOC
-#define MMC_PIN_SCK                     GPIO_Pin_10
-#define MMC_PIN_SCK_SOURCE              GPIO_PinSource10
-#define MMC_PIN_MISO                    GPIO_Pin_11
-#define MMC_PIN_MISO_SOURCE             GPIO_PinSource11
-#define MMC_PIN_MOSI                    GPIO_Pin_12
-#define MMC_PIN_MOSI_SOURCE             GPIO_PinSource12
-
-/** @addtogroup STM324xG_EVAL_SDIO_SD
-  * @brief      This file provides all the SD Card driver firmware functions.
-  * @{
-  */
-
-/** @defgroup STM324xG_EVAL_SDIO_SD_Private_Types
-  * @{
-  */
-/**
-  * @}
-  */
-
-
-/** @defgroup STM324xG_EVAL_SDIO_SD_Private_Defines
-  * @{
-  */
-
-/**
-  * @brief  SDIO Static flags, TimeOut, FIFO Address
-  */
-#define NULL 0
-#define SDIO_STATIC_FLAGS               ((uint32_t)0x000005FF)
-#define SDIO_CMD0TIMEOUT                ((uint32_t)0x00010000)
-
-/**
-  * @brief  Mask for errors Card Status R1 (OCR Register)
-  */
-#define SD_OCR_ADDR_OUT_OF_RANGE        ((uint32_t)0x80000000)
-#define SD_OCR_ADDR_MISALIGNED          ((uint32_t)0x40000000)
-#define SD_OCR_BLOCK_LEN_ERR            ((uint32_t)0x20000000)
-#define SD_OCR_ERASE_SEQ_ERR            ((uint32_t)0x10000000)
-#define SD_OCR_BAD_ERASE_PARAM          ((uint32_t)0x08000000)
-#define SD_OCR_WRITE_PROT_VIOLATION     ((uint32_t)0x04000000)
-#define SD_OCR_LOCK_UNLOCK_FAILED       ((uint32_t)0x01000000)
-#define SD_OCR_COM_CRC_FAILED           ((uint32_t)0x00800000)
-#define SD_OCR_ILLEGAL_CMD              ((uint32_t)0x00400000)
-#define SD_OCR_CARD_ECC_FAILED          ((uint32_t)0x00200000)
-#define SD_OCR_CC_ERROR                 ((uint32_t)0x00100000)
-#define SD_OCR_GENERAL_UNKNOWN_ERROR    ((uint32_t)0x00080000)
-#define SD_OCR_STREAM_READ_UNDERRUN     ((uint32_t)0x00040000)
-#define SD_OCR_STREAM_WRITE_OVERRUN     ((uint32_t)0x00020000)
-#define SD_OCR_CID_CSD_OVERWRIETE       ((uint32_t)0x00010000)
-#define SD_OCR_WP_ERASE_SKIP            ((uint32_t)0x00008000)
-#define SD_OCR_CARD_ECC_DISABLED        ((uint32_t)0x00004000)
-#define SD_OCR_ERASE_RESET              ((uint32_t)0x00002000)
-#define SD_OCR_AKE_SEQ_ERROR            ((uint32_t)0x00000008)
-#define SD_OCR_ERRORBITS                ((uint32_t)0xFDFFE008)
-
-/**
-  * @brief  Masks for R6 Response
-  */
-#define SD_R6_GENERAL_UNKNOWN_ERROR     ((uint32_t)0x00002000)
-#define SD_R6_ILLEGAL_CMD               ((uint32_t)0x00004000)
-#define SD_R6_COM_CRC_FAILED            ((uint32_t)0x00008000)
-
-#define SD_VOLTAGE_WINDOW_SD            ((uint32_t)0x80100000)
-#define SD_HIGH_CAPACITY                ((uint32_t)0x40000000)
-#define SD_STD_CAPACITY                 ((uint32_t)0x00000000)
-#define SD_CHECK_PATTERN                ((uint32_t)0x000001AA)
-
-#define SD_MAX_VOLT_TRIAL               ((uint32_t)0x0000FFFF)
-#define SD_ALLZERO                      ((uint32_t)0x00000000)
-
-#define SD_WIDE_BUS_SUPPORT             ((uint32_t)0x00040000)
-#define SD_SINGLE_BUS_SUPPORT           ((uint32_t)0x00010000)
-#define SD_CARD_LOCKED                  ((uint32_t)0x02000000)
-
-#define SD_DATATIMEOUT                  ((uint32_t)0xFFFFFFFF)
-#define SD_0TO7BITS                     ((uint32_t)0x000000FF)
-#define SD_8TO15BITS                    ((uint32_t)0x0000FF00)
-#define SD_16TO23BITS                   ((uint32_t)0x00FF0000)
-#define SD_24TO31BITS                   ((uint32_t)0xFF000000)
-#define SD_MAX_DATA_LENGTH              ((uint32_t)0x01FFFFFF)
-
-#define SD_HALFFIFO                     ((uint32_t)0x00000008)
-#define SD_HALFFIFOBYTES                ((uint32_t)0x00000020)
-
-/**
-  * @brief  Command Class Supported
-  */
-#define SD_CCCC_LOCK_UNLOCK             ((uint32_t)0x00000080)
-#define SD_CCCC_WRITE_PROT              ((uint32_t)0x00000040)
-#define SD_CCCC_ERASE                   ((uint32_t)0x00000020)
-
-/**
-  * @brief  Following commands are SD Card Specific commands.
-  *         SDIO_APP_CMD should be sent before sending these commands.
-  */
-#define SDIO_SEND_IF_COND               ((uint32_t)0x00000008)
-
-/**
-  * @}
-  */
-
-/** @defgroup STM324xG_EVAL_SDIO_SD_Private_Macros
-  * @{
-  */
-/**
-  * @}
-  */
-
-/** @defgroup STM324xG_EVAL_SDIO_SD_Private_Variables
-  * @{
-  */
 
 #endif // SD_SDIO_ENABLED
-
-#endif // OLIMEX_STM32_P407
 
 //-----------------------------------------------------------------------------
 /// @brief   SDIO initialization.
@@ -240,15 +59,24 @@
 Status SDIO_Init_(void);
 
 static Status SDIO__Init(void);
+static Status SDIO_DMA_Init(void);
+static Status SDIO_GPIO_Init(void);
 static Status SDIO_NVIC_Init(void);
 static Status SDIO__DeInit(void);
 static Status SDIO_Open(void* args_p);
 static Status SDIO_Close(void);
 static Status SDIO_Read(U8* data_in_p, U32 size, void* args_p);
 static Status SDIO_Write(U8* data_out_p, U32 size, void* args_p);
+static Status SDIO_DMA_Read(U8* data_in_p, U32 size, void* args_p);
+static Status SDIO_DMA_Write(U8* data_out_p, U32 size, void* args_p);
 static Status SDIO_IoCtl(const U32 request_id, void* args_p);
 
+static U8 SDIO_IsDetected(void);
+
 //-----------------------------------------------------------------------------
+static SD_HandleTypeDef sd_handle;
+static DMA_HandleTypeDef sd_dma_rx_handle;
+static DMA_HandleTypeDef sd_dma_tx_handle;
 static OS_DriverHd drv_led_sd;
 HAL_DriverItf* drv_sdio_v[DRV_ID_SDIO_LAST];
 
@@ -266,7 +94,7 @@ static HAL_DriverItf drv_sdio = {
 /*****************************************************************************/
 Status SDIO_Init_(void)
 {
-    memset(drv_sdio_v, 0x0, sizeof(drv_sdio_v));
+    HAL_MEMSET(drv_sdio_v, 0x0, sizeof(drv_sdio_v));
     drv_sdio_v[DRV_ID_SDIO] = &drv_sdio;
     return S_OK;
 }
@@ -276,137 +104,171 @@ Status SDIO__Init(void)
 {
 Status s;
     HAL_LOG(D_INFO, "Init: ");
-//        const SD_Error sd_err = SD_Init();
-//        if (SD_OK == sd_err) {
-//            s = SDIO_NVIC_Init();
-//            HAL_TRACE_S(D_INFO, s);
-//        } else {
-//            if (SD_CMD_RSP_TIMEOUT == sd_err) {
-//                s = S_TIMEOUT;
-//                HAL_TRACE(D_INFO, "Timeout (no media?)");
-//            } else {
-//                s = S_HARDWARE_FAULT;
-//                HAL_TRACE_S(D_INFO, s);
-//            }
+    /* Enable SDIO clock */
+    __SDIO_CLK_ENABLE();
+    IF_STATUS(s = SDIO_GPIO_Init()) { return s; }
+    IF_STATUS(s = SDIO_DMA_Init())  { return s; }
+    IF_STATUS(s = SDIO_NVIC_Init()) { return s; }
+    /* Check if the SD card is plugged in the slot */
+    if (SD_PRESENT == SDIO_IsDetected()) {
+        HAL_SD_CardInfoTypedef sd_card_info;
+
+        sd_handle.Instance                = SDIO;
+        sd_handle.Init.ClockEdge          = SDIO_CLOCK_EDGE_RISING;
+        sd_handle.Init.ClockBypass        = SDIO_CLOCK_BYPASS_DISABLE;
+        sd_handle.Init.ClockPowerSave     = SDIO_CLOCK_POWER_SAVE_DISABLE;
+        sd_handle.Init.BusWide            = SDIO_BUS_WIDE_1B;
+        sd_handle.Init.HardwareFlowControl= SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+        sd_handle.Init.ClockDiv           = SDIO_TRANSFER_CLK_DIV;
+        if (SD_OK != HAL_SD_Init(&sd_handle, &sd_card_info)) { s = S_HARDWARE_FAULT; }
+
+//TODO(A. Filyanov) Wrong bus width detection!
+//        HAL_SD_CardStatusTypedef sd_card_status;
+//        HAL_SD_GetCardStatus(&sd_handle, &sd_card_status);
+//
+//        if (4 == sd_card_status.DAT_BUS_WIDTH) {
+            if (SD_OK != HAL_SD_WideBusOperation_Config(&sd_handle, SDIO_BUS_WIDE_4B)) {
+                s = S_HARDWARE_FAULT;
+            }
 //        }
+    } else { s = S_HARDWARE_FAULT; }
     return s;
 }
 
 /*****************************************************************************/
-void SD_LowLevel_Init(void);
-void SD_LowLevel_Init(void)
+Status SDIO_GPIO_Init(void)
 {
-GPIO_InitTypeDef    GPIO_InitStructure;
-    // GPIO enable clock
-//    RCC_AHB1PeriphClockCmd(/*SD_CP_CLK | SD_WP_CLK |*/ SD_CMD_CLK | SD_CLK_CLK | \
-//                           SD_D0_CLK | SD_D1_CLK | SD_D2_CLK | SD_D3_CLK, ENABLE);
-//    GPIO_StructInit(&GPIO_InitStructure);
-#ifndef OLIMEX_STM32_P407
-    //THESE ARE NOT PRESENT OPN THE OLIMEX BOARD!!!
-    // Init CP pin
-    GPIO_InitStructure.GPIO_Pin     = SD_CP_PIN;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(SD_CP_PORT, &GPIO_InitStructure);
+GPIO_InitTypeDef GPIO_InitStruct;
+    /* Enable GPIOs clock */
+    __GPIOC_CLK_ENABLE();
+    __GPIOD_CLK_ENABLE();
 
-    // Init WP pin
-    GPIO_InitStructure.GPIO_Pin     = SD_WP_PIN;
-    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-    GPIO_Init(SD_WP_PORT, &GPIO_InitStructure);
+    /* Common GPIO configuration */
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull      = GPIO_PULLUP;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
+
+    /* GPIOC configuration */
+    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
+
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /* GPIOD configuration */
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+#ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
+    __SD_DETECT_GPIO_CLK_ENABLE();
+    /* SD Card detect pin configuration */
+    GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull      = GPIO_PULLUP;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pin       = SD_DETECT_PIN;
+    HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStruct);
 #endif // OLIMEX_STM32_P407
+    return S_OK;
+}
 
-    // Configure PC.08, PC.09, PC.10, PC.11, PC.12 pin: D0, D1, D2, D3, CLK pin
-//    GPIO_InitStructure.GPIO_Pin     = SD_D0_PIN | SD_D1_PIN | SD_D2_PIN | SD_D3_PIN | SD_CLK_PIN;
-//    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
-//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-//    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-//    GPIO_Init(GPIOC, &GPIO_InitStructure);
-//
-//    // Configure PD.02 CMD line
-//    GPIO_InitStructure.GPIO_Pin     = SD_CMD_PIN;
-//    GPIO_InitStructure.GPIO_OType   = GPIO_OType_PP;
-//    //GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_OUT;
-//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_AF;
-//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-//    GPIO_InitStructure.GPIO_Speed   = GPIO_Speed_50MHz;
-//    GPIO_Init(SD_CMD_PORT, &GPIO_InitStructure);
-//
-//    GPIO_PinAFConfig(SD_CMD_PORT, SD_CMD_SOURCE, GPIO_AF_SDIO);
-//    GPIO_PinAFConfig(SD_CLK_PORT, SD_CLK_SOURCE, GPIO_AF_SDIO);
-//    GPIO_PinAFConfig(SD_D0_PORT, SD_D0_SOURCE, GPIO_AF_SDIO);
-//    GPIO_PinAFConfig(SD_D1_PORT, SD_D1_SOURCE, GPIO_AF_SDIO);
-//    GPIO_PinAFConfig(SD_D2_PORT, SD_D2_SOURCE, GPIO_AF_SDIO);
-//    GPIO_PinAFConfig(SD_D3_PORT, SD_D3_SOURCE, GPIO_AF_SDIO);
-//
-//    /* Enable the SDIO AHB Clock */
-//    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, ENABLE);
-//
-//    // Enable the DMA2 Clock
-//    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+/*****************************************************************************/
+Status SDIO_DMA_Init(void)
+{
+    /* Enable DMA2 clocks */
+    __DMAx_TxRx_CLK_ENABLE();
+
+    /* Configure DMA Rx parameters */
+    sd_dma_rx_handle.Init.Channel             = SD_DMAx_Rx_CHANNEL;
+    sd_dma_rx_handle.Init.Direction           = DMA_PERIPH_TO_MEMORY;
+    sd_dma_rx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
+    sd_dma_rx_handle.Init.MemInc              = DMA_MINC_ENABLE;
+    sd_dma_rx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    sd_dma_rx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+    sd_dma_rx_handle.Init.Mode                = DMA_PFCTRL;
+    sd_dma_rx_handle.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
+    sd_dma_rx_handle.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
+    sd_dma_rx_handle.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    sd_dma_rx_handle.Init.MemBurst            = DMA_MBURST_INC4;
+    sd_dma_rx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
+
+    sd_dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
+
+    /* Associate the DMA handle */
+    __HAL_LINKDMA(&sd_handle, hdmarx, sd_dma_rx_handle);
+
+    /* Deinitialize the stream for new transfer */
+    HAL_DMA_DeInit(&sd_dma_rx_handle);
+
+    /* Configure the DMA stream */
+    HAL_DMA_Init(&sd_dma_rx_handle);
+
+    /* Configure DMA Tx parameters */
+    sd_dma_tx_handle.Init.Channel             = SD_DMAx_Tx_CHANNEL;
+    sd_dma_tx_handle.Init.Direction           = DMA_MEMORY_TO_PERIPH;
+    sd_dma_tx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
+    sd_dma_tx_handle.Init.MemInc              = DMA_MINC_ENABLE;
+    sd_dma_tx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    sd_dma_tx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+    sd_dma_tx_handle.Init.Mode                = DMA_PFCTRL;
+    sd_dma_tx_handle.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
+    sd_dma_tx_handle.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
+    sd_dma_tx_handle.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    sd_dma_tx_handle.Init.MemBurst            = DMA_MBURST_INC4;
+    sd_dma_tx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
+
+    sd_dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
+
+    /* Associate the DMA handle */
+    __HAL_LINKDMA(&sd_handle, hdmatx, sd_dma_tx_handle);
+
+    /* Deinitialize the stream for new transfer */
+    HAL_DMA_DeInit(&sd_dma_tx_handle);
+
+    /* Configure the DMA stream */
+    HAL_DMA_Init(&sd_dma_tx_handle);
+    return S_OK;
 }
 
 /*****************************************************************************/
 Status SDIO_NVIC_Init(void)
 {
-//NVIC_InitTypeDef NVIC_InitStructure;
-//
-//    NVIC_StructInit(&NVIC_InitStructure);
-//    // SDIO Interrupt ENABLE
-//    NVIC_InitStructure.NVIC_IRQChannel                      = SDIO_IRQn;
-//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = SD_SDIO_IRQ_PRIO;
-//    NVIC_InitStructure.NVIC_IRQChannelSubPriority           = 0;
-//    NVIC_InitStructure.NVIC_IRQChannelCmd                   = ENABLE;
-//    NVIC_Init(&NVIC_InitStructure);
-//    // DMA2 STREAMx Interrupt ENABLE
-//    NVIC_InitStructure.NVIC_IRQChannel                      = SD_SDIO_DMA_IRQn;
-//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = SD_SDIO_DMA_IRQ_PRIO;
-//    NVIC_Init(&NVIC_InitStructure);
+    /* NVIC configuration for SDIO interrupts */
+    HAL_NVIC_SetPriority(SDIO_IRQn, SD_NVIC_IRQ_PRIORITY, 0);
+    HAL_NVIC_EnableIRQ(SDIO_IRQn);
+
+    /* NVIC configuration for DMA transfer complete interrupt */
+    HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, SD_NVIC_DMA_IRQ_PRIORITY, 0);
+    HAL_NVIC_EnableIRQ(SD_DMAx_Rx_IRQn);
+
+    /* NVIC configuration for DMA transfer complete interrupt */
+    HAL_NVIC_SetPriority(SD_DMAx_Tx_IRQn, SD_NVIC_DMA_IRQ_PRIORITY, 0);
+    HAL_NVIC_EnableIRQ(SD_DMAx_Tx_IRQn);
     return S_OK;
 }
 
 /*****************************************************************************/
 Status SDIO__DeInit(void)
 {
-//    SD_DeInit();
-    return S_OK;
-}
+Status s = S_OK;
+    if (HAL_OK != HAL_SD_DeInit(&sd_handle)) { s = S_HARDWARE_FAULT; }
+    /* Peripheral clock disable */
+    __SDIO_CLK_DISABLE();
 
-/*****************************************************************************/
-void SD_LowLevel_DeInit(void);
-void SD_LowLevel_DeInit(void)
-{
-//GPIO_InitTypeDef GPIO_InitStructure;
-//    /*!< Disable SDIO Clock */
-//    SDIO_ClockCmd(DISABLE);
-//    /*!< Set Power State to OFF */
-//    SDIO_SetPowerState(SDIO_PowerState_OFF);
-//    /*!< DeInitializes the SDIO peripheral */
-//    SDIO_DeInit();
-//    /* Disable the SDIO APB2 Clock */
-//    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, DISABLE);
-//
-//    GPIO_PinAFConfig(SD_CMD_PORT, SD_CMD_SOURCE, GPIO_AF_MCO);
-//    GPIO_PinAFConfig(SD_CLK_PORT, SD_CLK_SOURCE, GPIO_AF_MCO);
-//    GPIO_PinAFConfig(SD_D0_PORT, SD_D0_SOURCE, GPIO_AF_MCO);
-//    GPIO_PinAFConfig(SD_D1_PORT, SD_D1_SOURCE, GPIO_AF_MCO);
-//    GPIO_PinAFConfig(SD_D2_PORT, SD_D2_SOURCE, GPIO_AF_MCO);
-//    GPIO_PinAFConfig(SD_D3_PORT, SD_D3_SOURCE, GPIO_AF_MCO);
-//
-//    /* Configure PC.08, PC.09, PC.10, PC.11 pins: D0, D1, D2, D3 pins */
-//    GPIO_InitStructure.GPIO_Pin     = SD_D0_PIN | SD_D1_PIN | SD_D2_PIN | SD_D3_PIN | SD_CLK_PIN;
-//    GPIO_InitStructure.GPIO_Mode    = GPIO_Mode_IN;
-//    GPIO_InitStructure.GPIO_PuPd    = GPIO_PuPd_NOPULL;
-//    GPIO_Init(GPIOC, &GPIO_InitStructure);
-//
-//    /* Configure PD.02 CMD line */
-//    GPIO_InitStructure.GPIO_Pin = SD_CMD_PIN;
-//    GPIO_Init(SD_CMD_PORT, &GPIO_InitStructure);
+    /**SDIO GPIO Configuration
+    PC8     ------> SDIO_D0
+    PC9     ------> SDIO_D1
+    PC10    ------> SDIO_D2
+    PC11    ------> SDIO_D3
+    PC12    ------> SDIO_CK
+    PD2     ------> SDIO_CMD
+    */
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
+                          |GPIO_PIN_12);
+
+    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
+
+    /* Peripheral DMA DeInit*/
+    HAL_DMA_DeInit(sd_handle.hdmarx);
+    HAL_DMA_DeInit(sd_handle.hdmatx);
+    return s;
 }
 
 /*****************************************************************************/
@@ -422,17 +284,43 @@ Status SDIO_Close(void)
     return S_OK;
 }
 
-//https://my.st.com/public/STe2ecommunities/mcu/Lists/cortex_mx_stm32/Flat.aspx?RootFolder=https%3a%2f%2fmy.st.com%2fpublic%2fSTe2ecommunities%2fmcu%2fLists%2fcortex_mx_stm32%2fST32f4discovery%2bsdcard%2bfatfs%20problem
 /******************************************************************************/
 Status SDIO_Read(U8* data_in_p, U32 size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-//SD_Error sd_status;
+State led_sd_state = ON;
+Status s = S_OK;
+    OS_DriverWrite(drv_led_sd, &led_sd_state, 1, OS_NULL);
+    if (SD_OK != HAL_SD_ReadBlocks(&sd_handle, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size)) {}
+    led_sd_state = OFF;
+    OS_DriverWrite(drv_led_sd, &led_sd_state, 1, OS_NULL);
+    return s;
+}
+
+/******************************************************************************/
+Status SDIO_Write(U8* data_out_p, U32 size, void* args_p)
+{
+U32 sector = *(U32*)args_p;
+State led_sd_state = ON;
+Status s = S_OK;
+    OS_DriverWrite(drv_led_sd, &led_sd_state, 1, OS_NULL);
+    if (SD_OK != HAL_SD_WriteBlocks(&sd_handle, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size)) {}
+    led_sd_state = OFF;
+    OS_DriverWrite(drv_led_sd, &led_sd_state, 1, OS_NULL);
+    return s;
+}
+
+//https://my.st.com/public/STe2ecommunities/mcu/Lists/cortex_mx_stm32/Flat.aspx?RootFolder=https%3a%2f%2fmy.st.com%2fpublic%2fSTe2ecommunities%2fmcu%2fLists%2fcortex_mx_stm32%2fST32f4discovery%2bsdcard%2bfatfs%20problem
+/******************************************************************************/
+Status SDIO_DMA_Read(U8* data_in_p, U32 size, void* args_p)
+{
+U32 sector = *(U32*)args_p;
+HAL_SD_ErrorTypedef sd_status;
 State state = ON;
 Status s = S_OK;
 
     OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
-//    if (SD_PRESENT != SD_Detect()) {
+//    if (SD_OK != SD_Detect()) {
 //        s = S_FS_NOT_READY;
 //        return s;
 //    }
@@ -441,44 +329,35 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(SD_SDIO_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            IF_STATUS(s = SDIO_Read((U8*)scratch_p, 1, &sector)) { break; }
+            IF_STATUS(s = drv_sdio.Read((U8*)scratch_p, 1, &sector)) { break; }
             ++sector;
-            OS_MemCpy32(data_in_p, scratch_p, SD_SDIO_BLOCK_SIZE / 4);
+            OS_MEMCPY32(data_in_p, scratch_p, (SD_SDIO_BLOCK_SIZE / 4));
             data_in_p += SD_SDIO_BLOCK_SIZE;
-            OS_ContextSwitchForce();
         }
         OS_Free(scratch_p);
         return s;
     }
 
-//    sd_status = SD_ReadMultiBlocks(data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
-//    if (SD_OK == sd_status) {
-//        SDTransferState transf_state;
-//        OS_ContextSwitchForce();
-//        sd_status = SD_WaitReadOperation(); // Check if the Transfer is finished
-//        if (SD_OK == sd_status) {
-//            while (SD_TRANSFER_BUSY == (transf_state = SD_GetStatus())) {
-//                OS_ContextSwitchForce();
-//            } // BUSY, OK (DONE), ERROR (FAIL)
-//            if (SD_TRANSFER_ERROR == transf_state) {
-//                s = S_FS_TRANSFER_FAIL;
-//            }
-//        } else {
-//            s = S_FS_TRANSFER_FAIL;
-//        }
-//    } else {
-//        s = S_FS_TRANSFER_FAIL;
-//    }
+    sd_status = HAL_SD_ReadBlocks_DMA(&sd_handle, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
+    if (SD_OK == sd_status) {
+        sd_status = HAL_SD_CheckReadOperation(&sd_handle, (U32)HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
+        if (SD_OK == sd_status) {
+        } else {
+            s = S_FS_TRANSFER_FAIL;
+        }
+    } else {
+        s = S_FS_TRANSFER_FAIL;
+    }
     state = OFF;
     OS_DriverWrite(drv_led_sd, &state, 1, OS_NULL);
     return s;
 }
 
 /******************************************************************************/
-Status SDIO_Write(U8* data_out_p, U32 size, void* args_p)
+Status SDIO_DMA_Write(U8* data_out_p, U32 size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-//SD_Error sd_status;
+HAL_SD_ErrorTypedef sd_status;
 State state = ON;
 Status s = S_OK;
 
@@ -492,34 +371,25 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(SD_SDIO_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            IF_STATUS(s = SDIO_Write((U8*)scratch_p, 1, &sector)) { break; }
+            IF_STATUS(s = drv_sdio.Write((U8*)scratch_p, 1, &sector)) { break; }
             ++sector;
-            OS_MemCpy32(data_out_p, scratch_p, SD_SDIO_BLOCK_SIZE / 4);
+            OS_MEMCPY32(data_out_p, scratch_p, (SD_SDIO_BLOCK_SIZE / 4));
             data_out_p += SD_SDIO_BLOCK_SIZE;
-            OS_ContextSwitchForce();
         }
         OS_Free(scratch_p);
         return s;
     }
 
-//    sd_status = SD_WriteMultiBlocks(data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
-//    if (SD_OK == sd_status) {
-//        SDTransferState transf_state;
-//        OS_ContextSwitchForce();
-//        sd_status = SD_WaitWriteOperation(); // Check if the Transfer is finished
-//        if (SD_OK == sd_status) {
-//            while (SD_TRANSFER_BUSY == (transf_state = SD_GetStatus())) {
-//                OS_ContextSwitchForce();
-//            } // BUSY, OK (DONE), ERROR (FAIL)
-//            if (SD_TRANSFER_ERROR == transf_state) {
-//                s = S_FS_TRANSFER_FAIL;
-//            }
-//        } else {
-//            s = S_FS_TRANSFER_FAIL;
-//        }
-//    } else {
-//        s = S_FS_TRANSFER_FAIL;
-//    }
+    sd_status = HAL_SD_WriteBlocks_DMA(&sd_handle, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_SDIO_BLOCK_SIZE, size); // 4GB Compliant(?)
+    if (SD_OK == sd_status) {
+        sd_status = HAL_SD_CheckWriteOperation(&sd_handle, (U32)HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
+        if (SD_OK == sd_status) {
+        } else {
+            s = S_FS_TRANSFER_FAIL;
+        }
+    } else {
+        s = S_FS_TRANSFER_FAIL;
+    }
     state = OFF;
     OS_DriverWrite(drv_led_sd, &state, 1, OS_NULL);
     return s;
@@ -530,63 +400,85 @@ Status SDIO_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
-//        case DRV_REQ_STD_POWER: {
-//            SD_Error sd_status = SD_OK;
-//            switch (*(OS_PowerState*)args_p) {
-//                case PWR_ON:
-//                    if (SDIO_PowerState_OFF == SDIO_GetPowerState()) {
-//                        sd_status = SD_PowerON();
-//                    }
-//                    break;
-//                case PWR_OFF: {
-//                    const U32 SDIO_PowerState_UP = 0x2;
-//                    if (SDIO_PowerState_ON == SDIO_GetPowerState()) {
-//                        sd_status = SD_PowerOFF();
-//                    } else if (SDIO_PowerState_UP == SDIO_GetPowerState()) {
-//                        while (SDIO_PowerState_ON != SDIO_GetPowerState()) {
-//                            OS_ContextSwitchForce();
-//                        }
-//                        sd_status = SD_PowerOFF();
-//                    }
-//                    }
-//                    break;
-//                default:
-//                    break;
-//            }
-//            if (SD_OK != sd_status) { s = S_FS_UNDEF; }
-//            }
-//            break;
-//        case CTRL_POWER: {
-//            SD_Error sd_status = SD_OK;
-//            //Power Get
-//            //....
-//            //Power Set
-//            const U8 power_state = (*(U8*)args_p) & 0xFF;
-//                switch (power_state) {
-//                    case PWR_ON:
-//                        sd_status = SD_PowerON();
-//                        break;
-//                    case PWR_OFF:
-//                        sd_status = SD_PowerOFF();
-//                        break;
-//                    default:
-//                        break;
-//                }
-//                if (SD_OK != sd_status) { s = S_FS_UNDEF; }
-//            }
-//            break;
+        case DRV_REQ_STD_MODE_IO_SET: {
+            const HAL_DriverModeIo mode_io = (*(HAL_DriverModeIo*)args_p);
+                switch (mode_io) {
+                    case DRV_MODE_IO_POLL:
+                        drv_sdio.Read = SDIO_Read;
+                        drv_sdio.Write= SDIO_Write;
+                        break;
+                    case DRV_MODE_IO_IT:
+//                        drv_sdio.Read = SDIO_IT_Read;
+//                        drv_sdio.Write= SDIO_IT_Write;
+                        break;
+                    case DRV_MODE_IO_DMA:
+                        drv_sdio.Read = SDIO_DMA_Read;
+                        drv_sdio.Write= SDIO_DMA_Write;
+                        break;
+                    case DRV_MODE_IO_USER:
+                        drv_sdio.Read = OS_NULL;
+                        drv_sdio.Write= OS_NULL;
+                        break;
+                    default:
+                        s = S_INVALID_VALUE;
+                        break;
+                }
+            }
+            break;
+        case DRV_REQ_STD_POWER_SET: {
+            HAL_StatusTypeDef hal_status = HAL_OK;
+            switch (*(OS_PowerState*)args_p) {
+                case PWR_ON:
+                    if (SD_POWER_STATE_OFF == SDIO_GetPowerState(sd_handle.Instance)) {
+                        hal_status = SDIO_PowerState_ON(sd_handle.Instance);
+                    }
+                    break;
+                case PWR_OFF: {
+                    if (SD_POWER_STATE_ON == SDIO_GetPowerState(sd_handle.Instance)) {
+                        hal_status = SDIO_PowerState_OFF(sd_handle.Instance);
+                    } else if (SD_POWER_STATE_UP == SDIO_GetPowerState(sd_handle.Instance)) {
+                        while (SD_POWER_STATE_ON != SDIO_GetPowerState(sd_handle.Instance)) {};
+                        hal_status = SDIO_PowerState_OFF(sd_handle.Instance);
+                    }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+            }
+            break;
+        case CTRL_POWER: {
+            HAL_StatusTypeDef hal_status = HAL_OK;
+            //Power Get
+            //....
+            //Power Set
+            const U8 power_state = (*(U8*)args_p) & 0xFF;
+                switch (power_state) {
+                    case PWR_ON:
+                        hal_status = SDIO_PowerState_ON(sd_handle.Instance);
+                        break;
+                    case PWR_OFF:
+                        hal_status = SDIO_PowerState_OFF(sd_handle.Instance);
+                        break;
+                    default:
+                        break;
+                }
+                if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+            }
+            break;
         case DRV_REQ_STD_SYNC:
         case CTRL_SYNC:
-//            while (SD_TRANSFER_OK != SD_GetStatus());
+            while (SD_TRANSFER_OK != HAL_SD_GetStatus(&sd_handle)) {};
             break;
         case GET_SECTOR_COUNT: {
-//            SD_CardInfo card_info;
-//
-//            if (SD_OK == SD_GetCardInfo(&card_info)) {
-//                *(U32*)args_p = card_info.CardCapacity / SD_SDIO_BLOCK_SIZE;
-//            } else {
-//                *(U32*)args_p = 0;
-//            }
+            HAL_SD_CardInfoTypedef card_info;
+
+            if (SD_OK == HAL_SD_Get_CardInfo(&sd_handle, &card_info)) {
+                *(U32*)args_p = card_info.CardCapacity / SD_SDIO_BLOCK_SIZE;
+            } else {
+                *(U32*)args_p = 0;
+            }
             }
             break;
         case GET_SECTOR_SIZE:
@@ -599,9 +491,9 @@ Status s = S_OK;
             //TODO(A. Filyanov) Check SDHC capability!
             U32 start_sector= ((U32*)args_p)[0] * SD_CARD_SECTOR_SIZE;
             U32 end_sector  = ((U32*)args_p)[1] * SD_CARD_SECTOR_SIZE;
-//            if (SD_OK != SD_Erase(start_sector, end_sector)) {
-//                s = S_FS_UNDEF;
-//            }
+            if (SD_OK != HAL_SD_Erase(&sd_handle, start_sector, end_sector)) {
+                s = S_FS_UNDEF;
+            }
             }
             break;
         default:
@@ -611,86 +503,17 @@ Status s = S_OK;
     return s;
 }
 
-/**
-  * @brief  Configures the DMA2 Channel4 for SDIO Tx request.
-  * @param  BufferSRC: pointer to the source buffer
-  * @param  BufferSize: buffer size
-  * @retval None
-  */
 /*****************************************************************************/
-void SD_LowLevel_DMA_TxConfig(uint32_t* BufferSRC, uint32_t BufferSize);
-void SD_LowLevel_DMA_TxConfig(uint32_t* BufferSRC, uint32_t BufferSize)
+U8 SDIO_IsDetected(void)
 {
-DMA_InitTypeDef SDDMA_InitStructure;
-
-//    DMA_ClearFlag(SD_SDIO_DMA_STREAM, SD_SDIO_DMA_FLAG_FEIF | SD_SDIO_DMA_FLAG_DMEIF |\
-//                  SD_SDIO_DMA_FLAG_TEIF | SD_SDIO_DMA_FLAG_HTIF | SD_SDIO_DMA_FLAG_TCIF);
-//    /* DMA2 Stream3  or Stream6 disable */
-//    DMA_Cmd(SD_SDIO_DMA_STREAM, DISABLE);
-//    /* DMA2 Stream3  or Stream6 Config */
-//    DMA_DeInit(SD_SDIO_DMA_STREAM);
-//
-//    SDDMA_InitStructure.DMA_Channel = SD_SDIO_DMA_CHANNEL;
-//    SDDMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)SDIO_FIFO_ADDRESS;
-//    SDDMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)BufferSRC;
-//    SDDMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-//    SDDMA_InitStructure.DMA_BufferSize = BufferSize;
-//    SDDMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-//    SDDMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-//    SDDMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
-//    SDDMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
-//    SDDMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-//    SDDMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
-//    SDDMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-//    SDDMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-//    SDDMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC4;
-//    SDDMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_INC4;
-//    DMA_Init(SD_SDIO_DMA_STREAM, &SDDMA_InitStructure);
-//    DMA_ITConfig(SD_SDIO_DMA_STREAM, DMA_IT_TC, ENABLE);
-//    DMA_FlowControllerConfig(SD_SDIO_DMA_STREAM, DMA_FlowCtrl_Peripheral);
-//    /* DMA2 Stream3  or Stream6 enable */
-//    DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
-}
-
-/**
-  * @brief  Configures the DMA2 Channel4 for SDIO Rx request.
-  * @param  BufferDST: pointer to the destination buffer
-  * @param  BufferSize: buffer size
-  * @retval None
-  */
-/*****************************************************************************/
-void SD_LowLevel_DMA_RxConfig(uint32_t* BufferDST, uint32_t BufferSize);
-void SD_LowLevel_DMA_RxConfig(uint32_t* BufferDST, uint32_t BufferSize)
-{
-DMA_InitTypeDef SDDMA_InitStructure;
-
-//    DMA_ClearFlag(SD_SDIO_DMA_STREAM, SD_SDIO_DMA_FLAG_FEIF | SD_SDIO_DMA_FLAG_DMEIF |\
-//                  SD_SDIO_DMA_FLAG_TEIF | SD_SDIO_DMA_FLAG_HTIF | SD_SDIO_DMA_FLAG_TCIF);
-//    /* DMA2 Stream3  or Stream6 disable */
-//    DMA_Cmd(SD_SDIO_DMA_STREAM, DISABLE);
-//    /* DMA2 Stream3 or Stream6 Config */
-//    DMA_DeInit(SD_SDIO_DMA_STREAM);
-//
-//    SDDMA_InitStructure.DMA_Channel = SD_SDIO_DMA_CHANNEL;
-//    SDDMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)SDIO_FIFO_ADDRESS;
-//    SDDMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)BufferDST;
-//    SDDMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
-//    SDDMA_InitStructure.DMA_BufferSize = BufferSize;
-//    SDDMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-//    SDDMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-//    SDDMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
-//    SDDMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
-//    SDDMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-//    SDDMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
-//    SDDMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-//    SDDMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-//    SDDMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC4;
-//    SDDMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_INC4;
-//    DMA_Init(SD_SDIO_DMA_STREAM, &SDDMA_InitStructure);
-//    DMA_ITConfig(SD_SDIO_DMA_STREAM, DMA_IT_TC, ENABLE);
-//    DMA_FlowControllerConfig(SD_SDIO_DMA_STREAM, DMA_FlowCtrl_Peripheral);
-//    /* DMA2 Stream3 or Stream6 enable */
-//    DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
+U8 status = SD_PRESENT;
+#ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
+    /* Check SD card detect pin */
+    if (GPIO_PIN_RESET != HAL_GPIO_ReadPin(SD_DETECT_GPIO_PORT, SD_DETECT_PIN)) {
+        status = SD_NOT_PRESENT;
+    }
+#endif // OLIMEX_STM32_P407
+    return status;
 }
 
 // SDIO IRQ handlers -----------------------------------------------------------
@@ -698,14 +521,19 @@ DMA_InitTypeDef SDDMA_InitStructure;
 void SDIO_IRQHandler(void);
 void SDIO_IRQHandler(void)
 {
-    /* Process All SDIO Interrupt Sources */
-//    SD_ProcessIRQSrc();
+    HAL_SD_IRQHandler(&sd_handle);
 }
 
 /*****************************************************************************/
-void SD_SDIO_DMA_IRQHANDLER(void);
-void SD_SDIO_DMA_IRQHANDLER(void)
+void SD_DMAx_Rx_IRQHandler(void);
+void SD_DMAx_Rx_IRQHandler(void)
 {
-    /* Process DMA2 Stream3 or DMA2 Stream6 Interrupt Sources */
-//    SD_ProcessDMAIRQ();
+    HAL_DMA_IRQHandler(sd_handle.hdmarx);
+}
+
+/*****************************************************************************/
+void SD_DMAx_Tx_IRQHandler(void);
+void SD_DMAx_Tx_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(sd_handle.hdmatx);
 }

@@ -37,6 +37,11 @@ typedef struct {
 
 //------------------------------------------------------------------------------
 /// @brief   Common functions.
+#define OS_MEMSET(dst_p, value, size)   HAL_MEMSET(dst_p, value, size)
+#define OS_MEMCPY(dst_p, src_p, size)   HAL_MEMCPY(dst_p, src_p, size)
+#define OS_MEMCPY32(dst_p, src_p, size) OS_MEMCPY(dst_p, src_p, ((size) * sizeof(U32)))
+#define OS_MEMMOV(dst_p, src_p, size)   HAL_MEMMOV(dst_p, src_p, size)
+#define OS_MEMMOV32(dst_p, src_p, size) OS_MEMMOV(dst_p, src_p, ((size) * sizeof(U32)))
 
 /// @brief      Allocate memory.
 /// @param[in]  size            Allocation size (in bytes).
@@ -65,40 +70,40 @@ void            OS_FreeEx(void* addr_p, const OS_MemoryType mem_type);
 /// @return     None.
 void            OS_MemCacheFlush(void);
 
-/// @brief      Copy memory in bytes.
-/// @param[out] dst_p           Destination address.
-/// @param[in]  src_p           Source address.
-/// @param[in]  size8           Size to copy (bytes).
-/// @return     None.
-void            OS_MemCpy8(void* dst_p, const void* src_p, SIZE size8);
-
-/// @brief      Copy memory in words.
-/// @param[out] dst_p           Destination address.
-/// @param[in]  src_p           Source address.
-/// @param[in]  size32          Size to copy (words).
-/// @return     None.
-void            OS_MemCpy32(void* dst_p, const void* src_p, SIZE size32);
-
-/// @brief      Copy memory in bytes.
-/// @param[out] dst_p           Destination address.
-/// @param[in]  src_p           Source address.
-/// @param[in]  size8           Size to copy (bytes).
-/// @return     None.
-void            OS_MemMove8(void* dst_p, const void* src_p, SIZE size8);
-
-/// @brief      Copy memory in words.
-/// @param[out] dst_p           Destination address.
-/// @param[in]  src_p           Source address.
-/// @param[in]  size32          Size to copy (words).
-/// @return     None.
-void            OS_MemMove32(void* dst_p, const void* src_p, SIZE size32);
-
-/// @brief      Set memory by value.
-/// @param[out] dst_p           Destination address.
-/// @param[in]  value           Value.
-/// @param[in]  size            Size to set(bytes).
-/// @return     None.
-void            OS_MemSet(void* dst_p, const U8 value, SIZE size);
+///// @brief      Copy memory in bytes.
+///// @param[out] dst_p           Destination address.
+///// @param[in]  src_p           Source address.
+///// @param[in]  size8           Size to copy (bytes).
+///// @return     None.
+//void            OS_MemCpy(void* dst_p, const void* src_p, SIZE size);
+//
+///// @brief      Copy memory in words.
+///// @param[out] dst_p           Destination address.
+///// @param[in]  src_p           Source address.
+///// @param[in]  size32          Size to copy (words).
+///// @return     None.
+//void            OS_MemCpy32(void* dst_p, const void* src_p, SIZE size32);
+//
+///// @brief      Copy memory in bytes.
+///// @param[out] dst_p           Destination address.
+///// @param[in]  src_p           Source address.
+///// @param[in]  size8           Size to copy (bytes).
+///// @return     None.
+//void            OS_MemMove(void* dst_p, const void* src_p, SIZE size);
+//
+///// @brief      Copy memory in words.
+///// @param[out] dst_p           Destination address.
+///// @param[in]  src_p           Source address.
+///// @param[in]  size32          Size to copy (words).
+///// @return     None.
+//void            OS_MemMove32(void* dst_p, const void* src_p, SIZE size32);
+//
+///// @brief      Set memory by value.
+///// @param[out] dst_p           Destination address.
+///// @param[in]  value           Value.
+///// @param[in]  size            Size to set(bytes).
+///// @return     None.
+//void            OS_MemSet(void* dst_p, const U8 value, SIZE size);
 
 /// @brief      Get the next memory heap type.
 /// @param[in]  mem_type        Memory type.

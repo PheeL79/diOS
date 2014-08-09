@@ -1061,7 +1061,7 @@
         </option>
         <option>
           <name>GenLowLevelInterface</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GEndianModeBE</name>
@@ -1073,7 +1073,7 @@
         </option>
         <option>
           <name>GenStdoutInterface</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GeneralMisraRules98</name>
@@ -2971,7 +2971,7 @@
         </option>
         <option>
           <name>GenLowLevelInterface</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GEndianModeBE</name>
@@ -2983,7 +2983,7 @@
         </option>
         <option>
           <name>GenStdoutInterface</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GeneralMisraRules98</name>
@@ -3843,9 +3843,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\hal_olimex_stm32_p407.c</name>
-        <excluded>
-          <configuration>Debug FLASH</configuration>
-        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\stm32f4xx_hal_msp.c</name>
@@ -4102,13 +4099,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usart6.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc\stm324xg_eval_sdio_sd.c</name>
-      <excluded>
-        <configuration>Debug FLASH</configuration>
-        <configuration>Debug SRAM</configuration>
-      </excluded>
     </file>
   </group>
   <file>

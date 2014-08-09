@@ -85,7 +85,7 @@ static HAL_DriverItf drv_led_user = {
 /*****************************************************************************/
 Status LED_Init_(void)
 {
-    memset(drv_led_v, 0x0, sizeof(drv_led_v));
+    HAL_MEMSET(drv_led_v, 0x0, sizeof(drv_led_v));
     drv_led_v[DRV_ID_LED_PULSE] = &drv_led_pulse;
     drv_led_v[DRV_ID_LED_FS]    = &drv_led_fs;
     drv_led_v[DRV_ID_LED_ASSERT]= &drv_led_assert;

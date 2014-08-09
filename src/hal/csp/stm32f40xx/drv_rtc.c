@@ -80,7 +80,7 @@ static HAL_DriverItf drv_rtc = {
 /*****************************************************************************/
 Status RTC_Init_(void)
 {
-    memset(drv_rtc_v, 0x0, sizeof(drv_rtc_v));
+    HAL_MEMSET(drv_rtc_v, 0x0, sizeof(drv_rtc_v));
     drv_rtc_v[DRV_ID_RTC] = &drv_rtc;
     return S_OK;
 }
@@ -96,6 +96,8 @@ Status RTC__Init(void)
         /* Configure RTC Calendar */
         RTC_Reset();
     }
+    RTC_NVIC_Init();
+    RTC_AlarmInit();
     RTC_WakeupInit();
     //HAL_TRACE(D_INFO, S_STRING_GET(S_OK));
     return S_OK;
@@ -417,7 +419,7 @@ Status s = S_OK;
             OS_DateTime* os_time_p = (OS_DateTime*)args_p;
             if (OS_NULL != os_time_p) {
                 RTC_TimeTypeDef time;
-                memset((void*)&time, 0, sizeof(time));
+                HAL_MEMSET((void*)&time, 0, sizeof(time));
                 time.Hours          = os_time_p->hours;
                 time.Minutes        = os_time_p->minutes;
                 time.Seconds        = os_time_p->seconds;
@@ -446,7 +448,7 @@ Status s = S_OK;
             OS_DateTime* os_date_p = (OS_DateTime*)args_p;
             if (OS_NULL != os_date_p) {
                 RTC_DateTypeDef date;
-                memset((void*)&date, 0, sizeof(date));
+                HAL_MEMSET((void*)&date, 0, sizeof(date));
                 date.Year           = os_date_p->year - RTC_YEAR_BASE;
                 date.Month          = os_date_p->month;
                 date.WeekDay        = os_date_p->weekday;

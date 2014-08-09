@@ -50,26 +50,26 @@ Status s = S_OK;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
+    const QueueHandle_t queue_hd = xQueueCreate(cfg_p->len, cfg_p->item_size);
+    if (OS_NULL == queue_hd) { s = S_UNDEF_QUEUE; goto error; }
+    *qhd_p                          = (OS_QueueHd)item_l_p;
+    cfg_dyn_p->parent_thd           = parent_thd;
+    cfg_dyn_p->cfg.dir              = cfg_p->dir;
+    cfg_dyn_p->cfg.len              = cfg_p->len;
+    cfg_dyn_p->cfg.item_size        = cfg_p->item_size;
+    cfg_dyn_p->stats.received       = 0;
+    cfg_dyn_p->stats.sended         = 0;
+    OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
+    OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)queue_hd);
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
-        const QueueHandle_t queue_hd = xQueueCreate(cfg_p->len, cfg_p->item_size);
-        if (OS_NULL == queue_hd) { s = S_UNDEF_QUEUE; goto error; }
-        *qhd_p                          = (OS_QueueHd)item_l_p;
-        cfg_dyn_p->parent_thd           = parent_thd;
-        cfg_dyn_p->cfg.dir              = cfg_p->dir;
-        cfg_dyn_p->cfg.len              = cfg_p->len;
-        cfg_dyn_p->cfg.item_size        = cfg_p->item_size;
-        cfg_dyn_p->stats.received       = 0;
-        cfg_dyn_p->stats.sended         = 0;
-        OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
-        OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)queue_hd);
-        OS_ListAppend(&os_queues_list, item_l_p);
         ++queues_count;
-error:
-        IF_STATUS(s) {
-            OS_Free(cfg_dyn_p);
-            OS_ListItemDelete(item_l_p);
-        }
+        OS_ListAppend(&os_queues_list, item_l_p);
         OS_MutexRecursiveUnlock(os_queue_mutex);
+    }
+error:
+    IF_STATUS(s) {
+        OS_Free(cfg_dyn_p);
+        OS_ListItemDelete(item_l_p);
     }
     return s;
 }
@@ -169,7 +169,7 @@ Status OS_QueueConfigGet(const OS_QueueHd qhd, OS_QueueConfig* config_p)
 Status s = S_OK;
     if ((OS_NULL == qhd) || (OS_NULL == config_p)) { return S_INVALID_REF; }
     OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_LIST_ITEM_VALUE_GET((OS_ListItem*)qhd);
-    OS_MemCpy8(config_p, &cfg_dyn_p->cfg, sizeof(cfg_dyn_p->cfg));
+    OS_MEMCPY(config_p, &cfg_dyn_p->cfg, sizeof(cfg_dyn_p->cfg));
     return s;
 }
 
@@ -179,7 +179,7 @@ Status OS_QueueStatsGet(const OS_QueueHd qhd, OS_QueueStats* stats_p)
 Status s = S_OK;
     if ((OS_NULL == qhd) || (OS_NULL == stats_p)) { return S_INVALID_REF; }
     OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_LIST_ITEM_VALUE_GET((OS_ListItem*)qhd);
-    OS_MemCpy8(stats_p, &cfg_dyn_p->stats, sizeof(cfg_dyn_p->stats));
+    OS_MEMCPY(stats_p, &cfg_dyn_p->stats, sizeof(cfg_dyn_p->stats));
     return s;
 }
 

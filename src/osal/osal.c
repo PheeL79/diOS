@@ -99,19 +99,19 @@ Status s;
         const OS_DriverConfig drv_cfg = {
             .name       = "USART6",
             .itf_p      = drv_stdio_p,
-            .prio_power = OS_PWR_PRIO_MAX - 1
+            .mode_io    = UART_MODE_IO,
+            .prio_power = OS_PWR_PRIO_MAX - 1,
         };
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_stdio)) { return s; }
         IF_STATUS(s = OS_DriverInit(os_env.drv_stdio)) { return s; }
         IF_STATUS(s = OS_DriverOpen(os_env.drv_stdio, OS_NULL)) { return s; }
-        const HAL_DriverModeIo mode_io = DRV_MODE_IO_USER;
-        IF_STATUS(s = OS_DriverIoCtl(os_env.drv_stdio, DRV_REQ_STD_MODE_IO_SET, (void*)&mode_io)) { return s; }
     }
 
     {
         const OS_DriverConfig drv_cfg = {
             .name       = "RTC",
             .itf_p      = drv_rtc_v[DRV_ID_RTC],
+            .mode_io    = DRV_MODE_IO_DEFAULT,
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_rtc)) { return s; }

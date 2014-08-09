@@ -58,7 +58,7 @@ OS_TaskHd OS_TaskHdGet(const TaskHandle_t task_hd)
 {
 OS_ListItem* iter_li_p;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
-        iter_li_p = OS_ListItemByOwnerFind(&os_tasks_list, task_hd);
+        iter_li_p = OS_ListItemByOwnerGet(&os_tasks_list, task_hd);
         OS_MutexRecursiveUnlock(os_task_mutex);
     }
     return (OS_TaskHd)iter_li_p;

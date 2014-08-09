@@ -35,10 +35,10 @@ void* pvPortMalloc(size_t xWantedSize);
 void* pvPortMalloc(size_t xWantedSize)
 {
 void* pvReturn;
-    OS_SchedulerSuspend(); {
+    OS_CriticalSectionEnter(); {
 	    pvReturn = tlsf_malloc(xWantedSize);
         //OS_LOG(D_DEBUG, "heap: %5d; malloc: 0x%X, %d\r\n", get_used_size(&heap), pvReturn, xWantedSize);
-    } OS_SchedulerResume();
+    } OS_CriticalSectionExit();
 	return pvReturn;
 }
 
@@ -47,11 +47,10 @@ void vPortFree(void* pv);
 void vPortFree(void* pv)
 {
 	if (pv)	{
-        OS_SchedulerSuspend(); {
+        OS_CriticalSectionEnter(); {
 		    tlsf_free(pv);
-//            OS_MutexUnlock(os_mem_mutex);
             //OS_LOG(D_DEBUG, "heap: %5d; free  : 0x%X\r\n", get_used_size(&heap), pv);
-        } OS_SchedulerResume();
+        } OS_CriticalSectionExit();
 	}
 }
 
@@ -158,37 +157,37 @@ void OS_MemCacheFlush(void)
 #endif // CM4F
 }
 
-/******************************************************************************/
-void OS_MemCpy8(void* dst_p, const void* src_p, SIZE size8)
-{
-    memcpy(dst_p, src_p, size8);
-    //DMA_MemCpy8(dst_p, src_p, size8);
-}
-
-/******************************************************************************/
-void OS_MemCpy32(void* dst_p, const void* src_p, SIZE size32)
-{
-    memcpy(dst_p, src_p, (size32 * sizeof(U32)));
-    //DMA_MemCpy32(dst_p, src_p, size32);
-}
-
-/******************************************************************************/
-void OS_MemMove8(void* dst_p, const void* src_p, SIZE size8)
-{
-    memmove(dst_p, src_p, size8);
-}
-
-/******************************************************************************/
-void OS_MemMove32(void* dst_p, const void* src_p, SIZE size32)
-{
-    memmove(dst_p, src_p, (size32 * sizeof(U32)));
-}
-
-/******************************************************************************/
-void OS_MemSet(void* dst_p, const U8 value, SIZE size)
-{
-    memset(dst_p, value, size);
-}
+///******************************************************************************/
+//void OS_MemCpy(void* dst_p, const void* src_p, SIZE size)
+//{
+//    memcpy(dst_p, src_p, size);
+//    //DMA_MemCpy8(dst_p, src_p, size8);
+//}
+//
+///******************************************************************************/
+//void OS_MemCpy32(void* dst_p, const void* src_p, SIZE size32)
+//{
+//    memcpy(dst_p, src_p, (size32 * sizeof(U32)));
+//    //DMA_MemCpy32(dst_p, src_p, size32);
+//}
+//
+///******************************************************************************/
+//void OS_MemMove(void* dst_p, const void* src_p, SIZE size)
+//{
+//    memmove(dst_p, src_p, size);
+//}
+//
+///******************************************************************************/
+//void OS_MemMove32(void* dst_p, const void* src_p, SIZE size32)
+//{
+//    memmove(dst_p, src_p, (size32 * sizeof(U32)));
+//}
+//
+///******************************************************************************/
+//void OS_MemSet(void* dst_p, const U8 value, SIZE size)
+//{
+//    memset(dst_p, value, size);
+//}
 
 /******************************************************************************/
 OS_MemoryType OS_MemoryTypeHeapNextGet(const OS_MemoryType mem_type)
@@ -222,7 +221,7 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
         }
         ++memory_cfg_p;
     }
-    OS_MemCpy8((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
+    OS_MEMCPY((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
     mem_stat_p->used = get_used_size((void*)mem_stat_p->desc.addr);
     mem_stat_p->free = mem_stat_p->desc.size - mem_stat_p->used;
     return S_OK;

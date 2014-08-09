@@ -41,7 +41,7 @@ static HAL_DriverItf drv_iwdg = {
 Status IWDG_Init_(void)
 {
 Status s = S_OK;
-    memset(drv_iwdg_v, 0x0, sizeof(drv_iwdg_v));
+    HAL_MEMSET(drv_iwdg_v, 0x0, sizeof(drv_iwdg_v));
     drv_iwdg_v[DRV_ID_IWDG] = &drv_iwdg;
     return s;
 }

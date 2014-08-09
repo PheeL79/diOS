@@ -105,8 +105,8 @@ Status s = S_OK;
         OS_EnvVariable* env_var_p;
         //Is variable already exists?
         if (OS_NULL == item_l_p) { //No. Create the new one.
-            const U32 variable_name_len = strlen((char const*)variable_name_p) + 1;
-            const U32 variable_value_len= strlen((char const*)variable_value_p) + 1;
+            const U32 variable_name_len = OS_STRLEN((char const*)variable_name_p) + 1;
+            const U32 variable_value_len= OS_STRLEN((char const*)variable_value_p) + 1;
             if ((0 == variable_name_len) || (0 == variable_value_len)) { s = S_INVALID_VALUE; goto error; }
             item_l_p = OS_ListItemCreate();
             env_var_p = (OS_EnvVariable*)OS_Malloc(sizeof(OS_EnvVariable));
@@ -114,19 +114,19 @@ Status s = S_OK;
             env_var_p->value_p  = (ConstStrPtr)OS_Malloc(variable_value_len);
             if ((OS_NULL == item_l_p) || (OS_NULL == env_var_p)) { s = S_NO_MEMORY; goto error; }
             if ((OS_NULL == env_var_p->name_p) || (OS_NULL == env_var_p->value_p)) { s = S_NO_MEMORY; goto error; }
-            strcpy((char*)env_var_p->name_p,  (char const*)variable_name_p);
-            strcpy((char*)env_var_p->value_p, (char const*)variable_value_p);
+            OS_STRNCPY((char*)env_var_p->name_p,  (char const*)variable_name_p,  variable_name_len);
+            OS_STRNCPY((char*)env_var_p->value_p, (char const*)variable_value_p, variable_value_len);
             OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)env_var_p);
             OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskGet());
             OS_ListAppend(&os_variables_list, item_l_p);
         } else { //Yes.
             env_var_p = (OS_EnvVariable*)OS_LIST_ITEM_VALUE_GET(item_l_p);
             OS_Free((void*)env_var_p->value_p); //Delete old value.
-            const U32 variable_data_len = strlen((char const*)variable_value_p) + 1;
+            const U32 variable_data_len = OS_STRLEN((char const*)variable_value_p) + 1;
             //Create the new one.
             env_var_p->value_p = (ConstStrPtr)OS_Malloc(variable_data_len);
             if (OS_NULL == env_var_p->value_p) { s = S_NO_MEMORY; goto error; }
-            strcpy((char*)env_var_p->value_p, (char const*)variable_value_p);
+            OS_STRNCPY((char*)env_var_p->value_p, (char const*)variable_value_p, variable_data_len);
         }
 error:
         IF_STATUS(s) {

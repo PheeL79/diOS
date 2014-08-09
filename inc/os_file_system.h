@@ -8,6 +8,7 @@
 
 #include "ff.h"
 #include "os_common.h"
+#include "os_driver.h"
 #include "os_time.h"
 
 #if (1 == OS_FILE_SYSTEM_ENABLED)
@@ -17,11 +18,7 @@
 * @{
 */
 //------------------------------------------------------------------------------
-#define OS_FILE_SYSTEM_UNDEF        OS_NULL
-#define OS_FILE_UNDEF               OS_FILE_SYSTEM_UNDEF
-#define OS_DIR_UNDEF                OS_FILE_SYSTEM_UNDEF
-
-//------------------------------------------------------------------------------
+typedef void*   OS_FileSystemMediaHd;
 typedef FATFS*  OS_FileSystemHd;
 typedef FIL*    OS_FileHd;
 typedef DIR*    OS_DirHd;
@@ -69,8 +66,14 @@ typedef enum {
 } OS_FileSystemPartitionRule;
 
 typedef struct {
+    Str             name[OS_FILE_SYSTEM_VOLUME_NAME_LEN];
+    OS_DriverConfig*drv_cfg_p;
+    U8              volume;
+} OS_FileSystemMediaConfig;
+
+typedef struct {
     StrPtr              media_name_p;
-    Str                 name[12];
+    Str                 name[OS_FILE_SYSTEM_VOLUME_NAME_LEN];
     U32                 serial;
     OS_FileSystemType   type;
     U32                 clusters_count;
@@ -83,7 +86,7 @@ typedef struct {
     U32                 base_fat;
     U32                 base_dir;
     U32                 base_data;
-} OS_VolumeStats;
+} OS_FileSystemVolumeStats;
 
 typedef struct {
     U32                 files_count;
@@ -151,68 +154,82 @@ Status          OS_FileSystemInit(void);
 /// @return     #Status.
 Status          OS_FileSystemDeInit(void);
 
-/// @brief      Init the file system media volume.
-/// @param[in]  volume          Media volume.
+/// @brief      Create the file system media volume.
+/// @param[out] fs_media_hd_p   Media handle.
 /// @return     #Status.
-Status          OS_FileSystemMediaInit(const S8 volume);
+Status          OS_FileSystemMediaCreate(const OS_FileSystemMediaConfig* cfg_p, OS_FileSystemMediaHd* fs_media_hd_p);
+
+/// @brief      Delete the file system media volume.
+/// @param[in]  fs_media_hd     Media handle.
+/// @return     #Status.
+Status          OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd);
+
+/// @brief      Init the file system media volume.
+/// @param[in]  fs_media_hd     Media handle.
+/// @return     #Status.
+Status          OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Deinit the file system media volume.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @return     #Status.
-Status          OS_FileSystemMediaDeInit(const S8 volume);
+Status          OS_FileSystemMediaDeInit(const OS_FileSystemMediaHd fs_media_hd);
 
 //S8              OS_FileSystemMediaCurrentGet(void);
 
 /// @brief      Set the system current media volume.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @return     #Status.
-Status          OS_FileSystemMediaCurrentSet(const S8 volume);
+Status          OS_FileSystemMediaCurrentSet(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Get the media volume name.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @return     Volume name.
-StrPtr          OS_FileSystemMediaNameGet(const S8 volume);
+ConstStrPtr     OS_FileSystemMediaNameGet(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Make file system on media volume.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @param[in]  part_rule       Make partition rule.
 /// @param[in]  size            Partition size.
 /// @return     #Status.
-Status          OS_FileSystemMake(const S8 volume, const OS_FileSystemPartitionRule part_rule, const U32 size);
+Status          OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const U32 size);
 
 /// @brief      Mount file system on media volume.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @return     #Status.
-Status          OS_FileSystemMount(const S8 volume);
+Status          OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Unmount file system on media volume.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @return     #Status.
-Status          OS_FileSystemUnMount(const S8 volume);
+Status          OS_FileSystemUnMount(const OS_FileSystemMediaHd fs_media_hd);
 
-/// @brief      Get media volume by it's name.
+OS_FileSystemMediaHd OS_FileSystemMediaByVolumeGet(const U8 volume);
+
+/// @brief      Get media handle by it's volume name.
 /// @param[in]  name_p          Media volume name.
-/// @return     Volume.
-S8              OS_FileSystemVolumeByNameGet(ConstStrPtr name_p);
+/// @return     Media handle.
+OS_FileSystemMediaHd OS_FileSystemMediaByNameGet(ConstStrPtr name_p);
+
+U8              OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Get media volume label.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @param[out] label_p         Media volume label.
 /// @param[out] serial_p        Media volume serial.
 /// @return     #Status.
-Status          OS_FileSystemVolumeLabelGet(const S8 volume, StrPtr label_p, U32* serial_p);
+Status          OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p, U32* serial_p);
 
 /// @brief      Set media volume label.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @param[in]  label_p         Media volume label.
 /// @return     #Status.
-Status          OS_FileSystemVolumeLabelSet(const S8 volume, StrPtr label_p);
+Status          OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p);
 
 /// @brief      Get media volume statistics.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @param[out] stats_p         Media volume statistics.
 /// @return     #Status.
-Status          OS_FileSystemVolumeStatsGet(const S8 volume, OS_VolumeStats* stats_p);
+Status          OS_FileSystemVolumeStatsGet(const OS_FileSystemMediaHd fs_media_hd, OS_FileSystemVolumeStats* stats_p);
 
 /// @brief      Scan volume for statistics.
 /// @param[in]  path_p          Volume path.
@@ -221,11 +238,11 @@ Status          OS_FileSystemVolumeStatsGet(const S8 volume, OS_VolumeStats* sta
 Status          OS_FileSystemVolumeScan(const StrPtr path_p, OS_FileSystemStats* stats_p);
 
 /// @brief      Get media volume free clusters.
-/// @param[in]  volume          Media volume.
+/// @param[in]  fs_media_hd     Media handle.
 /// @param[in]  path_p          Volume path.
 /// @param[out] clusters_free_count_p Free clusters count.
 /// @return     #Status.
-Status          OS_FileSystemClustersFreeGet(const S8 volume, const StrPtr path_p, U32* clusters_free_count_p);
+Status          OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media_hd, const StrPtr path_p, U32* clusters_free_count_p);
 
 /**
 * \addtogroup OS_FileSystemFilesOps File system files operations.

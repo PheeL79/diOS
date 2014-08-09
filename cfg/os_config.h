@@ -46,12 +46,12 @@ enum {
     OS_MEM_LAST,
     OS_MEM_UNDEF
 };
-#define OS_MEM_HEAP_SYS             OS_MEM_RAM_EXT_SRAM
-#define OS_MEM_HEAP_APP             OS_MEM_RAM_EXT_SRAM
-#define OS_STACK_SIZE_MIN           200
-#define OS_HEAP_SIZE                1 * 1024
+#define OS_MEM_HEAP_SYS             OS_MEM_RAM_INT_SRAM
+#define OS_MEM_HEAP_APP             OS_MEM_RAM_INT_SRAM
+#define OS_STACK_SIZE_MIN           0x100
+#define OS_HEAP_SIZE                0x19FFF //0x1BFFF
 
-__no_init static U8 heap_int_sram[OS_HEAP_SIZE];// @ RAM_region;
+__no_init static U8 heap_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
 __no_init static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
 __no_init static U8 heap_ext_sram[MEM_EXT_SRAM_SIZE]        @ MEM_EXT_SRAM_BASE_ADDRESS;
 
@@ -99,9 +99,12 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_FILE_SYSTEM_LOCK         0
 #define OS_FILE_SYSTEM_REENTRANT    1
 #define OS_FILE_SYSTEM_VOLUMES_MAX  3
+#define OS_FILE_SYSTEM_VOLUME_STR_LEN       4
+#define OS_FILE_SYSTEM_VOLUME_NAME_LEN      12
 #define OS_FILE_SYSTEM_LONG_NAMES_ENABLED   3
 #define OS_FILE_SYSTEM_LONG_NAMES_LEN       255
 #define OS_FILE_SYSTEM_LONG_NAMES_UNICODE   0
+#define OS_FILE_SYSTEM_DRV_DELIM    ':'
 #define OS_FILE_SYSTEM_DIR_DELIM    '/'
 #define OS_FILE_SYSTEM_SYNC_OBJ     OS_MutexHd
 #define OS_FILE_SYSTEM_YEAR_BASE    1980U
@@ -133,6 +136,13 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 
 //Tests
 //#define OS_TEST
+
+// cstdlib
+#define OS_STRLEN(str_p)                HAL_STRLEN(str_p)
+#define OS_STRCHR(str_p, c)             HAL_STRCHR(str_p, c)
+#define OS_STRCPY(dst_p, src_p)         HAL_STRCPY(dst_p, src_p)
+#define OS_STRCAT(dst_p, src_p)         HAL_STRCAT(dst_p, src_p)
+#define OS_STRNCPY(dst_p, src_p, size)  HAL_STRNCPY(dst_p, src_p, size)
 
 enum {
     OS_SHELL_BUTTON_UP              = 'A',

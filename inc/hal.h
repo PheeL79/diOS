@@ -27,6 +27,7 @@ enum {
 // Driver modes.
 enum {
     DRV_MODE_IO_UNDEF,
+    DRV_MODE_IO_DEFAULT,
     DRV_MODE_IO_POLL,
     DRV_MODE_IO_IT,
     DRV_MODE_IO_DMA,

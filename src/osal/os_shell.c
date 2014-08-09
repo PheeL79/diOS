@@ -51,7 +51,7 @@ void OS_ShellClClear(void)
 {
     shell_cr_pos = 0;
     //TODO(A. Filyanov) Remember cl cursor last max position and simply put EOL char at it.
-    memset(shell_cl, OS_ASCII_EOL, sizeof(shell_cl));
+    OS_MEMSET(shell_cl, OS_ASCII_EOL, sizeof(shell_cl));
 }
 
 /******************************************************************************/
@@ -113,8 +113,8 @@ Status s = S_OK;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
-    IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
-        OS_MemCpy8(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
+    IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        OS_MEMCPY(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
         OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cmd_cfg_dyn_p);
         OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskGet());
         OS_ListAppend(&os_commands_list, item_l_p);
@@ -131,11 +131,11 @@ Status s = S_OK;
 Status OS_ShellCommandDelete(ConstStrPtr name_p)
 {
 OS_ShellCommandConfig* cmd_cfg_p = OS_ShellCommandByNameGet(name_p);
-OS_ListItem* item_l_p = OS_ListItemByValueFind(&os_commands_list, (OS_Value)cmd_cfg_p);
+OS_ListItem* item_l_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_cfg_p);
 Status s = S_OK;
 
     if ((OS_NULL == cmd_cfg_p) || (OS_DELAY_MAX == (OS_Value)cmd_cfg_p)) { return S_INVALID_REF; }
-    IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
+    IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItemDelete(item_l_p);
         OS_Free(cmd_cfg_p);
         OS_MutexUnlock(os_shell_mutex);
@@ -191,19 +191,20 @@ OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrPtr name_p)
 {
 OS_ShellCommandHd cmd_hd = SHELL_COMMAND_UNDEF;
 
-    IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
-        OS_ListItem* iter_li_p = (OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_commands_list);
+    IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        OS_ListItem* iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_commands_list));
         OS_ShellCommandConfig* cmd_cfg_p;
 
-        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) {
-            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
             cmd_cfg_p = (OS_ShellCommandConfig*)OS_LIST_ITEM_VALUE_GET(iter_li_p);
             if (!strcmp((const char*)name_p, (const char*)cmd_cfg_p->command)) {
                 cmd_hd = (OS_ShellCommandHd)OS_LIST_ITEM_VALUE_GET(iter_li_p);
                 break;
             }
+            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
         }
-    } OS_MutexUnlock(os_shell_mutex);
+        OS_MutexUnlock(os_shell_mutex);
+    }
     return cmd_hd;
 }
 
@@ -212,23 +213,22 @@ OS_ShellCommandHd OS_ShellCommandNextGet(const OS_ShellCommandHd cmd_hd)
 {
 OS_ListItem* iter_li_p;
 OS_ShellCommandHd chd = SHELL_COMMAND_UNDEF;
-    IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_commands_list protection;
+    IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         if (SHELL_COMMAND_UNDEF == cmd_hd) {
-            iter_li_p = (OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_commands_list);
-            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) { goto error; }
-            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+            iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_commands_list));
+            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { goto error; }
             chd = (OS_ShellCommandHd)OS_LIST_ITEM_VALUE_GET(iter_li_p);
         } else {
-            iter_li_p = OS_ListItemByValueFind(&os_commands_list, (OS_Value)cmd_hd);
-            if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            iter_li_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_hd);
+            if (OS_NULL != iter_li_p) {
                 iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
                 if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { goto error; }
                 chd = (OS_ShellCommandHd)OS_LIST_ITEM_VALUE_GET(iter_li_p);
             }
         }
-    }
 error:
-    OS_MutexUnlock(os_shell_mutex);
+        OS_MutexUnlock(os_shell_mutex);
+    }
     return chd;
 }
 
@@ -272,10 +272,10 @@ static BL is_ctrl = OS_FALSE;
             break;
 #if (1 == OS_SHELL_EDIT_ENABLED)
         case OS_ASCII_SPACE: {
-            const U32 str_len = strlen((char const*)&shell_cl[shell_cr_pos]) + 1;
+            const U32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]) + 1;
             const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
             if ((shell_cr_pos + str_len + 1) < sizeof(shell_cl)) { //protect cl buffer
-                memmove(cl_str_p + 1, cl_str_p, str_len + 1);
+                OS_MEMMOV(cl_str_p + 1, cl_str_p, str_len + 1);
                 *cl_str_p = OS_ASCII_SPACE;
                 putchar(c); //echo
                 printf((char const*)cl_str_p + 1);
@@ -288,9 +288,9 @@ static BL is_ctrl = OS_FALSE;
             break;
         case OS_ASCII_ESC_BACKSPACE:
             if (0 < shell_cr_pos) {
-                const U32 str_len = strlen((char const*)&shell_cl[shell_cr_pos]);
+                const U32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]);
                 const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
-                memmove(cl_str_p - 1, cl_str_p, str_len + 1);
+                OS_MEMMOV(cl_str_p - 1, cl_str_p, str_len + 1);
                 putchar(c); //echo
                 printf("%s%c", (char const*)cl_str_p - 1, OS_ASCII_SPACE);
                 const S32 pos = --shell_cr_pos;
@@ -346,10 +346,10 @@ static BL is_ctrl = OS_FALSE;
 #if (1 == OS_SHELL_EDIT_ENABLED)
 echo:
             {
-            const U32 str_len = strlen((char const*)&shell_cl[shell_cr_pos]) + 1;
+            const U32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]) + 1;
             const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
             if ((shell_cr_pos + str_len + 1) < sizeof(shell_cl)) { //protect cl buffer
-                memmove(cl_str_p + 1, cl_str_p, str_len + 1);
+                OS_MEMMOV(cl_str_p + 1, cl_str_p, str_len + 1);
                 *cl_str_p = c;
                 putchar(c); //echo
                 printf((char const*)cl_str_p + 1);
@@ -377,13 +377,13 @@ void OS_ShellClControlHandler(const U8 c)
             OS_ShellCaretPositionSet(0);
             break;
         case OS_SHELL_BUTTON_END:
-            OS_ShellCaretPositionSet(strlen((char const*)&shell_cl));
+            OS_ShellCaretPositionSet(OS_STRLEN((char const*)&shell_cl));
             break;
         case OS_SHELL_BUTTON_DELETE: {
-            const S32 str_len = strlen((char const*)&shell_cl[shell_cr_pos]);
+            const S32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]);
             if (str_len) {
                 const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
-                memmove(cl_str_p, cl_str_p + 1, str_len + 1);
+                OS_MEMMOV(cl_str_p, cl_str_p + 1, str_len + 1);
                 printf("%s%c", (char const*)cl_str_p, OS_ASCII_SPACE);
                 const S32 pos = shell_cr_pos;
                 shell_cr_pos += str_len;

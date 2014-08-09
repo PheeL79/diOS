@@ -298,7 +298,6 @@ Status s = S_OK;
             break;
         case DRV_REQ_STD_MODE_IO_SET: {
             const HAL_DriverModeIo mode_io = (*(HAL_DriverModeIo*)args_p);
-//            CRITICAL_ENTER(); {
                 switch (mode_io) {
                     case DRV_MODE_IO_POLL:
                         drv_usart6.Read = USART6_Read;
@@ -320,7 +319,6 @@ Status s = S_OK;
                         s = S_INVALID_VALUE;
                         break;
                 }
-//            } CRITICAL_EXIT();
             }
             break;
         case DRV_REQ_STD_POWER_SET:

@@ -22,8 +22,8 @@
 extern const StatusItem status_fs_v[];
 
 //------------------------------------------------------------------------------
-static OS_FileHd fhd  = OS_FILE_UNDEF;
-static S8 volume_curr = 0;
+static OS_FileSystemMediaHd fs_media_hd_curr = OS_NULL;
+static OS_FileHd fhd = OS_NULL;
 
 //------------------------------------------------------------------------------
 static ConstStr cmd_mi[]            = "mi";
@@ -39,7 +39,8 @@ Status s;
         OS_LOG_S(D_WARNING, s);
         return s;
     }
-    IF_STATUS(s = OS_FileSystemMediaInit(volume)) {
+    const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+    IF_STATUS(s = OS_FileSystemMediaInit(fs_media_hd)) {
         OS_LOG_S(D_WARNING, s);
         return s;
     }
@@ -60,7 +61,8 @@ Status s;
         OS_LOG_S(D_WARNING, s);
         return s;
     }
-    IF_STATUS(s = OS_FileSystemMediaDeInit(volume)) {
+    const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+    IF_STATUS(s = OS_FileSystemMediaDeInit(fs_media_hd)) {
         OS_LOG_S(D_WARNING, s);
         return s;
     }
@@ -81,7 +83,8 @@ Status s;
         OS_LOG_S(D_WARNING, s);
         return s;
     }
-    IF_STATUS(s = OS_FileSystemMount(volume)) {
+    const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+    IF_STATUS(s = OS_FileSystemMount(fs_media_hd)) {
         OS_LOG_S(D_WARNING, s);
         return s;
     }
@@ -102,7 +105,8 @@ Status s;
         OS_LOG_S(D_WARNING, s);
         return s;
     }
-    IF_STATUS(s = OS_FileSystemUnMount(volume)) {
+    const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+    IF_STATUS(s = OS_FileSystemUnMount(fs_media_hd)) {
         OS_LOG_S(D_WARNING, s);
         return s;
     }
@@ -117,7 +121,7 @@ static Status OS_ShellCmdFsHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdFsHandler(const U32 argc, ConstStrPtr argv[])
 {
 StrPtr path_p = OS_NULL;
-OS_VolumeStats stats_vol;
+OS_FileSystemVolumeStats stats_vol;
 OS_FileSystemStats stats_fs;
 S8 volume;
 Status s;
@@ -128,20 +132,20 @@ Status s;
         ConstStrPtr volume_label_p = (ConstStrPtr)strtok(path_str_p, delim_str);
         volume = atoi((const char*)volume_label_p);
         if (-1 == volume) {
-            volume = volume_curr;
             s = S_FS_MEDIA_INVALID;
             OS_LOG_S(D_WARNING, s);
-            OS_LOG(D_WARNING, "Current media: %s", OS_FileSystemMediaNameGet(volume));
+            OS_LOG(D_WARNING, "Current media: %s", OS_FileSystemMediaNameGet(fs_media_hd_curr));
         } else {
-            IF_STATUS(s = OS_FileSystemMediaCurrentSet(volume)) { goto error; }
-            volume_curr = volume;
+            const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+            IF_STATUS(s = OS_FileSystemMediaCurrentSet(fs_media_hd)) { goto error; }
+            fs_media_hd_curr = fs_media_hd;
         }
     }
-    IF_STATUS(s = OS_FileSystemVolumeStatsGet(volume, &stats_vol)) { OS_LOG_S(D_WARNING, s); goto error; }
+    IF_STATUS(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &stats_vol)) { OS_LOG_S(D_WARNING, s); goto error; }
     path_p = (StrPtr)OS_Malloc(OS_FILE_SYSTEM_LONG_NAMES_LEN * 2);
     if (OS_NULL == path_p) { s = S_NO_MEMORY; goto error; }
     *path_p = OS_ASCII_EOL;
-    memset(&stats_fs, 0, sizeof(stats_fs));
+    OS_MEMSET(&stats_fs, 0, sizeof(stats_fs));
     IF_STATUS(s = OS_FileSystemVolumeScan(path_p, &stats_fs)) { OS_LOG_S(D_WARNING, s); goto error; }
     printf("\nMedia name            :%s"
            "\nVolume name           :%s"
@@ -179,7 +183,6 @@ Status s;
            (stats_vol.clusters_free  * stats_vol.cluster_size) / 1024);
 error:
     OS_Free(path_p);
-    OS_FileSystemMediaCurrentSet(volume_curr);
     return s;
 }
 
@@ -194,7 +197,6 @@ OS_DirHd dhd = OS_Malloc(sizeof(DIR));
 OS_FileStats stats;
 StrPtr path_p = "";
 U32 dirs_count, files_count, total_size;
-S8 volume = volume_curr;
 Status s;
     if (OS_NULL == dhd) { return S_NO_MEMORY; }
     if (1 == argc) {
@@ -202,15 +204,16 @@ Status s;
         char const delim_str[] = ":";
         char* path_str_p = (char*)argv[0];
         ConstStrPtr volume_label_p = (ConstStrPtr)strtok(path_str_p, delim_str);
-        volume = (S8)atoi((const char*)volume_label_p);
+        const S8 volume = (S8)atoi((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
             OS_LOG_S(D_DEBUG, s);
             path_p = (StrPtr)argv[argc - 1];
         } else {
-            IF_STATUS(s = OS_FileSystemMediaCurrentSet(volume)) { goto error; }
-            path_p = (StrPtr)(++path_str_p + strlen((const char*)volume_label_p));
-            volume_curr = volume;
+            const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+            IF_STATUS(s = OS_FileSystemMediaCurrentSet(fs_media_hd)) { goto error; }
+            path_p = (StrPtr)(++path_str_p + OS_STRLEN((const char*)volume_label_p));
+            fs_media_hd_curr = fs_media_hd;
         }
     }
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
@@ -250,9 +253,9 @@ Status s;
            files_count,
            total_size,
            dirs_count);
-    IF_STATUS_OK(OS_FileSystemClustersFreeGet(volume, path_p, &total_size)) {
-        OS_VolumeStats volume_stats;
-        IF_STATUS_OK(s = OS_FileSystemVolumeStatsGet(volume, &volume_stats)) {
+    IF_STATUS_OK(OS_FileSystemClustersFreeGet(fs_media_hd_curr, path_p, &total_size)) {
+        OS_FileSystemVolumeStats volume_stats;
+        IF_STATUS_OK(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &volume_stats)) {
             printf(", %11u bytes free", (total_size * volume_stats.cluster_size));
         }
     }
@@ -262,7 +265,6 @@ error:
     OS_Free(stats.long_name_p);
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
-    OS_FileSystemMediaCurrentSet(volume_curr);
     return s;
 }
 
@@ -470,7 +472,8 @@ const S8 volume = atoi((const char*)argv[0]);
         const U8 base = ('x' == *(U8*)(size_str + 1)) ? 16 : 10;
         size = (U32)strtol((const char*)size_str, OS_NULL, base);
     }
-    printf("\nThe %s will be formatted. Are you sure? (Y/n) ", OS_FileSystemMediaNameGet(volume));
+    const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+    printf("\nThe %s will be formatted. Are you sure? (Y/n) ", OS_FileSystemMediaNameGet(fs_media_hd));
 //-------------------------------------
 // Intercept incoming user input(signals from STDIO driver) to task_shell. Workaround.
 // TODO(A. Filyanov) Clarify application interface to allow users commands get an input(smthn like getc()).
@@ -510,7 +513,8 @@ const S8 volume = atoi((const char*)argv[0]);
 //-------------------------------------
     if ('Y' == c_buf[0]) {
         printf("Formating...");
-        IF_STATUS(s = OS_FileSystemMake(volume, part_rule, (U32)size)) {
+        const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
+        IF_STATUS(s = OS_FileSystemMake(fs_media_hd, part_rule, (U32)size)) {
             OS_LOG_S(D_WARNING, s);
         }
     }

@@ -69,7 +69,7 @@ void OS_ListItemInit(OS_ListItem* item_l_p)
 }
 
 /******************************************************************************/
-OS_ListItem* OS_ListItemByValueFind(OS_List* list_p, const OS_Value value)
+OS_ListItem* OS_ListItemByValueGet(OS_List* list_p, const OS_Value value)
 {
 OS_ListItem* iter_li_p;
 
@@ -84,7 +84,7 @@ OS_ListItem* iter_li_p;
 }
 
 /******************************************************************************/
-OS_ListItem* OS_ListItemByOwnerFind(OS_List* list_p, const OS_Owner owner)
+OS_ListItem* OS_ListItemByOwnerGet(OS_List* list_p, const OS_Owner owner)
 {
 OS_ListItem* iter_li_p;
 

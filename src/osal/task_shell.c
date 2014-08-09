@@ -52,7 +52,7 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 {
 extern volatile OS_QueueHd stdio_qhd;
 ConstStrPtr shell_prompt_p = OS_ShellPromptGet();
-const U8 shell_prompt_len = strlen((char const*)shell_prompt_p);
+const U8 shell_prompt_len = OS_STRLEN((char const*)shell_prompt_p);
 const OS_QueueHd stdin_qhd = stdio_qhd = OS_TaskStdIoGet(OS_THIS_TASK, OS_STDIO_IN);
 OS_Message* msg_p;
 const OS_DriverHd drv_shell = OS_DriverStdIoGet();

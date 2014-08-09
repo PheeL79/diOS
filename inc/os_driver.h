@@ -19,6 +19,7 @@ extern "C" {
 */
 //------------------------------------------------------------------------------
 typedef const void* OS_DriverHd;
+typedef HAL_DriverModeIo OS_DriverModeIo;
 
 enum { //Bit fields
     OS_DRV_STATE_UNDEF,
@@ -41,6 +42,7 @@ typedef struct {
 typedef struct {
     ConstStr            name[OS_DRIVER_NAME_LEN];
     HAL_DriverItf*      itf_p;
+    OS_DriverModeIo     mode_io;
     OS_PowerPrio        prio_power;
 } OS_DriverConfig;
 

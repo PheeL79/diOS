@@ -192,7 +192,7 @@ OS_Tick OS_TickCountGet(void)
 OS_DateTime OS_TimeStringParse(ConstStrPtr time_p)
 {
 OS_DateTime time;
-    memset(&time, 0, sizeof(time));
+    OS_MEMSET(&time, 0, sizeof(time));
     if (OS_NULL != time_p) {
         // Parse time string.
         char const delim_str[] = OS_LOCALE_TIME_DELIM_EN\
@@ -220,7 +220,7 @@ OS_DateTime OS_DateStringParse(ConstStrPtr date_p)
 {
 const Locale locale = OS_LocaleGet();
 OS_DateTime date;
-    memset(&date, 0, sizeof(date));
+    OS_MEMSET(&date, 0, sizeof(date));
     if (OS_NULL != date_p) {
         // Parse date string.
         char const delim_str[] = OS_LOCALE_DATE_DELIM_EN\

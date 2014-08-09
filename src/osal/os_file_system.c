@@ -7,10 +7,10 @@
 #include "ff.h"
 #include "diskio.h"
 #include "sdcard.h"
-//#include "stm324xg_eval_sdio_sd.h"
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_driver.h"
+#include "os_list.h"
 #include "os_time.h"
 #include "os_file_system.h"
 
@@ -22,16 +22,12 @@
 #define MDL_STATUS_ITEMS    &status_fs_v[0]
 
 //------------------------------------------------------------------------------
-enum {
-    ATA = 0,
-    MMC = 1,
-    USB = 2
-};
-
 typedef struct {
-    StrPtr  logical_drive_p;
-    StrPtr  name_p;
-} OS_FileSystemMediaLabel;
+    Str             name[OS_FILE_SYSTEM_VOLUME_NAME_LEN];
+    Str             volume[OS_FILE_SYSTEM_VOLUME_STR_LEN];
+    OS_DriverHd     dhd;
+    OS_FileSystemHd fshd;
+} OS_FileSystemMediaConfigDyn;
 
 //------------------------------------------------------------------------------
 //static void FDirTranslate(const DIR* dir_p, OS_DirHd dhd);
@@ -44,15 +40,10 @@ static Status       FResultTranslate(const FRESULT r);
 static Status       VolumeCheck(const S8 volume);
 
 //------------------------------------------------------------------------------
+static OS_List os_fs_list;
+static OS_MutexHd os_fs_mutex;
 static OS_DriverHd drv_led_fs;
-
-static OS_DriverHd drv_media_v[OS_FILE_SYSTEM_VOLUMES_MAX];
-static OS_FileSystemHd fshd_v[OS_FILE_SYSTEM_VOLUMES_MAX];
-static OS_FileSystemMediaLabel media_label_v[OS_FILE_SYSTEM_VOLUMES_MAX] = {
-    { "0:", "ATA"       },
-    { "1:", "SD Card"   },
-    { "2:", "USB"       }
-};
+OS_DriverHd fs_media_dhd_v[OS_FILE_SYSTEM_VOLUMES_MAX];
 
 const StatusItem status_fs_v[] = {
 //file system
@@ -83,15 +74,30 @@ const StatusItem status_fs_v[] = {
 };
 
 /******************************************************************************/
+#pragma inline
+static OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd);
+OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd)
+{
+const OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
+OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+    return cfg_dyn_p;
+}
+
+/******************************************************************************/
 Status OS_FileSystemInit(void)
 {
 Status s;
     HAL_LOG(D_INFO, "Init");
-    memset(&drv_media_v[0], 0, sizeof(drv_media_v));
+    os_fs_mutex = OS_MutexRecursiveCreate();
+    if (OS_NULL == os_fs_mutex) { return S_INVALID_REF; }
+    OS_ListInit(&os_fs_list);
+    if (OS_TRUE != OS_LIST_IS_INITIALISED(&os_fs_list)) { return S_INVALID_VALUE; }
+    OS_MEMSET(fs_media_dhd_v, 0, sizeof(fs_media_dhd_v));
     //Led SD Init/Open
     const OS_DriverConfig drv_cfg = {
         .name       = "LED_FS",
         .itf_p      = drv_led_v[DRV_ID_LED_FS],
+        .mode_io    = DRV_MODE_IO_DEFAULT,
         .prio_power = OS_PWR_PRIO_DEFAULT
     };
     IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&drv_led_fs)) { return s; }
@@ -104,6 +110,7 @@ Status s;
 Status OS_FileSystemDeInit(void)
 {
 Status s;
+    //TODO(A. Filyanov) Loop and delete over existed media handles.
     //Led FS Close/Deinit
     IF_STATUS(s = OS_DriverClose(drv_led_fs)) {
         OS_LOG_S(D_WARNING, s);
@@ -115,66 +122,122 @@ Status s;
 }
 
 /******************************************************************************/
-Status OS_FileSystemMediaInit(const S8 volume)
+Status OS_FileSystemMediaCreate(const OS_FileSystemMediaConfig* cfg_p, OS_FileSystemMediaHd* fs_media_hd_p)
 {
-OS_DriverHd* drv_media_p = &drv_media_v[volume];
-OS_DriverStats stats;
 Status s = S_OK;
-    OS_LOG(D_DEBUG, "FS media init: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    if (OS_NULL == *drv_media_p) {
-        OS_FileSystemHd fshd_p = OS_Malloc(sizeof(FATFS));
-        if (OS_NULL == fshd_p) { return S_NO_MEMORY; }
-        fshd_v[volume] = fshd_p;
-        const OS_DriverConfig drv_cfg = {
-            .name       = "SDIO",
-            .itf_p      = drv_sdio_v[DRV_ID_SDIO],
-            .prio_power = OS_PWR_PRIO_DEFAULT
-        };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)drv_media_p)) { return s; }
+    if (OS_NULL == cfg_p) { return S_INVALID_REF; }
+    IF_STATUS(s = VolumeCheck(cfg_p->volume)) { return s; }
+    if (OS_NULL != OS_FileSystemMediaByVolumeGet(cfg_p->volume)) { return S_FS_MEDIA_INVALID; }
+    OS_ListItem* item_l_p = OS_ListItemCreate();
+    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_FileSystemMediaConfigDyn));
+    if (OS_NULL == cfg_dyn_p) {
+        OS_ListItemDelete(item_l_p);
+        return S_NO_MEMORY;
     }
-    IF_STATUS(s = OS_DriverStatsGet(*drv_media_p, &stats)) { return s; }
-    if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_INIT))) {
-        IF_STATUS(s = OS_DriverInit(*drv_media_p)) { return s; }
+    cfg_dyn_p->fshd = OS_Malloc(sizeof(FATFS));
+    if (OS_NULL == cfg_dyn_p->fshd) {
+        OS_Free(cfg_dyn_p);
+        OS_ListItemDelete(item_l_p);
+        return S_NO_MEMORY;
     }
-    if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
-        IF_STATUS(s = OS_DriverOpen(*drv_media_p, &drv_led_fs)) { return s; }
+    IF_STATUS(s = OS_DriverCreate(cfg_p->drv_cfg_p, &cfg_dyn_p->dhd)) {
+        OS_Free(cfg_dyn_p->fshd);
+        OS_Free(cfg_dyn_p);
+        OS_ListItemDelete(item_l_p);
+        return s;
     }
-    const DSTATUS dstatus = disk_initialize(volume);
-    if (BIT_TEST(dstatus, STA_NODISK)) {
-        s = S_FS_UNMOUNTED;
-    } else if (BIT_TEST(dstatus, STA_NOINIT)) {
-        s = S_FS_ISNT_INITED;
-    } else if (BIT_TEST(dstatus, STA_PROTECT)) {
-        s = S_FS_WRITE_PROTECTED;
+    fs_media_dhd_v[cfg_p->volume] = cfg_dyn_p->dhd;
+    cfg_dyn_p->volume[0]= cfg_p->volume + '0';
+    cfg_dyn_p->volume[1]= OS_FILE_SYSTEM_DRV_DELIM;
+    cfg_dyn_p->volume[2]= OS_FILE_SYSTEM_DIR_DELIM;
+    cfg_dyn_p->volume[3]= OS_ASCII_EOL;
+    OS_STRNCPY(cfg_dyn_p->name, (const char*)cfg_p->name, sizeof(cfg_dyn_p->name));
+    OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
+    OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)cfg_p->volume);
+    if (OS_NULL != fs_media_hd_p) {
+        *fs_media_hd_p = (OS_FileSystemMediaHd)item_l_p;
+    }
+    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        OS_ListAppend(&os_fs_list, item_l_p);
+        OS_MutexRecursiveUnlock(os_fs_mutex);
+    }
+//error:
+    IF_STATUS(s) {
+        Status s_drv;
+        IF_STATUS(s_drv = OS_DriverDelete(cfg_dyn_p->dhd)) { s = s_drv; }
+        OS_Free(cfg_dyn_p->fshd);
+        OS_Free(cfg_dyn_p);
+        OS_ListItemDelete(item_l_p);
+        fs_media_dhd_v[cfg_p->volume] = OS_NULL;
     }
     return s;
 }
 
 /******************************************************************************/
-Status OS_FileSystemMediaDeInit(const S8 volume)
+Status OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd)
 {
-OS_DriverHd* drv_media_p = &drv_media_v[volume];
+Status s = S_OK;
+    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
+        OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+        const U8 volume = (U8)OS_LIST_ITEM_OWNER_GET(item_l_p);
+        fs_media_dhd_v[volume] = OS_NULL;
+        s = OS_DriverDelete(cfg_dyn_p->dhd);
+        OS_Free(cfg_dyn_p->fshd);
+        OS_Free(cfg_dyn_p);
+        OS_ListItemDelete(item_l_p);
+        OS_MutexRecursiveUnlock(os_fs_mutex);
+    }
+    return s;
+}
+
+/******************************************************************************/
+Status OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd)
+{
+Status s = S_OK;
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS media init: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    {
+        const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+        const OS_DriverHd drv_media_hd = cfg_dyn_p->dhd;
+        OS_DriverStats stats;
+        IF_STATUS(s = OS_DriverStatsGet(drv_media_hd, &stats)) { return s; }
+        if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_INIT))) {
+            IF_STATUS(s = OS_DriverInit(drv_media_hd)) { return s; }
+        }
+        if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
+            IF_STATUS(s = OS_DriverOpen(drv_media_hd, &drv_led_fs)) { return s; }
+        }
+    }
+//    const DSTATUS dstatus = disk_initialize(OS_FileSystemVolumeGet(fs_media_hd));
+//    if (BIT_TEST(dstatus, STA_NODISK)) {
+//        s = S_FS_UNMOUNTED;
+//    } else if (BIT_TEST(dstatus, STA_NOINIT)) {
+//        s = S_FS_ISNT_INITED;
+//    } else if (BIT_TEST(dstatus, STA_PROTECT)) {
+//        s = S_FS_WRITE_PROTECTED;
+//    }
+    return s;
+}
+
+/******************************************************************************/
+Status OS_FileSystemMediaDeInit(const OS_FileSystemMediaHd fs_media_hd)
+{
 Status s;
-    OS_LOG(D_DEBUG, "FS media deinit: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    IF_STATUS(s = OS_DriverIoCtl(*drv_media_p, DRV_REQ_STD_SYNC, OS_NULL)) {
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS media deinit: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    const OS_DriverHd drv_media_hd = cfg_dyn_p->dhd;
+    IF_STATUS(s = OS_DriverIoCtl(drv_media_hd, DRV_REQ_STD_SYNC, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
     }
-    if (OS_NULL != *drv_media_p) {
-        OS_FileSystemUnMount(volume);
+    if (OS_NULL != drv_media_hd) {
+        OS_FileSystemUnMount(fs_media_hd);
     }
-    IF_STATUS(s = OS_DriverClose(*drv_media_p))  {
+    IF_STATUS(s = OS_DriverDeInit(drv_media_hd)) {
         OS_LOG_S(D_WARNING, s);
     }
-    IF_STATUS(s = OS_DriverDeInit(*drv_media_p)) {
-        OS_LOG_S(D_WARNING, s);
-    }
-    IF_STATUS(s = OS_DriverDelete(*drv_media_p)) {
-        OS_LOG_S(D_WARNING, s);
-    }
-    OS_Free(fshd_v[volume]);
-    *drv_media_p = OS_NULL;
     return s;
 }
 
@@ -185,114 +248,143 @@ Status s;
 //}
 
 /******************************************************************************/
-Status OS_FileSystemMediaCurrentSet(const S8 volume)
+OS_FileSystemMediaHd OS_FileSystemMediaByVolumeGet(const U8 volume)
+{
+OS_FileSystemMediaHd fs_media_hd = OS_NULL;
+    IF_STATUS_OK(OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        fs_media_hd = (OS_FileSystemMediaHd)OS_ListItemByOwnerGet(&os_fs_list, (OS_Owner)volume);
+        OS_MutexRecursiveUnlock(os_fs_mutex);
+    }
+    return fs_media_hd;
+}
+
+/******************************************************************************/
+Status OS_FileSystemMediaCurrentSet(const OS_FileSystemMediaHd fs_media_hd)
 {
 Status s;
-    OS_LOG(D_DEBUG, "FS media set: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    IF_STATUS_OK(s = FResultTranslate(f_chdrive((const char*)media_label_v[volume].logical_drive_p))) {
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS media set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    IF_STATUS_OK(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) {
 //        volume_curr = volume;
     }
     return s;
 }
 
 /******************************************************************************/
-StrPtr OS_FileSystemMediaNameGet(const S8 volume)
+ConstStrPtr OS_FileSystemMediaNameGet(const OS_FileSystemMediaHd fs_media_hd)
 {
-    IF_STATUS(VolumeCheck(volume)) { return OS_NULL; }
-    return media_label_v[volume].name_p;
+    if (OS_NULL == fs_media_hd) { return OS_NULL; }
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    return cfg_dyn_p->name;
+}
+
+/******************************************************************************/
+OS_DriverHd OS_FileSystemMediaDriverGet(const OS_FileSystemMediaHd fs_media_hd);
+OS_DriverHd OS_FileSystemMediaDriverGet(const OS_FileSystemMediaHd fs_media_hd)
+{
+    if (OS_NULL == fs_media_hd) { return OS_NULL; }
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    return cfg_dyn_p->dhd;
 }
 
 #if (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
 /******************************************************************************/
-Status OS_FileSystemMake(const S8 volume, const OS_FileSystemPartitionRule part_rule, const U32 size)
+Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const U32 size)
 {
-Status s;
 const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
                         (OS_FS_PART_RULE_SFD   == part_rule) ? 1 : U8_MAX;
-    OS_LOG(D_DEBUG, "FS make: %s, rule: %d, size: %u", OS_FileSystemMediaNameGet(volume), part_rule, size);
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS make: %s, rule: %d, size: %u", OS_FileSystemMediaNameGet(fs_media_hd), part_rule, size);
     if (U8_MAX == fpart_rule) { return S_FS_INVALID_PARAMETER; }
-    return FResultTranslate(f_mkfs((const char*)media_label_v[volume].logical_drive_p, fpart_rule, size));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    return FResultTranslate(f_mkfs((const char*)cfg_dyn_p->volume, fpart_rule, size));
 }
 #endif // (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
 
 /******************************************************************************/
-Status OS_FileSystemMount(const S8 volume)
+Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd)
 {
-Status s;
-    OS_LOG(D_DEBUG, "FS mount volume: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS mount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
 #ifndef NDEBUG
-    memset(fshd_v[1], 0xF5, sizeof(FATFS));
+    OS_MEMSET(cfg_dyn_p->fshd, 0xF5, sizeof(FATFS));
 #endif // NDEBUG
-    return FResultTranslate(f_mount((FATFS*)fshd_v[volume], (const char*)media_label_v[volume].logical_drive_p, 1));
+    return FResultTranslate(f_mount(cfg_dyn_p->fshd, (const char*)cfg_dyn_p->volume, 1));
 }
 
 /******************************************************************************/
-Status OS_FileSystemUnMount(const S8 volume)
+Status OS_FileSystemUnMount(const OS_FileSystemMediaHd fs_media_hd)
 {
-Status s;
-    OS_LOG(D_DEBUG, "FS unmount volume: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    return FResultTranslate(f_mount(OS_NULL, (const char*)media_label_v[volume].logical_drive_p, 1));
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS unmount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    return FResultTranslate(f_mount(OS_NULL, (const char*)cfg_dyn_p->volume, 1));
 }
 
 /******************************************************************************/
-S8 OS_FileSystemVolumeByNameGet(ConstStrPtr name_p)
+U8 OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd)
 {
-    for (S8 i = 0; i < OS_FILE_SYSTEM_VOLUMES_MAX; ++i) {
-        if (!strcmp((const char*)name_p, (const char*)media_label_v[i].name_p)) {
-            return i;
-        }
-    }
-    return -1;
+    if (OS_NULL == fs_media_hd) { return U8_MAX; }
+    OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
+    return (U8)OS_LIST_ITEM_OWNER_GET(item_l_p);
 }
 
 /******************************************************************************/
-Status OS_FileSystemVolumeLabelGet(const S8 volume, StrPtr label_p, U32* serial_p)
+//S8 OS_FileSystemVolumeByNameGet(ConstStrPtr name_p)
+//{
+//    for (S8 i = 0; i < OS_FILE_SYSTEM_VOLUMES_MAX; ++i) {
+//        if (!strcmp((const char*)name_p, (const char*)media_label_v[i].name_p)) {
+//            return i;
+//        }
+//    }
+//    return -1;
+//}
+
+/******************************************************************************/
+Status OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p, U32* serial_p)
 {
-Status s;
-    OS_LOG(D_DEBUG, "FS vol label get: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    return FResultTranslate(f_getlabel((const char*)media_label_v[volume].logical_drive_p,
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS vol label get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    return FResultTranslate(f_getlabel((const char*)cfg_dyn_p->volume,
                                        (char*)label_p,
                                        (DWORD*)serial_p));
 }
 
 /******************************************************************************/
-Status OS_FileSystemVolumeLabelSet(const S8 volume, StrPtr label_p)
+Status OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p)
 {
-#define VOLUME_LOG_DRV_LEN  02U
-#define VOLUME_NAME_LEN     11U
-Str vol_label[VOLUME_LOG_DRV_LEN + VOLUME_NAME_LEN];
-Status s;
-    OS_LOG(D_DEBUG, "FS vol label set: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    strncpy((char*)&vol_label[0], (char const*)media_label_v[volume].logical_drive_p, VOLUME_LOG_DRV_LEN);
-    strncpy((char*)&vol_label[VOLUME_LOG_DRV_LEN], (char const*)label_p, VOLUME_NAME_LEN);
+Str vol_label[OS_FILE_SYSTEM_VOLUME_STR_LEN + OS_FILE_SYSTEM_VOLUME_NAME_LEN];
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS vol label set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    OS_STRNCPY(vol_label, (char const*)cfg_dyn_p->volume, OS_FILE_SYSTEM_VOLUME_STR_LEN);
+    OS_STRCAT( vol_label, (char const*)label_p);
     return FResultTranslate(f_setlabel((const char*)vol_label));
 }
 
 /******************************************************************************/
-Status OS_FileSystemVolumeStatsGet(const S8 volume, OS_VolumeStats* stats_p)
+Status OS_FileSystemVolumeStatsGet(const OS_FileSystemMediaHd fs_media_hd, OS_FileSystemVolumeStats* stats_p)
 {
 Status s = S_OK;
-    OS_LOG(D_DEBUG, "FS vol stats get: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
     if (OS_NULL == stats_p) { return S_INVALID_REF; }
-    FATFS* fs_p = (FATFS*)fshd_v[volume];
-    memset(stats_p, 0x0, sizeof(OS_VolumeStats));
+    OS_LOG(D_DEBUG, "FS vol stats get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    FATFS* fs_p = cfg_dyn_p->fshd;
+    OS_MEMSET(stats_p, 0x0, sizeof(OS_FileSystemVolumeStats));
     {
     DWORD clusters_count;
-        IF_STATUS(s = FResultTranslate(f_chdrive((const char*)media_label_v[volume].logical_drive_p))) { return s; }
-        IF_STATUS(s = FResultTranslate(f_getfree((const char*)media_label_v[volume].logical_drive_p,
+        IF_STATUS(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) { return s; }
+        IF_STATUS(s = FResultTranslate(f_getfree((const char*)cfg_dyn_p->volume,
                                                 &clusters_count, &fs_p))) { return s; }
-        IF_STATUS(s = OS_FileSystemVolumeLabelGet(volume,
+        IF_STATUS(s = OS_FileSystemVolumeLabelGet(fs_media_hd,
                                                  (StrPtr)stats_p->name,
                                                  &stats_p->serial)) { return s; }
     }
-    stats_p->media_name_p           = media_label_v[volume].name_p;
+    stats_p->media_name_p           = (StrPtr)cfg_dyn_p->name;
     stats_p->type                   = (FS_FAT12 == fs_p->fs_type) ? OS_FS_FAT12 :
                                       (FS_FAT16 == fs_p->fs_type) ? OS_FS_FAT16 :
                                       (FS_FAT32 == fs_p->fs_type) ? OS_FS_FAT32 : OS_FS_UNDEF;
@@ -310,12 +402,12 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_FileSystemClustersFreeGet(const S8 volume, const StrPtr path_p, U32* clusters_free_count_p)
+Status OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media_hd, const StrPtr path_p, U32* clusters_free_count_p)
 {
-Status s;
-    OS_LOG(D_DEBUG, "FS clusters free: %s", OS_FileSystemMediaNameGet(volume));
-    IF_STATUS(s = VolumeCheck(volume)) { return s; }
-    return FResultTranslate(f_getfree((const char*)path_p, (DWORD*)clusters_free_count_p, (FATFS**)&fshd_v[volume]));
+    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_LOG(D_DEBUG, "FS clusters free: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
+    return FResultTranslate(f_getfree((const char*)path_p, (DWORD*)clusters_free_count_p, (FATFS**)&cfg_dyn_p->fshd));
 }
 
 /******************************************************************************/
@@ -323,7 +415,7 @@ Status OS_FileSystemVolumeScan(const StrPtr path_p, OS_FileSystemStats* stats_p)
 {
 OS_DirHd dir_hd;
 OS_FileStats stats_file;
-U32 path_len;
+SIZE path_len;
 StrPtr file_name_p;
 Status s = S_OK;
     OS_LOG(D_DEBUG, "FS volume scan: %s", path_p);
@@ -336,7 +428,7 @@ Status s = S_OK;
     if (OS_NULL == stats_file.long_name_p) { s = S_NO_MEMORY; goto error; }
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     IF_STATUS(s = OS_DirectoryOpen(dir_hd, path_p)) { s = S_FS_PATH_NOT_FOUND; goto error; }
-    path_len = strlen((const char*)path_p);
+    path_len = OS_STRLEN((const char*)path_p);
     while ((S_OK == (s = OS_DirectoryRead(dir_hd, &stats_file))) && (OS_ASCII_EOL != stats_file.name[0])) {
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
         file_name_p = (*stats_file.long_name_p) ? stats_file.long_name_p : stats_file.name;
@@ -345,10 +437,10 @@ Status s = S_OK;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
         if (BIT_TEST(stats_file.attrs, BIT(OS_FS_FILE_ATTR_DIR))) {
             // Guard relative directories.
-            if (OS_NULL != strchr((const char*)file_name_p, '.')) { continue; }
+            if (OS_NULL != OS_STRCHR((const char*)file_name_p, '.')) { continue; }
             stats_p->dirs_count++;
             *(path_p + path_len) = OS_FILE_SYSTEM_DIR_DELIM;
-            strcpy((char*)(path_p + path_len + 1), (const char*)file_name_p);
+            OS_STRCPY((char*)(path_p + path_len + 1), (const char*)file_name_p);
             s = OS_FileSystemVolumeScan(path_p, stats_p);
             *(path_p + path_len) = OS_ASCII_EOL;
             IF_STATUS(s) { break; }
@@ -536,7 +628,7 @@ FILINFO file_info;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     Status s = FResultTranslate(f_readdir(dhd, &file_info));
     IF_STATUS_OK(s) {
-        OS_MemCpy8(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
+        OS_MEMCPY(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
         file_stats_p->size          = file_info.fsize;
         file_stats_p->date_time     = FDateTimeTranslate(file_info.fdate, file_info.ftime);
         file_stats_p->attrs         = FAttributeTranslate(file_info.fattrib);
@@ -553,37 +645,6 @@ Status OS_DirectoryRename(ConstStrPtr name_old_p, ConstStrPtr name_new_p)
 {
     OS_LOG(D_DEBUG, "Dir rename: %s -> %s", name_old_p, name_new_p);
     return OS_FileRename(name_old_p, name_new_p);
-}
-
-/******************************************************************************/
-int MMC_disk_initialize(OS_DriverHd* drv_sdio_sd_p)
-{
-//SD_CardInfo card_info;
-DSTATUS dstatus = 0;
-
-//    *drv_sdio_sd_p = drv_media_v[MMC];
-//    if (SD_Detect() != SD_PRESENT) {
-//        BIT_SET(dstatus, STA_NODISK);
-//    } else {
-//        if (SD_OK == SD_GetCardInfo(&card_info)) {
-//            if (card_info.SD_csd.PermWrProtect) {
-//                BIT_SET(dstatus, STA_PROTECT);
-//            }
-//        } else {
-//            BIT_SET(dstatus, STA_NOINIT);
-//        }
-//    }
-    return dstatus;
-}
-
-/******************************************************************************/
-int MMC_disk_status(void)
-{
-DSTATUS dstatus = 0;
-//    if (SD_Detect() != SD_PRESENT) {
-//        BIT_SET(dstatus, STA_NODISK);
-//    }
-    return dstatus;
 }
 
 /******************************************************************************/
