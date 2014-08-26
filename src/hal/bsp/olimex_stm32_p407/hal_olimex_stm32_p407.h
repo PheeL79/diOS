@@ -12,13 +12,13 @@
 //CSP
 #include "drv_dma.h"
 #include "drv_rtc.h"
-#include "drv_iwdg.h"
 #include "drv_gpio.h"
 #include "drv_nvic.h"
-#include "drv_sdio.h"
 #include "drv_timer.h"
 #include "drv_usart.h"
 #include "drv_power.h"
+#include "drv_sdio.h"
+#include "drv_usbh.h"
 //BSP
 #include "drv_mem_ext.h"
 #include "drv_button.h"
@@ -66,7 +66,7 @@ extern U32 SystemCoreClockKHz;
 ///         D_LOG(D_DEBUG, "%d(ms)", CYCLES_TO_MS(cycles_diff));
 #define CYCLES_TO_MS(cycles)            ((U32)((cycles) / SystemCoreClockKHz))
 
-typedef volatile U32 HAL_IO_Reg;
+typedef VU32 HAL_IO_Reg;
 
 //-----------------------------------------------------------------------------
 /// @brief      Init HAL.

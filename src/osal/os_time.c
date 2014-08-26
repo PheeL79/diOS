@@ -198,13 +198,13 @@ OS_DateTime time;
         char const delim_str[] = OS_LOCALE_TIME_DELIM_EN\
                                  OS_LOCALE_TIME_DELIM_RU;
         char* time_str_p = (char*)time_p;
-        char* time_item_p = strtok(time_str_p, delim_str);
+        char* time_item_p = OS_STRTOK(time_str_p, delim_str);
         LNG time_val[3];
 
         for (SIZE i = 0; OS_NULL != time_item_p; ++i) {
             //TODO(A. Filyanov) Check for valid digits.
-            time_val[i] = strtol((const char*)time_item_p, OS_NULL, 10);
-            time_item_p = strtok(OS_NULL, delim_str);
+            time_val[i] = OS_STRTOL((const char*)time_item_p, OS_NULL, 10);
+            time_item_p = OS_STRTOK(OS_NULL, delim_str);
         }
         time.hours      = (U8)time_val[0];
         time.minutes    = (U8)time_val[1];
@@ -226,12 +226,12 @@ OS_DateTime date;
         char const delim_str[] = OS_LOCALE_DATE_DELIM_EN\
                                  OS_LOCALE_DATE_DELIM_RU;
         char* date_str_p = (char*)date_p;
-        char* date_item_p = strtok(date_str_p, delim_str);
+        char* date_item_p = OS_STRTOK(date_str_p, delim_str);
         LNG date_val[3];
 
         for (SIZE i = 0; OS_NULL != date_item_p; ++i) {
-            date_val[i] = strtol((const char*)date_item_p, OS_NULL, 10);
-            date_item_p = strtok(OS_NULL, delim_str);
+            date_val[i] = OS_STRTOL((const char*)date_item_p, OS_NULL, 10);
+            date_item_p = OS_STRTOK(OS_NULL, delim_str);
         }
         if (LOC_RU == locale) {
             date.day    = (U8)date_val[0];

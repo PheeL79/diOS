@@ -21,7 +21,7 @@ typedef struct {
 //------------------------------------------------------------------------------
 static OS_List os_events_list;
 static OS_MutexHd os_event_mutex;
-static volatile U32 events_count = 0;
+static VU32 events_count = 0;
 
 /******************************************************************************/
 #pragma inline

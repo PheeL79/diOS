@@ -52,7 +52,14 @@
 //    #ifndef NDEBUG
 //        #define HAL_ASSERT(c)                 assert(c)
 //    #else
-        #define HAL_ASSERT(c)               if (!(c)) { HAL_CRITICAL_SECTION_ENTER(); HAL_ASSERT_PIN_UP; while(1) {}; }
+    #if (D_DEBUG == HAL_ASSERT_LEVEL)
+        void HAL_ASSERT_FAILED(U8* file, U32 line);
+        #define HAL_ASSERT(e)               if (!(e)) { HAL_ASSERT_FAILED((U8*)__FILE__, __LINE__); }
+        #define HAL_ASSERT_VALUE(e)         HAL_ASSERT(e)
+    #else
+        #define HAL_ASSERT(e)               if (!(e)) { HAL_CRITICAL_SECTION_ENTER(); HAL_ASSERT_PIN_UP; while(1) {}; }
+        #define HAL_ASSERT_VALUE(e)         ((void)0)
+    #endif // HAL_ASSERT_LEVEL_DEFAULT
 //    #endif // HAL_ASSERT
 #else
     #error "status.h: Undefined compiler"

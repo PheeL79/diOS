@@ -16,9 +16,9 @@
 
 //------------------------------------------------------------------------------
 typedef struct {
-    ConstStrPtr name_p;
-    ConstStrPtr value_p;
-//    BL          is_user;
+    ConstStrPtr             name_p;
+    ConstStrPtr             value_p;
+    OS_EnvVariableHandler   handler_p;
 } OS_EnvVariable;
 
 //------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ OS_ListItem* iter_li_p = OS_NULL;
         if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
             do {
                 OS_EnvVariable* env_var_p = (OS_EnvVariable*)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-                if (!strcmp((const char*)env_var_p->name_p, (const char*)name_p)) {
+                if (!OS_STRCMP((const char*)env_var_p->name_p, (const char*)name_p)) {
                     goto exit;
                 }
                 iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
@@ -71,6 +71,16 @@ OS_TaskHd OS_EnvVariableOwnerGet(ConstStrPtr variable_name_p)
     const OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
     if (OS_NULL == item_l_p) { return OS_NULL; } //Variable not exists.
     return (OS_TaskHd)OS_LIST_ITEM_OWNER_GET(item_l_p);
+}
+
+/******************************************************************************/
+OS_EnvVariableHandler OS_EnvVariableHandlerGet(ConstStrPtr variable_name_p)
+{
+    OS_LOG(D_DEBUG, "Env owner get: %s", variable_name_p);
+    const OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
+    if (OS_NULL == item_l_p) { return OS_NULL; } //Variable not exists.
+    const OS_EnvVariable* env_var_p = (OS_EnvVariable*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+    return env_var_p->handler_p;
 }
 
 /******************************************************************************/
@@ -95,7 +105,8 @@ const OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
 }
 
 /******************************************************************************/
-Status OS_EnvVariableSet(ConstStrPtr variable_name_p, ConstStrPtr variable_value_p)
+Status OS_EnvVariableSet(ConstStrPtr variable_name_p, ConstStrPtr variable_value_p,
+                         const OS_EnvVariableHandler variable_handler_p)
 {
 Status s = S_OK;
     if ((OS_NULL == variable_name_p) || (OS_NULL == variable_value_p)) { return S_INVALID_REF; }
@@ -105,13 +116,13 @@ Status s = S_OK;
         OS_EnvVariable* env_var_p;
         //Is variable already exists?
         if (OS_NULL == item_l_p) { //No. Create the new one.
-            const U32 variable_name_len = OS_STRLEN((char const*)variable_name_p) + 1;
-            const U32 variable_value_len= OS_STRLEN((char const*)variable_value_p) + 1;
+            const SIZE variable_name_len = OS_STRLEN((char const*)variable_name_p) + 1;
+            const SIZE variable_value_len= OS_STRLEN((char const*)variable_value_p) + 1;
             if ((0 == variable_name_len) || (0 == variable_value_len)) { s = S_INVALID_VALUE; goto error; }
             item_l_p = OS_ListItemCreate();
             env_var_p = (OS_EnvVariable*)OS_Malloc(sizeof(OS_EnvVariable));
-            env_var_p->name_p   = (ConstStrPtr)OS_Malloc(variable_name_len);
-            env_var_p->value_p  = (ConstStrPtr)OS_Malloc(variable_value_len);
+            env_var_p->name_p  = (ConstStrPtr)OS_Malloc(variable_name_len);
+            env_var_p->value_p = (ConstStrPtr)OS_Malloc(variable_value_len);
             if ((OS_NULL == item_l_p) || (OS_NULL == env_var_p)) { s = S_NO_MEMORY; goto error; }
             if ((OS_NULL == env_var_p->name_p) || (OS_NULL == env_var_p->value_p)) { s = S_NO_MEMORY; goto error; }
             OS_STRNCPY((char*)env_var_p->name_p,  (char const*)variable_name_p,  variable_name_len);
@@ -122,7 +133,7 @@ Status s = S_OK;
         } else { //Yes.
             env_var_p = (OS_EnvVariable*)OS_LIST_ITEM_VALUE_GET(item_l_p);
             OS_Free((void*)env_var_p->value_p); //Delete old value.
-            const U32 variable_data_len = OS_STRLEN((char const*)variable_value_p) + 1;
+            const SIZE variable_data_len = OS_STRLEN((char const*)variable_value_p) + 1;
             //Create the new one.
             env_var_p->value_p = (ConstStrPtr)OS_Malloc(variable_data_len);
             if (OS_NULL == env_var_p->value_p) { s = S_NO_MEMORY; goto error; }
@@ -134,6 +145,14 @@ error:
             OS_Free((void*)env_var_p->name_p);
             OS_Free(env_var_p);
             OS_ListItemDelete(item_l_p);
+        } else {
+            if ((OS_NULL != env_var_p->handler_p) ||
+                (OS_NULL != variable_handler_p)) {
+                if (OS_NULL != variable_handler_p) {
+                    env_var_p->handler_p = variable_handler_p;
+                }
+                s = env_var_p->handler_p(env_var_p->value_p);
+            }
         }
         OS_MutexRecursiveUnlock(os_env_mutex);
     }

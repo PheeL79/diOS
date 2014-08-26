@@ -23,7 +23,7 @@
 /// @brief      DMA initialize.
 /// @return     #Status.
 Status          DMA_Init_(void);
-static Status   DMA2_Init(void);
+static Status   DMA2_Init(void* args_p);
 static Status   DMA2_MEM_Init(void);
 static Status   DMA2_NVIC_Init(void);
 
@@ -50,7 +50,7 @@ Status DMA_Init_(void)
 }
 
 /*****************************************************************************/
-Status DMA2_Init(void)
+Status DMA2_Init(void* args_p)
 {
 Status s;
     HAL_LOG(D_INFO, "Init");

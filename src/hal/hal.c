@@ -42,10 +42,10 @@ Status s = S_OK;
         // HAL environment init
         hal_env.locale      = LOC_EN;
         hal_env.power       = PWR_ON;
-        hal_env.log_level   = HAL_LOG_LEVEL_DEFAULT;
+        hal_env.log_level   = HAL_LOG_LEVEL;
         IF_STATUS(s = USART_Init_()) { return s; }
         hal_env.stdio_p = drv_stdio_p;
-        HAL_ASSERT(S_OK == hal_env.stdio_p->Init());
+        HAL_ASSERT(S_OK == hal_env.stdio_p->Init(OS_NULL));
         HAL_ASSERT(S_OK == hal_env.stdio_p->Open(OS_NULL));
         // Init device description.
         IF_STATUS(HAL_DeviceDescriptionInit()) { return S_MODULE; }
@@ -53,11 +53,11 @@ Status s = S_OK;
         HAL_StdIoCls();
         HAL_LOG(D_INFO, "-------------------------------");
         HAL_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
-                       ver_p->maj,
-                       ver_p->min,
-                       ver_p->bld,
-                       ver_lbl[ver_p->lbl],
-                       ver_p->rev);
+                        ver_p->maj,
+                        ver_p->min,
+                        ver_p->bld,
+                        ver_lbl[ver_p->lbl],
+                        ver_p->rev);
         HAL_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
         HAL_LOG(D_INFO, "-------------------------------");
         HAL_LOG(D_INFO, "HAL init...");
@@ -244,15 +244,22 @@ RCC_OscInitTypeDef RCC_OscInitStruct;
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
 }
 
-/******************************************************************************/
 #ifndef NDEBUG
-#ifdef USE_FULL_ASSERT
+/******************************************************************************/
+#pragma inline
 void assert_failed(uint8_t* file, uint32_t line)
 {
+    HAL_ASSERT_PIN_UP;
     /* User can add his own implementation to report the file name and line number,*/
-    printf("ASSERT: file %s on line %d\r\n", file, line);
+    printf("\nASSERT: %s on line %d\r\n", file, line);
+    HAL_CRITICAL_SECTION_ENTER();
     /* Infinite loop */
     while (1) {};
 }
-#endif // USE_FULL_ASSERT
+
+/******************************************************************************/
+void HAL_ASSERT_FAILED(U8* file, U32 line)
+{
+    assert_failed(file, line);
+}
 #endif // NDEBUG

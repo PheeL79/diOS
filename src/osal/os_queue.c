@@ -24,7 +24,7 @@ typedef struct {
 //------------------------------------------------------------------------------
 static OS_List os_queues_list;
 static OS_MutexHd os_queue_mutex;
-static volatile U32 queues_count = 0;
+static VU32 queues_count = 0;
 
 /******************************************************************************/
 Status OS_QueueInit(void);
@@ -42,7 +42,6 @@ Status OS_QueueCreate(const OS_QueueConfig* cfg_p, OS_TaskHd parent_thd, OS_Queu
 {
 Status s = S_OK;
     if (OS_NULL == qhd_p) { return S_INVALID_REF; }
-    if ((DIR_IN > cfg_p->dir) || (DIR_OUT < cfg_p->dir)) { return S_INVALID_VALUE; }
     OS_ListItem* item_l_p = OS_ListItemCreate();
     if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
     OS_QueueConfigDyn* cfg_dyn_p= OS_Malloc(sizeof(OS_QueueConfigDyn));
@@ -54,7 +53,6 @@ Status s = S_OK;
     if (OS_NULL == queue_hd) { s = S_UNDEF_QUEUE; goto error; }
     *qhd_p                          = (OS_QueueHd)item_l_p;
     cfg_dyn_p->parent_thd           = parent_thd;
-    cfg_dyn_p->cfg.dir              = cfg_p->dir;
     cfg_dyn_p->cfg.len              = cfg_p->len;
     cfg_dyn_p->cfg.item_size        = cfg_p->item_size;
     cfg_dyn_p->stats.received       = 0;
@@ -132,10 +130,12 @@ Status s = S_OK;
             } else {
                 s = S_MODULE;
             }
+//            OS_LOG_S(D_WARNING, s);
         }
         cfg_dyn_p->stats.sended++;
     } else {
         s = S_UNDEF_QUEUE;
+//        OS_LOG_S(D_WARNING, s);
     }
     return s;
 }

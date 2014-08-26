@@ -310,14 +310,15 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
         </option>
         <option>
@@ -3886,11 +3887,25 @@
     <group>
       <name>stm32_usb_host_library</name>
       <excluded>
-        <configuration>Debug FLASH</configuration>
         <configuration>Debug SRAM</configuration>
       </excluded>
       <group>
         <name>class</name>
+        <group>
+          <name>hid</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Src\usbh_hid.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Src\usbh_hid_keybd.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Src\usbh_hid_mouse.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Src\usbh_hid_parser.c</name>
+          </file>
+        </group>
         <group>
           <name>msc</name>
           <file>
@@ -4083,7 +4098,7 @@
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_rtc.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_sdio.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_sdio_sd.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_timer.c</name>
@@ -4099,6 +4114,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usart6.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh_msc.c</name>
     </file>
   </group>
   <file>

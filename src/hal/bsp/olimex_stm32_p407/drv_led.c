@@ -15,23 +15,23 @@
 /// @return     #Status.
 Status          LED_Init_(void);
 
-static Status LED_PulseInit(void);
+static Status LED_PulseInit(void* args_p);
 static Status LED_PulseDeInit(void);
 static Status LED_PulseOpen(void* args_p);
 static Status LED_PulseClose(void);
 static Status LED_PulseWrite(U8* data_out_p, U32 size, void* args_p);
 static Status LED_PulseIoCtl(const U32 request_id, void* args_p);
 
-static Status LED_FsInit(void);
+static Status LED_FsInit(void* args_p);
 static Status LED_FsDeInit(void);
 static Status LED_FsOpen(void* args_p);
 static Status LED_FsClose(void);
 static Status LED_FsWrite(U8* data_out_p, U32 size, void* args_p);
 static Status LED_FsIoCtl(const U32 request_id, void* args_p);
 
-static Status LED_AssertInit(void);
+static Status LED_AssertInit(void* args_p);
 
-static Status LED_UserInit(void);
+static Status LED_UserInit(void* args_p);
 static Status LED_UserDeInit(void);
 static Status LED_UserOpen(void* args_p);
 static Status LED_UserClose(void);
@@ -94,7 +94,7 @@ Status LED_Init_(void)
 }
 
 /*****************************************************************************/
-Status LED_PulseInit(void)
+Status LED_PulseInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -169,7 +169,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-Status LED_FsInit(void)
+Status LED_FsInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -244,7 +244,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-Status LED_AssertInit(void)
+Status LED_AssertInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -261,7 +261,7 @@ GPIO_InitTypeDef GPIO_InitStructure;
 }
 
 /*****************************************************************************/
-Status LED_UserInit(void)
+Status LED_UserInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 

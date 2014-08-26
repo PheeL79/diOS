@@ -309,6 +309,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
@@ -316,12 +317,12 @@
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\osal\mem_mng\tlsf</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\osal\min_ini</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\sett\min_ini</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
         </option>
         <option>
@@ -1912,300 +1913,300 @@
     </settings>
   </configuration>
   <group>
-    <name>fat_fs</name>
+    <name>fs</name>
     <group>
-      <name>option</name>
+      <name>fat_fs</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\option\ccsbcs.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs\syscall.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs\diskio.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\ff.c</name>
+        <configuration>
+          <name>Debug</name>
+          <settings>
+            <name>ICCARM</name>
+            <data>
+              <version>31</version>
+              <wantNonLocal>0</wantNonLocal>
+              <debug>1</debug>
+              <option>
+                <name>CCOptimizationNoSizeConstraints</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCDefines</name>
+                <state>CM4F</state>
+                <state>STM32F407xx</state>
+              </option>
+              <option>
+                <name>CCPreprocFile</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCPreprocComments</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCPreprocLine</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCListCFile</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>CCListCMnemonics</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>CCListCMessages</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCListAssFile</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCListAssSource</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCEnableRemarks</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCDiagSuppress</name>
+                <state></state>
+              </option>
+              <option>
+                <name>CCDiagRemark</name>
+                <state></state>
+              </option>
+              <option>
+                <name>CCDiagWarning</name>
+                <state></state>
+              </option>
+              <option>
+                <name>CCDiagError</name>
+                <state></state>
+              </option>
+              <option>
+                <name>CCObjPrefix</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>CCAllowList</name>
+                <version>1</version>
+                <state>00000000</state>
+              </option>
+              <option>
+                <name>CCDebugInfo</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IEndianMode</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IProcessor</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IExtraOptionsCheck</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IExtraOptions</name>
+                <state></state>
+              </option>
+              <option>
+                <name>CCLangConformance</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCSignedPlainChar</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>CCRequirePrototypes</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCMultibyteSupport</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCDiagWarnAreErr</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCCompilerRuntimeInfo</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IFpuProcessor</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>OutputFile</name>
+                <state>$FILE_BNAME$.o</state>
+              </option>
+              <option>
+                <name>CCLibConfigHeader</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>PreInclude</name>
+                <state></state>
+              </option>
+              <option>
+                <name>CompilerMisraOverride</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCIncludePath2</name>
+                <state>$PROJ_DIR$\..\..\..\..\ext</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Include</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
+                <state>$PROJ_DIR$\..\..\..\..\inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\src</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\sett\min_ini</state>
+                <state>$PROJ_DIR$\..\..\..\..\cfg</state>
+                <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
+                <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
+                <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
+              </option>
+              <option>
+                <name>CCStdIncCheck</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCCodeSection</name>
+                <state>.text</state>
+              </option>
+              <option>
+                <name>IInterwork2</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IProcessorMode2</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>CCOptLevel</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCOptStrategy</name>
+                <version>0</version>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCOptLevelSlave</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CompilerMisraRules98</name>
+                <version>0</version>
+                <state>1000111110110101101110011100111111101110011011000101110111101101100111111111111100110011111001110111001111111111111111111111111</state>
+              </option>
+              <option>
+                <name>CompilerMisraRules04</name>
+                <version>0</version>
+                <state>111101110010111111111000110111111111111111111111111110010111101111010101111111111111111111111111101111111011111001111011111011111111111111111</state>
+              </option>
+              <option>
+                <name>CCPosIndRopi</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCPosIndRwpi</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCPosIndNoDynInit</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IccLang</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IccCDialect</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IccAllowVLA</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IccCppDialect</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IccExceptions</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IccRTTI</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IccStaticDestr</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IccCppInlineSemantics</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>IccCmsis</name>
+                <state>1</state>
+              </option>
+              <option>
+                <name>IccFloatSemantics</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCNoLiteralPool</name>
+                <state>0</state>
+              </option>
+              <option>
+                <name>CCOptStrategySlave</name>
+                <version>0</version>
+                <state>0</state>
+              </option>
+            </data>
+          </settings>
+        </configuration>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs\syscall.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\option\unicode.c</name>
       </file>
     </group>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs\diskio.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src\ff.c</name>
-      <configuration>
-        <name>Debug</name>
-        <settings>
-          <name>ICCARM</name>
-          <data>
-            <version>31</version>
-            <wantNonLocal>0</wantNonLocal>
-            <debug>1</debug>
-            <option>
-              <name>CCOptimizationNoSizeConstraints</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCDefines</name>
-              <state>CM4F</state>
-              <state>STM32F407xx</state>
-            </option>
-            <option>
-              <name>CCPreprocFile</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCPreprocComments</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCPreprocLine</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCListCFile</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>CCListCMnemonics</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>CCListCMessages</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCListAssFile</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCListAssSource</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCEnableRemarks</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCDiagSuppress</name>
-              <state></state>
-            </option>
-            <option>
-              <name>CCDiagRemark</name>
-              <state></state>
-            </option>
-            <option>
-              <name>CCDiagWarning</name>
-              <state></state>
-            </option>
-            <option>
-              <name>CCDiagError</name>
-              <state></state>
-            </option>
-            <option>
-              <name>CCObjPrefix</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>CCAllowList</name>
-              <version>1</version>
-              <state>00000000</state>
-            </option>
-            <option>
-              <name>CCDebugInfo</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IEndianMode</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IProcessor</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IExtraOptionsCheck</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IExtraOptions</name>
-              <state></state>
-            </option>
-            <option>
-              <name>CCLangConformance</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCSignedPlainChar</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>CCRequirePrototypes</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCMultibyteSupport</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCDiagWarnAreErr</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCCompilerRuntimeInfo</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IFpuProcessor</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>OutputFile</name>
-              <state>$FILE_BNAME$.o</state>
-            </option>
-            <option>
-              <name>CCLibConfigHeader</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>PreInclude</name>
-              <state></state>
-            </option>
-            <option>
-              <name>CompilerMisraOverride</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCIncludePath2</name>
-              <state>$PROJ_DIR$\..\..\..\..\ext</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Include</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
-              <state>$PROJ_DIR$\..\..\..\..\inc</state>
-              <state>$PROJ_DIR$\..\..\..\..\src</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\mem_mng\tlsf</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\min_ini</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
-            </option>
-            <option>
-              <name>CCStdIncCheck</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCCodeSection</name>
-              <state>.text</state>
-            </option>
-            <option>
-              <name>IInterwork2</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IProcessorMode2</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>CCOptLevel</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCOptStrategy</name>
-              <version>0</version>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCOptLevelSlave</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CompilerMisraRules98</name>
-              <version>0</version>
-              <state>1000111110110101101110011100111111101110011011000101110111101101100111111111111100110011111001110111001111111111111111111111111</state>
-            </option>
-            <option>
-              <name>CompilerMisraRules04</name>
-              <version>0</version>
-              <state>111101110010111111111000110111111111111111111111111110010111101111010101111111111111111111111111101111111011111001111011111011111111111111111</state>
-            </option>
-            <option>
-              <name>CCPosIndRopi</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCPosIndRwpi</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCPosIndNoDynInit</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IccLang</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IccCDialect</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IccAllowVLA</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IccCppDialect</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IccExceptions</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IccRTTI</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IccStaticDestr</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IccCppInlineSemantics</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>IccCmsis</name>
-              <state>1</state>
-            </option>
-            <option>
-              <name>IccFloatSemantics</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCNoLiteralPool</name>
-              <state>0</state>
-            </option>
-            <option>
-              <name>CCOptStrategySlave</name>
-              <version>0</version>
-              <state>0</state>
-            </option>
-          </data>
-        </settings>
-      </configuration>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\os_file_system.c</name>
     </file>
   </group>
   <group>
-    <name>lwip</name>
-  </group>
-  <group>
-    <name>mem_mng</name>
+    <name>mm</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\MemMang\heap_4.c</name>
       <excluded>
@@ -2213,11 +2214,23 @@
       </excluded>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\mem_mng\tlsf\tlsf.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\mm\os_memory.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf\tlsf.c</name>
     </file>
   </group>
   <group>
-    <name>min_ini</name>
+    <name>net</name>
+    <group>
+      <name>lwip</name>
+    </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\net\os_network.c</name>
+    </file>
+  </group>
+  <group>
+    <name>sett</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b\minIni.c</name>
       <configuration>
@@ -2378,12 +2391,12 @@
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\src</state>
               <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\mem_mng\tlsf</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\fat_fs</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\min_ini</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\sett\min_ini</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b\cm4f</state>
+              <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
+              <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
             </option>
             <option>
@@ -2490,14 +2503,53 @@
         </settings>
       </configuration>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\sett\os_settings.c</name>
+    </file>
+  </group>
+  <group>
+    <name>shell</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell_commands_fs.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell_commands_net.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell_commands_std.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_task_shell.c</name>
+    </file>
   </group>
   <group>
     <name>tst</name>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\tst\test_hal.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\src\tst\test_main.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\tst\test_osal.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+      </excluded>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\unity\210\src\unity.c</name>
+    </file>
+  </group>
+  <group>
+    <name>usb</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\usb\os_task_usbhd.c</name>
     </file>
   </group>
   <file>
@@ -2513,22 +2565,13 @@
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_event.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_file_system.c</name>
-  </file>
-  <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_list.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_memory.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_message.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_mutex.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_network.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_power.c</name>
@@ -2540,25 +2583,13 @@
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_semaphore.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_settings.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_shell.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_shell_commands_fs.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_shell_commands_net.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_shell_commands_std.c</name>
-  </file>
-  <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_startup.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_task.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_task_sv.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_time.c</name>
@@ -2568,12 +2599,6 @@
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\osal.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\task_shell.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\task_sv.c</name>
   </file>
 </project>
 

@@ -6,6 +6,8 @@
 *.pbd
 *.browse
 *.tmp
+*.tmp.c
+*.tmp.h
 *.lst
 *.o
 *.dep

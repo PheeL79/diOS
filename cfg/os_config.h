@@ -51,8 +51,8 @@ enum {
 #define OS_STACK_SIZE_MIN           0x100
 #define OS_HEAP_SIZE                0x19FFF //0x1BFFF
 
-__no_init static U8 heap_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
-__no_init static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
+/*__no_init*/ static U8 heap_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
+/*__no_init*/ static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
 __no_init static U8 heap_ext_sram[MEM_EXT_SRAM_SIZE]        @ MEM_EXT_SRAM_BASE_ADDRESS;
 
 /// @brief   Memory config vector.
@@ -69,14 +69,14 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_TIMERS_STACK_SIZE        OS_STACK_SIZE_MIN * 2
 
 // Names length
-#define OS_DRIVER_NAME_LEN          8
+#define OS_DRIVER_NAME_LEN          9
 #define OS_TASK_NAME_LEN            12
 #define OS_TIMER_NAME_LEN           12
 
 #define OS_LOG_LEVEL_DEFAULT        "debug"
 #define OS_LOG_STRING_LEN           128
 #define OS_LOG_TIMER_STEP           3000
-#define OS_LOG_FILE_PATH            "1:log.txt"
+#define OS_LOG_FILE_PATH            "1:/log.txt"
 
 //File system
 //Look in ffconf.h for details
@@ -114,7 +114,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_SETTINGS_BUFFER_LEN      256
 #define OS_SETTINGS_VALUE_LEN       16
 #define OS_SETTINGS_VALUE_DEFAULT   ""
-#define OS_SETTINGS_FILE_PATH       "1:config.ini"
+#define OS_SETTINGS_FILE_PATH       "1:/config.ini"
 
 //Shell
 #define OS_SHELL_HEIGHT             HAL_STDIO_TERM_HEIGHT
@@ -138,11 +138,15 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 //#define OS_TEST
 
 // cstdlib
-#define OS_STRLEN(str_p)                HAL_STRLEN(str_p)
-#define OS_STRCHR(str_p, c)             HAL_STRCHR(str_p, c)
-#define OS_STRCPY(dst_p, src_p)         HAL_STRCPY(dst_p, src_p)
-#define OS_STRCAT(dst_p, src_p)         HAL_STRCAT(dst_p, src_p)
-#define OS_STRNCPY(dst_p, src_p, size)  HAL_STRNCPY(dst_p, src_p, size)
+#define OS_ATOI     HAL_ATOI
+#define OS_STRLEN   HAL_STRLEN
+#define OS_STRCHR   HAL_STRCHR
+#define OS_STRCMP   HAL_STRCMP
+#define OS_STRCPY   HAL_STRCPY
+#define OS_STRCAT   HAL_STRCAT
+#define OS_STRTOL   HAL_STRTOL
+#define OS_STRTOK   HAL_STRTOK
+#define OS_STRNCPY  HAL_STRNCPY
 
 enum {
     OS_SHELL_BUTTON_UP              = 'A',

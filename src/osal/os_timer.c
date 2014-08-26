@@ -50,7 +50,7 @@ void OS_TimerCallback(const TimerHandle_t timer_handle)
     }
     const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, OS_TIM_OPT_EVENT) ? OS_SIG_EVENT : OS_SIG_TIMER;
     const OS_Signal signal = OS_SIGNAL_CREATE(sig_id, cfg_dyn_p->id);
-    OS_SIGNAL_EMIT(cfg_dyn_p->slot, signal, OS_MSG_PRIO_HIGH);
+    OS_SIGNAL_SEND(cfg_dyn_p->slot, signal, OS_MSG_PRIO_HIGH);
 }
 
 /******************************************************************************/
@@ -244,7 +244,7 @@ OS_TimerHd timer_hd = OS_NULL;
 
         while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) {
             const OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
-            if (!strcmp((const char*)name_p, (const char*)cfg_dyn_p->name_p)) {
+            if (!OS_STRCMP((const char*)name_p, (const char*)cfg_dyn_p->name_p)) {
                 timer_hd = (OS_TimerHd)iter_li_p;
                 break;
             }

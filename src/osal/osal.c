@@ -18,8 +18,6 @@
 #include "os_file_system.h"
 #include "os_environment.h"
 #include "os_startup.h"
-#include "task_sv.h"
-#include "task_shell.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "osal"
@@ -29,9 +27,9 @@ extern volatile HAL_Env hal_env;
 volatile OS_Env os_env = {
     .hal_env_p      = &hal_env,
     .drv_stdio      = OS_NULL,
-    .drv_rtc        = OS_NULL
+    .drv_rtc        = OS_NULL,
 };
-volatile BL is_idle;
+VBL is_idle;
 
 //------------------------------------------------------------------------------
 static Status OSAL_DriversCreate(void);
@@ -72,14 +70,15 @@ Status s;
 #if (1 == OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_FileSystemInit())  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
-    IF_STATUS(s = OS_LocaleSet(LOCALE_DEFAULT))                             { return s; }
-    IF_STATUS(s = OS_LogLevelSet(OS_LOG_LEVEL_DEFAULT))                     { return s; }
     //Create environment variables.
-    IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT))              { return s; }
-    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6"))                     { return s; }
-    IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT))     { return s; }
-    IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH))          { return s; }
-    IF_STATUS(s = OS_EnvVariableSet("config_file", OS_SETTINGS_FILE_PATH))  { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT, OS_LogLevelSet)) { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH, OS_NULL))             { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("config_file", OS_SETTINGS_FILE_PATH, OS_NULL))     { return s; }
+#if (1 == OS_FILE_SYSTEM_ENABLED)
+    IF_STATUS(s = OS_EnvVariableSet("media_automount", "on", OS_NULL))                  { return s; }
+#endif // OS_FILE_SYSTEM_ENABLED
     //Init environment variables.
     const OS_PowerState power = PWR_STARTUP;
     os_env.hal_env_p->power = power;
@@ -99,11 +98,14 @@ Status s;
         const OS_DriverConfig drv_cfg = {
             .name       = "USART6",
             .itf_p      = drv_stdio_p,
-            .mode_io    = UART_MODE_IO,
             .prio_power = OS_PWR_PRIO_MAX - 1,
         };
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_stdio)) { return s; }
-        IF_STATUS(s = OS_DriverInit(os_env.drv_stdio)) { return s; }
+        HAL_DriverItf drv_itf;
+        OS_MEMMOV(&drv_itf, drv_stdio_p, sizeof(drv_itf));
+        drv_itf.Write = USART6_DMA_Write;
+        IF_STATUS(s = OS_DriverItfSet(os_env.drv_stdio, &drv_itf)) { return s; }
+        IF_STATUS(s = OS_DriverInit(os_env.drv_stdio, OS_NULL)) { return s; }
         IF_STATUS(s = OS_DriverOpen(os_env.drv_stdio, OS_NULL)) { return s; }
     }
 
@@ -111,11 +113,10 @@ Status s;
         const OS_DriverConfig drv_cfg = {
             .name       = "RTC",
             .itf_p      = drv_rtc_v[DRV_ID_RTC],
-            .mode_io    = DRV_MODE_IO_DEFAULT,
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_rtc)) { return s; }
-        IF_STATUS(s = OS_DriverInit(os_env.drv_rtc)) { return s; }
+        IF_STATUS(s = OS_DriverInit(os_env.drv_rtc, OS_NULL)) { return s; }
         IF_STATUS(s = OS_DriverOpen(os_env.drv_rtc, OS_NULL)) { return s; }
     }
     return s;
@@ -159,9 +160,9 @@ Locale OS_LocaleGet(void)
 Status OS_LocaleSet(ConstStrPtr locale_p)
 {
     if (OS_NULL == locale_p) { return S_INVALID_REF; }
-    if (!strcmp(LOCALE_STRING_EN, (char const*)locale_p)) {
+    if (!OS_STRCMP(LOCALE_STRING_EN, (char const*)locale_p)) {
         os_env.hal_env_p->locale = LOC_EN;
-    } else if (!strcmp(LOCALE_STRING_RU, (char const*)locale_p)) {
+    } else if (!OS_STRCMP(LOCALE_STRING_RU, (char const*)locale_p)) {
         os_env.hal_env_p->locale = LOC_RU;
     } else { return S_INVALID_VALUE; }
     return S_OK;
@@ -176,8 +177,6 @@ const HAL_DriverItf* OS_StdIoGet(void)
 /******************************************************************************/
 Status OS_StdIoSet(ConstStrPtr drv_name_p)
 {
-extern const HAL_DriverItf* OS_DriverItfGet(const OS_DriverHd dhd);
-
     if (OS_NULL == drv_name_p) { return S_INVALID_REF; }
     OS_DriverHd dhd = OS_DriverByNameGet(drv_name_p);
     if (OS_NULL == dhd) { return S_UNDEF_DRV; }
@@ -202,14 +201,14 @@ ConstStr debug_str[]    = "debug";
 OS_LogLevel level       = D_NONE;
 
     if (OS_NULL == log_level_p) { return S_INVALID_REF; }
-    if (!strcmp((const char*)none_str, (const char*)log_level_p)) {
-    } else if (!strcmp((const char*)critical_str, (const char*)log_level_p)) {
+    if (!OS_STRCMP((const char*)none_str, (const char*)log_level_p)) {
+    } else if (!OS_STRCMP((const char*)critical_str, (const char*)log_level_p)) {
         level = D_CRITICAL;
-    } else if (!strcmp((const char*)warning_str, (const char*)log_level_p)) {
+    } else if (!OS_STRCMP((const char*)warning_str, (const char*)log_level_p)) {
         level = D_WARNING;
-    } else if (!strcmp((const char*)info_str, (const char*)log_level_p)) {
+    } else if (!OS_STRCMP((const char*)info_str, (const char*)log_level_p)) {
         level = D_INFO;
-    } else if (!strcmp((const char*)debug_str, (const char*)log_level_p)) {
+    } else if (!OS_STRCMP((const char*)debug_str, (const char*)log_level_p)) {
         level = D_DEBUG;
     } else {
         return S_INVALID_VALUE;

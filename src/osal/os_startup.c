@@ -67,6 +67,10 @@ const OS_PowerState power = OS_PowerStateGet();
 Status s;
     IF_STATUS(s = task_sv_cfg.func_power(task_sv_cfg.args_p, power)) { return s; }
     IF_STATUS(s = OS_StartupTaskAdd(&task_shell_cfg)) { return s; }
+#if (1 == USBH_ENABLED)
+    extern const OS_TaskConfig task_usbhd_cfg;
+    IF_STATUS(s = OS_StartupTaskAdd(&task_usbhd_cfg)) { return s; }
+#endif // USBH_ENABLED
     return s;
 }
 

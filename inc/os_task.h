@@ -22,15 +22,8 @@ extern "C" {
 */
 //------------------------------------------------------------------------------
 /// @brief Common declarations.
-
 #define OS_THIS_TASK    OS_NULL
-
 #define OS_STDIO_LEN    4
-enum {
-    OS_STDIO_IN,
-    OS_STDIO_OUT
-};
-typedef U8 OS_StdIoDir;
 
 enum {
     OS_TASK_ATTR_UNDEF,
@@ -86,7 +79,6 @@ typedef struct {
     U8                  timeout;
     U16                 stack_size;
     U8                  stdin_len;
-    U8                  stdout_len;
 } OS_TaskConfig;
 
 //------------------------------------------------------------------------------
@@ -164,6 +156,18 @@ OS_TaskHd       OS_TaskParentGet(void);
 /// @return     Task handle.
 OS_TaskHd       OS_TaskParentByHdGet(const OS_TaskHd thd);
 
+/// @brief      Connect two tasks by each other.
+/// @param[in]  signal_thd      Task handle.
+/// @param[in]  slot_thd        Task handle.
+/// @return     #Status.
+Status          OS_TasksConnect(const OS_TaskHd signal_thd, const OS_TaskHd slot_thd);
+
+/// @brief      Disconnect tasks.
+/// @param[in]  signal_thd      Task handle.
+/// @param[in]  slot_thd        Task handle.
+/// @return     #Status.
+Status          OS_TasksDisconnect(const OS_TaskHd signal_thd, const OS_TaskHd slot_thd);
+
 /// @brief      Get tasks count.
 /// @return     Tasks count.
 U32             OS_TasksCountGet(void);
@@ -233,20 +237,18 @@ OS_TaskHd       OS_TaskNextGet(const OS_TaskHd thd);
 
 /// @brief      Get the system supervisor task standart input queue.
 /// @return     Queue handle.
-OS_QueueHd      OS_TaskSvcStdInGet(void);
+OS_QueueHd      OS_TaskSvStdInGet(void);
 
 /// @brief      Get the task standart input/output queue.
 /// @param[in]  thd             Task handle.
-/// @param[in]  dir             I\O direction.
 /// @return     Queue handle.
-OS_QueueHd      OS_TaskStdIoGet(const OS_TaskHd thd, const OS_StdIoDir dir);
+OS_QueueHd      OS_TaskStdInGet(const OS_TaskHd thd);
 
 /// @brief      Set the task standart input/output queue.
 /// @param[in]  thd             Task handle.
 /// @param[in]  qhd             Queue handle.
-/// @param[in]  dir             I\O direction.
 /// @return     Queue handle.
-//Status          OS_TaskStdIoSet(const OS_TaskHd thd, const OS_QueueHd qhd, const OS_StdIoDir dir);
+//Status          OS_TaskStdInSet(const OS_TaskHd thd, const OS_QueueHd qhd);
 
 /**
 * \addtogroup OS_MPU_Task MPU specific functions.

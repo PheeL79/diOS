@@ -20,8 +20,8 @@
 typedef struct {
     const OS_TaskConfig* cfg_p;
     OS_QueueHd      stdin_qhd;
-    OS_QueueHd      stdout_qhd;
     OS_TaskHd       parent;
+    OS_List*        slots_l_p;
     OS_TaskStats    stats;
     OS_TaskId       id;
     OS_PowerState   power;
@@ -34,6 +34,11 @@ typedef struct {
 /// @param[in]  state           Task power state.
 /// @return     #Status.
 Status          OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state);
+
+/// @brief      Get task slots list.
+/// @param[in]  thd             Task handle.
+/// @return     Slots list.
+const OS_List*  OS_TaskSlotsGet(const OS_TaskHd thd);
 
 //------------------------------------------------------------------------------
 static OS_List os_tasks_list;
@@ -122,7 +127,6 @@ Status s = S_OK;
     }
     // Creating StdIo task queues.
     OS_QueueConfig que_cfg;
-    que_cfg.dir = DIR_IN;
     que_cfg.len = cfg_p->stdin_len;
     que_cfg.item_size = sizeof(OS_Message*);
     if (que_cfg.len > 0) {
@@ -130,16 +134,10 @@ Status s = S_OK;
     } else {
         cfg_dyn_p->stdin_qhd = OS_NULL;
     }
-    que_cfg.dir = DIR_OUT;
-    que_cfg.len = cfg_p->stdout_len;
-    if (que_cfg.len > 0) {
-        IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdout_qhd)) { goto error; }
-    } else {
-        cfg_dyn_p->stdout_qhd = OS_NULL;
-    }
     cfg_dyn_p->cfg_p    = cfg_p;
     cfg_dyn_p->id       = id_curr;
     cfg_dyn_p->parent   = OS_TaskGet();
+    cfg_dyn_p->slots_l_p= OS_NULL;
     cfg_dyn_p->timeout  = cfg_dyn_p->cfg_p->timeout;
     OS_CriticalSectionEnter(); { // Atomic section to prevent context switch right after task creation by OS Engine.
         if (pdPASS != xTaskCreate(cfg_p->func_main, cfg_p->name, cfg_p->stack_size, cfg_p->args_p, cfg_p->prio_init, &task_hd)) {
@@ -190,10 +188,10 @@ Status s = S_OK;
                 OS_LOG_S(D_WARNING, s);
             }
         }
-        if (OS_NULL != cfg_dyn_p->stdout_qhd) {
-            IF_STATUS(s = OS_QueueDelete(cfg_dyn_p->stdout_qhd)) {
-                OS_LOG_S(D_WARNING, s);
-            }
+        //TODO(A. Filyanov) OS_TasksDisconnect();!!!
+        if (OS_NULL != cfg_dyn_p->slots_l_p) {
+            OS_ListClear(cfg_dyn_p->slots_l_p);
+            OS_Free(cfg_dyn_p->slots_l_p);
         }
         OS_ListItemDelete(item_l_p);
         OS_Free(cfg_dyn_p);
@@ -544,7 +542,7 @@ OS_TaskHd thd = OS_NULL;
         while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) {
             iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
             cfg_dyn_p = (OS_TaskConfigDyn*)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-            if (!strcmp((const char*)name_p, (const char*)cfg_dyn_p->cfg_p->name)) {
+            if (!OS_STRCMP((const char*)name_p, (const char*)cfg_dyn_p->cfg_p->name)) {
                 thd = (OS_TaskHd)iter_li_p;
                 break;
             }
@@ -582,21 +580,82 @@ OS_ListItem* iter_li_p = (OS_ListItem*)thd;
 }
 
 /******************************************************************************/
-OS_QueueHd OS_TaskStdIoGet(const OS_TaskHd thd, const OS_StdIoDir dir)
+Status OS_TasksConnect(const OS_TaskHd signal_thd, const OS_TaskHd slot_thd)
 {
-OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
-
-    if (OS_NULL == cfg_dyn_p) { return OS_NULL; }
-    if (OS_STDIO_IN == dir) {
-        return cfg_dyn_p->stdin_qhd;
-    } else if (OS_STDIO_OUT == dir) {
-        return cfg_dyn_p->stdout_qhd;
+Status s = S_OK;
+    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+        OS_TaskConfigDyn* cfg_dyn_p;
+        OS_ListItem* item_l_p;
+        const OS_QueueHd slot_qhd = OS_TaskStdInGet(slot_thd);
+        if (OS_NULL == slot_qhd) { s = S_INVALID_REF; goto error; }
+        cfg_dyn_p = OS_TaskConfigDynGet(signal_thd);
+        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_REF; goto error; }
+        if (OS_NULL == cfg_dyn_p->slots_l_p) {
+            cfg_dyn_p->slots_l_p = OS_Malloc(sizeof(OS_List));
+            if (OS_NULL == cfg_dyn_p->slots_l_p) { s = S_NO_MEMORY; goto error; }
+            OS_ListInit(cfg_dyn_p->slots_l_p);
+            if (OS_TRUE != OS_LIST_IS_INITIALISED(cfg_dyn_p->slots_l_p)) {
+                OS_Free(cfg_dyn_p->slots_l_p);
+                cfg_dyn_p->slots_l_p = OS_NULL;
+                s = S_INVALID_VALUE;
+                goto error;
+            }
+        }
+        item_l_p = OS_ListItemCreate();
+        if (OS_NULL == item_l_p) {
+            OS_Free(cfg_dyn_p->slots_l_p);
+            cfg_dyn_p->slots_l_p = OS_NULL;
+            s = S_NO_MEMORY;
+            goto error;
+        }
+        OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)slot_qhd);
+        OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)slot_thd);
+        OS_ListAppend(cfg_dyn_p->slots_l_p, item_l_p);
+error:
+        OS_MutexRecursiveUnlock(os_task_mutex);
     }
-    return OS_NULL;
+    return s;
 }
 
 /******************************************************************************/
-OS_QueueHd OS_TaskSvcStdInGet(void)
+Status OS_TasksDisconnect(const OS_TaskHd signal_thd, const OS_TaskHd slot_thd)
+{
+Status s = S_OK;
+    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+        OS_ListItem* item_l_p;
+        OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(signal_thd);
+        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_REF; goto error; }
+        item_l_p = OS_ListItemByOwnerGet(cfg_dyn_p->slots_l_p, slot_thd);
+        if (OS_NULL == item_l_p) { s = S_INVALID_VALUE; goto error; }
+        OS_ListItemDelete(item_l_p);
+        if (OS_TRUE == OS_LIST_IS_EMPTY(cfg_dyn_p->slots_l_p)) {
+            OS_Free(cfg_dyn_p->slots_l_p);
+            cfg_dyn_p->slots_l_p = OS_NULL;
+        }
+error:
+        OS_MutexRecursiveUnlock(os_task_mutex);
+    }
+    return s;
+}
+
+/******************************************************************************/
+const OS_List* OS_TaskSlotsGet(const OS_TaskHd thd)
+{
+OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
+    if (OS_NULL == cfg_dyn_p) { return OS_NULL; }
+    return cfg_dyn_p->slots_l_p;
+}
+
+/******************************************************************************/
+OS_QueueHd OS_TaskStdInGet(const OS_TaskHd thd)
+{
+OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
+    if (OS_NULL == cfg_dyn_p) { return OS_NULL; }
+    return cfg_dyn_p->stdin_qhd;
+}
+
+/******************************************************************************/
+OS_QueueHd OS_TaskSvStdInGet(void)
 {
 extern volatile OS_QueueHd sv_stdin_qhd;
     return sv_stdin_qhd;

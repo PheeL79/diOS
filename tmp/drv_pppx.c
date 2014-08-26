@@ -11,9 +11,8 @@
 //------------------------------------------------------------------------------
 static Status   PPPX_Init(void);
 static Status   PPPX_DeInit(void);
-static void     PPPX_GPIO_Init(void);
-static void     PPPX_NVIC_Init(void);
-static void     PPPX_DMA_Init(void);
+static Status   PPPX_LL_Init(void);
+static Status   PPPX_LL_DeInit(void);
 static Status   PPPX_Open(void* args_p);
 static Status   PPPX_Close(void);
 static Status   PPPX_Read(U8* data_in_p, U32 size, void* args_p);
@@ -43,25 +42,24 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-void PPPX_GPIO_Init(void)
-{
-}
-
-/******************************************************************************/
-void PPPX_DMA_Init(void)
-{
-}
-
-/******************************************************************************/
-void PPPX_NVIC_Init(void)
-{
-}
-
-/******************************************************************************/
 Status PPPX_DeInit(void)
 {
 Status s = S_OK;
     return s;
+}
+
+/******************************************************************************/
+Status PPPX_LL_Init(void)
+{
+Status s = S_OK;
+    return s;    
+}
+
+/******************************************************************************/
+Status PPPX_LL_DeInit(void)
+{
+Status s = S_OK;
+    return s;    
 }
 
 /******************************************************************************/

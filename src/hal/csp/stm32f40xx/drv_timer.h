@@ -8,6 +8,8 @@
 
 //-----------------------------------------------------------------------------
 enum {
+    DRV_ID_UNDEF,
+    DRV_ID_TIMER_IWDG,
     DRV_ID_TIMER1,
     DRV_ID_TIMER2,
     DRV_ID_TIMER3,
@@ -25,14 +27,26 @@ enum {
     DRV_ID_TIMER_LAST
 };
 
+enum {
+    DRV_REQ_TIMER_UNDEF = DRV_REQ_STD_LAST,
+    DRV_REQ_TIMER_START,
+    DRV_REQ_TIMER_STOP,
+    DRV_REQ_TIMER_RESET,
+    DRV_REQ_TIMER_COUNTER_GET,
+    DRV_REQ_TIMER_LAST
+};
+
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_timer_v[];
 
 //-----------------------------------------------------------------------------
+Status      TIMER_IWDG_Init(void);
+Status      TIMER_IWDG_Start(void);
+void        TIMER_IWDG_Reset(void);
+
 void        TIMER_DWT_Init(void);
 LNG         TIMER_DWT_Get(void);
 
-//TODO(A. Filyanov) Move all of interface functions to IoCtl part of the driver.
 void        TIMER10_Reset(void);
 void        TIMER10_Start(void);
 MutexState  TIMER10_MutexGet(void);

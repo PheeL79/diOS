@@ -23,6 +23,12 @@ typedef FATFS*  OS_FileSystemHd;
 typedef FIL*    OS_FileHd;
 typedef DIR*    OS_DirHd;
 
+enum {
+    DRV_REQ_FS_UNDEF = DRV_REQ_STD_LAST,
+    DRV_REQ_FS_MEDIA_STATUS_GET,
+    DRV_REQ_FS_LAST
+};
+
 typedef enum {
     S_FS_UNDEF = S_MODULE,
     S_FS_UNMOUNTED,
@@ -180,6 +186,11 @@ Status          OS_FileSystemMediaDeInit(const OS_FileSystemMediaHd fs_media_hd)
 /// @param[in]  fs_media_hd     Media handle.
 /// @return     #Status.
 Status          OS_FileSystemMediaCurrentSet(const OS_FileSystemMediaHd fs_media_hd);
+
+/// @brief      Get the media current status.
+/// @param[in]  fs_media_hd     Media handle.
+/// @return     #Status.
+Status          OS_FileSystemMediaStatusGet(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Get the media volume name.
 /// @param[in]  fs_media_hd     Media handle.

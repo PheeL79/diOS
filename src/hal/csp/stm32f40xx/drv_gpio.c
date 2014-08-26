@@ -13,8 +13,8 @@
 /// @brief      GPIO initialize.
 /// @return     #Status.
 Status          GPIO_Init_(void);
-static Status   GPIOC_Init(void);
-static Status   GPIOF_Init(void);
+static Status   GPIOC_Init(void* args_p);
+static Status   GPIOF_Init(void* args_p);
 static void     GPIO_AssertPinInit(void);
 static void     GPIO_DebugPinInit(void);
 
@@ -52,7 +52,7 @@ Status GPIO_Init_(void)
 }
 
 /*****************************************************************************/
-Status GPIOC_Init(void)
+Status GPIOC_Init(void* args_p)
 {
     HAL_LOG(D_INFO, "Init: ");
     GPIO_AssertPinInit();
@@ -76,7 +76,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 }
 
 /*****************************************************************************/
-Status GPIOF_Init(void)
+Status GPIOF_Init(void* args_p)
 {
     HAL_LOG(D_INFO, "Init: ");
     GPIO_DebugPinInit();

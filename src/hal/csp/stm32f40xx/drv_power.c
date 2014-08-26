@@ -18,7 +18,7 @@
 /// @return  #Status.
 Status POWER_Init_(void);
 
-static Status POWER__Init(void);
+static Status POWER__Init(void* args_p);
 static Status POWER__DeInit(void);
 static Status POWER_Open(void* args_p);
 static Status POWER_Close(void);
@@ -47,7 +47,7 @@ Status POWER_Init_(void)
 }
 
 /*****************************************************************************/
-Status POWER__Init(void)
+Status POWER__Init(void* args_p)
 {
     //D_LOG(D_INFO, "Init: ");
     //D_TRACE_S(D_INFO, S_OK);

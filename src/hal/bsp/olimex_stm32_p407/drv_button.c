@@ -16,14 +16,14 @@
 /// @return  #Status.
 Status BUTTON_Init_(void);
 
-static Status BUTTON_WakeupInit(void);
+static Status BUTTON_WakeupInit(void* args_p);
 static Status BUTTON_NVIC_WakeupInit(void);
 static Status BUTTON_WakeupDeInit(void);
 static Status BUTTON_WakeupOpen(void* args_p);
 static Status BUTTON_WakeupClose(void);
 static Status BUTTON_WakeupIoCtl(const U32 request_id, void* args_p);
 
-static Status BUTTON_TamperInit(void);
+static Status BUTTON_TamperInit(void* args_p);
 static Status BUTTON_NVIC_TamperInit(void);
 static Status BUTTON_TamperDeInit(void);
 static Status BUTTON_TamperOpen(void* args_p);
@@ -70,7 +70,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-Status BUTTON_WakeupInit(void)
+Status BUTTON_WakeupInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
@@ -143,7 +143,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-Status BUTTON_TamperInit(void)
+Status BUTTON_TamperInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
@@ -222,7 +222,7 @@ Status s = S_OK;
             }
             break;
         case DRV_REQ_BUTTON_TAMPER_ENABLE:
-            s = BUTTON_TamperInit();
+            s = BUTTON_TamperInit(OS_NULL);
             break;
         case DRV_REQ_BUTTON_TAMPER_DISABLE:
             if (HAL_OK != HAL_RTCEx_DeactivateTamper(&rtc_handle, RTC_TAMPER_1))   { s = S_HARDWARE_FAULT; }

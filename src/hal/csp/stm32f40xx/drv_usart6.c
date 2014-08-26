@@ -46,7 +46,7 @@
 #define USARTx_DMA_RX_IRQHandler        DMA2_Stream2_IRQHandler
 
 //------------------------------------------------------------------------------
-static Status   USART6_Init(void);
+static Status   USART6_Init(void* args_p);
 static Status   USART6_DeInit(void);
 static void     USART6_GPIO_Init(void);
 static void     USART6_NVIC_Init(void);
@@ -58,7 +58,7 @@ static Status   USART6_Write(U8* data_out_p, U32 size, void* args_p);
 //static Status   USART6_IT_Read(U8* data_in_p, U32 size, void* args_p);
 //static Status   USART6_IT_Write(U8* data_out_p, U32 size, void* args_p);
 static Status   USART6_DMA_Read(U8* data_in_p, U32 size, void* args_p);
-static Status   USART6_DMA_Write(U8* data_out_p, U32 size, void* args_p);
+//static Status   USART6_DMA_Write(U8* data_out_p, U32 size, void* args_p);
 static Status   USART6_IoCtl(const U32 request_id, void* args_p);
 
 //------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ static DMA_HandleTypeDef    hdma_rx;
 };
 
 /******************************************************************************/
-Status USART6_Init(void)
+Status USART6_Init(void* args_p)
 {
     //HAL_LOG(D_INFO, "Init: ");
     USART6_GPIO_Init();
@@ -296,31 +296,6 @@ Status s = S_OK;
         case DRV_REQ_STD_SYNC:
             while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_handle)) {};
             break;
-        case DRV_REQ_STD_MODE_IO_SET: {
-            const HAL_DriverModeIo mode_io = (*(HAL_DriverModeIo*)args_p);
-                switch (mode_io) {
-                    case DRV_MODE_IO_POLL:
-                        drv_usart6.Read = USART6_Read;
-                        drv_usart6.Write= USART6_Write;
-                        break;
-                    case DRV_MODE_IO_IT:
-//                        drv_usart6.Read = USART6_IT_Read;
-//                        drv_usart6.Write= USART6_IT_Write;
-                        break;
-                    case DRV_MODE_IO_DMA:
-                        drv_usart6.Read = USART6_DMA_Read;
-                        drv_usart6.Write= USART6_DMA_Write;
-                        break;
-                    case DRV_MODE_IO_USER:
-                        drv_usart6.Read = OS_NULL;
-                        drv_usart6.Write= USART6_DMA_Write;
-                        break;
-                    default:
-                        s = S_INVALID_VALUE;
-                        break;
-                }
-            }
-            break;
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
@@ -360,8 +335,8 @@ void USARTx_IRQHandler(void)
 
     extern OS_QueueHd stdio_qhd;
     const OS_SignalData sig_data = (U16)(USARTx->DR & (U16)0x01FF);
-    const OS_Signal signal = OS_ISR_SIGNAL_CREATE(OS_SIG_STDIN, sig_data);
-    if (1 == OS_ISR_SIGNAL_EMIT(stdio_qhd, signal, OS_MSG_PRIO_NORMAL)) {
+    const OS_Signal signal = OS_ISR_SIGNAL_CREATE(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
+    if (1 == OS_ISR_SIGNAL_SEND(stdio_qhd, signal, OS_MSG_PRIO_NORMAL)) {
         OS_ContextSwitchForce();
     }
 }
@@ -380,6 +355,7 @@ void USARTx_DMA_RX_IRQHandler(void)
     HAL_DMA_IRQHandler(uart_handle.hdmarx);
 }
 
+/******************************************************************************/
 /**
   * @brief  This function handles DMA interrupt request.
   * @param  None

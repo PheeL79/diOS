@@ -37,10 +37,10 @@ typedef struct {
 
 //------------------------------------------------------------------------------
 /// @brief   Common functions.
-#define OS_MEMSET(dst_p, value, size)   HAL_MEMSET(dst_p, value, size)
-#define OS_MEMCPY(dst_p, src_p, size)   HAL_MEMCPY(dst_p, src_p, size)
+#define OS_MEMSET   HAL_MEMSET
+#define OS_MEMCPY   HAL_MEMCPY
 #define OS_MEMCPY32(dst_p, src_p, size) OS_MEMCPY(dst_p, src_p, ((size) * sizeof(U32)))
-#define OS_MEMMOV(dst_p, src_p, size)   HAL_MEMMOV(dst_p, src_p, size)
+#define OS_MEMMOV   HAL_MEMMOV
 #define OS_MEMMOV32(dst_p, src_p, size) OS_MEMMOV(dst_p, src_p, ((size) * sizeof(U32)))
 
 /// @brief      Allocate memory.

@@ -6,6 +6,7 @@
 #ifndef _OS_MESSAGE_H_
 #define _OS_MESSAGE_H_
 
+#include "os_list.h"
 #include "os_task.h"
 
 #ifdef __cplusplus
@@ -46,6 +47,13 @@ OS_Message*     OS_MessageCreate(const OS_MessageId id, const U16 size, const Ti
 /// @return     None.
 void            OS_MessageDelete(OS_Message* msg_p);
 
+/// @brief      Emit the message.
+/// @param[in]  msg_p           Message.
+/// @param[in]  timeout         Message sending timeout.
+/// @param[in]  priority        Message sending priority.
+/// @return     #Status.
+Status          OS_MessageEmit(const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
+
 /// @brief      Send the message.
 /// @param[in]  qhd             Receiver (task) queue handle.
 /// @param[in]  msg_p           Message.
@@ -60,7 +68,7 @@ Status          OS_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p, co
 /// @param[in]  timeout         Message sending timeout.
 /// @param[in]  priority        Message sending priority.
 /// @return     #Status.
-Status          OS_MessageMulticastSend(const OS_QueueHd receivers_qhd_v[], const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
+Status          OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
 
 //Status          OS_MessageBroadcastSend(const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
 

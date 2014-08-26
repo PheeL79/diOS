@@ -16,7 +16,7 @@ Status MEM_EXT_Init_(void);
 
 /// @brief   External memory initialization.
 /// @return  #Status.
-static Status MEM_EXT_SRAM512K_Init(void);
+static Status MEM_EXT_SRAM512K_Init(void* args_p);
 
 /// @brief   External memory deinitialization.
 /// @return  #Status.
@@ -24,7 +24,7 @@ static Status MEM_EXT_SRAM512K_DeInit(void);
 
 //-----------------------------------------------------------------------------
 static SRAM_HandleTypeDef hsram1;
-static volatile BL fsmc_is_initialized = OS_FALSE;
+static VBL fsmc_is_initialized = OS_FALSE;
 
 HAL_DriverItf* drv_mem_ext_v[DRV_ID_MEM_EXT_LAST];
 
@@ -48,7 +48,7 @@ Status MEM_EXT_Init_(void)
 }
 
 /*****************************************************************************/
-Status MEM_EXT_SRAM512K_Init(void)
+Status MEM_EXT_SRAM512K_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
 Status s = S_OK;

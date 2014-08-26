@@ -24,7 +24,6 @@ typedef void* OS_QueueHd;
 typedef struct {
     U16             len;
     U16             item_size;
-    Direction       dir;
 } OS_QueueConfig;
 
 typedef struct {

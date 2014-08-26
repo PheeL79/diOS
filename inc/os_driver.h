@@ -19,7 +19,6 @@ extern "C" {
 */
 //------------------------------------------------------------------------------
 typedef const void* OS_DriverHd;
-typedef HAL_DriverModeIo OS_DriverModeIo;
 
 enum { //Bit fields
     OS_DRV_STATE_UNDEF,
@@ -42,7 +41,6 @@ typedef struct {
 typedef struct {
     ConstStr            name[OS_DRIVER_NAME_LEN];
     HAL_DriverItf*      itf_p;
-    OS_DriverModeIo     mode_io;
     OS_PowerPrio        prio_power;
 } OS_DriverConfig;
 
@@ -60,8 +58,9 @@ Status          OS_DriverDelete(const OS_DriverHd dhd);
 
 /// @brief      Init driver.
 /// @param[in]  dhd            Driver's handle.
+/// @param[in]  args_p         Driver's input arguments.
 /// @return     #Status.
-Status          OS_DriverInit(const OS_DriverHd dhd);
+Status          OS_DriverInit(const OS_DriverHd dhd, void* args_p);
 
 /// @brief      Deinit driver.
 /// @param[in]  dhd            Driver's handle.
@@ -101,6 +100,17 @@ Status          OS_DriverWrite(const OS_DriverHd dhd, void* data_out_p, U32 size
 /// @param[in]  args_p         Driver's specific input arguments (if presents).
 /// @return     #Status.
 Status          OS_DriverIoCtl(const OS_DriverHd dhd, const U32 request_id, void* args_p);
+
+/// @brief      Get driver interface.
+/// @param[in]  dhd            Driver's handle.
+/// @return     Driver interface.
+const HAL_DriverItf* OS_DriverItfGet(const OS_DriverHd dhd);
+
+/// @brief      Set driver interface.
+/// @param[in]  dhd            Driver's handle.
+/// @param[in]  itf_p          Driver's interface.
+/// @return     #Status.
+Status          OS_DriverItfSet(const OS_DriverHd dhd, HAL_DriverItf* itf_p);
 
 /// @brief      Get driver name.
 /// @param[in]  dhd            Driver's handle.

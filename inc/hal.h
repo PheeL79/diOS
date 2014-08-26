@@ -19,25 +19,12 @@ typedef void (*HAL_IrqCallbackFunc)(void);
 enum {
     DRV_REQ_STD_UNDEF = 64,
     DRV_REQ_STD_SYNC,
-    DRV_REQ_STD_MODE_IO_SET,
     DRV_REQ_STD_POWER_SET,
     DRV_REQ_STD_LAST
 };
 
-// Driver modes.
-enum {
-    DRV_MODE_IO_UNDEF,
-    DRV_MODE_IO_DEFAULT,
-    DRV_MODE_IO_POLL,
-    DRV_MODE_IO_IT,
-    DRV_MODE_IO_DMA,
-    DRV_MODE_IO_USER,
-    DRV_MODE_IO_LAST
-};
-typedef U8 HAL_DriverModeIo;
-
 typedef struct {
-    Status  (*Init)(void);
+    Status  (*Init)(void* args_p);
     Status  (*DeInit)(void);
     Status  (*Open)(void* args_p);
     Status  (*Close)(void);

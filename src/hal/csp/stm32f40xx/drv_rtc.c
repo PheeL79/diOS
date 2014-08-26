@@ -29,7 +29,7 @@
 /// @return  #Status.
 Status RTC_Init_(void);
 
-static Status   RTC__Init(void);
+static Status   RTC__Init(void* args_p);
 static Status   RTC__DeInit(void);
 static Status   RTC_Open(void* args_p);
 static Status   RTC_Close(void);
@@ -86,7 +86,7 @@ Status RTC_Init_(void)
 }
 
 /*****************************************************************************/
-Status RTC__Init(void)
+Status RTC__Init(void* args_p)
 {
     //HAL_LOG(D_INFO, "Init");
     RTC_LowLevelInit();

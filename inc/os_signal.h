@@ -2,6 +2,7 @@
 #define _OS_SIGNAL_H_
 
 #include "os_common.h"
+#include "os_task.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,17 +11,18 @@ extern "C" {
 //------------------------------------------------------------------------------
 typedef U32         OS_Signal;
 typedef U8          OS_SignalId;
+typedef OS_TaskId   OS_SignalSrc;
 typedef U16         OS_SignalData;
 
 #define OS_SIGNAL_TOKEN         BIT(BIT_SIZE(OS_Signal) - 1)
 #define OS_SIGNAL_ID_MASK       BIT_MASK(BIT_SIZE(OS_SignalId) - 1)
-#define OS_SIGNAL_SRC_MASK      BIT_MASK(BIT_SIZE(OS_TaskId))
+#define OS_SIGNAL_SRC_MASK      BIT_MASK(BIT_SIZE(OS_SignalSrc))
 #define OS_SIGNAL_DATA_MASK     BIT_MASK(BIT_SIZE(OS_SignalData))
 
 enum {
     OS_SIG_UNDEF,
     OS_SIG_SYS = 1,
-    OS_SIG_ISR,                             // src = dev ID(drv.h), data - device dependent;
+    OS_SIG_DRV,                             // src = dev ID(drv.h), data - device dependent;
     OS_SIG_STDIN,
     OS_SIG_STDOUT,
     OS_SIG_REBOOT,
@@ -40,22 +42,22 @@ enum {
 };
 
 //------------------------------------------------------------------------------
-#define OS_SIGNAL_CREATE_(tid, id, data)                        (OS_SIGNAL_TOKEN | \
-                                                                ((((OS_Signal)(id) & OS_SIGNAL_ID_MASK) << 24) | \
-                                                                (((OS_Signal)(tid) & OS_SIGNAL_SRC_MASK) << 16) | \
+#define OS_SIGNAL_CREATE_EX(src, id, data)                      (OS_SIGNAL_TOKEN | \
+                                                                ((((OS_Signal)(id) & OS_SIGNAL_ID_MASK)  << 24) | \
+                                                                (((OS_Signal)(src) & OS_SIGNAL_SRC_MASK) << 16) | \
                                                                 ((OS_Signal)(data) & OS_SIGNAL_DATA_MASK)))
 
-#define OS_SIGNAL_CREATE(id, data)                              OS_SIGNAL_CREATE_(OS_TaskIdGet(OS_THIS_TASK), id, data)
-#define OS_SIGNAL_EMIT(qhd, signal, prio)                       OS_MessageSend(qhd, (OS_Message *)signal, OS_NO_BLOCK, prio)
-#define OS_SIGNAL_MULTICAST_EMIT(receivers_qhd_v, signal, prio) OS_MessageMulticastSend(receivers_qhd_v, (OS_Message *)signal, OS_NO_BLOCK, prio)
-#define OS_SIGNAL_IS(msg)                                       (OS_SIGNAL_TOKEN == ((OS_Signal)(msg) & OS_SIGNAL_TOKEN))
+#define OS_SIGNAL_CREATE(id, data)                              OS_SIGNAL_CREATE_EX(OS_TaskIdGet(OS_THIS_TASK), id, data)
+#define OS_SIGNAL_EMIT(signal, prio)                            OS_MessageEmit((OS_Message*)signal, OS_NO_BLOCK, prio)
+#define OS_SIGNAL_SEND(qhd, signal, prio)                       OS_MessageSend(qhd, (OS_Message*)signal, OS_NO_BLOCK, prio)
+#define OS_SIGNAL_MULTICAST_SEND(slots_qhd_l_p, signal, prio)   OS_MessageMulticastSend(slots_qhd_l_p, (OS_Message*)signal, OS_NO_BLOCK, prio)
+#define OS_SIGNAL_IS(msg_p)                                     (OS_SIGNAL_TOKEN == ((OS_Signal)(msg_p) & OS_SIGNAL_TOKEN))
 #define OS_SIGNAL_ID_GET(signal)                                ((OS_SignalId)(((OS_Signal)(signal) >> 24) & OS_SIGNAL_ID_MASK))
-#define OS_SIGNAL_SRC_GET(signal)                               ((OS_TaskId)(((OS_Signal)(signal) >> 16) & OS_SIGNAL_SRC_MASK))
+#define OS_SIGNAL_SRC_GET(signal)                               ((OS_SignalSrc)(((OS_Signal)(signal) >> 16) & OS_SIGNAL_SRC_MASK))
 #define OS_SIGNAL_DATA_GET(signal)                              ((OS_SignalData)(((OS_Signal)(signal)) & OS_SIGNAL_DATA_MASK))
 
-#define OS_ISR_SIGNAL_CREATE(id, data)                          OS_SIGNAL_CREATE_(0, id, data)
-
-#define OS_ISR_SIGNAL_EMIT(qhd, signal, prio)                   OS_ISR_MessageSend(qhd, (OS_Message *)signal, prio)
+#define OS_ISR_SIGNAL_CREATE                                    OS_SIGNAL_CREATE_EX
+#define OS_ISR_SIGNAL_SEND(qhd, signal, prio)                   OS_ISR_MessageSend(qhd, (OS_Message*)signal, prio)
 
 #ifdef __cplusplus
 }

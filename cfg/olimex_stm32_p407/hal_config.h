@@ -26,11 +26,12 @@
 #define BUTTON_WAKEUP_PIN               GPIO_PIN_0
 
 // IWDG
-//#define IWDG_ENABLED
-#define HAL_WATCHDOG_TIMEOUT            3000
+#define TIMER_IWDG_ENABLED              0
+#define TIMER_IWDG_TIMEOUT              3000
 
 // DEBUG
-#define HAL_LOG_LEVEL_DEFAULT           D_DEBUG
+#define HAL_ASSERT_LEVEL                D_DEBUG
+#define HAL_LOG_LEVEL                   D_DEBUG
 #define HAL_STDIO_TERM_HEIGHT           24
 #define HAL_STDIO_TERM_WIDTH            80
 #define HAL_STDIO_BUFF_LEN              512
@@ -38,20 +39,28 @@
 
 // Timeouts
 #define HAL_TIMEOUT_DRIVER              1000U
-#define HAL_TIMEOUT_TIMER_MILESTONE     20
+#define HAL_TIMEOUT_TIMER_TIMESTAMP     20
 
-//U(S)ART
-#define UART_MODE_IO                    DRV_MODE_IO_USER
+//SDIO SD
+#define SDIO_SD_ENABLED                 1
+#define SDIO_SDIO_DMA_STREAM3           3
+//#define SDIO_SD_DMA_STREAM6             6
+#define SDIO_SD_IRQ_PRIO                1
+#define SDIO_SD_DMA_IRQ_PRIO            1
+#define SD_CARD_BLOCK_SIZE              512
+#define SD_CARD_SECTOR_SIZE             SD_CARD_BLOCK_SIZE
 
-//SD CARD
-#define SD_SDIO_ENABLED                 1
-#define SD_SDIO_MODE_IO                 DRV_MODE_IO_DMA
-#define SD_SDIO_DMA_STREAM3             3
-//#define SD_SDIO_DMA_STREAM6             6
-#define SD_SDIO_IRQ_PRIO                1
-#define SD_SDIO_DMA_IRQ_PRIO            1
-#define SD_SDIO_BLOCK_SIZE              512
-#define SD_CARD_SECTOR_SIZE             SD_SDIO_BLOCK_SIZE
+//USB Host
+#define USBH_ENABLED                    1
+
+//USBH HID
+#define USBH_HID_ENABLED                1
+
+//USBH MSC
+#define USBH_MSC_ENABLED                1
+//USBH_MAX_DATA_BUFFER
+#define USBH_MSC_BLOCK_SIZE             512
+#define USBH_MSC_SECTOR_SIZE            USBH_MSC_BLOCK_SIZE
 
 // Memory
 #define MEM_BLOCK_SIZE_MIN              8
@@ -66,15 +75,19 @@
 // APP ------------------------------------------------------------------------
 // cstdlib redefenitions
 // Memory
-#define HAL_MEMSET(dst_p, value, size)  memset(dst_p, value, size)
-#define HAL_MEMCPY(dst_p, src_p, size)  memcpy(dst_p, src_p, size)
-#define HAL_MEMMOV(dst_p, src_p, size)  memmove(dst_p, src_p, size)
+#define HAL_MEMSET  memset
+#define HAL_MEMCPY  memcpy
+#define HAL_MEMMOV  memmove
 // String
-#define HAL_STRLEN(str_p)               strlen(str_p)
-#define HAL_STRCHR(str_p, c)            strchr(str_p, c)
-#define HAL_STRCPY(dst_p, src_p)        strcpy(dst_p, src_p)
-#define HAL_STRCAT(dst_p, src_p)        strcat(dst_p, src_p)
-#define HAL_STRNCPY(dst_p, src_p, size) strncpy(dst_p, src_p, size)
+#define HAL_ATOI    atoi
+#define HAL_STRLEN  strlen
+#define HAL_STRCHR  strchr
+#define HAL_STRCMP  strcmp
+#define HAL_STRCPY  strcpy
+#define HAL_STRCAT  strcat
+#define HAL_STRTOK  strtok
+#define HAL_STRTOL  strtol
+#define HAL_STRNCPY strncpy
 
 // Locale
 #define LOCALE_STRING_EN                "en"

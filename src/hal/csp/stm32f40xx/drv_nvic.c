@@ -5,6 +5,7 @@
 ******************************************************************************/
 #include <string.h>
 #include "hal.h"
+#include "os_config.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_nvic"
@@ -14,7 +15,7 @@
 /// @return     #Status.
 Status          NVIC_Init_(void);
 
-static Status   NVIC__Init(void);
+static Status   NVIC__Init(void* args_p);
 
 //-----------------------------------------------------------------------------
 HAL_DriverItf* drv_nvic_v[DRV_ID_NVIC_LAST];
@@ -39,7 +40,7 @@ Status NVIC_Init_(void)
 }
 
 /*****************************************************************************/
-Status NVIC__Init(void)
+Status NVIC__Init(void* args_p)
 {
     HAL_LOG(D_INFO, "Init: ");
     HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4); //By FreeRTOS request.

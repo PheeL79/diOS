@@ -20,14 +20,13 @@
 /// @return  #Status.
 Status USART_Init_(void);
 
-extern HAL_DriverItf drv_usart6;
-
 //-----------------------------------------------------------------------------
 HAL_DriverItf* drv_usart_v[DRV_ID_USART_LAST];
 
 /*****************************************************************************/
 Status USART_Init_(void)
 {
+extern HAL_DriverItf drv_usart6;
     HAL_MEMSET(drv_usart_v, 0x0, sizeof(drv_usart_v));
     drv_usart_v[DRV_ID_USART6] = &drv_usart6;
     return S_OK;
