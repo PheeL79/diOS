@@ -312,6 +312,9 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
@@ -3876,12 +3879,39 @@
       </excluded>
       <group>
         <name>class</name>
+        <group>
+          <name>hid</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Src\usbd_hid.c</name>
+          </file>
+        </group>
+        <group>
+          <name>msc</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Src\usbd_msc.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Src\usbd_msc_bot.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Src\usbd_msc_data.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Src\usbd_msc_scsi.c</name>
+          </file>
+        </group>
       </group>
       <group>
         <name>core</name>
-      </group>
-      <group>
-        <name>driver</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Src\usbd_core.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Src\usbd_ctlreq.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Src\usbd_ioreq.c</name>
+        </file>
       </group>
     </group>
     <group>
@@ -4114,6 +4144,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usart6.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd.c</name>
+      <excluded>
+        <configuration>Debug FLASH</configuration>
+      </excluded>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh.c</name>

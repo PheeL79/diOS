@@ -282,6 +282,7 @@ OS_Message* msg_p;
     led_state = (ON == led_state) ? OFF : ON;
     OS_DriverWrite(task_args_p->drv_led_pulse, (void*)&led_state, 1, OS_NULL);
 
+#if (1 == OS_TASK_DEADLOCK_TEST_ENABLED)
     if (OS_TRUE != is_idle) {
         Status s;
         IF_STATUS_OK(s = TaskDeadLockTest()) {
@@ -296,8 +297,10 @@ OS_Message* msg_p;
             deadlock_thd = OS_NULL;
         }
     }
+#endif // OS_TASK_DEADLOCK_TEST_ENABLED
 }
 
+#if (1 == OS_TASK_DEADLOCK_TEST_ENABLED)
 /******************************************************************************/
 Status TaskDeadLockTest(void)
 {
@@ -391,6 +394,7 @@ const OS_TaskConfig* task_cfg_p = OS_TaskConfigGet(deadlock_thd);
     }
     return S_OK;
 }
+#endif // OS_TASK_DEADLOCK_TEST_ENABLED
 
 /******************************************************************************/
 void Reboot(TaskArgs* task_args_p)

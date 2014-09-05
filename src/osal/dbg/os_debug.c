@@ -21,7 +21,8 @@ extern void LogVaListPrint(const LogLevel level, ConstStrPtr mdl_name_p, ConstSt
 //------------------------------------------------------------------------------
 const TimeMs timeout_def = 100;
 volatile static OS_MutexHd print_mut;
-volatile OS_QueueHd stdio_qhd;
+volatile OS_QueueHd stdin_qhd;
+volatile OS_QueueHd stdout_qhd;
 
 /******************************************************************************/
 Status OS_DebugInit(void)
@@ -49,7 +50,7 @@ void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
             LogVaListPrint(level, OS_TaskNameGet(OS_THIS_TASK), format_str_p, args);
             va_end(args);
             const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_STDOUT, 0);
-            OS_SIGNAL_SEND(stdio_qhd, signal, OS_MSG_PRIO_NORMAL);
+            OS_SIGNAL_SEND(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
         }
         OS_MutexUnlock(print_mut);
     }
@@ -74,7 +75,7 @@ void OS_Trace(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
             TraceVaListPrint(format_str_p, args);
             va_end(args);
             const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_STDOUT, 0);
-            OS_SIGNAL_SEND(stdio_qhd, signal, OS_MSG_PRIO_NORMAL);
+            OS_SIGNAL_SEND(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
         }
         OS_MutexUnlock(print_mut);
     }

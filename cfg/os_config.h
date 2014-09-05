@@ -12,10 +12,11 @@
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
-#define OS_IS_PREEMPTIVE            1
-#define OS_MPU_ENABLED              0
-#define OS_STATS_ENABLED            1
-#define OS_DEBUG_ENABLED            1
+#define OS_IS_PREEMPTIVE                1
+#define OS_MPU_ENABLED                  0
+#define OS_STATS_ENABLED                1
+#define OS_DEBUG_ENABLED                1
+#define OS_TASK_DEADLOCK_TEST_ENABLED   1
 
 // Timeouts.
 #define OS_TIMEOUT_DEFAULT          1000U
@@ -98,7 +99,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_FILE_SYSTEM_WORD_ACCESS  0
 #define OS_FILE_SYSTEM_LOCK         0
 #define OS_FILE_SYSTEM_REENTRANT    1
-#define OS_FILE_SYSTEM_VOLUMES_MAX  3
+#define OS_FILE_SYSTEM_VOLUMES_MAX  4
 #define OS_FILE_SYSTEM_VOLUME_STR_LEN       4
 #define OS_FILE_SYSTEM_VOLUME_NAME_LEN      12
 #define OS_FILE_SYSTEM_LONG_NAMES_ENABLED   3

@@ -57,10 +57,10 @@
 	MiddleWare version :
 */
 /*----------   -----------*/
-#define USBH_MAX_NUM_ENDPOINTS      2
+#define USBH_MAX_NUM_ENDPOINTS      6
 
 /*----------   -----------*/
-#define USBH_MAX_NUM_INTERFACES      2
+#define USBH_MAX_NUM_INTERFACES      10
 
 /*----------   -----------*/
 #define USBH_MAX_NUM_CONFIGURATION      1
@@ -69,7 +69,7 @@
 #define USBH_KEEP_CFG_DESCRIPTOR      0
 
 /*----------   -----------*/
-#define USBH_MAX_NUM_SUPPORTED_CLASS      3
+#define USBH_MAX_NUM_SUPPORTED_CLASS      2
 
 /*----------   -----------*/
 #define USBH_MAX_SIZE_CONFIGURATION      255
@@ -87,8 +87,8 @@
 
 /****************************************/
 /* #define for FS and HS identification */
-#define HOST_HS 		1
-#define HOST_FS 		1
+#define HOST_HS 		USBH_HS_ENABLED
+#define HOST_FS 		USBH_FS_ENABLED
 
 /** @defgroup USBH_Exported_Macros
   * @{

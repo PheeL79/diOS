@@ -62,10 +62,11 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_StartupSystem(void)
 {
-extern const OS_TaskConfig task_sv_cfg, task_shell_cfg;
+extern const OS_TaskConfig task_sv_cfg, task_log_cfg, task_shell_cfg;
 const OS_PowerState power = OS_PowerStateGet();
 Status s;
     IF_STATUS(s = task_sv_cfg.func_power(task_sv_cfg.args_p, power)) { return s; }
+    IF_STATUS(s = OS_StartupTaskAdd(&task_log_cfg))   { return s; }
     IF_STATUS(s = OS_StartupTaskAdd(&task_shell_cfg)) { return s; }
 #if (1 == USBH_ENABLED)
     extern const OS_TaskConfig task_usbhd_cfg;

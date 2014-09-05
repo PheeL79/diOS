@@ -1,6 +1,6 @@
 /***************************************************************************//**
-* @file    task_shell.c
-* @brief   Shell and log\trace\dump task definitions.
+* @file    task_log.c
+* @brief   Log\trace\dump task definitions.
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 #include "os_signal.h"
 
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "task_shell"
+#define MDL_NAME            "task_log"
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -24,8 +24,8 @@
 //static const TaskArgs task_args;
 
 //------------------------------------------------------------------------------
-const OS_TaskConfig task_shell_cfg = {
-    .name       = "Shell",
+const OS_TaskConfig task_log_cfg = {
+    .name       = "Log",
     .func_main  = OS_TaskMain,
     .func_power = OS_TaskPower,
     .args_p     = OS_NULL,//(void*)&task_args,
@@ -48,25 +48,21 @@ Status s = S_OK;
 /******************************************************************************/
 void OS_TaskMain(OS_TaskArgs* args_p)
 {
-extern volatile OS_QueueHd stdio_qhd;
-ConstStrPtr shell_prompt_p = OS_ShellPromptGet();
+extern volatile OS_QueueHd stdout_qhd;
+ConstStrPtr shell_prompt_p= OS_ShellPromptGet();
 const U8 shell_prompt_len = OS_STRLEN((char const*)shell_prompt_p);
-const OS_QueueHd stdin_qhd = stdio_qhd = OS_TaskStdInGet(OS_THIS_TASK);
+const OS_DriverHd drv_log = OS_DriverStdOutGet();
 OS_Message* msg_p;
-const OS_DriverHd drv_shell = OS_DriverStdIoGet();
 BL is_prompted = OS_FALSE;
-    //Init stdio_qhd before all other tasks and return to the base priority.
     OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
+    //Init stdout_qhd before all other tasks and return to the base priority.
+    stdout_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
-        IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
+        IF_STATUS(OS_MessageReceive(stdout_qhd, &msg_p, OS_BLOCK)) {
             OS_LOG_S(D_WARNING, S_UNDEF_MSG);
         } else {
             if (OS_SIGNAL_IS(msg_p)) {
                 switch (OS_SIGNAL_ID_GET(msg_p)) {
-                    case OS_SIG_STDIN:
-                        // get char from STDIO driver.
-                        OS_ShellClHandler((U8)OS_SIGNAL_DATA_GET(msg_p));
-                        break;
                     case OS_SIG_STDOUT:
                         is_prompted = OS_FALSE;
                         break;
@@ -86,9 +82,9 @@ BL is_prompted = OS_FALSE;
             }
         }
         if (OS_TRUE != is_prompted) {
-            //If are no more messages in the input queue - print a shell prompt.
-            if (0 == OS_QueueItemsCountGet(stdin_qhd) && (OS_TRUE != is_prompted)) {
-                OS_DriverWrite(drv_shell, (void*)shell_prompt_p, shell_prompt_len, OS_NULL);
+            //If there are no more messages in the input queue - print a shell prompt.
+            if (0 == OS_QueueItemsCountGet(stdout_qhd) && (OS_TRUE != is_prompted)) {
+                OS_DriverWrite(drv_log, (void*)shell_prompt_p, shell_prompt_len, OS_NULL);
                 is_prompted = OS_TRUE;
             }
         }

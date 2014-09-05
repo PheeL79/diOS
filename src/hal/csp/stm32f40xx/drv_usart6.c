@@ -47,12 +47,12 @@
 
 //------------------------------------------------------------------------------
 static Status   USART6_Init(void* args_p);
-static Status   USART6_DeInit(void);
+static Status   USART6_DeInit(void* args_p);
 static void     USART6_GPIO_Init(void);
 static void     USART6_NVIC_Init(void);
 static void     USART6_DMA_Init(void);
 static Status   USART6_Open(void* args_p);
-static Status   USART6_Close(void);
+static Status   USART6_Close(void* args_p);
 static Status   USART6_Read(U8* data_in_p, U32 size, void* args_p);
 static Status   USART6_Write(U8* data_out_p, U32 size, void* args_p);
 //static Status   USART6_IT_Read(U8* data_in_p, U32 size, void* args_p);
@@ -202,7 +202,7 @@ void USART6_NVIC_Init(void)
 }
 
 /******************************************************************************/
-Status USART6_DeInit(void)
+Status USART6_DeInit(void* args_p)
 {
     /*##-1- Reset peripherals ##################################################*/
     USARTx_FORCE_RESET();
@@ -236,7 +236,7 @@ Status USART6_Open(void* args_p)
 }
 
 /******************************************************************************/
-Status USART6_Close(void)
+Status USART6_Close(void* args_p)
 {
     //TODO(A. Filyanov)
     return S_OK;
@@ -333,10 +333,10 @@ void USARTx_IRQHandler(void)
 {
     HAL_UART_IRQHandler(&uart_handle);
 
-    extern OS_QueueHd stdio_qhd;
+    extern OS_QueueHd stdin_qhd;
     const OS_SignalData sig_data = (U16)(USARTx->DR & (U16)0x01FF);
     const OS_Signal signal = OS_ISR_SIGNAL_CREATE(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
-    if (1 == OS_ISR_SIGNAL_SEND(stdio_qhd, signal, OS_MSG_PRIO_NORMAL)) {
+    if (1 == OS_ISR_SIGNAL_SEND(stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
         OS_ContextSwitchForce();
     }
 }

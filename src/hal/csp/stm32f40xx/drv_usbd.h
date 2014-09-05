@@ -1,25 +1,24 @@
 /**************************************************************************//**
-* @file    drv_usbh.h
-* @brief   USB Host driver.
+* @file    drv_usbd.h
+* @brief   USB Device driver.
 * @author  A. Filyanov
 ******************************************************************************/
-#ifndef _DRV_USBH_H_
-#define _DRV_USBH_H_
+#ifndef _DRV_USBD_H_
+#define _DRV_USBD_H_
 
 //-----------------------------------------------------------------------------
 enum {
-    DRV_ID_USBH,
-    DRV_ID_USBH_FS_MSC,
-    DRV_ID_USBH_HS_MSC,
-    DRV_ID_USBH_LAST
+    DRV_ID_USBD,
+    DRV_ID_USBD_MSC,
+    DRV_ID_USBD_LAST
 };
 
 enum {
-    DRV_REQ_USBH_UNDEF = DRV_REQ_STD_LAST,
-    DRV_REQ_USBH_LAST
+    DRV_REQ_USBD_UNDEF = DRV_REQ_STD_LAST,
+    DRV_REQ_USBD_LAST
 };
 
 //-----------------------------------------------------------------------------
-extern HAL_DriverItf* drv_usbh_v[];
+extern HAL_DriverItf* drv_usbd_v[];
 
-#endif // _DRV_USBH_H_
+#endif // _DRV_USBD_H_

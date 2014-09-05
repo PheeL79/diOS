@@ -26,7 +26,8 @@
 extern volatile HAL_Env hal_env;
 volatile OS_Env os_env = {
     .hal_env_p      = &hal_env,
-    .drv_stdio      = OS_NULL,
+    .drv_stdin      = OS_NULL,
+    .drv_stdout     = OS_NULL,
     .drv_rtc        = OS_NULL,
 };
 VBL is_idle;
@@ -100,13 +101,16 @@ Status s;
             .itf_p      = drv_stdio_p,
             .prio_power = OS_PWR_PRIO_MAX - 1,
         };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_stdio)) { return s; }
+        OS_DriverHd drv_stdio;
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&drv_stdio)) { return s; }
         HAL_DriverItf drv_itf;
         OS_MEMMOV(&drv_itf, drv_stdio_p, sizeof(drv_itf));
         drv_itf.Write = USART6_DMA_Write;
-        IF_STATUS(s = OS_DriverItfSet(os_env.drv_stdio, &drv_itf)) { return s; }
-        IF_STATUS(s = OS_DriverInit(os_env.drv_stdio, OS_NULL)) { return s; }
-        IF_STATUS(s = OS_DriverOpen(os_env.drv_stdio, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverItfSet(drv_stdio, &drv_itf)) { return s; }
+        IF_STATUS(s = OS_DriverInit(drv_stdio, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(drv_stdio, OS_NULL)) { return s; }
+        os_env.drv_stdin = drv_stdio;
+        os_env.drv_stdout= os_env.drv_stdin;
     }
 
     {
@@ -139,9 +143,15 @@ OS_PowerState OS_PowerStateGet(void)
 }
 
 /******************************************************************************/
-OS_DriverHd OS_DriverStdIoGet(void)
+OS_DriverHd OS_DriverStdInGet(void)
 {
-    return os_env.drv_stdio;
+    return os_env.drv_stdin;
+}
+
+/******************************************************************************/
+OS_DriverHd OS_DriverStdOutGet(void)
+{
+    return os_env.drv_stdout;
 }
 
 /******************************************************************************/

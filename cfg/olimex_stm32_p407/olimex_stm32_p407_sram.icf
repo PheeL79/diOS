@@ -8,27 +8,27 @@ define symbol __ICFEDIT_region_ROM_start__ = __ICFEDIT_intvec_start__;
 define symbol __ICFEDIT_region_ROM_end__   = __ICFEDIT_intvec_start__ + 0x19FFF;
 define symbol __ICFEDIT_region_RAM_start__ = __ICFEDIT_region_ROM_start__;
 define symbol __ICFEDIT_region_RAM_end__   = __ICFEDIT_region_ROM_end__;
+define symbol __ICFEDIT_region_CCMRAM_start__ = 0x10000000;
+define symbol __ICFEDIT_region_CCMRAM_end__   = 0x1000FFFF;
 /*-Sizes-*/
 define symbol __ICFEDIT_size_cstack__ = 0x400;
-define symbol __ICFEDIT_size_heap__   = 0x0000;
+define symbol __ICFEDIT_size_heap__   = 0x000;
 /**** End of ICF editor section. ###ICF###*/
 
-define symbol __region_RAM1_start__ = 0x10000000;
-define symbol __region_RAM1_end__   = 0x1000FFFF;
 
 define memory mem with size = 4G;
-define region ROM_region   = mem:[from __ICFEDIT_region_ROM_start__   to __ICFEDIT_region_ROM_end__];
-define region RAM_region   = mem:[from __ICFEDIT_region_RAM_start__   to __ICFEDIT_region_RAM_end__];
-define region RAM1_region  = mem:[from __region_RAM1_start__   to __region_RAM1_end__];
+define region ROM_region      = mem:[from __ICFEDIT_region_ROM_start__   to __ICFEDIT_region_ROM_end__];
+define region RAM_region      = mem:[from __ICFEDIT_region_RAM_start__   to __ICFEDIT_region_RAM_end__];
+define region CCMRAM_region   = mem:[from __ICFEDIT_region_CCMRAM_start__   to __ICFEDIT_region_CCMRAM_end__];
 
 define block CSTACK    with alignment = 8, size = __ICFEDIT_size_cstack__   { };
 define block HEAP      with alignment = 8, size = __ICFEDIT_size_heap__     { };
 
-/*initialize by copy { readwrite };*/
+initialize by copy { readwrite };
 do not initialize  { section .noinit };
 
-place at start of ROM_region { readonly section .intvec};
-place in ROM_region   { readonly  };
-place in RAM_region   { readwrite };
-place in RAM_region   { zi }; 
-place in RAM_region   { block CSTACK, block HEAP };
+place at address mem:__ICFEDIT_intvec_start__ { readonly section .intvec };
+
+place in ROM_region   { readonly };
+place in RAM_region   { readwrite, zi,
+                        block CSTACK, block HEAP };

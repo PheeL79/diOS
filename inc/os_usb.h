@@ -13,6 +13,17 @@
 * @{
 */
 //------------------------------------------------------------------------------
+#define OS_USBH_SIG_ITF_GET(itf)        BF_GET(itf, 0,  BIT_SIZE(U8))
+#define OS_USBH_SIG_MSG_GET(msg)        BF_GET(msg, 8,  BIT_SIZE(U8))
+
+#define OS_USBH_SIG_ITF_SET(sig, itf)   BF_SET(sig, itf, 0, BIT_SIZE(U8));
+#define OS_USBH_SIG_MSG_SET(sig, msg)   BF_SET(sig, msg, 8, BIT_SIZE(U8));
+
+enum {
+    USBH_ID_FS,
+    USBH_ID_HS
+};
+
 enum {
 //USB Common
     OS_SIG_USB_CONNECT = OS_SIG_APP,
@@ -38,6 +49,13 @@ enum {
     OS_USB_CLASS_CDC    = 0x0A,
     OS_USB_CLASS_LAST
 };
+
+typedef const void* OS_UsbHd;
+
+typedef struct {
+    OS_UsbHd usbh_fs_hd;
+    OS_UsbHd usbh_hs_hd;
+} OS_UsbhHd;
 
 /**@}*/ //OS_Usb
 

@@ -18,16 +18,16 @@ Status BUTTON_Init_(void);
 
 static Status BUTTON_WakeupInit(void* args_p);
 static Status BUTTON_NVIC_WakeupInit(void);
-static Status BUTTON_WakeupDeInit(void);
+static Status BUTTON_WakeupDeInit(void* args_p);
 static Status BUTTON_WakeupOpen(void* args_p);
-static Status BUTTON_WakeupClose(void);
+static Status BUTTON_WakeupClose(void* args_p);
 static Status BUTTON_WakeupIoCtl(const U32 request_id, void* args_p);
 
 static Status BUTTON_TamperInit(void* args_p);
 static Status BUTTON_NVIC_TamperInit(void);
-static Status BUTTON_TamperDeInit(void);
+static Status BUTTON_TamperDeInit(void* args_p);
 static Status BUTTON_TamperOpen(void* args_p);
-static Status BUTTON_TamperClose(void);
+static Status BUTTON_TamperClose(void* args_p);
 static Status BUTTON_TamperIoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ Status BUTTON_NVIC_WakeupInit(void)
 }
 
 /*****************************************************************************/
-Status BUTTON_WakeupDeInit(void)
+Status BUTTON_WakeupDeInit(void* args_p)
 {
     HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
     return S_OK;
@@ -118,7 +118,7 @@ Status BUTTON_WakeupOpen(void* args_p)
 }
 
 /*****************************************************************************/
-Status BUTTON_WakeupClose(void)
+Status BUTTON_WakeupClose(void* args_p)
 {
     wakeup_irq_callback_func = OS_NULL;
     return S_OK;
@@ -189,7 +189,7 @@ Status BUTTON_NVIC_TamperInit(void)
 }
 
 /*****************************************************************************/
-Status BUTTON_TamperDeInit(void)
+Status BUTTON_TamperDeInit(void* args_p)
 {
     return S_OK;
 }
@@ -203,7 +203,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-Status BUTTON_TamperClose(void)
+Status BUTTON_TamperClose(void* args_p)
 {
 Status s = S_OK;
     tamper_irq_callback_func = OS_NULL;

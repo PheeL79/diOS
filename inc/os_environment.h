@@ -26,9 +26,13 @@ typedef Status (*OS_EnvVariableHandler)(ConstStrPtr variable_value_p);
 //------------------------------------------------------------------------------
 // System environment variables handlers.
 
-/// @brief      Get system input/output driver.
+/// @brief      Get system input driver.
 /// @return     Driver handle.
-OS_DriverHd     OS_DriverStdIoGet(void);
+OS_DriverHd     OS_DriverStdInGet(void);
+
+/// @brief      Get system output driver.
+/// @return     Driver handle.
+OS_DriverHd     OS_DriverStdOutGet(void);
 
 /// @brief      Get system realtime clock driver.
 /// @return     Driver handle.

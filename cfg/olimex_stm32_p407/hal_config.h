@@ -52,13 +52,13 @@
 
 //USB Host
 #define USBH_ENABLED                    1
+#define USBH_FS_ENABLED                 1
+#define USBH_HS_ENABLED                 1
 
-//USBH HID
+//USBH Classes
 #define USBH_HID_ENABLED                1
-
-//USBH MSC
 #define USBH_MSC_ENABLED                1
-//USBH_MAX_DATA_BUFFER
+//#define USBH_MSC_BLOCK_SIZE             USBH_MAX_DATA_BUFFER
 #define USBH_MSC_BLOCK_SIZE             512
 #define USBH_MSC_SECTOR_SIZE            USBH_MSC_BLOCK_SIZE
 

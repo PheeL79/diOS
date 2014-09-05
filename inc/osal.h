@@ -25,7 +25,8 @@ extern "C" {
 
 typedef struct {
     volatile HAL_Env*   hal_env_p;
-    OS_DriverHd         drv_stdio;
+    OS_DriverHd         drv_stdin;
+    OS_DriverHd         drv_stdout;
     OS_DriverHd         drv_rtc;
 } OS_Env;
 

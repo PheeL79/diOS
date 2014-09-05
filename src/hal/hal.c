@@ -68,8 +68,8 @@ Status s = S_OK;
         HAL_LOG(D_INFO, "-------------------------------");
         // Close and deinit STDIO stream(for init HAL output).
         // Stream will be open back again in OSAL init.
-        HAL_ASSERT(S_OK == hal_env.stdio_p->Close());
-        HAL_ASSERT(S_OK == hal_env.stdio_p->DeInit());
+        HAL_ASSERT(S_OK == hal_env.stdio_p->Close(OS_NULL));
+        HAL_ASSERT(S_OK == hal_env.stdio_p->DeInit(OS_NULL));
     } HAL_CRITICAL_SECTION_EXIT();
     return s;
 }

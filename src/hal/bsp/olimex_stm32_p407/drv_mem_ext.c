@@ -20,7 +20,7 @@ static Status MEM_EXT_SRAM512K_Init(void* args_p);
 
 /// @brief   External memory deinitialization.
 /// @return  #Status.
-static Status MEM_EXT_SRAM512K_DeInit(void);
+static Status MEM_EXT_SRAM512K_DeInit(void* args_p);
 
 //-----------------------------------------------------------------------------
 static SRAM_HandleTypeDef hsram1;
@@ -186,7 +186,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-Status MEM_EXT_SRAM512K_DeInit(void)
+Status MEM_EXT_SRAM512K_DeInit(void* args_p)
 {
     if (OS_TRUE != fsmc_is_initialized) {
         return S_INIT;

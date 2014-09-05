@@ -319,7 +319,7 @@
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\osal\sett\min_ini</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\set\min_ini</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
@@ -1913,6 +1913,15 @@
     </settings>
   </configuration>
   <group>
+    <name>dbg</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\dbg\os_debug.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\dbg\os_task_log.c</name>
+    </file>
+  </group>
+  <group>
     <name>fs</name>
     <group>
       <name>fat_fs</name>
@@ -2084,7 +2093,7 @@
                 <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
                 <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
                 <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
-                <state>$PROJ_DIR$\..\..\..\..\src\osal\sett\min_ini</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\set\min_ini</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
@@ -2230,7 +2239,7 @@
     </file>
   </group>
   <group>
-    <name>sett</name>
+    <name>set</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b\minIni.c</name>
       <configuration>
@@ -2393,7 +2402,7 @@
               <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
               <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
               <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\sett\min_ini</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\set\min_ini</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
@@ -2504,25 +2513,25 @@
       </configuration>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\sett\os_settings.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\set\os_settings.c</name>
     </file>
   </group>
   <group>
-    <name>shell</name>
+    <name>shl</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shl\os_shell.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell_commands_fs.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shl\os_shell_commands_fs.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell_commands_net.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shl\os_shell_commands_net.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_shell_commands_std.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shl\os_shell_commands_std.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\shell\os_task_shell.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\shl\os_task_shell.c</name>
     </file>
   </group>
   <group>
@@ -2552,9 +2561,6 @@
       <name>$PROJ_DIR$\..\..\..\..\src\osal\usb\os_task_usbhd.c</name>
     </file>
   </group>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\..\src\osal\os_debug.c</name>
-  </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_driver.c</name>
   </file>

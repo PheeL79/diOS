@@ -19,9 +19,9 @@
 Status POWER_Init_(void);
 
 static Status POWER__Init(void* args_p);
-static Status POWER__DeInit(void);
+static Status POWER__DeInit(void* args_p);
 static Status POWER_Open(void* args_p);
-static Status POWER_Close(void);
+static Status POWER_Close(void* args_p);
 static Status POWER_IoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ Status POWER__Init(void* args_p)
 }
 
 /*****************************************************************************/
-Status POWER__DeInit(void)
+Status POWER__DeInit(void* args_p)
 {
 Status s = S_OK;
 //    D_LOG(D_INFO, "DeInit: ");
@@ -71,7 +71,7 @@ Status POWER_Open(void* args_p)
 }
 
 /******************************************************************************/
-Status POWER_Close(void)
+Status POWER_Close(void* args_p)
 {
     //TODO(A. Filyanov)
     return S_OK;

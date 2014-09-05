@@ -62,9 +62,9 @@ static Status SDIO_Init_(void* args_p);
 static Status SDIO_DMA_Init(void);
 static Status SDIO_GPIO_Init(void);
 static Status SDIO_NVIC_Init(void);
-static Status SDIO_DeInit_(void);
+static Status SDIO_DeInit_(void* args_p);
 static Status SDIO_Open(void* args_p);
-static Status SDIO_Close(void);
+static Status SDIO_Close(void* args_p);
 static Status SDIO_Read(U8* data_in_p, U32 size, void* args_p);
 static Status SDIO_Write(U8* data_out_p, U32 size, void* args_p);
 static Status SDIO_DMA_Read(U8* data_in_p, U32 size, void* args_p);
@@ -246,7 +246,7 @@ Status SDIO_NVIC_Init(void)
 }
 
 /*****************************************************************************/
-Status SDIO_DeInit_(void)
+Status SDIO_DeInit_(void* args_p)
 {
 Status s = S_OK;
     if (HAL_OK != HAL_SD_DeInit(&sd_handle)) { s = S_HARDWARE_FAULT; }
@@ -280,7 +280,7 @@ Status SDIO_Open(void* args_p)
 }
 
 /*****************************************************************************/
-Status SDIO_Close(void)
+Status SDIO_Close(void* args_p)
 {
 Status s = S_OK;
     s = drv_sdio_sd.IoCtl(DRV_REQ_STD_SYNC, OS_NULL);

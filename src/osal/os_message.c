@@ -87,7 +87,7 @@ signal_filter: //Prevent recursion calls.
                 //OS_SchedulerSuspend();
                 if (OS_NULL != thd) {
                     const OS_PowerState state =
-                        (OS_PowerState)BF_GET(OS_SIGNAL_DATA_GET(msg_p), 0, BIT_MASK(BIT_SIZE(OS_PowerState)));
+                        (OS_PowerState)BF_GET(OS_SIGNAL_DATA_GET(msg_p), 0, BIT_SIZE(OS_PowerState));
                     IF_STATUS_OK(s = OS_TaskPowerStateSet(thd, state)) {
                         const OS_TaskId src_tid = (OS_TaskId)OS_SIGNAL_SRC_GET(msg_p);
                         SignalSend(src_tid, s, OS_SIG_PWR_ACK);

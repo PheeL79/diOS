@@ -110,10 +110,10 @@ Status OS_FileSystemDeInit(void)
 Status s;
     //TODO(A. Filyanov) Loop and delete over existed media handles.
     //Led FS Close/Deinit
-    IF_STATUS(s = OS_DriverClose(drv_led_fs)) {
+    IF_STATUS(s = OS_DriverClose(drv_led_fs, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
     }
-    IF_STATUS(s = OS_DriverDeInit(drv_led_fs)) {
+    IF_STATUS(s = OS_DriverDeInit(drv_led_fs, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
     }
     return S_OK;
@@ -225,7 +225,7 @@ Status s;
     if (OS_NULL != drv_media_hd) {
         OS_FileSystemUnMount(fs_media_hd);
     }
-    IF_STATUS(s = OS_DriverDeInit(drv_media_hd)) {
+    IF_STATUS(s = OS_DriverDeInit(drv_media_hd, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
     }
     return s;
@@ -660,13 +660,13 @@ OS_DateTime date_time;
 OS_DateTime FDateTimeTranslate(const WORD date, const WORD time)
 {
 OS_DateTime time_date;
-    time_date.year      = BF_GET(date, 9,  BIT_MASK(7)) + OS_FILE_SYSTEM_YEAR_BASE;
-    time_date.month     = BF_GET(date, 5,  BIT_MASK(4));
-    time_date.day       = BF_GET(date, 0,  BIT_MASK(4));
+    time_date.year      = BF_GET(date, 9,  7) + OS_FILE_SYSTEM_YEAR_BASE;
+    time_date.month     = BF_GET(date, 5,  4);
+    time_date.day       = BF_GET(date, 0,  4);
 
-    time_date.hours     = BF_GET(time, 11, BIT_MASK(5));
-    time_date.minutes   = BF_GET(time, 5,  BIT_MASK(6));
-    time_date.seconds   = BF_GET(time, 0,  BIT_MASK(4));
+    time_date.hours     = BF_GET(time, 11, 5);
+    time_date.minutes   = BF_GET(time, 5,  6);
+    time_date.seconds   = BF_GET(time, 0,  4);
     return time_date;
 }
 

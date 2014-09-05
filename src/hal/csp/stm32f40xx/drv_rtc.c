@@ -30,9 +30,9 @@
 Status RTC_Init_(void);
 
 static Status   RTC__Init(void* args_p);
-static Status   RTC__DeInit(void);
+static Status   RTC__DeInit(void* args_p);
 static Status   RTC_Open(void* args_p);
-static Status   RTC_Close(void);
+static Status   RTC_Close(void* args_p);
 static Status   RTC_Read(U8* data_in_p, U32 size, void* args_p);
 static Status   RTC_Write(U8* data_out_p, U32 size, void* args_p);
 static Status   RTC_IoCtl(const U32 request_id, void* args_p);
@@ -312,7 +312,7 @@ Status RTC_NVIC_WakeupInit(void)
 }
 
 /*****************************************************************************/
-Status RTC__DeInit(void)
+Status RTC__DeInit(void* args_p)
 {
 Status s = S_OK;
     HAL_LOG(D_INFO, "DeInit: ");
@@ -332,7 +332,7 @@ Status RTC_Open(void* args_p)
 }
 
 /******************************************************************************/
-Status RTC_Close(void)
+Status RTC_Close(void* args_p)
 {
     //TODO(A. Filyanov)
     return S_OK;

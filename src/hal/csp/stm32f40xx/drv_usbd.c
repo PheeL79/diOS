@@ -1,16 +1,16 @@
 /**************************************************************************//**
-* @file    drv_usbh.c
-* @brief   USB Host driver.
+* @file    drv_usbd.c
+* @brief   USB Device driver.
 * @author  A. Filyanov
 ******************************************************************************/
 #include "hal.h"
-#include "usbh_core.h"
-#if (1 == USBH_HID_ENABLED)
-    #include "usbh_hid.h"
-#endif // USBH_HID_ENABLED
-#if (1 == USBH_MSC_ENABLED)
-    #include "usbh_msc.h"
-#endif // USBH_MSC_ENABLED
+#include "usbd_core.h"
+#if (1 == USBD_HID_ENABLED)
+    #include "usbd_hid.h"
+#endif // USBD_HID_ENABLED
+#if (1 == USBD_MSC_ENABLED)
+    #include "usbd_msc.h"
+#endif // USBD_MSC_ENABLED
 #include "os_common.h"
 #include "os_task.h"
 #include "os_supervise.h"
@@ -19,177 +19,161 @@
 #include "os_debug.h"
 
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "drv_usbh"
+#define MDL_NAME            "drv_usbd"
 
 //------------------------------------------------------------------------------
-/// @brief   USBH initialization.
+/// @brief   USBD initialization.
 /// @return  #Status.
-Status USBH__Init(void);
+Status USBD__Init(void);
 
-static Status   USBH_Init_(void* args_p);
-static Status   USBH_DeInit_(void* args_p);
-static Status   USBH_Open(void* args_p);
-static Status   USBH_Close(void* args_p);
-static Status   USBH_IoCtl(const U32 request_id, void* args_p);
+static Status   USBD_Init_(void* args_p);
+static Status   USBD_DeInit_(void);
+static Status   USBD_Open(void* args_p);
+static Status   USBD_Close(void);
+static Status   USBD_Read(U8* data_in_p, U32 size, void* args_p);
+static Status   USBD_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   USBD_IT_Read(U8* data_in_p, U32 size, void* args_p);
+static Status   USBD_IT_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   USBD_DMA_Read(U8* data_in_p, U32 size, void* args_p);
+static Status   USBD_DMA_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   USBD_IoCtl(const U32 request_id, void* args_p);
 
-static void     USBH_UserProcess(USBH_HandleTypeDef* usbh_hd_p, uint8_t id);
+static void     USBD_UserProcess(USBD_HandleTypeDef* usbd_hd_p, uint8_t id);
 
 //------------------------------------------------------------------------------
-static HCD_HandleTypeDef    hcd_fs_hd;
-static HCD_HandleTypeDef    hcd_hs_hd;
-static USBH_HandleTypeDef*  usbh_fs_hd_p;
-static USBH_HandleTypeDef*  usbh_hs_hd_p;
-OS_QueueHd                  usbhd_stdin_qhd;
-HAL_DriverItf*              drv_usbh_v[DRV_ID_USBH_LAST];
+static HCD_HandleTypeDef    hcd_otg_hs_hd;
+static USBD_HandleTypeDef*  usbd_hs_hd_p;
+OS_QueueHd                  usbdd_stdin_qhd;
+HAL_DriverItf*              drv_usb_fs_v[DRV_ID_USBD_LAST];
+HAL_DriverItf*              drv_usb_hs_v[DRV_ID_USBD_LAST];
 
-static HAL_DriverItf drv_usbh = {
-    .Init   = USBH_Init_,
-    .DeInit = USBH_DeInit_,
-    .Open   = USBH_Open,
-    .Close  = USBH_Close,
-    .IoCtl  = USBH_IoCtl
+static HAL_DriverItf drv_usbd = {
+    .Init   = USBD_Init_,
+    .DeInit = USBD_DeInit_,
+    .Open   = USBD_Open,
+    .Close  = USBD_Close,
+    .Read   = USBD_Read,
+    .Write  = USBD_Write,
+    .IoCtl  = USBD_IoCtl
 };
 
 /******************************************************************************/
-Status USBH__Init(void)
+Status USBD__Init(void)
 {
 Status s = S_OK;
-    HAL_MEMSET(drv_usbh_v, 0x0, sizeof(drv_usbh_v));
-    drv_usbh_v[DRV_ID_USBH] = &drv_usbh;
-#if (1 == USBH_MSC_ENABLED)
-    extern HAL_DriverItf drv_usbh_fs_msc, drv_usbh_hs_msc;
-    drv_usbh_v[DRV_ID_USBH_FS_MSC] = &drv_usbh_fs_msc;
-    drv_usbh_v[DRV_ID_USBH_HS_MSC] = &drv_usbh_hs_msc;
-#endif // USBH_MSC_ENABLED
+    HAL_MEMSET(drv_usbd_v, 0x0, sizeof(drv_usbd_v));
+    drv_usbd_v[DRV_ID_USBD]     = &drv_usbd;
+#if (1 == USBD_MSC_ENABLED)
+    extern HAL_DriverItf drv_usbd_msc;
+    drv_usbd_v[DRV_ID_USBD_MSC] = &drv_usbd_msc;
+#endif // USBD_MSC_ENABLED
     return s;
 }
 
 /******************************************************************************/
-Status USBH_Init_(void* args_p)
+Status USBD_Init_(void* args_p)
 {
-const OS_UsbhHd* usbh_hd_p = (OS_UsbhHd*)args_p;
+const OS_UsbhHd* usbd_hd_p = (OS_UsbhHd*)args_p;
 Status s = S_OK;
-    usbh_fs_hd_p = (USBH_HandleTypeDef*)usbh_hd_p->usbh_fs_hd;
-    usbh_hs_hd_p = (USBH_HandleTypeDef*)usbh_hd_p->usbh_hs_hd;
+    usbd_fs_hd_p = (USBD_HandleTypeDef*)usbd_hd_p->usbd_fs_hd;
+    usbd_hs_hd_p = (USBD_HandleTypeDef*)usbd_hd_p->usbd_hs_hd;
 
 // Interface
-#if (1 == USBH_FS_ENABLED)
-    if (USBH_OK != USBH_Init(usbh_fs_hd_p, USBH_UserProcess, USBH_ID_FS))   { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
-    if (USBH_OK != USBH_Init(usbh_hs_hd_p, USBH_UserProcess, USBH_ID_HS))   { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+#if (1 == HOST_FS)
+    if (USBD_OK != USBD_Init(usbd_fs_hd_p, USBD_UserProcess, USBD_ID_FS))   { return s = S_HARDWARE_FAULT; }
+#endif // HOST_FS
+#if (1 == HOST_HS)
+    if (USBD_OK != USBD_Init(usbd_hs_hd_p, USBD_UserProcess, USBD_ID_HS))   { return s = S_HARDWARE_FAULT; }
+#endif // HOST_HS
 
 // Class
-#if (1 == USBH_HID_ENABLED)
-#if (1 == USBH_FS_ENABLED)
-    if (USBH_OK != USBH_RegisterClass(usbh_fs_hd_p, USBH_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
-    if (USBH_OK != USBH_RegisterClass(usbh_hs_hd_p, USBH_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
-#endif // USBH_HID_ENABLED
+#if (1 == USBD_HID_ENABLED)
+#if (1 == HOST_FS)
+    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
+#endif // HOST_FS
+#if (1 == HOST_HS)
+    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
+#endif // HOST_HS
+#endif // USBD_HID_ENABLED
 
-#if (1 == USBH_MSC_ENABLED)
-#if (1 == USBH_FS_ENABLED)
-    if (S_OK != drv_usbh_v[DRV_ID_USBH_FS_MSC]->Init(usbh_fs_hd_p))         { return s = S_HARDWARE_FAULT; }
-    if (USBH_OK != USBH_RegisterClass(usbh_fs_hd_p, USBH_MSC_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
-    if (S_OK != drv_usbh_v[DRV_ID_USBH_HS_MSC]->Init(usbh_hs_hd_p))         { return s = S_HARDWARE_FAULT; }
-    if (USBH_OK != USBH_RegisterClass(usbh_hs_hd_p, USBH_MSC_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
-#endif // USBH_MSC_ENABLED
+#if (1 == USBD_MSC_ENABLED)
+    if (S_OK != drv_usbd_v[DRV_ID_USBD_MSC]->Init(usbd_hd_p))               { return s = S_HARDWARE_FAULT; }
+    if (USBD_OK != USBD_RegisterClass(usbd_hd_p, USBD_MSC_CLASS))           { return s = S_HARDWARE_FAULT; }
+#endif // USBD_MSC_ENABLED
     return s;
 }
 
 /******************************************************************************/
-Status USBH_DeInit_(void* args_p)
+Status USBD_DeInit_(void)
 {
 Status s = S_OK;
-#if (1 == USBH_FS_ENABLED)
-    HAL_HCD_MspDeInit(usbh_fs_hd_p->pData);
-    if (USBH_OK != USBH_DeInit(usbh_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
-    HAL_HCD_MspDeInit(usbh_hs_hd_p->pData);
-    if (USBH_OK != USBH_DeInit(usbh_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+    HAL_HCD_MspDeInit(usbd_hd_p->pData);
+    if (USBD_OK != USBD_DeInit(usbd_hd_p)) { return s = S_HARDWARE_FAULT; }
     return s;
 }
 
 /******************************************************************************/
-Status USBH_Open(void* args_p)
+Status USBD_Open(void* args_p)
 {
 Status s = S_OK;
-    usbhd_stdin_qhd = (OS_QueueHd)args_p;
-#if (1 == USBH_FS_ENABLED)
-    if (USBH_OK != USBH_Start(usbh_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
-    if (USBH_OK != USBH_Start(usbh_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+    usbdd_stdin_qhd = (OS_QueueHd)args_p;
+    if (USBD_OK != USBD_Start(usbd_hd_p)) { return s = S_HARDWARE_FAULT; }
     return s;
 }
 
 /******************************************************************************/
-Status USBH_Close(void* args_p)
+Status USBD_Close(void)
 {
 Status s = S_OK;
-    usbhd_stdin_qhd = OS_NULL;
-#if (1 == USBH_FS_ENABLED)
-    if (USBH_OK != USBH_Stop(usbh_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
-    if (USBH_OK != USBH_Stop(usbh_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+    usbdd_stdin_qhd = OS_NULL;
+    if (USBD_OK != USBD_Stop(usbd_hd_p)) { return s = S_HARDWARE_FAULT; }
     return s;
 }
 
-///******************************************************************************/
-//Status USBH_Read(U8* data_in_p, U32 size, void* args_p)
-//{
-//Status s = S_OK;
-//    return s;
-//}
-//
-///******************************************************************************/
-//Status USBH_Write(U8* data_out_p, U32 size, void* args_p)
-//{
-//Status s = S_OK;
-//    return s;
-//}
-//
-///******************************************************************************/
-//Status USBH_IT_Read(U8* data_in_p, U32 size, void* args_p)
-//{
-//Status s = S_OK;
-//    return s;
-//}
-//
-///******************************************************************************/
-//Status USBH_IT_Write(U8* data_out_p, U32 size, void* args_p)
-//{
-//Status s = S_OK;
-//    return s;
-//}
-//
-///******************************************************************************/
-//Status USBH_DMA_Read(U8* data_in_p, U32 size, void* args_p)
-//{
-//Status s = S_OK;
-//    return s;
-//}
-//
-///******************************************************************************/
-//Status USBH_DMA_Write(U8* data_out_p, U32 size, void* args_p)
-//{
-//Status s = S_OK;
-//    return s;
-//}
+/******************************************************************************/
+Status USBD_Read(U8* data_in_p, U32 size, void* args_p)
+{
+Status s = S_OK;
+    return s;
+}
 
 /******************************************************************************/
-Status USBH_IoCtl(const U32 request_id, void* args_p)
+Status USBD_Write(U8* data_out_p, U32 size, void* args_p)
+{
+Status s = S_OK;
+    return s;
+}
+
+/******************************************************************************/
+Status USBD_IT_Read(U8* data_in_p, U32 size, void* args_p)
+{
+Status s = S_OK;
+    return s;
+}
+
+/******************************************************************************/
+Status USBD_IT_Write(U8* data_out_p, U32 size, void* args_p)
+{
+Status s = S_OK;
+    return s;
+}
+
+/******************************************************************************/
+Status USBD_DMA_Read(U8* data_in_p, U32 size, void* args_p)
+{
+Status s = S_OK;
+    return s;
+}
+
+/******************************************************************************/
+Status USBD_DMA_Write(U8* data_out_p, U32 size, void* args_p)
+{
+Status s = S_OK;
+    return s;
+}
+
+/******************************************************************************/
+Status USBD_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
@@ -239,13 +223,14 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_10;
@@ -271,22 +256,22 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     PB14     ------> USB_OTG_HS_DM
     PB15     ------> USB_OTG_HS_DP
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_14|GPIO_PIN_15;
+    GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_3;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_13;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     /* Peripheral clock enable */
@@ -344,7 +329,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hhcd)
   */
 void HAL_HCD_SOF_Callback(HCD_HandleTypeDef *hhcd)
 {
-  USBH_LL_IncTimer (hhcd->pData);
+  USBD_LL_IncTimer (hhcd->pData);
 }
 
 /**
@@ -354,7 +339,7 @@ void HAL_HCD_SOF_Callback(HCD_HandleTypeDef *hhcd)
   */
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd)
 {
-  USBH_LL_Connect(hhcd->pData);
+  USBD_LL_Connect(hhcd->pData);
 }
 
 /**
@@ -364,7 +349,7 @@ void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd)
   */
 void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd)
 {
-  USBH_LL_Disconnect(hhcd->pData);
+  USBD_LL_Disconnect(hhcd->pData);
 }
 
 /**
@@ -375,66 +360,59 @@ void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd)
 void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state)
 {
   /* To be used with OS to sync URB state with the global state machine */
-#if (USBH_USE_OS == 1)
-  USBH_LL_NotifyURBChange(hhcd->pData);
+#if (USBD_USE_OS == 1)
+  USBD_LL_NotifyURBChange(hhcd->pData);
 #endif
-#if (1 == USBH_USE_diOS)
-OS_SignalData signal_data = 0;
-    OS_USBH_SIG_ITF_SET(signal_data, ((USBH_HandleTypeDef*)(hhcd->pData))->id);
-    const OS_Signal signal = OS_ISR_SIGNAL_CREATE(DRV_ID_USBH, OS_SIG_DRV, signal_data);
-    if (1 == OS_ISR_SIGNAL_SEND(usbhd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
+#if (1 == USBD_USE_diOS)
+const OS_Signal signal = OS_ISR_SIGNAL_CREATE(DRV_ID_USBD, OS_SIG_DRV, 0);
+    if (1 == OS_ISR_SIGNAL_SEND(usbdd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
         OS_ContextSwitchForce();
     }
-#endif // USBH_USE_diOS
+#endif // USBD_USE_diOS
 }
 /*******************************************************************************
                        LL Driver Interface (USB Host Library --> HCD)
 *******************************************************************************/
 /**
-  * @brief  USBH_LL_Init
+  * @brief  USBD_LL_Init
   *         Initialize the HOST portion of the driver.
   * @param  phost: Selected device
   * @param  base_address: OTG base address
   * @retval Status
   */
-USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
+USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *phost)
 {
   /* Init USB_IP */
-  if (phost->id == USBH_ID_FS)
+  if (phost->id == USBD_ID_FS)
   {
-    hcd_fs_hd.Instance = USB_OTG_FS;
-    hcd_fs_hd.Init.Host_channels = 8;
-    hcd_fs_hd.Init.speed = HCD_SPEED_FULL;
-    hcd_fs_hd.Init.dma_enable = DISABLE;
-    hcd_fs_hd.Init.phy_itface = HCD_PHY_EMBEDDED;
-    hcd_fs_hd.Init.Sof_enable = DISABLE;
-    hcd_fs_hd.Init.low_power_enable = DISABLE;
-    hcd_fs_hd.Init.vbus_sensing_enable = ENABLE;
-    hcd_fs_hd.Init.use_external_vbus = ENABLE;
-    /* Link The driver to the stack */
-    hcd_fs_hd.pData = phost;
-    phost->pData = &hcd_fs_hd;
-    HAL_HCD_Init(&hcd_fs_hd);
-    USBH_LL_SetTimer (phost, HAL_HCD_GetCurrentFrame(&hcd_fs_hd));
+  hcd_otg_fs_hd.Instance = USB_OTG_FS;
+  hcd_otg_fs_hd.Init.Host_channels = 8;
+  hcd_otg_fs_hd.Init.speed = HCD_SPEED_FULL;
+  hcd_otg_fs_hd.Init.dma_enable = DISABLE;
+  hcd_otg_fs_hd.Init.phy_itface = HCD_PHY_EMBEDDED;
+  hcd_otg_fs_hd.Init.Sof_enable = DISABLE;
+  hcd_otg_fs_hd.Init.low_power_enable = ENABLE;
+  hcd_otg_fs_hd.Init.vbus_sensing_enable = ENABLE;
+  hcd_otg_fs_hd.Init.use_external_vbus = ENABLE;
   }
-  else if (phost->id == USBH_ID_HS)
+  else if (phost->id == USBD_ID_HS)
   {
-    hcd_hs_hd.Instance = USB_OTG_HS;
-    hcd_hs_hd.Init.Host_channels = 12;
-    hcd_hs_hd.Init.speed = HCD_SPEED_FULL;
-    hcd_hs_hd.Init.dma_enable = ENABLE;
-    hcd_hs_hd.Init.phy_itface = HCD_PHY_EMBEDDED;
-    hcd_hs_hd.Init.Sof_enable = DISABLE;
-    hcd_hs_hd.Init.low_power_enable = DISABLE;
-    hcd_hs_hd.Init.vbus_sensing_enable = ENABLE;
-    hcd_hs_hd.Init.use_external_vbus = ENABLE;
-    /* Link The driver to the stack */
-    hcd_hs_hd.pData = phost;
-    phost->pData = &hcd_hs_hd;
-    HAL_HCD_Init(&hcd_hs_hd);
-    USBH_LL_SetTimer (phost, HAL_HCD_GetCurrentFrame(&hcd_hs_hd));
+  hcd_otg_hs_hd.Instance = USB_OTG_HS;
+  hcd_otg_hs_hd.Init.Host_channels = 8;
+  hcd_otg_hs_hd.Init.speed = HCD_SPEED_FULL;
+  hcd_otg_hs_hd.Init.dma_enable = ENABLE;
+  hcd_otg_hs_hd.Init.phy_itface = HCD_PHY_EMBEDDED;
+  hcd_otg_hs_hd.Init.Sof_enable = DISABLE;
+  hcd_otg_hs_hd.Init.low_power_enable = DISABLE;
+  hcd_otg_hs_hd.Init.vbus_sensing_enable = ENABLE;
+  hcd_otg_hs_hd.Init.use_external_vbus = ENABLE;
   }
-  return USBH_OK;
+  /* Link The driver to the stack */
+  hcd_otg_hd.pData = phost;
+  phost->pData = &hcd_otg_hd;
+  HAL_HCD_Init(&hcd_otg_hd);
+  USBD_LL_SetTimer (phost, HAL_HCD_GetCurrentFrame(&hcd_otg_hd));
+  return USBD_OK;
 }
 
 /**
@@ -443,10 +421,10 @@ USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef  USBH_LL_DeInit (USBH_HandleTypeDef *phost)
+USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *phost)
 {
   HAL_HCD_DeInit(phost->pData);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -455,10 +433,10 @@ USBH_StatusTypeDef  USBH_LL_DeInit (USBH_HandleTypeDef *phost)
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef  USBH_LL_Start(USBH_HandleTypeDef *phost)
+USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *phost)
 {
   HAL_HCD_Start(phost->pData);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -467,10 +445,10 @@ USBH_StatusTypeDef  USBH_LL_Start(USBH_HandleTypeDef *phost)
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
+USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *phost)
 {
   HAL_HCD_Stop(phost->pData);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -479,26 +457,26 @@ USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
   * @param
   * @retval Status
   */
-USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
+USBD_SpeedTypeDef USBD_LL_GetSpeed  (USBD_HandleTypeDef *phost)
 {
-  USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
+  USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
 
   switch (HAL_HCD_GetCurrentSpeed(phost->pData))
   {
   case 0 :
-    speed = USBH_SPEED_HIGH;
+    speed = USBD_SPEED_HIGH;
     break;
 
   case 1 :
-    speed = USBH_SPEED_FULL;
+    speed = USBD_SPEED_FULL;
     break;
 
   case 2 :
-    speed = USBH_SPEED_LOW;
+    speed = USBD_SPEED_LOW;
     break;
 
   default:
-   speed = USBH_SPEED_FULL;
+   speed = USBD_SPEED_FULL;
     break;
   }
   return  speed;
@@ -510,10 +488,10 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
+USBD_StatusTypeDef USBD_LL_ResetPort (USBD_HandleTypeDef *phost)
 {
   HAL_HCD_ResetPort(phost->pData);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -522,7 +500,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
   * @param
   * @retval Status
   */
-uint32_t USBH_LL_GetLastXferSize  (USBH_HandleTypeDef *phost, uint8_t pipe)
+uint32_t USBD_LL_GetLastXferSize  (USBD_HandleTypeDef *phost, uint8_t pipe)
 {
   return HAL_HCD_HC_GetXferCount(phost->pData, pipe);
 }
@@ -533,7 +511,7 @@ uint32_t USBH_LL_GetLastXferSize  (USBH_HandleTypeDef *phost, uint8_t pipe)
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef   USBH_LL_OpenPipe    (USBH_HandleTypeDef *phost,
+USBD_StatusTypeDef   USBD_LL_OpenPipe    (USBD_HandleTypeDef *phost,
                                       uint8_t pipe_num,
                                       uint8_t epnum,
                                       uint8_t dev_address,
@@ -548,7 +526,7 @@ USBH_StatusTypeDef   USBH_LL_OpenPipe    (USBH_HandleTypeDef *phost,
                   speed,
                   ep_type,
                   mps);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -557,10 +535,10 @@ USBH_StatusTypeDef   USBH_LL_OpenPipe    (USBH_HandleTypeDef *phost,
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef   USBH_LL_ClosePipe   (USBH_HandleTypeDef *phost, uint8_t pipe)
+USBD_StatusTypeDef   USBD_LL_ClosePipe   (USBD_HandleTypeDef *phost, uint8_t pipe)
 {
   HAL_HCD_HC_Halt(phost->pData, pipe);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -570,7 +548,7 @@ USBH_StatusTypeDef   USBH_LL_ClosePipe   (USBH_HandleTypeDef *phost, uint8_t pip
   * @retval Status
   */
 
-USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
+USBD_StatusTypeDef   USBD_LL_SubmitURB  (USBD_HandleTypeDef *phost,
                                             uint8_t pipe,
                                             uint8_t direction ,
                                             uint8_t ep_type,
@@ -587,7 +565,7 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
                             pbuff,
                             length,
                             do_ping);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
@@ -596,9 +574,9 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB  (USBH_HandleTypeDef *phost,
   * @param
   * @retval Status
   */
-USBH_URBStateTypeDef  USBH_LL_GetURBState (USBH_HandleTypeDef *phost, uint8_t pipe)
+USBD_URBStateTypeDef  USBD_LL_GetURBState (USBD_HandleTypeDef *phost, uint8_t pipe)
 {
-  return (USBH_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
+  return (USBD_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
 }
 
 /**
@@ -607,7 +585,7 @@ USBH_URBStateTypeDef  USBH_LL_GetURBState (USBH_HandleTypeDef *phost, uint8_t pi
   * @param
   * @retval Status
   */
-USBH_StatusTypeDef  USBH_LL_DriverVBUS (USBH_HandleTypeDef *phost, uint8_t state)
+USBD_StatusTypeDef  USBD_LL_DriverVBUS (USBD_HandleTypeDef *phost, uint8_t state)
 {
  /* USER CODE BEGIN 0 */
  /* USER CODE END 0 */
@@ -617,13 +595,13 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS (USBH_HandleTypeDef *phost, uint8_t state
     /* USER CODE BEGIN 1 */
     /* ToDo: Add IOE driver control */
     /* USER CODE END 1 */
-    if (phost->id == USBH_ID_FS)
+    if (phost->id == USBD_ID_FS)
     {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
     }
-    else if (phost->id == USBH_ID_HS)
+    else if (phost->id == USBD_ID_HS)
     {
-      HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
     }
   }
   else
@@ -632,28 +610,28 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS (USBH_HandleTypeDef *phost, uint8_t state
     /* USER CODE BEGIN 2 */
     /* ToDo: Add IOE driver control */
     /* USER CODE END 2 */
-    if (phost->id == USBH_ID_FS)
+    if (phost->id == USBD_ID_FS)
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
     }
-    else if (phost->id == USBH_ID_HS)
+    else if (phost->id == USBD_ID_HS)
     {
       HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
     }
   }
 
   HAL_Delay(200);
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
-  * @brief  USBH_LL_SetToggle
+  * @brief  USBD_LL_SetToggle
   *         Initialize the HOST portion of the driver.
   * @param  phost: Selected device
   * @param  base_address: OTG base address
   * @retval Status
   */
-USBH_StatusTypeDef   USBH_LL_SetToggle   (USBH_HandleTypeDef *phost, uint8_t pipe, uint8_t toggle)
+USBD_StatusTypeDef   USBD_LL_SetToggle   (USBD_HandleTypeDef *phost, uint8_t pipe, uint8_t toggle)
 {
   HCD_HandleTypeDef *pHandle;
   pHandle = phost->pData;
@@ -667,17 +645,17 @@ USBH_StatusTypeDef   USBH_LL_SetToggle   (USBH_HandleTypeDef *phost, uint8_t pip
     pHandle->hc[pipe].toggle_out = toggle;
   }
 
-  return USBH_OK;
+  return USBD_OK;
 }
 
 /**
-  * @brief  USBH_LL_GetToggle
+  * @brief  USBD_LL_GetToggle
   *         Initialize the HOST portion of the driver.
   * @param  phost: Selected device
   * @param  base_address: OTG base address
   * @retval Status
   */
-uint8_t  USBH_LL_GetToggle   (USBH_HandleTypeDef *phost, uint8_t pipe)
+uint8_t  USBD_LL_GetToggle   (USBD_HandleTypeDef *phost, uint8_t pipe)
 {
   uint8_t toggle = 0;
   HCD_HandleTypeDef *pHandle;
@@ -700,7 +678,7 @@ uint8_t  USBH_LL_GetToggle   (USBH_HandleTypeDef *phost, uint8_t pipe)
   * @param
   * @retval Status
   */
-void  USBH_Delay (uint32_t Delay)
+void  USBD_Delay (uint32_t Delay)
 {
     HAL_Delay(Delay);
 }
@@ -711,7 +689,7 @@ void  USBH_Delay (uint32_t Delay)
   * @param  phost: Selected device
   * @retval None
   */
-void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
+void USBD_HID_EventCallback(USBD_HandleTypeDef *phost)
 {
 //  osSemaphoreRelease(MenuEvent);
     OS_TRACE(D_DEBUG, "%c", 'x');
@@ -721,18 +699,15 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 /*
  * user callbañk definition
 */
-void USBH_UserProcess(USBH_HandleTypeDef *usbh_hd_p, uint8_t id)
+void USBD_UserProcess(USBD_HandleTypeDef *usbd_hd_p, uint8_t id)
 {
-OS_SignalData signal_data = 0;
-    OS_USBH_SIG_ITF_SET(signal_data, usbh_hd_p->id);
-    OS_USBH_SIG_MSG_SET(signal_data, id);
-    const OS_Signal signal = OS_ISR_SIGNAL_CREATE(DRV_ID_USBH, OS_SIG_DRV, signal_data);
-    if (1 == OS_ISR_SIGNAL_SEND(usbhd_stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+const OS_Signal signal = OS_ISR_SIGNAL_CREATE(DRV_ID_USBD, OS_SIG_DRV, id);
+    if (1 == OS_ISR_SIGNAL_SEND(usbdd_stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
         OS_ContextSwitchForce();
     }
 }
 
-// USBH IRQ handlers----------------------------------------------------------
+// USBD IRQ handlers----------------------------------------------------------
 /******************************************************************************/
 /**
 * @brief This function handles USB On The Go HS global interrupt.
@@ -741,7 +716,7 @@ void OTG_HS_IRQHandler(void);
 void OTG_HS_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(OTG_HS_IRQn);
-    HAL_HCD_IRQHandler(&hcd_hs_hd);
+    HAL_HCD_IRQHandler(&hcd_otg_hd);
 }
 
 /******************************************************************************/
@@ -752,5 +727,5 @@ void OTG_FS_IRQHandler(void);
 void OTG_FS_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
-    HAL_HCD_IRQHandler(&hcd_fs_hd);
+    HAL_HCD_IRQHandler(&hcd_otg_hd);
 }

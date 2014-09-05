@@ -25,9 +25,9 @@ enum {
 
 typedef struct {
     Status  (*Init)(void* args_p);
-    Status  (*DeInit)(void);
+    Status  (*DeInit)(void* args_p);
     Status  (*Open)(void* args_p);
-    Status  (*Close)(void);
+    Status  (*Close)(void* args_p);
     Status  (*Read)(U8* data_in_p, U32 size, void* args_p);
     Status  (*Write)(U8* data_out_p, U32 size, void* args_p);
     Status  (*IoCtl)(const U32 request_id, void* args_p);

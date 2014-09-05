@@ -16,25 +16,25 @@
 Status          LED_Init_(void);
 
 static Status LED_PulseInit(void* args_p);
-static Status LED_PulseDeInit(void);
+static Status LED_PulseDeInit(void* args_p);
 static Status LED_PulseOpen(void* args_p);
-static Status LED_PulseClose(void);
+static Status LED_PulseClose(void* args_p);
 static Status LED_PulseWrite(U8* data_out_p, U32 size, void* args_p);
 static Status LED_PulseIoCtl(const U32 request_id, void* args_p);
 
 static Status LED_FsInit(void* args_p);
-static Status LED_FsDeInit(void);
+static Status LED_FsDeInit(void* args_p);
 static Status LED_FsOpen(void* args_p);
-static Status LED_FsClose(void);
+static Status LED_FsClose(void* args_p);
 static Status LED_FsWrite(U8* data_out_p, U32 size, void* args_p);
 static Status LED_FsIoCtl(const U32 request_id, void* args_p);
 
 static Status LED_AssertInit(void* args_p);
 
 static Status LED_UserInit(void* args_p);
-static Status LED_UserDeInit(void);
+static Status LED_UserDeInit(void* args_p);
 static Status LED_UserOpen(void* args_p);
-static Status LED_UserClose(void);
+static Status LED_UserClose(void* args_p);
 static Status LED_UserWrite(U8* data_out_p, U32 size, void* args_p);
 static Status LED_UserIoCtl(const U32 request_id, void* args_p);
 
@@ -111,7 +111,7 @@ GPIO_InitTypeDef GPIO_InitStructure;
 }
 
 /*****************************************************************************/
-Status LED_PulseDeInit(void)
+Status LED_PulseDeInit(void* args_p)
 {
     return S_OK;
 }
@@ -123,7 +123,7 @@ Status LED_PulseOpen(void* args_p)
 }
 
 /*****************************************************************************/
-Status LED_PulseClose(void)
+Status LED_PulseClose(void* args_p)
 {
     return S_OK;
 }
@@ -186,7 +186,7 @@ GPIO_InitTypeDef GPIO_InitStructure;
 }
 
 /*****************************************************************************/
-Status LED_FsDeInit(void)
+Status LED_FsDeInit(void* args_p)
 {
     return S_OK;
 }
@@ -198,7 +198,7 @@ Status LED_FsOpen(void* args_p)
 }
 
 /*****************************************************************************/
-Status LED_FsClose(void)
+Status LED_FsClose(void* args_p)
 {
     return S_OK;
 }
@@ -278,7 +278,7 @@ GPIO_InitTypeDef GPIO_InitStructure;
 }
 
 /*****************************************************************************/
-Status LED_UserDeInit(void)
+Status LED_UserDeInit(void* args_p)
 {
     return S_OK;
 }
@@ -290,7 +290,7 @@ Status LED_UserOpen(void* args_p)
 }
 
 /*****************************************************************************/
-Status LED_UserClose(void)
+Status LED_UserClose(void* args_p)
 {
     return S_OK;
 }

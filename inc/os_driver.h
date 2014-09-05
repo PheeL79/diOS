@@ -58,25 +58,27 @@ Status          OS_DriverDelete(const OS_DriverHd dhd);
 
 /// @brief      Init driver.
 /// @param[in]  dhd            Driver's handle.
-/// @param[in]  args_p         Driver's input arguments.
+/// @param[in]  args_p         Driver's arguments.
 /// @return     #Status.
 Status          OS_DriverInit(const OS_DriverHd dhd, void* args_p);
 
 /// @brief      Deinit driver.
 /// @param[in]  dhd            Driver's handle.
+/// @param[in]  args_p         Driver's arguments.
 /// @return     #Status.
-Status          OS_DriverDeInit(const OS_DriverHd dhd);
+Status          OS_DriverDeInit(const OS_DriverHd dhd, void* args_p);
 
 /// @brief      Open driver.
 /// @param[in]  dhd            Driver's handle.
-/// @param[in]  args_p         Driver's input arguments.
+/// @param[in]  args_p         Driver's arguments.
 /// @return     #Status.
 Status          OS_DriverOpen(const OS_DriverHd dhd, void* args_p);
 
 /// @brief      Close driver.
 /// @param[in]  dhd            Driver's handle.
+/// @param[in]  args_p         Driver's arguments.
 /// @return     #Status.
-Status          OS_DriverClose(const OS_DriverHd dhd);
+Status          OS_DriverClose(const OS_DriverHd dhd, void* args_p);
 
 /// @brief      Read data.
 /// @param[in]  dhd            Driver's handle.
