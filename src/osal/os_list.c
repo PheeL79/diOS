@@ -35,11 +35,11 @@ U32 OS_ListRemove(OS_ListItem* item_l_p)
 void OS_ListClear(OS_List* list_p)
 {
     if (OS_NULL == list_p) { return; }
-    if (OS_LIST_IS_EMPTY(list_p)) { return; }
-    OS_ListItem* iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
-    while (OS_DELAY_MAX != (OS_Value)OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+    if (OS_ListIsEmpty(list_p)) { return; }
+    OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(list_p));
+    while (OS_DELAY_MAX != (OS_Value)OS_ListItemValueGet(iter_li_p)) {
         OS_ListItem* iter_li_tmp_p = iter_li_p;
-        iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+        iter_li_p = OS_ListItemNextGet(iter_li_p);
         OS_ListItemDelete(iter_li_tmp_p);
     }
 }
@@ -74,11 +74,11 @@ OS_ListItem* OS_ListItemByValueGet(OS_List* list_p, const OS_Value value)
 OS_ListItem* iter_li_p;
 
     if (OS_NULL == list_p) { return OS_NULL; }
-    if (OS_LIST_IS_EMPTY(list_p)) { return OS_NULL; }
-    for (iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
-         value != (OS_Value)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-         iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p)) {
-        if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { return OS_NULL; }
+    if (OS_ListIsEmpty(list_p)) { return OS_NULL; }
+    for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(list_p));
+         value != (OS_Value)OS_ListItemValueGet(iter_li_p);
+         iter_li_p = OS_ListItemNextGet(iter_li_p)) {
+        if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { return OS_NULL; }
     }
     return (OS_ListItem* )iter_li_p;
 }
@@ -89,11 +89,11 @@ OS_ListItem* OS_ListItemByOwnerGet(OS_List* list_p, const OS_Owner owner)
 OS_ListItem* iter_li_p;
 
     if (OS_NULL == list_p) { return OS_NULL; }
-    if (OS_LIST_IS_EMPTY(list_p)) { return OS_NULL; }
-    for (iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
-         owner != (OS_Owner*)OS_LIST_ITEM_OWNER_GET(iter_li_p);
-         iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p)) {
-        if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { return OS_NULL; }
+    if (OS_ListIsEmpty(list_p)) { return OS_NULL; }
+    for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(list_p));
+         owner != (OS_Owner*)OS_ListItemOwnerGet(iter_li_p);
+         iter_li_p = OS_ListItemNextGet(iter_li_p)) {
+        if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { return OS_NULL; }
     }
     return (OS_ListItem*)iter_li_p;
 }
@@ -117,53 +117,53 @@ void swapNodes(Node* left, Node* right)
 */
 void OS_ListItemsSwap(OS_ListItem* item_1_p, OS_ListItem* item_2_p)
 {
-    if (OS_LIST_ITEM_PREVIOUS_GET(item_2_p) != item_1_p) {
-        OS_LIST_ITEM_NEXT_GET(OS_LIST_ITEM_PREVIOUS_GET(item_2_p)) = item_1_p;
-        OS_LIST_ITEM_PREVIOUS_GET(OS_LIST_ITEM_NEXT_GET(item_1_p)) = item_2_p;
+    if (OS_ListItemPreviousGet(item_2_p) != item_1_p) {
+        OS_ListItemNextGet(OS_ListItemPreviousGet(item_2_p)) = item_1_p;
+        OS_ListItemPreviousGet(OS_ListItemNextGet(item_1_p)) = item_2_p;
     } else {
-        OS_LIST_ITEM_NEXT_GET(OS_LIST_ITEM_PREVIOUS_GET(item_2_p)) = OS_LIST_ITEM_NEXT_GET(item_2_p);
-        OS_LIST_ITEM_PREVIOUS_GET(OS_LIST_ITEM_NEXT_GET(item_1_p)) = item_1_p;
+        OS_ListItemNextGet(OS_ListItemPreviousGet(item_2_p)) = OS_ListItemNextGet(item_2_p);
+        OS_ListItemPreviousGet(OS_ListItemNextGet(item_1_p)) = item_1_p;
     }
-    OS_LIST_ITEM_NEXT_GET(OS_LIST_ITEM_PREVIOUS_GET(item_1_p)) = item_2_p;
-    OS_LIST_ITEM_PREVIOUS_GET(OS_LIST_ITEM_NEXT_GET(item_2_p)) = item_1_p;
-    OS_ListItem* item_tmp_p = OS_LIST_ITEM_PREVIOUS_GET(item_1_p);
-    if (OS_LIST_ITEM_PREVIOUS_GET(item_2_p) != item_1_p) {
-        OS_LIST_ITEM_PREVIOUS_GET(item_1_p) = OS_LIST_ITEM_PREVIOUS_GET(item_2_p);
+    OS_ListItemNextGet(OS_ListItemPreviousGet(item_1_p)) = item_2_p;
+    OS_ListItemPreviousGet(OS_ListItemNextGet(item_2_p)) = item_1_p;
+    OS_ListItem* item_tmp_p = OS_ListItemPreviousGet(item_1_p);
+    if (OS_ListItemPreviousGet(item_2_p) != item_1_p) {
+        OS_ListItemPreviousGet(item_1_p) = OS_ListItemPreviousGet(item_2_p);
     } else {
-        OS_LIST_ITEM_PREVIOUS_GET(item_1_p) = item_2_p;
+        OS_ListItemPreviousGet(item_1_p) = item_2_p;
     }
-    OS_LIST_ITEM_PREVIOUS_GET(item_2_p) = item_tmp_p;
-    item_tmp_p = OS_LIST_ITEM_NEXT_GET(item_1_p);
-    OS_LIST_ITEM_NEXT_GET(item_1_p) = OS_LIST_ITEM_NEXT_GET(item_2_p);
-    if (OS_LIST_ITEM_NEXT_GET(item_2_p) != item_tmp_p) {
-        OS_LIST_ITEM_NEXT_GET(item_2_p) = item_tmp_p;
+    OS_ListItemPreviousGet(item_2_p) = item_tmp_p;
+    item_tmp_p = OS_ListItemNextGet(item_1_p);
+    OS_ListItemNextGet(item_1_p) = OS_ListItemNextGet(item_2_p);
+    if (OS_ListItemNextGet(item_2_p) != item_tmp_p) {
+        OS_ListItemNextGet(item_2_p) = item_tmp_p;
     } else {
-        OS_LIST_ITEM_NEXT_GET(item_2_p) = item_1_p;
+        OS_ListItemNextGet(item_2_p) = item_1_p;
     }
 /*
-OS_ListItem* item_1p_p = OS_LIST_ITEM_PREVIOUS_GET(item_1_p);
-OS_ListItem* item_1n_p = OS_LIST_ITEM_NEXT_GET(item_1_p);
-OS_ListItem* item_2p_p = OS_LIST_ITEM_PREVIOUS_GET(item_2_p);
-OS_ListItem* item_2n_p = OS_LIST_ITEM_NEXT_GET(item_2_p);
+OS_ListItem* item_1p_p = OS_ListItemPreviousGet(item_1_p);
+OS_ListItem* item_1n_p = OS_ListItemNextGet(item_1_p);
+OS_ListItem* item_2p_p = OS_ListItemPreviousGet(item_2_p);
+OS_ListItem* item_2n_p = OS_ListItemNextGet(item_2_p);
     if (item_2_p != item_1n_p) {
-        OS_LIST_ITEM_NEXT_GET(item_2_p) = item_1n_p;
+        OS_ListItemNextGet(item_2_p) = item_1n_p;
     } else {
-        OS_LIST_ITEM_NEXT_GET(item_2_p) = item_1_p;
+        OS_ListItemNextGet(item_2_p) = item_1_p;
     }
     if (item_1_p != item_2p_p) {
-        OS_LIST_ITEM_PREVIOUS_GET(item_1_p) = item_2p_p;
+        OS_ListItemPreviousGet(item_1_p) = item_2p_p;
     } else {
-        OS_LIST_ITEM_PREVIOUS_GET(item_1_p) = item_2_p;
+        OS_ListItemPreviousGet(item_1_p) = item_2_p;
     }
     if (item_1n_p != item_2_p) {
-        OS_LIST_ITEM_PREVIOUS_GET(item_1n_p)= item_2_p;
+        OS_ListItemPreviousGet(item_1n_p)= item_2_p;
     }
     if (item_2p_p != item_1_p) {
-        OS_LIST_ITEM_NEXT_GET(item_2p_p)= item_1_p;
+        OS_ListItemNextGet(item_2p_p)= item_1_p;
     }
-    OS_LIST_ITEM_NEXT_GET(item_1_p)     = item_2n_p;
-    OS_LIST_ITEM_PREVIOUS_GET(item_2_p) = item_1p_p;
-    OS_LIST_ITEM_NEXT_GET(item_1p_p)    = item_2_p;
-    OS_LIST_ITEM_PREVIOUS_GET(item_2n_p)= item_1_p;
+    OS_ListItemNextGet(item_1_p)     = item_2n_p;
+    OS_ListItemPreviousGet(item_2_p) = item_1p_p;
+    OS_ListItemNextGet(item_1p_p)    = item_2_p;
+    OS_ListItemPreviousGet(item_2n_p)= item_1_p;
 */
 }

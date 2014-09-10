@@ -78,8 +78,8 @@
  /* Memory management macros */
 #define USBD_malloc               OS_Malloc
 #define USBD_free                 OS_Free
-#define USBD_memset               OS_MEMSET
-#define USBD_memcpy               OS_MEMCPY
+#define USBD_memset               OS_MemSet
+#define USBD_memcpy               OS_MemCpy
 
  /* DEBUG macros */
 

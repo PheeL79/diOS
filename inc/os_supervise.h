@@ -21,31 +21,31 @@ typedef U8 OS_SchedulerState;
 //------------------------------------------------------------------------------
 /// @brief      Enter critical section.
 /// @return     None.
-#define         OS_CriticalSectionEnter()   portENTER_CRITICAL()
+#define         OS_CriticalSectionEnter     portENTER_CRITICAL
 
 /// @brief      Exit critical section.
 /// @return     None.
-#define         OS_CriticalSectionExit()    portEXIT_CRITICAL()
+#define         OS_CriticalSectionExit      portEXIT_CRITICAL
 
 /// @brief      Start scheduler.
 /// @return     None.
-#define         OS_SchedulerStart()         vTaskStartScheduler()
+#define         OS_SchedulerStart           vTaskStartScheduler
 
 /// @brief      Suspend scheduler.
 /// @return     None.
-#define         OS_SchedulerSuspend()       vTaskSuspendAll()
+#define         OS_SchedulerSuspend         vTaskSuspendAll
 
 /// @brief      Resume scheduler.
 /// @return     None.
-#define         OS_SchedulerResume()        xTaskResumeAll()
+#define         OS_SchedulerResume          xTaskResumeAll
 
 /// @brief      Force task context switch.
 /// @return     None.
-#define         OS_ContextSwitchForce()     taskYIELD()
+#define         OS_ContextSwitchForce       taskYIELD
 
 /// @brief      Switch to user mode.
 /// @return     None.
-#define         OS_UserMode()               portSWITCH_TO_USER_MODE()
+#define         OS_UserMode                 portSWITCH_TO_USER_MODE
 
 /// @brief      Get OS scheduler state.
 /// @return     #OS_SchedulerState.

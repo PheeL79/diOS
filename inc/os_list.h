@@ -20,22 +20,22 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
-#define OS_LIST_CURRENT_LEN_GET(OS_ListP)               listCURRENT_LIST_LENGTH(OS_ListP)
-#define OS_LIST_IS_EMPTY(OS_ListP)                      listLIST_IS_EMPTY(OS_ListP)
-#define OS_LIST_ITEM_FIRST_VALUE_GET(OS_ListP)          listGET_ITEM_VALUE_OF_HEAD_ENTRY(OS_ListP)
-#define OS_LIST_ITEM_VALUE_GET(OS_ListItemP)            listGET_LIST_ITEM_VALUE(OS_ListItemP)
-#define OS_LIST_ITEM_VALUE_SET(OS_ListItemP, OS_Value)  listSET_LIST_ITEM_VALUE(OS_ListItemP, OS_Value)
-#define OS_LIST_ITEM_OWNER_GET(OS_ListItemP)            listGET_LIST_ITEM_OWNER(OS_ListItemP)
-#define OS_LIST_ITEM_OWNER_SET(OS_ListItemP, OS_Owner)  listSET_LIST_ITEM_OWNER(OS_ListItemP, OS_Owner)
-#define OS_LIST_ITEM_PREVIOUS_GET(OS_ListItemP)         ((OS_ListItemP)->pxPrevious)
-#define OS_LIST_ITEM_NEXT_GET(OS_ListItemP)             listGET_NEXT(OS_ListItemP)
-#define OS_LIST_ITEM_FIRST_GET(OS_ListP)                listGET_HEAD_ENTRY(OS_ListP)
-#define OS_LIST_ITEM_LAST_GET(OS_ListP)                 ((OS_ListP)->xListEnd)
-#define OS_LIST_ITEM_NEXT_OWNER_GET(OS_Owner, OS_ListP) listGET_OWNER_OF_NEXT_ENTRY(OS_Owner, OS_ListP)
-#define OS_LIST_ITEM_FIRST_OWNER_GET(OS_ListP)          listGET_OWNER_OF_HEAD_ENTRY(OS_ListP)
-#define OS_LIST_ITEM_IS_WITHIN(OS_ListP, OS_ListItemP)  listIS_CONTAINED_WITHIN(OS_ListP, OS_ListItemP)
-#define OS_LIST_ITEM_CONTAINER_GET(OS_ListItemP)        listLIST_ITEM_CONTAINER(OS_ListItemP)
-#define OS_LIST_IS_INITIALISED(OS_ListP)                listLIST_IS_INITIALISED(OS_ListP)
+#define OS_ListCurrentLenGet                            listCURRENT_LIST_LENGTH
+#define OS_ListIsEmpty                                  listLIST_IS_EMPTY
+#define OS_ListItemValueFirstGet                        listGET_ITEM_VALUE_OF_HEAD_ENTRY
+#define OS_ListItemValueGet                             listGET_LIST_ITEM_VALUE
+#define OS_ListItemValueSet                             listSET_LIST_ITEM_VALUE
+#define OS_ListItemOwnerGet                             listGET_LIST_ITEM_OWNER
+#define OS_ListItemOwnerSet                             listSET_LIST_ITEM_OWNER
+#define OS_ListItemPreviousGet(os_list_item_p)          ((os_list_item_p)->pxPrevious)
+#define OS_ListItemNextGet                              listGET_NEXT
+#define OS_ListItemFirstGet                             listGET_HEAD_ENTRY
+#define OS_ListItemLastGet(os_list_p)                   ((os_list_p)->xListEnd)
+#define OS_ListItemOwnerNextGet                         listGET_OWNER_OF_NEXT_ENTRY
+#define OS_ListItemOwnerFirstGet                        listGET_OWNER_OF_HEAD_ENTRY
+#define OS_ListItemIsWithin                             listIS_CONTAINED_WITHIN
+#define OS_ListItemContainerGet                         listLIST_ITEM_CONTAINER
+#define OS_ListIsInitialised                            listLIST_IS_INITIALISED
 
 //------------------------------------------------------------------------------
 typedef List_t OS_List;

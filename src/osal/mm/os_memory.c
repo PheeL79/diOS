@@ -221,7 +221,7 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
         }
         ++memory_cfg_p;
     }
-    OS_MEMCPY((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
+    OS_MemCpy((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
     mem_stat_p->used = get_used_size((void*)mem_stat_p->desc.addr);
     mem_stat_p->free = mem_stat_p->desc.size - mem_stat_p->used;
     return S_OK;

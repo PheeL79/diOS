@@ -29,7 +29,7 @@ static OS_EventConfigDyn* OS_EventConfigDynGet(const OS_EventHd ehd);
 OS_EventConfigDyn* OS_EventConfigDynGet(const OS_EventHd ehd)
 {
 const OS_ListItem* item_l_p = (OS_ListItem*)ehd;
-OS_EventConfigDyn* cfg_dyn_p = (OS_EventConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+OS_EventConfigDyn* cfg_dyn_p = (OS_EventConfigDyn*)OS_ListItemValueGet(item_l_p);
     return cfg_dyn_p;
 }
 
@@ -40,7 +40,7 @@ Status OS_EventInit(void)
     os_event_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_event_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_events_list);
-    if (OS_TRUE != OS_LIST_IS_INITIALISED(&os_events_list)) { return S_INVALID_VALUE; }
+    if (OS_TRUE != OS_ListIsInitialised(&os_events_list)) { return S_INVALID_VALUE; }
     return S_OK;
 }
 
@@ -60,8 +60,8 @@ Status s = S_OK;
             cfg_dyn_p->item_p   = cfg_p->item_p;
             cfg_dyn_p->state    = cfg_p->state;
             cfg_dyn_p->timer_hd = timer_hd;
-            OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
-            OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)cfg_p->timer_cfg_p->id);
+            OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
+            OS_ListItemOwnerSet(item_l_p, (OS_Owner)cfg_p->timer_cfg_p->id);
             OS_ListAppend(&os_events_list, item_l_p);
             ++events_count;
             if (OS_NULL != ehd_p) {
@@ -220,7 +220,7 @@ OS_EventItem* item_p = OS_NULL;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_event_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         const OS_ListItem* item_l_p = OS_ListItemByOwnerGet(&os_events_list, (OS_Owner)timer_id);
         if (OS_NULL != item_l_p) {
-            const OS_EventConfigDyn* cfg_dyn_p = (OS_EventConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+            const OS_EventConfigDyn* cfg_dyn_p = (OS_EventConfigDyn*)OS_ListItemValueGet(item_l_p);
             item_p = cfg_dyn_p->item_p;
         }
         OS_MutexRecursiveUnlock(os_event_mutex);
@@ -264,14 +264,14 @@ OS_EventHd OS_EventNextGet(const OS_EventHd ehd)
 OS_ListItem* iter_li_p = (OS_ListItem*)ehd;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_event_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         if (OS_NULL == iter_li_p) {
-            iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_events_list));
-            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_events_list));
+            if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
                 iter_li_p = OS_NULL;
             }
         } else {
-            if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
-                iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
-                if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
+                iter_li_p = OS_ListItemNextGet(iter_li_p);
+                if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
                     iter_li_p = OS_NULL;
                 }
             } else {

@@ -9,8 +9,9 @@
 //-----------------------------------------------------------------------------
 enum {
     DRV_ID_USBD,
-    DRV_ID_USBD_MSC,
-    DRV_ID_USBD_LAST
+    DRV_ID_USBD_FS_MSC,
+    DRV_ID_USBD_HS_MSC,
+    DRV_ID_USBH_LAST
 };
 
 enum {

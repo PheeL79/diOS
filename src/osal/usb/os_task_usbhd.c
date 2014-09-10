@@ -17,6 +17,7 @@
 #include "os_signal.h"
 #include "os_usb.h"
 
+#if (1 == USBH_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "task_usbhd"
 
@@ -42,10 +43,10 @@ const OS_TaskConfig task_usbhd_cfg = {
     .args_p     = (void*)&task_args,
     .attrs      = BIT(OS_TASK_ATTR_RECREATE),
     .timeout    = 3,
-    .prio_init  = OS_TASK_PRIO_HIGH,
+    .prio_init  = OS_TASK_PRIO_BELOW_NORMAL,
     .prio_power = OS_PWR_PRIO_MAX,
-    .stack_size = OS_STACK_SIZE_MIN,
-    .stdin_len  = 255
+    .stack_size = OS_STACK_SIZE_MIN * 3,
+    .stdin_len  = 250
 };
 
 /******************************************************************************/
@@ -80,14 +81,12 @@ OS_Message* msg_p;
         IF_STATUS(OS_MessageReceive(task_args_p->stdin_qhd, &msg_p, OS_BLOCK)) {
             //OS_LOG_S(D_WARNING, S_UNDEF_MSG);
         } else {
-            if (OS_SIGNAL_IS(msg_p)) {
-                if (DRV_ID_USBH == OS_SIGNAL_SRC_GET(msg_p)) {
-                    const OS_SignalData sig_data_in = OS_SIGNAL_DATA_GET(msg_p);
+            if (OS_SignalIs(msg_p)) {
+                if (DRV_ID_USBH == OS_SignalSrcGet(msg_p)) {
+                    const OS_SignalData sig_data_in = OS_SignalDataGet(msg_p);
                     const U8 usbh_itf_id = OS_USBH_SIG_ITF_GET(sig_data_in);
                     USBH_HandleTypeDef* usbh_itf_hd_p;
                     StrPtr usbh_itf_str_p;
-                    OS_SignalId sig_id = OS_SIG_UNDEF;
-                    OS_SignalData sig_data = 0;
                     if (USBH_ID_FS == usbh_itf_id) {
                         usbh_itf_str_p  = "FS";
                         usbh_itf_hd_p   = &(task_args_p->usbh_fs_hd);
@@ -96,8 +95,10 @@ OS_Message* msg_p;
                         usbh_itf_hd_p   = &(task_args_p->usbh_hs_hd);
                     } else { OS_ASSERT(OS_FALSE); }
                     USBH_Process(usbh_itf_hd_p);
-                    switch (OS_SIGNAL_ID_GET(msg_p)) {
+                    switch (OS_SignalIdGet(msg_p)) {
                         case OS_SIG_DRV: {
+                            OS_SignalId sig_id;
+                            OS_SignalData sig_data = 0;
                             const U8 usbh_msg_id = OS_USBH_SIG_MSG_GET(sig_data_in);
                             switch (usbh_msg_id) {
                                 case HOST_USER_SELECT_CONFIGURATION:
@@ -107,9 +108,23 @@ OS_Message* msg_p;
                                     sig_id = OS_SIG_USB_DISCONNECT;
                                     OS_LOG(D_INFO, "%s Disconnected", usbh_itf_str_p);
                                     break;
-                                case HOST_USER_CLASS_ACTIVE:
+                                case HOST_USER_CLASS_ACTIVE: {
                                     sig_id = OS_SIG_USB_READY;
                                     OS_LOG(D_INFO, "%s Ready", usbh_itf_str_p);
+                                    OS_USBH_SIG_ITF_SET(sig_data, usbh_itf_id);
+                                    switch (USBH_GetActiveClass(usbh_itf_hd_p)) {
+                                        case USB_MSC_CLASS:
+                                            OS_USBH_SIG_MSG_SET(sig_data, OS_USB_CLASS_MSC);
+                                            break;
+                                        case USB_HID_CLASS:
+                                            OS_USBH_SIG_MSG_SET(sig_data, OS_USB_CLASS_HID);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    const OS_Signal signal = OS_SignalCreate(sig_id, sig_data);
+                                    OS_SignalEmit(signal, OS_MSG_PRIO_NORMAL);
+                                    }
                                     break;
                                 case HOST_USER_CONNECTION:
                                     sig_id = OS_SIG_USB_CONNECT;
@@ -123,21 +138,6 @@ OS_Message* msg_p;
                         default:
                             //OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
                             break;
-                    }
-                    if (OS_SIG_UNDEF != sig_id) {
-                        OS_USBH_SIG_ITF_SET(sig_data, usbh_itf_id);
-                        switch (USBH_GetActiveClass(usbh_itf_hd_p)) {
-                            case USB_MSC_CLASS:
-                                OS_USBH_SIG_MSG_SET(sig_data, OS_USB_CLASS_MSC);
-                                break;
-                            case USB_HID_CLASS:
-                                OS_USBH_SIG_MSG_SET(sig_data, OS_USB_CLASS_HID);
-                                break;
-                            default:
-                                break;
-                        }
-                        const OS_Signal signal = OS_SIGNAL_CREATE(sig_id, sig_data);
-                        OS_SIGNAL_EMIT(signal, OS_MSG_PRIO_NORMAL);
                     }
                 }
             } else {
@@ -167,10 +167,10 @@ Status s = S_OK;
             IF_STATUS_OK(s = OS_DriverOpen(task_args_p->drv_usbh, task_args_p->stdin_qhd)) {
 #if (1 == USBH_FS_ENABLED)
                 if (USBH_OK != USBH_ReEnumerate(&(task_args_p->usbh_fs_hd))) { s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
+#endif // (1 == USBH_FS_ENABLED)
 #if (1 == USBH_HS_ENABLED)
                 if (USBH_OK != USBH_ReEnumerate(&(task_args_p->usbh_hs_hd))) { s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+#endif // (1 == USBH_HS_ENABLED)
             }
             break;
         case PWR_STOP:
@@ -182,3 +182,5 @@ Status s = S_OK;
     }
     return s;
 }
+
+#endif //(1 == USBH_ENABLED)

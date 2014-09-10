@@ -104,7 +104,7 @@ Status s;
         OS_DriverHd drv_stdio;
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&drv_stdio)) { return s; }
         HAL_DriverItf drv_itf;
-        OS_MEMMOV(&drv_itf, drv_stdio_p, sizeof(drv_itf));
+        OS_MemMov(&drv_itf, drv_stdio_p, sizeof(drv_itf));
         drv_itf.Write = USART6_DMA_Write;
         IF_STATUS(s = OS_DriverItfSet(drv_stdio, &drv_itf)) { return s; }
         IF_STATUS(s = OS_DriverInit(drv_stdio, OS_NULL)) { return s; }
@@ -170,9 +170,9 @@ Locale OS_LocaleGet(void)
 Status OS_LocaleSet(ConstStrPtr locale_p)
 {
     if (OS_NULL == locale_p) { return S_INVALID_REF; }
-    if (!OS_STRCMP(LOCALE_STRING_EN, (char const*)locale_p)) {
+    if (!OS_StrCmp(LOCALE_STRING_EN, (char const*)locale_p)) {
         os_env.hal_env_p->locale = LOC_EN;
-    } else if (!OS_STRCMP(LOCALE_STRING_RU, (char const*)locale_p)) {
+    } else if (!OS_StrCmp(LOCALE_STRING_RU, (char const*)locale_p)) {
         os_env.hal_env_p->locale = LOC_RU;
     } else { return S_INVALID_VALUE; }
     return S_OK;
@@ -211,14 +211,14 @@ ConstStr debug_str[]    = "debug";
 OS_LogLevel level       = D_NONE;
 
     if (OS_NULL == log_level_p) { return S_INVALID_REF; }
-    if (!OS_STRCMP((const char*)none_str, (const char*)log_level_p)) {
-    } else if (!OS_STRCMP((const char*)critical_str, (const char*)log_level_p)) {
+    if (!OS_StrCmp((const char*)none_str, (const char*)log_level_p)) {
+    } else if (!OS_StrCmp((const char*)critical_str, (const char*)log_level_p)) {
         level = D_CRITICAL;
-    } else if (!OS_STRCMP((const char*)warning_str, (const char*)log_level_p)) {
+    } else if (!OS_StrCmp((const char*)warning_str, (const char*)log_level_p)) {
         level = D_WARNING;
-    } else if (!OS_STRCMP((const char*)info_str, (const char*)log_level_p)) {
+    } else if (!OS_StrCmp((const char*)info_str, (const char*)log_level_p)) {
         level = D_INFO;
-    } else if (!OS_STRCMP((const char*)debug_str, (const char*)log_level_p)) {
+    } else if (!OS_StrCmp((const char*)debug_str, (const char*)log_level_p)) {
         level = D_DEBUG;
     } else {
         return S_INVALID_VALUE;

@@ -53,7 +53,7 @@ TaskHandle_t OS_TaskHandleGet(const OS_TaskHd thd)
 {
     if ((OS_TaskHd)(~0UL) == thd) { return OS_NULL; }
     const OS_ListItem* item_l_p = (OS_ListItem*)((OS_THIS_TASK == thd) ? OS_TaskGet() : thd);
-    TaskHandle_t task_hd = (TaskHandle_t)OS_LIST_ITEM_OWNER_GET(item_l_p);
+    TaskHandle_t task_hd = (TaskHandle_t)OS_ListItemOwnerGet(item_l_p);
     return task_hd;
 }
 
@@ -76,7 +76,7 @@ OS_TaskConfigDyn* OS_TaskConfigDynGet(const OS_TaskHd thd)
 {
     if ((OS_TaskHd)(~0UL) == thd) { return OS_NULL; }
     const OS_ListItem* item_l_p = (OS_ListItem*)((OS_THIS_TASK == thd) ? OS_TaskGet() : thd);
-    OS_TaskConfigDyn* cfg_dyn_p = (OS_TaskConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+    OS_TaskConfigDyn* cfg_dyn_p = (OS_TaskConfigDyn*)OS_ListItemValueGet(item_l_p);
     return cfg_dyn_p;
 }
 
@@ -98,7 +98,7 @@ Status OS_TaskInit_(void)
     os_task_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_task_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_tasks_list);
-    if (OS_TRUE != OS_LIST_IS_INITIALISED(&os_tasks_list)) { return S_INVALID_VALUE; }
+    if (OS_TRUE != OS_ListIsInitialised(&os_tasks_list)) { return S_INVALID_VALUE; }
     return S_OK;
 }
 
@@ -146,8 +146,8 @@ Status s = S_OK;
             goto error;
         }
         vTaskSetApplicationTaskTag(task_hd, (TaskHookFunction_t)thd);
-        OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
-        OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)task_hd);
+        OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
+        OS_ListItemOwnerSet(item_l_p, (OS_Owner)task_hd);
         OS_ListAppend(&os_tasks_list, item_l_p);
     } OS_CriticalSectionExit();
     if (OS_NULL != thd_p) {
@@ -174,13 +174,13 @@ error:
 Status OS_TaskDelete(const OS_TaskHd thd)
 {
 OS_ListItem* item_l_p = (OS_ListItem*)((OS_THIS_TASK == thd) ? OS_TaskGet() : thd);
-OS_TaskConfigDyn* cfg_dyn_p = (OS_TaskConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+OS_TaskConfigDyn* cfg_dyn_p = (OS_TaskConfigDyn*)OS_ListItemValueGet(item_l_p);
 Status s = S_OK;
 
     if (OS_NULL == item_l_p) { return S_INVALID_REF; }
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         const OS_TaskConfig* cfg_p = cfg_dyn_p->cfg_p;
-        const TaskHandle_t task_hd = (TaskHandle_t)OS_LIST_ITEM_OWNER_GET(item_l_p);
+        const TaskHandle_t task_hd = (TaskHandle_t)OS_ListItemOwnerGet(item_l_p);
         const OS_TaskId tid = cfg_dyn_p->id;
         IF_STATUS(s = OS_TaskPowerStateSet(thd, PWR_SHUTDOWN)) { goto error; } //TODO(A.Filyanov) Status handler!
         if (OS_NULL != cfg_dyn_p->stdin_qhd) {
@@ -259,12 +259,12 @@ OS_TaskHd OS_TaskByIdGet(const OS_TaskId tid)
 {
 OS_ListItem* iter_li_p;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
-        iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_tasks_list));
-        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+        iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list));
+        while (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
             if (tid == OS_TaskIdGet((OS_TaskHd)iter_li_p)) {
                 goto exit;
             }
-            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+            iter_li_p = OS_ListItemNextGet(iter_li_p);
         }
         iter_li_p = OS_NULL;
 exit:
@@ -407,18 +407,18 @@ void OS_TaskPowerPrioritySort(const SortDirection sort_dir)
 {
     IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         //TODO(A.Filyanov) Optimize selective sort function.
-        OS_ListItem* item_curr_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_tasks_list));
+        OS_ListItem* item_curr_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list));
         OS_ListItem* item_next_p;
         OS_ListItem* item_min_p;
         OS_TaskConfigDyn* cfg_dyn_min_p;
         OS_TaskConfigDyn* cfg_dyn_next_p;
 
-        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(item_curr_p)) {
+        while (OS_DELAY_MAX != OS_ListItemValueGet(item_curr_p)) {
             item_min_p = item_curr_p;
-            item_next_p = OS_LIST_ITEM_NEXT_GET(item_curr_p);
-            while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(item_next_p)) {
-                cfg_dyn_min_p  = (OS_TaskConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_min_p);
-                cfg_dyn_next_p = (OS_TaskConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_next_p);
+            item_next_p = OS_ListItemNextGet(item_curr_p);
+            while (OS_DELAY_MAX != OS_ListItemValueGet(item_next_p)) {
+                cfg_dyn_min_p  = (OS_TaskConfigDyn*)OS_ListItemValueGet(item_min_p);
+                cfg_dyn_next_p = (OS_TaskConfigDyn*)OS_ListItemValueGet(item_next_p);
 
                 if (SORT_ASCENDING == sort_dir) {
                     if (cfg_dyn_next_p->cfg_p->prio_power < cfg_dyn_min_p->cfg_p->prio_power) {
@@ -430,12 +430,12 @@ void OS_TaskPowerPrioritySort(const SortDirection sort_dir)
                     }
                 } else { OS_ASSERT(OS_FALSE); }
 
-                item_next_p = OS_LIST_ITEM_NEXT_GET(item_next_p);
+                item_next_p = OS_ListItemNextGet(item_next_p);
             }
             if (item_curr_p != item_min_p) {
                 OS_ListItemsSwap(item_curr_p, item_min_p);
             }
-            item_curr_p = OS_LIST_ITEM_NEXT_GET(item_min_p);
+            item_curr_p = OS_ListItemNextGet(item_min_p);
         }
         OS_MutexRecursiveUnlock(os_task_mutex);
     }
@@ -536,13 +536,13 @@ OS_TaskHd OS_TaskByNameGet(ConstStr* name_p)
 {
 OS_TaskHd thd = OS_NULL;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
-        OS_ListItem* iter_li_p = (OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_tasks_list);
+        OS_ListItem* iter_li_p = (OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list);
         OS_TaskConfigDyn* cfg_dyn_p;
 
-        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(OS_LIST_ITEM_NEXT_GET(iter_li_p))) {
-            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
-            cfg_dyn_p = (OS_TaskConfigDyn*)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-            if (!OS_STRCMP((const char*)name_p, (const char*)cfg_dyn_p->cfg_p->name)) {
+        while (OS_DELAY_MAX != OS_ListItemValueGet(OS_ListItemNextGet(iter_li_p))) {
+            iter_li_p = OS_ListItemNextGet(iter_li_p);
+            cfg_dyn_p = (OS_TaskConfigDyn*)OS_ListItemValueGet(iter_li_p);
+            if (!OS_StrCmp((const char*)name_p, (const char*)cfg_dyn_p->cfg_p->name)) {
                 thd = (OS_TaskHd)iter_li_p;
                 break;
             }
@@ -558,14 +558,14 @@ OS_TaskHd OS_TaskNextGet(const OS_TaskHd thd)
 OS_ListItem* iter_li_p = (OS_ListItem*)thd;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         if (OS_NULL == iter_li_p) {
-            iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_tasks_list));
-            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list));
+            if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
                 iter_li_p = OS_NULL;
             }
         } else {
-            if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
-                iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
-                if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
+                iter_li_p = OS_ListItemNextGet(iter_li_p);
+                if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
                     iter_li_p = OS_NULL;
                 }
             } else {
@@ -594,7 +594,7 @@ Status s = S_OK;
             cfg_dyn_p->slots_l_p = OS_Malloc(sizeof(OS_List));
             if (OS_NULL == cfg_dyn_p->slots_l_p) { s = S_NO_MEMORY; goto error; }
             OS_ListInit(cfg_dyn_p->slots_l_p);
-            if (OS_TRUE != OS_LIST_IS_INITIALISED(cfg_dyn_p->slots_l_p)) {
+            if (OS_TRUE != OS_ListIsInitialised(cfg_dyn_p->slots_l_p)) {
                 OS_Free(cfg_dyn_p->slots_l_p);
                 cfg_dyn_p->slots_l_p = OS_NULL;
                 s = S_INVALID_VALUE;
@@ -608,8 +608,8 @@ Status s = S_OK;
             s = S_NO_MEMORY;
             goto error;
         }
-        OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)slot_qhd);
-        OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)slot_thd);
+        OS_ListItemValueSet(item_l_p, (OS_Value)slot_qhd);
+        OS_ListItemOwnerSet(item_l_p, (OS_Owner)slot_thd);
         OS_ListAppend(cfg_dyn_p->slots_l_p, item_l_p);
 error:
         OS_MutexRecursiveUnlock(os_task_mutex);
@@ -628,7 +628,7 @@ Status s = S_OK;
         item_l_p = OS_ListItemByOwnerGet(cfg_dyn_p->slots_l_p, slot_thd);
         if (OS_NULL == item_l_p) { s = S_INVALID_VALUE; goto error; }
         OS_ListItemDelete(item_l_p);
-        if (OS_TRUE == OS_LIST_IS_EMPTY(cfg_dyn_p->slots_l_p)) {
+        if (OS_TRUE == OS_ListIsEmpty(cfg_dyn_p->slots_l_p)) {
             OS_Free(cfg_dyn_p->slots_l_p);
             cfg_dyn_p->slots_l_p = OS_NULL;
         }

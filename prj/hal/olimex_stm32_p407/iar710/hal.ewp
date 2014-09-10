@@ -3874,13 +3874,15 @@
     <group>
       <name>stm32_usb_device_library</name>
       <excluded>
-        <configuration>Debug FLASH</configuration>
         <configuration>Debug SRAM</configuration>
       </excluded>
       <group>
         <name>class</name>
         <group>
           <name>hid</name>
+          <excluded>
+            <configuration>Debug FLASH</configuration>
+          </excluded>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Src\usbd_hid.c</name>
           </file>
@@ -4147,12 +4149,15 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd.c</name>
-      <excluded>
-        <configuration>Debug FLASH</configuration>
-      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd_msc.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh_hid.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh_msc.c</name>

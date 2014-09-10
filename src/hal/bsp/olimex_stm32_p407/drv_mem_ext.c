@@ -42,7 +42,7 @@ static HAL_DriverItf drv_mem_ext_sram512k = {
 /*****************************************************************************/
 Status MEM_EXT_Init_(void)
 {
-    HAL_MEMSET(drv_mem_ext_v, 0x0, sizeof(drv_mem_ext_v));
+    HAL_MemSet(drv_mem_ext_v, 0x0, sizeof(drv_mem_ext_v));
     drv_mem_ext_v[DRV_ID_MEM_EXT_SRAM512K] = &drv_mem_ext_sram512k;
     return S_OK;
 }
@@ -181,7 +181,7 @@ Status s = S_OK;
         return s;
     }
     HAL_TRACE(D_INFO, "Passed");
-	HAL_MEMSET((void*)MEM_EXT_SRAM_BASE_ADDRESS, 0x00, MEM_EXT_SRAM_SIZE);
+	HAL_MemSet((void*)MEM_EXT_SRAM_BASE_ADDRESS, 0x00, MEM_EXT_SRAM_SIZE);
     return S_OK;
 }
 

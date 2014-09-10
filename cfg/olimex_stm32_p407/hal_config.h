@@ -55,12 +55,21 @@
 #define USBH_FS_ENABLED                 1
 #define USBH_HS_ENABLED                 1
 
-//USBH Classes
+//USB Host Classes
 #define USBH_HID_ENABLED                1
 #define USBH_MSC_ENABLED                1
 //#define USBH_MSC_BLOCK_SIZE             USBH_MAX_DATA_BUFFER
 #define USBH_MSC_BLOCK_SIZE             512
 #define USBH_MSC_SECTOR_SIZE            USBH_MSC_BLOCK_SIZE
+
+//USB Device
+#define USBD_ENABLED                    0
+#define USBD_FS_ENABLED                 0
+#define USBD_HS_ENABLED                 1
+
+//USB Device Classes
+#define USBD_HID_ENABLED                0
+#define USBD_MSC_ENABLED                1
 
 // Memory
 #define MEM_BLOCK_SIZE_MIN              8
@@ -75,19 +84,19 @@
 // APP ------------------------------------------------------------------------
 // cstdlib redefenitions
 // Memory
-#define HAL_MEMSET  memset
-#define HAL_MEMCPY  memcpy
-#define HAL_MEMMOV  memmove
+#define HAL_MemSet  memset
+#define HAL_MemCpy  memcpy
+#define HAL_MemMov  memmove
 // String
-#define HAL_ATOI    atoi
-#define HAL_STRLEN  strlen
-#define HAL_STRCHR  strchr
-#define HAL_STRCMP  strcmp
-#define HAL_STRCPY  strcpy
-#define HAL_STRCAT  strcat
-#define HAL_STRTOK  strtok
-#define HAL_STRTOL  strtol
-#define HAL_STRNCPY strncpy
+#define HAL_AtoI    atoi
+#define HAL_StrLen  strlen
+#define HAL_StrChr  strchr
+#define HAL_StrCmp  strcmp
+#define HAL_StrCpy  strcpy
+#define HAL_StrCat  strcat
+#define HAL_StrToK  strtok
+#define HAL_StrToL  strtol
+#define HAL_StrNCpy strncpy
 
 // Locale
 #define LOCALE_STRING_EN                "en"

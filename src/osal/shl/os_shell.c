@@ -51,7 +51,7 @@ void OS_ShellClClear(void)
 {
     shell_cr_pos = 0;
     //TODO(A. Filyanov) Remember cl cursor last max position and simply put EOL char at it.
-    OS_MEMSET(shell_cl, OS_ASCII_EOL, sizeof(shell_cl));
+    OS_MemSet(shell_cl, OS_ASCII_EOL, sizeof(shell_cl));
 }
 
 /******************************************************************************/
@@ -90,7 +90,7 @@ Status s = S_OK;
     os_shell_mutex = OS_MutexCreate();
     if (OS_NULL == os_shell_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_commands_list);
-    if (OS_TRUE != OS_LIST_IS_INITIALISED(&os_commands_list)) { return S_INVALID_VALUE; }
+    if (OS_TRUE != OS_ListIsInitialised(&os_commands_list)) { return S_INVALID_VALUE; }
     OS_ShellClClear();
     IF_STATUS(s = OS_ShellCommandsStdInit()) { return s; }
 #if (1 == OS_FILE_SYSTEM_ENABLED)
@@ -114,9 +114,9 @@ Status s = S_OK;
         return S_NO_MEMORY;
     }
     IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
-        OS_MEMCPY(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
-        OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cmd_cfg_dyn_p);
-        OS_LIST_ITEM_OWNER_SET(item_l_p, OS_TaskGet());
+        OS_MemCpy(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
+        OS_ListItemValueSet(item_l_p, (OS_Value)cmd_cfg_dyn_p);
+        OS_ListItemOwnerSet(item_l_p, OS_TaskGet());
         OS_ListAppend(&os_commands_list, item_l_p);
         IF_STATUS(s) {
             OS_Free(cmd_cfg_dyn_p);
@@ -192,16 +192,16 @@ OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrPtr name_p)
 OS_ShellCommandHd cmd_hd = SHELL_COMMAND_UNDEF;
 
     IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
-        OS_ListItem* iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_commands_list));
+        OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_commands_list));
         OS_ShellCommandConfig* cmd_cfg_p;
 
-        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
-            cmd_cfg_p = (OS_ShellCommandConfig*)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-            if (!OS_STRCMP((const char*)name_p, (const char*)cmd_cfg_p->command)) {
-                cmd_hd = (OS_ShellCommandHd)OS_LIST_ITEM_VALUE_GET(iter_li_p);
+        while (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
+            cmd_cfg_p = (OS_ShellCommandConfig*)OS_ListItemValueGet(iter_li_p);
+            if (!OS_StrCmp((const char*)name_p, (const char*)cmd_cfg_p->command)) {
+                cmd_hd = (OS_ShellCommandHd)OS_ListItemValueGet(iter_li_p);
                 break;
             }
-            iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
+            iter_li_p = OS_ListItemNextGet(iter_li_p);
         }
         OS_MutexUnlock(os_shell_mutex);
     }
@@ -215,15 +215,15 @@ OS_ListItem* iter_li_p;
 OS_ShellCommandHd chd = SHELL_COMMAND_UNDEF;
     IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         if (SHELL_COMMAND_UNDEF == cmd_hd) {
-            iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_commands_list));
-            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { goto error; }
-            chd = (OS_ShellCommandHd)OS_LIST_ITEM_VALUE_GET(iter_li_p);
+            iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_commands_list));
+            if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { goto error; }
+            chd = (OS_ShellCommandHd)OS_ListItemValueGet(iter_li_p);
         } else {
             iter_li_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_hd);
             if (OS_NULL != iter_li_p) {
-                iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
-                if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) { goto error; }
-                chd = (OS_ShellCommandHd)OS_LIST_ITEM_VALUE_GET(iter_li_p);
+                iter_li_p = OS_ListItemNextGet(iter_li_p);
+                if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { goto error; }
+                chd = (OS_ShellCommandHd)OS_ListItemValueGet(iter_li_p);
             }
         }
 error:
@@ -260,7 +260,8 @@ static BL is_echo = OS_OS_TRUE;
 static BL is_ctrl = OS_FALSE;
 #endif // OS_SHELL_EDIT_ENABLED
     switch (c) {
-        case OS_ASCII_ESC_CR: {
+        case OS_ASCII_ESC_CR:
+        case OS_ASCII_ESC_LF: {
 #if (0 == OS_SHELL_EDIT_ENABLED)
             OS_ShellControlEcho(OS_SHELL_BUTTON_UP); //Cursor up to cancel remote terminal LF.
 #endif // OS_SHELL_EDIT_ENABLED

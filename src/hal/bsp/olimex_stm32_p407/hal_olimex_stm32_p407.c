@@ -18,6 +18,7 @@ extern Status   NVIC_Init_(void);
 extern Status   GPIO_Init_(void);
 extern Status   SDIO__Init(void);
 extern Status   USBH__Init(void);
+extern Status   USBD__Init(void);
 extern Status   TIMER_Init_(void);
 extern Status   USART_Init_(void);
 extern Status   POWER_Init_(void);
@@ -57,6 +58,9 @@ Status s = S_OK;
 #if (1 == USBH_ENABLED)
     IF_STATUS(s = USBH__Init()) { return s; }
 #endif // USBH_ENABLED
+#if (1 == USBD_ENABLED)
+    IF_STATUS(s = USBD__Init()) { return s; }
+#endif // USBD_ENABLED
     // High-level drivers init.
     IF_STATUS(s = LED_Init_()) { return s; }
 //    IF_STATUS(s = drv_led[DRV_ID_LED_PULSE]->Init(OS_NULL)) { return s; }

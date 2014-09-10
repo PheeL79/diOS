@@ -78,7 +78,7 @@ static OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_File
 OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd)
 {
 const OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
-OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListItemValueGet(item_l_p);
     return cfg_dyn_p;
 }
 
@@ -90,8 +90,8 @@ Status s;
     os_fs_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_fs_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_fs_list);
-    if (OS_TRUE != OS_LIST_IS_INITIALISED(&os_fs_list)) { return S_INVALID_VALUE; }
-    OS_MEMSET(fs_media_dhd_v, 0, sizeof(fs_media_dhd_v));
+    if (OS_TRUE != OS_ListIsInitialised(&os_fs_list)) { return S_INVALID_VALUE; }
+    OS_MemSet(fs_media_dhd_v, 0, sizeof(fs_media_dhd_v));
     //Led SD Init/Open
     const OS_DriverConfig drv_cfg = {
         .name       = "LED_FS",
@@ -150,9 +150,9 @@ Status s = S_OK;
     cfg_dyn_p->volume[1]= OS_FILE_SYSTEM_DRV_DELIM;
     cfg_dyn_p->volume[2]= OS_FILE_SYSTEM_DIR_DELIM;
     cfg_dyn_p->volume[3]= OS_ASCII_EOL;
-    OS_STRNCPY(cfg_dyn_p->name, (const char*)cfg_p->name, sizeof(cfg_dyn_p->name));
-    OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
-    OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)cfg_p->volume);
+    OS_StrNCpy(cfg_dyn_p->name, (const char*)cfg_p->name, sizeof(cfg_dyn_p->name));
+    OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
+    OS_ListItemOwnerSet(item_l_p, (OS_Owner)cfg_p->volume);
     if (OS_NULL != fs_media_hd_p) {
         *fs_media_hd_p = (OS_FileSystemMediaHd)item_l_p;
     }
@@ -178,8 +178,8 @@ Status OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd)
 Status s = S_OK;
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
-        OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
-        const U8 volume = (U8)OS_LIST_ITEM_OWNER_GET(item_l_p);
+        OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListItemValueGet(item_l_p);
+        const U8 volume = (U8)OS_ListItemOwnerGet(item_l_p);
         fs_media_dhd_v[volume] = OS_NULL;
         s = OS_DriverDelete(cfg_dyn_p->dhd);
         OS_Free(cfg_dyn_p->fshd);
@@ -307,7 +307,7 @@ Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd)
     OS_LOG(D_DEBUG, "FS mount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
 #ifndef NDEBUG
-    OS_MEMSET(cfg_dyn_p->fshd, 0xF5, sizeof(FATFS));
+    OS_MemSet(cfg_dyn_p->fshd, 0xF5, sizeof(FATFS));
 #endif // NDEBUG
     return FResultTranslate(f_mount(cfg_dyn_p->fshd, (const char*)cfg_dyn_p->volume, 1));
 }
@@ -326,7 +326,7 @@ U8 OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd)
 {
     if (OS_NULL == fs_media_hd) { return U8_MAX; }
     OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
-    return (U8)OS_LIST_ITEM_OWNER_GET(item_l_p);
+    return (U8)OS_ListItemOwnerGet(item_l_p);
 }
 
 /******************************************************************************/
@@ -358,8 +358,8 @@ Str vol_label[OS_FILE_SYSTEM_VOLUME_STR_LEN + OS_FILE_SYSTEM_VOLUME_NAME_LEN];
     if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
     OS_LOG(D_DEBUG, "FS vol label set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
-    OS_STRNCPY(vol_label, (char const*)cfg_dyn_p->volume, OS_FILE_SYSTEM_VOLUME_STR_LEN);
-    OS_STRCAT( vol_label, (char const*)label_p);
+    OS_StrNCpy(vol_label, (char const*)cfg_dyn_p->volume, OS_FILE_SYSTEM_VOLUME_STR_LEN);
+    OS_StrCat( vol_label, (char const*)label_p);
     return FResultTranslate(f_setlabel((const char*)vol_label));
 }
 
@@ -372,7 +372,7 @@ Status s = S_OK;
     OS_LOG(D_DEBUG, "FS vol stats get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     FATFS* fs_p = cfg_dyn_p->fshd;
-    OS_MEMSET(stats_p, 0x0, sizeof(OS_FileSystemVolumeStats));
+    OS_MemSet(stats_p, 0x0, sizeof(OS_FileSystemVolumeStats));
     {
     DWORD clusters_count;
         IF_STATUS(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) { return s; }
@@ -426,7 +426,7 @@ Status s = S_OK;
     if (OS_NULL == stats_file.long_name_p) { s = S_NO_MEMORY; goto error; }
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     IF_STATUS(s = OS_DirectoryOpen(dir_hd, path_p)) { s = S_FS_PATH_NOT_FOUND; goto error; }
-    path_len = OS_STRLEN((const char*)path_p);
+    path_len = OS_StrLen((const char*)path_p);
     while ((S_OK == (s = OS_DirectoryRead(dir_hd, &stats_file))) && (OS_ASCII_EOL != stats_file.name[0])) {
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
         file_name_p = (*stats_file.long_name_p) ? stats_file.long_name_p : stats_file.name;
@@ -435,10 +435,10 @@ Status s = S_OK;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
         if (BIT_TEST(stats_file.attrs, BIT(OS_FS_FILE_ATTR_DIR))) {
             // Guard relative directories.
-            if (OS_NULL != OS_STRCHR((const char*)file_name_p, '.')) { continue; }
+            if (OS_NULL != OS_StrChr((const char*)file_name_p, '.')) { continue; }
             stats_p->dirs_count++;
             *(path_p + path_len) = OS_FILE_SYSTEM_DIR_DELIM;
-            OS_STRCPY((char*)(path_p + path_len + 1), (const char*)file_name_p);
+            OS_StrCpy((char*)(path_p + path_len + 1), (const char*)file_name_p);
             s = OS_FileSystemVolumeScan(path_p, stats_p);
             *(path_p + path_len) = OS_ASCII_EOL;
             IF_STATUS(s) { break; }
@@ -626,7 +626,7 @@ FILINFO file_info;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     Status s = FResultTranslate(f_readdir(dhd, &file_info));
     IF_STATUS_OK(s) {
-        OS_MEMCPY(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
+        OS_MemCpy(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
         file_stats_p->size          = file_info.fsize;
         file_stats_p->date_time     = FDateTimeTranslate(file_info.fdate, file_info.ftime);
         file_stats_p->attrs         = FAttributeTranslate(file_info.fattrib);

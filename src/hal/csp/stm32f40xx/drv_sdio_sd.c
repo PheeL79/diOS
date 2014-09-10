@@ -94,7 +94,7 @@ static HAL_DriverItf drv_sdio_sd = {
 /*****************************************************************************/
 Status SDIO__Init(void)
 {
-    HAL_MEMSET(drv_sdio_v, 0x0, sizeof(drv_sdio_v));
+    HAL_MemSet(drv_sdio_v, 0x0, sizeof(drv_sdio_v));
     drv_sdio_v[DRV_ID_SDIO_SD] = &drv_sdio_sd;
     return S_OK;
 }
@@ -329,7 +329,7 @@ Status s = S_OK;
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
             IF_STATUS(s = drv_sdio_sd.Read((U8*)scratch_p, 1, &sector)) { break; }
-            OS_MEMCPY(data_in_p, scratch_p, SD_CARD_BLOCK_SIZE);
+            OS_MemCpy(data_in_p, scratch_p, SD_CARD_BLOCK_SIZE);
             data_in_p += SD_CARD_BLOCK_SIZE;
             ++sector;
         }
@@ -365,7 +365,7 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            OS_MEMCPY(data_out_p, scratch_p, SD_CARD_BLOCK_SIZE);
+            OS_MemCpy(data_out_p, scratch_p, SD_CARD_BLOCK_SIZE);
             IF_STATUS(s = drv_sdio_sd.Write((U8*)scratch_p, 1, &sector)) { break; }
             data_out_p += SD_CARD_BLOCK_SIZE;
             ++sector;

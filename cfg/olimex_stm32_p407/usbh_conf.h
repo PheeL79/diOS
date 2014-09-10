@@ -51,16 +51,18 @@
 #include "os_signal.h"
 #include "os_usb.h"
 
+extern OS_QueueHd usbhd_stdin_qhd;
+
 /**
 	MiddleWare name : USB_HOST
 	MiddleWare fileName : usbh_conf.h
 	MiddleWare version :
 */
 /*----------   -----------*/
-#define USBH_MAX_NUM_ENDPOINTS      6
+#define USBH_MAX_NUM_ENDPOINTS      4
 
 /*----------   -----------*/
-#define USBH_MAX_NUM_INTERFACES      10
+#define USBH_MAX_NUM_INTERFACES      1
 
 /*----------   -----------*/
 #define USBH_MAX_NUM_CONFIGURATION      1
@@ -69,7 +71,7 @@
 #define USBH_KEEP_CFG_DESCRIPTOR      0
 
 /*----------   -----------*/
-#define USBH_MAX_NUM_SUPPORTED_CLASS      2
+#define USBH_MAX_NUM_SUPPORTED_CLASS      4
 
 /*----------   -----------*/
 #define USBH_MAX_SIZE_CONFIGURATION      255
@@ -100,8 +102,8 @@
  /* Memory management macros */
 #define USBH_malloc               OS_Malloc
 #define USBH_free                 OS_Free
-#define USBH_memset               OS_MEMSET
-#define USBH_memcpy               OS_MEMCPY
+#define USBH_memset               OS_MemSet
+#define USBH_memcpy               OS_MemCpy
 
  /* DEBUG macros */
 

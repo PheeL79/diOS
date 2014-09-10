@@ -33,7 +33,7 @@ static Status OS_ShellCmdMiHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdMiHandler(const U32 argc, ConstStrPtr argv[])
 {
 Status s;
-    const S8 volume = OS_ATOI((const char*)argv[0]);
+    const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
         OS_LOG_S(D_WARNING, s);
@@ -55,7 +55,7 @@ static Status OS_ShellCmdMdHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdMdHandler(const U32 argc, ConstStrPtr argv[])
 {
 Status s;
-    const S8 volume = OS_ATOI((const char*)argv[0]);
+    const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
         OS_LOG_S(D_WARNING, s);
@@ -77,7 +77,7 @@ static Status OS_ShellCmdFiHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdFiHandler(const U32 argc, ConstStrPtr argv[])
 {
 Status s;
-    const S8 volume = OS_ATOI((const char*)argv[0]);
+    const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
         OS_LOG_S(D_WARNING, s);
@@ -99,7 +99,7 @@ static Status OS_ShellCmdFdHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdFdHandler(const U32 argc, ConstStrPtr argv[])
 {
 Status s;
-    const S8 volume = OS_ATOI((const char*)argv[0]);
+    const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
         OS_LOG_S(D_WARNING, s);
@@ -129,8 +129,8 @@ Status s;
         //Parse volume string.
         char const delim_str[] = ":";
         char* path_str_p = (char*)argv[0];
-        ConstStrPtr volume_label_p = (ConstStrPtr)OS_STRTOK(path_str_p, delim_str);
-        volume = OS_ATOI((const char*)volume_label_p);
+        ConstStrPtr volume_label_p = (ConstStrPtr)OS_StrToK(path_str_p, delim_str);
+        volume = OS_AtoI((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
             OS_LOG_S(D_WARNING, s);
@@ -145,7 +145,7 @@ Status s;
     path_p = (StrPtr)OS_Malloc(OS_FILE_SYSTEM_LONG_NAMES_LEN * 2);
     if (OS_NULL == path_p) { s = S_NO_MEMORY; goto error; }
     *path_p = OS_ASCII_EOL;
-    OS_MEMSET(&stats_fs, 0, sizeof(stats_fs));
+    OS_MemSet(&stats_fs, 0, sizeof(stats_fs));
     IF_STATUS(s = OS_FileSystemVolumeScan(path_p, &stats_fs)) { OS_LOG_S(D_WARNING, s); goto error; }
     printf("\nMedia name            :%s"
            "\nVolume name           :%s"
@@ -203,8 +203,8 @@ Status s;
         //Parse volume string.
         char const delim_str[] = ":";
         char* path_str_p = (char*)argv[0];
-        ConstStrPtr volume_label_p = (ConstStrPtr)OS_STRTOK(path_str_p, delim_str);
-        const S8 volume = (S8)OS_ATOI((const char*)volume_label_p);
+        ConstStrPtr volume_label_p = (ConstStrPtr)OS_StrToK(path_str_p, delim_str);
+        const S8 volume = (S8)OS_AtoI((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
             OS_LOG_S(D_DEBUG, s);
@@ -212,7 +212,7 @@ Status s;
         } else {
             const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
             IF_STATUS(s = OS_FileSystemMediaCurrentSet(fs_media_hd)) { goto error; }
-            path_p = (StrPtr)(++path_str_p + OS_STRLEN((const char*)volume_label_p));
+            path_p = (StrPtr)(++path_str_p + OS_StrLen((const char*)volume_label_p));
             fs_media_hd_curr = fs_media_hd;
         }
     }
@@ -448,7 +448,7 @@ Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[])
 U32 size = 0;
 OS_FileSystemPartitionRule part_rule = OS_FS_PART_RULE_UNDEF;
 Status s = S_OK;
-const S8 volume = OS_ATOI((const char*)argv[0]);
+const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
         OS_LOG_S(D_WARNING, s);
@@ -457,10 +457,10 @@ const S8 volume = OS_ATOI((const char*)argv[0]);
     //Parse partition rule string.
     char const delim_str[] = " ";
     char* part_rule_p = (char*)argv[1];
-    const char* part_rule_str_p = OS_STRTOK(part_rule_p, delim_str);
-    if (!OS_STRCMP("fdisk", part_rule_str_p)) {
+    const char* part_rule_str_p = OS_StrToK(part_rule_p, delim_str);
+    if (!OS_StrCmp("fdisk", part_rule_str_p)) {
         part_rule = OS_FS_PART_RULE_FDISK;
-    } else if (!OS_STRCMP("sfd", part_rule_str_p)) {
+    } else if (!OS_StrCmp("sfd", part_rule_str_p)) {
         part_rule = OS_FS_PART_RULE_SFD;
     } else {
         s = S_FS_INVALID_PARAMETER;
@@ -470,7 +470,7 @@ const S8 volume = OS_ATOI((const char*)argv[0]);
     if (3 == argc) {
         const U8* size_str = (const U8*)argv[3];
         const U8 base = ('x' == *(U8*)(size_str + 1)) ? 16 : 10;
-        size = (U32)OS_STRTOL((const char*)size_str, OS_NULL, base);
+        size = (U32)OS_StrToL((const char*)size_str, OS_NULL, base);
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     printf("\nThe %s will be formatted. Are you sure? (Y/n) ", OS_FileSystemMediaNameGet(fs_media_hd));
@@ -487,11 +487,11 @@ const S8 volume = OS_ATOI((const char*)argv[0]);
             IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
                     OS_LOG_S(D_WARNING, S_UNDEF_MSG);
             } else {
-                if (OS_SIGNAL_IS(msg_p)) {
-                    switch (OS_SIGNAL_ID_GET(msg_p)) {
+                if (OS_SignalIs(msg_p)) {
+                    switch (OS_SignalIdGet(msg_p)) {
                         case OS_SIG_STDIN:
                             // get char from STDIO driver.
-                            c = (char)OS_SIGNAL_DATA_GET(msg_p);
+                            c = (char)OS_SignalDataGet(msg_p);
                             c_buf[i] = c;
                             i = (++i > ITEMS_COUNT_GET(c_buf, char)) ? --i : i;
                             break;

@@ -192,19 +192,19 @@ OS_Tick OS_TickCountGet(void)
 OS_DateTime OS_TimeStringParse(ConstStrPtr time_p)
 {
 OS_DateTime time;
-    OS_MEMSET(&time, 0, sizeof(time));
+    OS_MemSet(&time, 0, sizeof(time));
     if (OS_NULL != time_p) {
         // Parse time string.
         char const delim_str[] = OS_LOCALE_TIME_DELIM_EN\
                                  OS_LOCALE_TIME_DELIM_RU;
         char* time_str_p = (char*)time_p;
-        char* time_item_p = OS_STRTOK(time_str_p, delim_str);
+        char* time_item_p = OS_StrToK(time_str_p, delim_str);
         LNG time_val[3];
 
         for (SIZE i = 0; OS_NULL != time_item_p; ++i) {
             //TODO(A. Filyanov) Check for valid digits.
-            time_val[i] = OS_STRTOL((const char*)time_item_p, OS_NULL, 10);
-            time_item_p = OS_STRTOK(OS_NULL, delim_str);
+            time_val[i] = OS_StrToL((const char*)time_item_p, OS_NULL, 10);
+            time_item_p = OS_StrToK(OS_NULL, delim_str);
         }
         time.hours      = (U8)time_val[0];
         time.minutes    = (U8)time_val[1];
@@ -220,18 +220,18 @@ OS_DateTime OS_DateStringParse(ConstStrPtr date_p)
 {
 const Locale locale = OS_LocaleGet();
 OS_DateTime date;
-    OS_MEMSET(&date, 0, sizeof(date));
+    OS_MemSet(&date, 0, sizeof(date));
     if (OS_NULL != date_p) {
         // Parse date string.
         char const delim_str[] = OS_LOCALE_DATE_DELIM_EN\
                                  OS_LOCALE_DATE_DELIM_RU;
         char* date_str_p = (char*)date_p;
-        char* date_item_p = OS_STRTOK(date_str_p, delim_str);
+        char* date_item_p = OS_StrToK(date_str_p, delim_str);
         LNG date_val[3];
 
         for (SIZE i = 0; OS_NULL != date_item_p; ++i) {
-            date_val[i] = OS_STRTOL((const char*)date_item_p, OS_NULL, 10);
-            date_item_p = OS_STRTOK(OS_NULL, delim_str);
+            date_val[i] = OS_StrToL((const char*)date_item_p, OS_NULL, 10);
+            date_item_p = OS_StrToK(OS_NULL, delim_str);
         }
         if (LOC_RU == locale) {
             date.day    = (U8)date_val[0];

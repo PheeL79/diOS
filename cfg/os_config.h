@@ -28,7 +28,7 @@
 // Ticks.
 #define OS_TICK_RATE                1000U
 #define OS_PULSE_RATE               1000U
-#define OS_IDLE_TICKLESS_ENABLED    1
+#define OS_IDLE_TICKLESS_ENABLED    0
 #define OS_IDLE_TICKS_TO_SLEEP      1000U
 #endif // __ICCARM__
 
@@ -139,15 +139,15 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 //#define OS_TEST
 
 // cstdlib
-#define OS_ATOI     HAL_ATOI
-#define OS_STRLEN   HAL_STRLEN
-#define OS_STRCHR   HAL_STRCHR
-#define OS_STRCMP   HAL_STRCMP
-#define OS_STRCPY   HAL_STRCPY
-#define OS_STRCAT   HAL_STRCAT
-#define OS_STRTOL   HAL_STRTOL
-#define OS_STRTOK   HAL_STRTOK
-#define OS_STRNCPY  HAL_STRNCPY
+#define OS_AtoI     HAL_AtoI
+#define OS_StrLen   HAL_StrLen
+#define OS_StrChr   HAL_StrChr
+#define OS_StrCmp   HAL_StrCmp
+#define OS_StrCpy   HAL_StrCpy
+#define OS_StrCat   HAL_StrCat
+#define OS_StrToL   HAL_StrToL
+#define OS_StrToK   HAL_StrToK
+#define OS_StrNCpy  HAL_StrNCpy
 
 enum {
     OS_SHELL_BUTTON_UP              = 'A',

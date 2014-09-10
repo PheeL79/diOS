@@ -80,7 +80,7 @@ static HAL_DriverItf drv_rtc = {
 /*****************************************************************************/
 Status RTC_Init_(void)
 {
-    HAL_MEMSET(drv_rtc_v, 0x0, sizeof(drv_rtc_v));
+    HAL_MemSet(drv_rtc_v, 0x0, sizeof(drv_rtc_v));
     drv_rtc_v[DRV_ID_RTC] = &drv_rtc;
     return S_OK;
 }
@@ -404,6 +404,12 @@ Status s = S_OK;
         case DRV_REQ_RTC_TIME_GET: {
             RTC_TimeTypeDef time;
             if (HAL_OK == HAL_RTC_GetTime(&rtc_handle, &time, FORMAT_BIN)) {
+// Workaround {
+//  * @note   Call HAL_RTC_GetDate() after HAL_RTC_GetTime() to unlock the values
+//  *         in the higher-order calendar shadow registers.
+                RTC_DateTypeDef date;
+                HAL_RTC_GetDate(&rtc_handle, &date, FORMAT_BIN);
+// Workaround }
                 OS_DateTime* os_time_p = (OS_DateTime*)args_p;
                 if (OS_NULL != os_time_p) {
                     os_time_p->hours        = time.Hours;
@@ -419,7 +425,7 @@ Status s = S_OK;
             OS_DateTime* os_time_p = (OS_DateTime*)args_p;
             if (OS_NULL != os_time_p) {
                 RTC_TimeTypeDef time;
-                HAL_MEMSET((void*)&time, 0, sizeof(time));
+                HAL_MemSet((void*)&time, 0, sizeof(time));
                 time.Hours          = os_time_p->hours;
                 time.Minutes        = os_time_p->minutes;
                 time.Seconds        = os_time_p->seconds;
@@ -448,7 +454,7 @@ Status s = S_OK;
             OS_DateTime* os_date_p = (OS_DateTime*)args_p;
             if (OS_NULL != os_date_p) {
                 RTC_DateTypeDef date;
-                HAL_MEMSET((void*)&date, 0, sizeof(date));
+                HAL_MemSet((void*)&date, 0, sizeof(date));
                 date.Year           = os_date_p->year - RTC_YEAR_BASE;
                 date.Month          = os_date_p->month;
                 date.WeekDay        = os_date_p->weekday;

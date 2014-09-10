@@ -31,7 +31,7 @@ OS_DriverConfigDyn* OS_DriverConfigDynGet(const OS_DriverHd dhd)
 {
     OS_ASSERT_VALUE(OS_NULL != dhd);
     const OS_ListItem* item_l_p = (OS_ListItem*)dhd;
-    OS_DriverConfigDyn* cfg_dyn_p = (OS_DriverConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+    OS_DriverConfigDyn* cfg_dyn_p = (OS_DriverConfigDyn*)OS_ListItemValueGet(item_l_p);
     OS_ASSERT_VALUE(OS_DELAY_MAX != (OS_Value)cfg_dyn_p);
     return cfg_dyn_p;
 }
@@ -43,7 +43,7 @@ Status OS_DriverInit_(void)
     os_driver_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_driver_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_drivers_list);
-    if (OS_TRUE != OS_LIST_IS_INITIALISED(&os_drivers_list)) { return S_INVALID_VALUE; }
+    if (OS_TRUE != OS_ListIsInitialised(&os_drivers_list)) { return S_INVALID_VALUE; }
     return S_OK;
 }
 
@@ -52,7 +52,7 @@ OS_TaskHd OS_DriverParentGet(const OS_DriverHd dhd)
 {
 const OS_ListItem* item_l_p = OS_ListItemByValueGet(&os_drivers_list, (OS_Value)dhd);
     if (OS_NULL == item_l_p) { return OS_NULL; }
-    return (OS_TaskHd)OS_LIST_ITEM_OWNER_GET(item_l_p);
+    return (OS_TaskHd)OS_ListItemOwnerGet(item_l_p);
 }
 
 /******************************************************************************/
@@ -60,18 +60,18 @@ OS_DriverHd OS_DriverByNameGet(ConstStrPtr name_p)
 {
 OS_ListItem* iter_li_p = OS_NULL;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_driver_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
-        iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_drivers_list));
+        iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_drivers_list));
         if (OS_NULL == name_p) {
             goto exit;
         }
-        if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+        if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
             do {
-                const OS_DriverConfigDyn* cfg_dyn_p = (OS_DriverConfigDyn*)OS_LIST_ITEM_VALUE_GET(iter_li_p);
-                if (!OS_STRCMP((const char*)name_p, (char*)cfg_dyn_p->cfg.name)) {
+                const OS_DriverConfigDyn* cfg_dyn_p = (OS_DriverConfigDyn*)OS_ListItemValueGet(iter_li_p);
+                if (!OS_StrCmp((const char*)name_p, (char*)cfg_dyn_p->cfg.name)) {
                     goto exit;
                 }
-                iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
-            } while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p));
+                iter_li_p = OS_ListItemNextGet(iter_li_p);
+            } while (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p));
         }
         iter_li_p = OS_NULL;
 exit:
@@ -94,15 +94,15 @@ Status s = S_OK;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
-    OS_MEMMOV(&cfg_dyn_p->cfg, cfg_p, sizeof(cfg_dyn_p->cfg));
-    OS_MEMSET(&cfg_dyn_p->stats, 0, sizeof(OS_DriverStats));
+    OS_MemMov(&cfg_dyn_p->cfg, cfg_p, sizeof(cfg_dyn_p->cfg));
+    OS_MemSet(&cfg_dyn_p->stats, 0, sizeof(OS_DriverStats));
     cfg_dyn_p->stats.state      = OS_DRV_STATE_UNDEF;
     cfg_dyn_p->stats.power      = PWR_UNDEF;
     cfg_dyn_p->stats.status_last= s;
     cfg_dyn_p->mutex = OS_MutexCreate();
     if (OS_NULL == cfg_dyn_p->mutex) { s = S_INVALID_REF; goto error; }
-    OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)cfg_dyn_p);
-    OS_LIST_ITEM_OWNER_SET(item_l_p, (OS_Owner)OS_TaskGet());
+    OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
+    OS_ListItemOwnerSet(item_l_p, (OS_Owner)OS_TaskGet());
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_driver_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListAppend(&os_drivers_list, item_l_p);
         OS_MutexRecursiveUnlock(os_driver_mutex);
@@ -125,7 +125,7 @@ Status s = S_OK;
 
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_driver_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)dhd;
-        OS_DriverConfigDyn* cfg_dyn_p = (OS_DriverConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_l_p);
+        OS_DriverConfigDyn* cfg_dyn_p = (OS_DriverConfigDyn*)OS_ListItemValueGet(item_l_p);
         OS_ListItemDelete(item_l_p);
         OS_MutexDelete(cfg_dyn_p->mutex);
         OS_Free(cfg_dyn_p);
@@ -356,7 +356,7 @@ Status s = S_OK;
     OS_DriverConfigDyn* cfg_dyn_p = OS_DriverConfigDynGet(dhd);
     IF_STATUS_OK(s = OS_MutexLock(cfg_dyn_p->mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         OS_ASSERT_VALUE(OS_TRUE != BIT_TEST(cfg_dyn_p->stats.state, BIT(OS_DRV_STATE_IS_INIT)));
-        OS_MEMMOV(cfg_dyn_p->cfg.itf_p, itf_p, sizeof(HAL_DriverItf));
+        OS_MemMov(cfg_dyn_p->cfg.itf_p, itf_p, sizeof(HAL_DriverItf));
         OS_MutexUnlock(cfg_dyn_p->mutex);
     }
     return s;
@@ -400,7 +400,7 @@ Status OS_DriverStatsGet(const OS_DriverHd dhd, OS_DriverStats* stats_p)
 {
     if ((OS_NULL == dhd) || (OS_NULL == stats_p)) { return S_INVALID_REF; }
     const OS_DriverConfigDyn* cfg_dyn_p = OS_DriverConfigDynGet(dhd);
-    OS_MEMMOV(stats_p, &cfg_dyn_p->stats, sizeof(cfg_dyn_p->stats));
+    OS_MemMov(stats_p, &cfg_dyn_p->stats, sizeof(cfg_dyn_p->stats));
     return S_OK;
 }
 
@@ -418,18 +418,18 @@ void OS_DriverPowerPrioritySort(const SortDirection sort_dir)
 {
     IF_STATUS_OK(OS_MutexRecursiveLock(os_driver_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         //TODO(A.Filyanov) Optimize selective sort function.
-        OS_ListItem* item_curr_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_drivers_list));
+        OS_ListItem* item_curr_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_drivers_list));
         OS_ListItem* item_next_p;
         OS_ListItem* item_min_p;
         OS_DriverConfigDyn* cfg_dyn_min_p;
         OS_DriverConfigDyn* cfg_dyn_next_p;
 
-        while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(item_curr_p)) {
+        while (OS_DELAY_MAX != OS_ListItemValueGet(item_curr_p)) {
             item_min_p = item_curr_p;
-            item_next_p = OS_LIST_ITEM_NEXT_GET(item_curr_p);
-            while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(item_next_p)) {
-                cfg_dyn_min_p  = (OS_DriverConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_min_p);
-                cfg_dyn_next_p = (OS_DriverConfigDyn*)OS_LIST_ITEM_VALUE_GET(item_next_p);
+            item_next_p = OS_ListItemNextGet(item_curr_p);
+            while (OS_DELAY_MAX != OS_ListItemValueGet(item_next_p)) {
+                cfg_dyn_min_p  = (OS_DriverConfigDyn*)OS_ListItemValueGet(item_min_p);
+                cfg_dyn_next_p = (OS_DriverConfigDyn*)OS_ListItemValueGet(item_next_p);
 
                 if (SORT_ASCENDING == sort_dir) {
                     if (cfg_dyn_next_p->cfg.prio_power < cfg_dyn_min_p->cfg.prio_power) {
@@ -441,12 +441,12 @@ void OS_DriverPowerPrioritySort(const SortDirection sort_dir)
                     }
                 } else { OS_ASSERT(OS_FALSE); }
 
-                item_next_p = OS_LIST_ITEM_NEXT_GET(item_next_p);
+                item_next_p = OS_ListItemNextGet(item_next_p);
             }
             if (item_curr_p != item_min_p) {
                 OS_ListItemsSwap(item_curr_p, item_min_p);
             }
-            item_curr_p = OS_LIST_ITEM_NEXT_GET(item_min_p);
+            item_curr_p = OS_ListItemNextGet(item_min_p);
         }
         OS_MutexRecursiveUnlock(os_driver_mutex);
     }
@@ -458,14 +458,14 @@ OS_DriverHd OS_DriverNextGet(const OS_DriverHd dhd)
 OS_ListItem* iter_li_p = (OS_ListItem*)dhd;
     IF_STATUS_OK(OS_MutexRecursiveLock(os_driver_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         if (OS_NULL == iter_li_p) {
-            iter_li_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_drivers_list));
-            if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_drivers_list));
+            if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
                 iter_li_p = OS_NULL;
             }
         } else {
-            if (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
-                iter_li_p = OS_LIST_ITEM_NEXT_GET(iter_li_p);
-                if (OS_DELAY_MAX == OS_LIST_ITEM_VALUE_GET(iter_li_p)) {
+            if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
+                iter_li_p = OS_ListItemNextGet(iter_li_p);
+                if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
                     iter_li_p = OS_NULL;
                 }
             } else {

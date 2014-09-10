@@ -49,7 +49,7 @@ Status          OS_LocaleSet(ConstStrPtr locale_p);
 
 /// @brief      Get system input/output driver interface.
 /// @return     Driver interface.
-const HAL_DriverItf*OS_StdIoGet(void);
+const HAL_DriverItf* OS_StdIoGet(void);
 
 /// @brief      Set system input/output driver.
 /// @param[in]  drv_name_p      Driver name.

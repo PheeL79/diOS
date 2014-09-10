@@ -84,7 +84,7 @@ const U8 step = 16;
     //Convert address to number.
     const U8* addr_str = (const U8*)argv[0];
     U8 base = ('x' == *(U8*)(addr_str + 1)) ? 16 : 10;
-    LNG addr = OS_STRTOL((const char*)addr_str, OS_NULL, base);
+    LNG addr = OS_StrToL((const char*)addr_str, OS_NULL, base);
     if (0 > addr) { return S_INVALID_REF; }
 //    OS_MemoryType mem_type = OS_MEM_UNDEF;
 //    OS_MemoryStat mem_stat;
@@ -101,7 +101,7 @@ const U8 step = 16;
     if (OS_TRUE != is_valid) { return S_INVALID_VALUE; }
     const U8* size_str = (const U8*)argv[1];
     base = ('x' == *(U8*)(size_str + 1)) ? 16 : 10;
-    LNG size = OS_STRTOL((const char*)size_str, OS_NULL, base);
+    LNG size = OS_StrToL((const char*)size_str, OS_NULL, base);
     if (0 == size) { return S_OK; }
     while (0 < size) {
         U8* p;
@@ -381,7 +381,7 @@ CommandHandler cmd_handlers_v[] = {
     { OS_NULL }
 };
     for (SIZE i = 0; OS_NULL != cmd_handlers_v[i].cmd; ++i) {
-        if (!OS_STRCMP(cmd_handlers_v[i].cmd, (char const*)argv[0])) {
+        if (!OS_StrCmp(cmd_handlers_v[i].cmd, (char const*)argv[0])) {
             cmd_handlers_v[i].handler();
             return S_OK;
         }
@@ -400,15 +400,15 @@ Status s = S_OK;
     //Convert TaskId to number.
     const U8* tid_str = (const U8*)argv[0];
     U8 base = ('x' == *(U8*)(tid_str + 1)) ? 16 : 10;
-    LNG tid = OS_STRTOL((const char*)tid_str, OS_NULL, base);
+    LNG tid = OS_StrToL((const char*)tid_str, OS_NULL, base);
     if (0 > tid) { return S_INVALID_REF; }
 
-    const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_PWR, PWR_SHUTDOWN);
+    const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, PWR_SHUTDOWN);
     const OS_TaskHd dst_thd = OS_TaskByIdGet(tid);
     if (OS_NULL != dst_thd) {
         const OS_QueueHd dst_stdin_qhd = OS_TaskStdInGet(dst_thd);
         if (OS_NULL != dst_stdin_qhd) {
-            OS_SIGNAL_SEND(dst_stdin_qhd, signal, OS_MSG_PRIO_NORMAL);
+            OS_SignalSend(dst_stdin_qhd, signal, OS_MSG_PRIO_NORMAL);
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
             OS_Message* msg_p;
             do {
@@ -416,10 +416,10 @@ Status s = S_OK;
                     OS_LOG_S(D_WARNING, S_UNDEF_MSG);
                     return S_UNDEF_MSG;
                 } else {
-                    if (OS_SIGNAL_IS(msg_p)) {
-                        switch (OS_SIGNAL_ID_GET(msg_p)) {
+                    if (OS_SignalIs(msg_p)) {
+                        switch (OS_SignalIdGet(msg_p)) {
                             case OS_SIG_PWR_ACK:
-                                IF_STATUS(s = (Status)OS_SIGNAL_DATA_GET(msg_p)) {
+                                IF_STATUS(s = (Status)OS_SignalDataGet(msg_p)) {
                                 }
                                 s = OS_TaskDelete(dst_thd);
                                 return s;
@@ -453,7 +453,7 @@ static Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrPtr argv[])
 {
 Status s = S_OK;
-    if (!OS_STRCMP("set", (char const*)argv[0])) {
+    if (!OS_StrCmp("set", (char const*)argv[0])) {
         if ((2 < argc) || (1 > argc)) { return S_INVALID_ARGS_NUMBER; }
         OS_DateTime time = OS_TimeStringParse(argv[1]);
         s = OS_TimeSet(OS_TIME_UNDEF, &time);
@@ -480,7 +480,7 @@ static Status OS_ShellCmdDateHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdDateHandler(const U32 argc, ConstStrPtr argv[])
 {
 Status s = S_OK;
-    if (!OS_STRCMP("set", (char const*)argv[0])) {
+    if (!OS_StrCmp("set", (char const*)argv[0])) {
         if ((2 < argc) || (1 > argc)) { return S_INVALID_ARGS_NUMBER; }
         OS_DateTime date = OS_DateStringParse(argv[1]);
         s = OS_DateSet(OS_DATE_UNDEF, &date);
@@ -508,10 +508,10 @@ static ConstStr cmd_help_brief_reboot[] = "Reboot the device.";
 static Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrPtr argv[])
 {
-const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_REBOOT, 0);
+const OS_Signal signal = OS_SignalCreate(OS_SIG_REBOOT, 0);
 const OS_QueueHd sv_stdin_qhd = OS_TaskStdInGet(OS_TaskParentGet());
 
-    OS_SIGNAL_SEND(OS_TaskSvStdInGet(), signal, OS_MSG_PRIO_HIGH);
+    OS_SignalSend(OS_TaskSvStdInGet(), signal, OS_MSG_PRIO_HIGH);
     return S_OK;
 }
 
@@ -522,10 +522,10 @@ static ConstStr cmd_help_brief_shutdown[]   = "Shutdown the device.";
 static Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrPtr argv[])
 {
-const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_SHUTDOWN, 0);
+const OS_Signal signal = OS_SignalCreate(OS_SIG_SHUTDOWN, 0);
 const OS_QueueHd sv_stdin_qhd = OS_TaskStdInGet(OS_TaskParentGet());
 
-    OS_SIGNAL_SEND(OS_TaskSvStdInGet(), signal, OS_MSG_PRIO_HIGH);
+    OS_SignalSend(OS_TaskSvStdInGet(), signal, OS_MSG_PRIO_HIGH);
     return S_OK;
 }
 

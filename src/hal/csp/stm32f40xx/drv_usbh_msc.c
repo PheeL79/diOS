@@ -4,6 +4,8 @@
 * @author  A. Filyanov
 ******************************************************************************/
 #include "hal.h"
+#if (1 == USBH_ENABLED)
+#if (1 == USBH_MSC_ENABLED)
 #include "usbh_msc.h"
 #include "diskio.h"
 #include "os_common.h"
@@ -14,8 +16,6 @@
 #include "os_debug.h"
 #include "os_file_system.h"
 
-#if (1 == USBH_ENABLED)
-#if (1 == USBH_MSC_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usb_msc"
 
@@ -120,7 +120,7 @@ Status s = S_OK;
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
             IF_STATUS(s = drv_usbh_fs_msc.Read((U8*)scratch_p, 1, &sector)) { break; }
-            OS_MEMCPY(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
+            OS_MemCpy(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             data_in_p += USBH_MSC_BLOCK_SIZE;
             ++sector;
         }
@@ -161,7 +161,7 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            OS_MEMCPY(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
+            OS_MemCpy(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             IF_STATUS(s = drv_usbh_fs_msc.Write((U8*)scratch_p, 1, &sector)) { break; }
             data_out_p += USBH_MSC_BLOCK_SIZE;
             ++sector;
@@ -324,7 +324,7 @@ Status s = S_OK;
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
             IF_STATUS(s = drv_usbh_hs_msc.Read((U8*)scratch_p, 1, &sector)) { break; }
-            OS_MEMCPY(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
+            OS_MemCpy(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             data_in_p += USBH_MSC_BLOCK_SIZE;
             ++sector;
         }
@@ -365,7 +365,7 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            OS_MEMCPY(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
+            OS_MemCpy(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             IF_STATUS(s = drv_usbh_hs_msc.Write((U8*)scratch_p, 1, &sector)) { break; }
             data_out_p += USBH_MSC_BLOCK_SIZE;
             ++sector;
@@ -482,5 +482,5 @@ Status s = S_OK;
 }
 #endif //(1 == USBH_HS_ENABLED)
 
-#endif //(1 == USBH_ENABLED)
 #endif //(1 == USBH_MSC_ENABLED)
+#endif //(1 == USBH_ENABLED)

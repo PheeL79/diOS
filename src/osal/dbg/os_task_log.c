@@ -50,7 +50,7 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 {
 extern volatile OS_QueueHd stdout_qhd;
 ConstStrPtr shell_prompt_p= OS_ShellPromptGet();
-const U8 shell_prompt_len = OS_STRLEN((char const*)shell_prompt_p);
+const U8 shell_prompt_len = OS_StrLen((char const*)shell_prompt_p);
 const OS_DriverHd drv_log = OS_DriverStdOutGet();
 OS_Message* msg_p;
 BL is_prompted = OS_FALSE;
@@ -61,8 +61,8 @@ BL is_prompted = OS_FALSE;
         IF_STATUS(OS_MessageReceive(stdout_qhd, &msg_p, OS_BLOCK)) {
             OS_LOG_S(D_WARNING, S_UNDEF_MSG);
         } else {
-            if (OS_SIGNAL_IS(msg_p)) {
-                switch (OS_SIGNAL_ID_GET(msg_p)) {
+            if (OS_SignalIs(msg_p)) {
+                switch (OS_SignalIdGet(msg_p)) {
                     case OS_SIG_STDOUT:
                         is_prompted = OS_FALSE;
                         break;

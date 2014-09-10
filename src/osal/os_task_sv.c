@@ -163,7 +163,7 @@ Status SystemPowerStateForTasksSet(const OS_PowerState state)
 {
 extern Status OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state);
 extern void   OS_TaskPowerPrioritySort(const SortDirection sort_dir);
-const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_PWR, state);
+const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, state);
 const OS_TaskHd sv_thd = OS_TaskGet();
 OS_TaskHd thd;
 OS_TaskHd next_thd = OS_NULL;
@@ -178,13 +178,13 @@ Status s = S_OK; //!
         if ((par_thd != OS_NULL) && (sv_thd != thd)) { //ignore OS system tasks.
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(thd);
             if (OS_NULL != stdin_qhd) {
-                IF_STATUS_OK(s = OS_SIGNAL_SEND(stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+                IF_STATUS_OK(s = OS_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
                     OS_Message* msg_p;
                     IF_STATUS_OK(s = OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_TIMEOUT_POWER)) {
-                        if (OS_SIGNAL_IS(msg_p)) {
-                            switch (OS_SIGNAL_ID_GET(msg_p)) {
+                        if (OS_SignalIs(msg_p)) {
+                            switch (OS_SignalIdGet(msg_p)) {
                                 case OS_SIG_PWR_ACK:
-                                    IF_STATUS_OK(s = (Status)OS_SIGNAL_DATA_GET(msg_p)) {
+                                    IF_STATUS_OK(s = (Status)OS_SignalDataGet(msg_p)) {
                                         if (PWR_SHUTDOWN == state) {
                                             IF_STATUS(s = OS_TaskDelete(thd)) {
                                                 //TODO(A.Filyanov) Status handler!
@@ -251,8 +251,8 @@ static State led_state = OFF;
 OS_Message* msg_p;
 
     IF_STATUS_OK(OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_PULSE_RATE)) {
-        if (OS_SIGNAL_IS(msg_p)) {
-            switch (OS_SIGNAL_ID_GET(msg_p)) {
+        if (OS_SignalIs(msg_p)) {
+            switch (OS_SignalIdGet(msg_p)) {
                 case OS_SIG_PULSE_ACK:
                     break;
                 case OS_SIG_PWR_ACK:

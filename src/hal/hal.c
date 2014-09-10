@@ -77,7 +77,7 @@ Status s = S_OK;
 /*****************************************************************************/
 Status HAL_DeviceDescriptionInit(void)
 {
-    HAL_MEMSET((void*)&device_state, 0x0, sizeof(device_state));
+    HAL_MemSet((void*)&device_state, 0x0, sizeof(device_state));
     // Static info description.
     device_state.description.device_description.version = version;
     return S_OK;

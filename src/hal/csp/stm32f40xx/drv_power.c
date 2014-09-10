@@ -41,7 +41,7 @@ static HAL_DriverItf drv_power = {
 /*****************************************************************************/
 Status POWER_Init_(void)
 {
-    HAL_MEMSET(drv_power_v, 0x0, sizeof(drv_power_v));
+    HAL_MemSet(drv_power_v, 0x0, sizeof(drv_power_v));
     drv_power_v[DRV_ID_POWER] = &drv_power;
     return S_OK;
 }

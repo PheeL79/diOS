@@ -49,8 +49,8 @@ void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
             va_start(args, format_str_p);
             LogVaListPrint(level, OS_TaskNameGet(OS_THIS_TASK), format_str_p, args);
             va_end(args);
-            const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_STDOUT, 0);
-            OS_SIGNAL_SEND(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
+            const OS_Signal signal = OS_SignalCreate(OS_SIG_STDOUT, 0);
+            OS_SignalSend(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
         }
         OS_MutexUnlock(print_mut);
     }
@@ -74,8 +74,8 @@ void OS_Trace(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
             va_start(args, format_str_p);
             TraceVaListPrint(format_str_p, args);
             va_end(args);
-            const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_STDOUT, 0);
-            OS_SIGNAL_SEND(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
+            const OS_Signal signal = OS_SignalCreate(OS_SIG_STDOUT, 0);
+            OS_SignalSend(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
         }
         OS_MutexUnlock(print_mut);
     }

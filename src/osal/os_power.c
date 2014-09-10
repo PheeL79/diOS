@@ -21,15 +21,15 @@ Status OS_PowerInit(void)
 /******************************************************************************/
 Status OS_PowerStateSet(const OS_PowerState state)
 {
-const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_PWR, state);
-    return OS_SIGNAL_SEND(sv_stdin_qhd, signal, OS_MSG_PRIO_HIGH);
+const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, state);
+    return OS_SignalSend(sv_stdin_qhd, signal, OS_MSG_PRIO_HIGH);
 }
 
 /******************************************************************************/
 Status OS_ISR_PowerStateSet(const OS_PowerState state)
 {
-const OS_Signal signal = OS_SIGNAL_CREATE(OS_SIG_PWR, state);
-    return OS_ISR_SIGNAL_SEND(sv_stdin_qhd, signal, OS_MSG_PRIO_HIGH);
+const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, state);
+    return OS_ISR_SignalSend(sv_stdin_qhd, signal, OS_MSG_PRIO_HIGH);
 }
 
 /******************************************************************************/

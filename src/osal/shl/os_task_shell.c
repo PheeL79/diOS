@@ -12,6 +12,11 @@
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"
+#if (1 == USBH_ENABLED)
+#if (1 == USBH_HID_ENABLED)
+#include "os_usb.h"
+#endif //(1 == USBH_HID_ENABLED)
+#endif //(1 == USBH_ENABLED)
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "task_shell"
@@ -52,26 +57,54 @@ extern volatile OS_QueueHd stdin_qhd;
 const OS_DriverHd drv_shell = OS_DriverStdInGet();
 OS_Message* msg_p;
     OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
+#if (1 == USBH_ENABLED)
+#if (1 == USBH_HID_ENABLED)
+const OS_TaskHd usbhd_thd = OS_TaskByNameGet("UsbHostD");
+    OS_ASSERT(S_OK == OS_TasksConnect(usbhd_thd, OS_THIS_TASK));
+#endif //(1 == USBH_HID_ENABLED)
+#endif //(1 == USBH_ENABLED)
     //Init stdin_qhd before all other tasks and return to the base priority.
     stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
             OS_LOG_S(D_WARNING, S_UNDEF_MSG);
         } else {
-            if (OS_SIGNAL_IS(msg_p)) {
-                switch (OS_SIGNAL_ID_GET(msg_p)) {
+            if (OS_SignalIs(msg_p)) {
+                switch (OS_SignalIdGet(msg_p)) {
                     case OS_SIG_STDIN:
                         // get char from STDIO driver.
-                        OS_ShellClHandler((U8)OS_SIGNAL_DATA_GET(msg_p));
+                        OS_ShellClHandler((U8)OS_SignalDataGet(msg_p));
                         break;
                     case OS_SIG_PWR_ACK:
                         break;
+                    case OS_SIG_DRV:
+                        break;
+#if (1 == USBH_ENABLED)
+                    case OS_SIG_USB_READY:
+                        break;
+#endif //(1 == USBH_ENABLED)
                     default:
                         OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
+#if (1 == USBH_ENABLED)
+#if (1 == USBH_HID_ENABLED)
+                    case OS_MSG_USB_HID_MOUSE:
+                        break;
+                    case OS_MSG_USB_HID_KEYBOARD: {
+                        const OS_UsbHidKeyboardData* keyboard_data_p = (OS_UsbHidKeyboardData*)&(msg_p->data);
+                        if ('\0' != keyboard_data_p->key_ascii) {
+                            OS_ShellClHandler(keyboard_data_p->key_ascii);
+                            if (!OS_StrCmp(OS_EnvVariableGet("echo"), "on")) {
+                                OS_TRACE(D_INFO, "%c", keyboard_data_p->key_ascii);
+                            }
+                        }
+                        }
+                        break;
+#endif //(1 == USBH_HID_ENABLED)
+#endif //(1 == USBH_ENABLED)
                     default:
                         OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
                         break;
