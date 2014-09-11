@@ -31,19 +31,18 @@ Status RTC_Init_(void);
 
 static Status   RTC__Init(void* args_p);
 static Status   RTC__DeInit(void* args_p);
+static Status   RTC_LL_Init(void);
+//static Status   RTC_LL_DeInit(void* args_p);
 static Status   RTC_Open(void* args_p);
 static Status   RTC_Close(void* args_p);
 static Status   RTC_Read(U8* data_in_p, U32 size, void* args_p);
 static Status   RTC_Write(U8* data_out_p, U32 size, void* args_p);
 static Status   RTC_IoCtl(const U32 request_id, void* args_p);
 
-static void     RTC_NVIC_Init(void);
 static void     RTC_SRAM_BACKUP_Init(void);
 static Status   RTC_AlarmInit(void);
 static Status   RTC_WakeupInit(void);
-static Status   RTC_NVIC_WakeupInit(void);
 
-static void     RTC_LowLevelInit(void);
 static void     RTC_Reset(void);
 static void     RTC_SRAM_RegistersReset(void);
 static void     RTC_SRAM_BackupReset(void);
@@ -89,14 +88,13 @@ Status RTC_Init_(void)
 Status RTC__Init(void* args_p)
 {
     //HAL_LOG(D_INFO, "Init");
-    RTC_LowLevelInit();
+    RTC_LL_Init();
     /*##-2- Check if Data stored in BackUp register0: No Need to reconfigure RTC#*/
     /* Read the Back Up Register 0 Data */
     if (RTC_STAMP != HAL_RTCEx_BKUPRead(&rtc_handle, HAL_RTC_BKUP_REG_IS_VALID)) {
         /* Configure RTC Calendar */
         RTC_Reset();
     }
-    RTC_NVIC_Init();
     RTC_AlarmInit();
     RTC_WakeupInit();
     //HAL_TRACE(D_INFO, S_STRING_GET(S_OK));
@@ -104,27 +102,7 @@ Status RTC__Init(void* args_p)
 }
 
 /******************************************************************************/
-void RTC_NVIC_Init(void)
-{
-//NVIC_InitTypeDef NVIC_InitStructure;
-//    //HAL_LOG(D_INFO, "NVIC Init: ");
-//    NVIC_StructInit(&NVIC_InitStructure);
-//    // RTC Alarm IRQ channel configuration
-//    NVIC_InitStructure.NVIC_IRQChannel                  = RTC_Alarm_IRQn;
-//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MIN;
-//    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-//    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-//    NVIC_Init(&NVIC_InitStructure);
-//
-//    // Configure interrupts for RTC.
-//    RTC_ITConfig(RTC_IT_ALRA, ENABLE);
-//    RTC_ClearITPendingBit(RTC_IT_ALRA);
-//    RTC_ClearITPendingBit(RTC_IT_ALRB);
-//    //HAL_TRACE_S(D_INFO, S_OK);
-}
-
-/******************************************************************************/
-void RTC_LowLevelInit(void)
+Status RTC_LL_Init(void)
 {
 RCC_OscInitTypeDef        RCC_OscInitStruct;
 RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
@@ -167,6 +145,7 @@ RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
     if (HAL_OK != HAL_RTCEx_EnableBypassShadow(&rtc_handle)) {
         HAL_ASSERT(OS_FALSE);
     }
+    return S_OK;
 }
 
 /******************************************************************************/
@@ -189,7 +168,7 @@ void RTC_SRAM_RegistersReset(void)
     /* Restore the Content of BDCR register */
     RCC->BDCR = tmpreg;
 
-    RTC_LowLevelInit();
+    RTC_LL_Init();
 }
 
 /******************************************************************************/
@@ -269,9 +248,6 @@ Status s = S_OK;
 Status RTC_WakeupInit(void)
 {
 Status s = S_OK;
-
-    s = RTC_NVIC_WakeupInit();
-
 //    //HAL_LOG(D_INFO, "Wakeup init: ");
 ////    /* Disable the Wakeup detection */
 //    RTC_WakeUpCmd(DISABLE);
@@ -284,31 +260,6 @@ Status s = S_OK;
 ////    RTC_WakeUpCmd(ENABLE);
 //    //HAL_TRACE_S(D_INFO, s);
     return s;
-}
-
-/*****************************************************************************/
-Status RTC_NVIC_WakeupInit(void)
-{
-//EXTI_InitTypeDef EXTI_InitStructure;
-//NVIC_InitTypeDef NVIC_InitStructure;
-//
-//    NVIC_StructInit(&NVIC_InitStructure);
-//    // RTC Wakeup IRQ channel configuration
-//    NVIC_InitStructure.NVIC_IRQChannel                  = RTC_WKUP_IRQn;
-//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= OS_PRIORITY_INT_MAX;
-//    NVIC_InitStructure.NVIC_IRQChannelSubPriority       = 0;
-//    NVIC_InitStructure.NVIC_IRQChannelCmd               = ENABLE;
-//    NVIC_Init(&NVIC_InitStructure);
-//
-//    /* Clear Wakeup pin Event(WUTF) pending flag */
-//    RTC_ClearFlag(RTC_FLAG_WUTF);
-//    /* Enable the Wakeup interrupt */
-//    RTC_ITConfig(RTC_IT_WUT, ENABLE);
-//    /* Enable The external line22 interrupt */
-//    EXTI_ClearITPendingBit(EXTI_Line22);
-//    /* Clear Wakeup pin interrupt pending bit */
-//    RTC_ClearITPendingBit(RTC_IT_WUT);
-    return S_OK;
 }
 
 /*****************************************************************************/

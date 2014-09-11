@@ -12,11 +12,11 @@
 #include "os_memory.h"
 #include "os_file_system.h"
 
+#if (1 == SDIO_SD_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_sdio_sd"
 
 //-----------------------------------------------------------------------------
-#if (1 == SDIO_SD_ENABLED)
 /** @defgroup STM324xG_EVAL_SD_Exported_Constants
   * @{
   */
@@ -51,18 +51,15 @@
 #define SD_DetectIRQHandler()           HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13)
 #endif // OLIMEX_STM32_P407
 
-#endif // SDIO_SD_ENABLED
-
 //-----------------------------------------------------------------------------
 /// @brief   SDIO initialization.
 /// @return  #Status.
 Status SDIO__Init(void);
 
 static Status SDIO_Init_(void* args_p);
-static Status SDIO_DMA_Init(void);
-static Status SDIO_GPIO_Init(void);
-static Status SDIO_NVIC_Init(void);
 static Status SDIO_DeInit_(void* args_p);
+static Status SDIO_LL_Init(void* args_p);
+static Status SDIO_LL_DeInit(void* args_p);
 static Status SDIO_Open(void* args_p);
 static Status SDIO_Close(void* args_p);
 static Status SDIO_Read(U8* data_in_p, U32 size, void* args_p);
@@ -106,9 +103,7 @@ Status s;
     HAL_LOG(D_INFO, "Init: ");
     /* Enable SDIO clock */
     __SDIO_CLK_ENABLE();
-    IF_STATUS(s = SDIO_GPIO_Init()) { return s; }
-    IF_STATUS(s = SDIO_DMA_Init())  { return s; }
-    IF_STATUS(s = SDIO_NVIC_Init()) { return s; }
+    IF_STATUS(s = SDIO_LL_Init(args_p)) { return s; }
     /* Check if the SD card is plugged in the slot */
     if (OS_TRUE == SD_IsDetected()) {
         HAL_SD_CardInfoTypedef sd_card_info;
@@ -137,7 +132,7 @@ Status s;
 }
 
 /*****************************************************************************/
-Status SDIO_GPIO_Init(void)
+Status SDIO_LL_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
     /* Enable GPIOs clock */
@@ -167,12 +162,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Pin       = SD_DETECT_PIN;
     HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStruct);
 #endif // OLIMEX_STM32_P407
-    return S_OK;
-}
 
-/*****************************************************************************/
-Status SDIO_DMA_Init(void)
-{
     /* Enable DMA2 clocks */
     __DMAx_TxRx_CLK_ENABLE();
 
@@ -225,12 +215,7 @@ Status SDIO_DMA_Init(void)
 
     /* Configure the DMA stream */
     HAL_DMA_Init(&sd_dma_tx_handle);
-    return S_OK;
-}
 
-/*****************************************************************************/
-Status SDIO_NVIC_Init(void)
-{
     /* NVIC configuration for SDIO interrupts */
     HAL_NVIC_SetPriority(SDIO_IRQn, SD_NVIC_IRQ_PRIORITY, 0);
     HAL_NVIC_EnableIRQ(SDIO_IRQn);
@@ -509,3 +494,5 @@ void SD_DMAx_Tx_IRQHandler(void)
 {
     HAL_DMA_IRQHandler(sd_handle.hdmatx);
 }
+
+#endif //(1 == SDIO_SD_ENABLED)

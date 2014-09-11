@@ -42,12 +42,12 @@ static Status   USBH_HS_MSC_IoCtl(const U32 request_id, void* args_p);
 //------------------------------------------------------------------------------
 #if (1 == USBH_FS_ENABLED)
 static USBH_HandleTypeDef* usbh_fs_hd_p;
-static U8 usbh_fs_msc_lun = 0; //!!!Driver (by now) supports only logical unit 0!!!
+static U8 usbh_fs_msc_lun = 0; //!!!Driver (by now) support only logical unit 0!!!
 #endif //(1 == USBH_FS_ENABLED)
 
 #if (1 == USBH_HS_ENABLED)
 static USBH_HandleTypeDef* usbh_hs_hd_p;
-static U8 usbh_hs_msc_lun = 0; //!!!Driver (by now) supports only logical unit 0!!!
+static U8 usbh_hs_msc_lun = 0; //!!!Driver (by now) support only logical unit 0!!!
 #endif //(1 == USBH_HS_ENABLED)
 
 #if (1 == USBH_FS_ENABLED)

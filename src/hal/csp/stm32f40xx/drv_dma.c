@@ -24,8 +24,8 @@
 /// @return     #Status.
 Status          DMA_Init_(void);
 static Status   DMA2_Init(void* args_p);
+static Status   DMA2_LL_Init(void* args_p);
 static Status   DMA2_MEM_Init(void);
-static Status   DMA2_NVIC_Init(void);
 
 //-----------------------------------------------------------------------------
 HAL_DriverItf* drv_dma_v[DRV_ID_DMA_LAST];
@@ -54,13 +54,13 @@ Status DMA2_Init(void* args_p)
 {
 Status s;
     HAL_LOG(D_INFO, "Init");
-    IF_STATUS(s = DMA2_MEM_Init())    { return s; }
-    IF_STATUS(s = DMA2_NVIC_Init())   { return s; }
+    IF_STATUS(s = DMA2_MEM_Init())      { return s; }
+    IF_STATUS(s = DMA2_LL_Init(args_p)) { return s; }
     return s;
 }
 
 /*****************************************************************************/
-Status DMA2_NVIC_Init(void)
+Status DMA2_LL_Init(void* args_p)
 {
 //NVIC_InitTypeDef NVIC_InitStructure;
 //

@@ -18,8 +18,8 @@
 /// @return  #Status.
 Status POWER_Init_(void);
 
-static Status POWER__Init(void* args_p);
-static Status POWER__DeInit(void* args_p);
+static Status POWER_Init(void* args_p);
+static Status POWER_DeInit(void* args_p);
 static Status POWER_Open(void* args_p);
 static Status POWER_Close(void* args_p);
 static Status POWER_IoCtl(const U32 request_id, void* args_p);
@@ -29,8 +29,8 @@ HAL_DriverItf* drv_power_v[DRV_ID_POWER_LAST];
 
 //-----------------------------------------------------------------------------
 static HAL_DriverItf drv_power = {
-    .Init   = POWER__Init,
-    .DeInit = POWER__DeInit,
+    .Init   = POWER_Init,
+    .DeInit = POWER_DeInit,
     .Open   = POWER_Open,
     .Close  = POWER_Close,
     .Read   = OS_NULL,
@@ -47,7 +47,7 @@ Status POWER_Init_(void)
 }
 
 /*****************************************************************************/
-Status POWER__Init(void* args_p)
+Status POWER_Init(void* args_p)
 {
     //D_LOG(D_INFO, "Init: ");
     //D_TRACE_S(D_INFO, S_OK);
@@ -55,7 +55,7 @@ Status POWER__Init(void* args_p)
 }
 
 /*****************************************************************************/
-Status POWER__DeInit(void* args_p)
+Status POWER_DeInit(void* args_p)
 {
 Status s = S_OK;
 //    D_LOG(D_INFO, "DeInit: ");

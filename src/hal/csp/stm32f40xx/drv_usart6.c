@@ -48,9 +48,8 @@
 //------------------------------------------------------------------------------
 static Status   USART6_Init(void* args_p);
 static Status   USART6_DeInit(void* args_p);
-static void     USART6_GPIO_Init(void);
-static void     USART6_NVIC_Init(void);
-static void     USART6_DMA_Init(void);
+static Status   USART6_LL_Init(void* args_p);
+//static Status   USART6_LL_DeInit(void* args_p);
 static Status   USART6_Open(void* args_p);
 static Status   USART6_Close(void* args_p);
 static Status   USART6_Read(U8* data_in_p, U32 size, void* args_p);
@@ -79,10 +78,9 @@ static DMA_HandleTypeDef    hdma_rx;
 /******************************************************************************/
 Status USART6_Init(void* args_p)
 {
+Status s = S_OK;
     //HAL_LOG(D_INFO, "Init: ");
-    USART6_GPIO_Init();
-    USART6_DMA_Init();
-    USART6_NVIC_Init();
+    IF_STATUS(s = USART6_LL_Init(args_p)) { return s; }
     /* Enable USARTx clock */
     USARTx_CLK_ENABLE();
     /*##-1- Configure the UART peripheral ######################################*/
@@ -101,17 +99,15 @@ Status USART6_Init(void* args_p)
     uart_handle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
     uart_handle.Init.Mode       = UART_MODE_TX_RX;
 
-    if (HAL_OK != HAL_UART_Init(&uart_handle)) {
-        /* Initialization Error */
-        return S_HARDWARE_FAULT;
-    }
-    /* Enable the UART Data Register not empty Interrupt */
-    __HAL_UART_ENABLE_IT(&uart_handle, UART_IT_RXNE);
-    return S_OK;
+    if (HAL_OK == HAL_UART_Init(&uart_handle)) {
+        /* Enable the UART Data Register not empty Interrupt */
+        __HAL_UART_ENABLE_IT(&uart_handle, UART_IT_RXNE);
+    } else { s = S_HARDWARE_FAULT; }
+    return s;
 }
 
 /******************************************************************************/
-void USART6_GPIO_Init(void)
+Status USART6_LL_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
     /* Enable GPIO clock */
@@ -132,11 +128,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Alternate   = USARTx_RX_AF;
 
     HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
-}
 
-/******************************************************************************/
-void USART6_DMA_Init(void)
-{
     /* Enable DMA2 clock */
     DMAx_CLK_ENABLE();
       /*##-3- Configure the DMA streams ##########################################*/
@@ -181,11 +173,7 @@ void USART6_DMA_Init(void)
 
     /* Associate the initialized DMA handle to the the UART handle */
     __HAL_LINKDMA(&uart_handle, hdmarx, hdma_rx);
-}
 
-/******************************************************************************/
-void USART6_NVIC_Init(void)
-{
     /*##-3- Configure the NVIC for IRQ #########################################*/
     /* NVIC configuration for interrupt (USARTx) */
     HAL_NVIC_SetPriority(USARTx_IRQn, OS_PRIORITY_INT_MIN, 0);
@@ -199,6 +187,7 @@ void USART6_NVIC_Init(void)
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_RX) */
     HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, OS_PRIORITY_INT_MIN, 0);
     HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
+    return S_OK;
 }
 
 /******************************************************************************/
