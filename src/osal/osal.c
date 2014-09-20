@@ -73,7 +73,7 @@ Status s;
 #endif // OS_FILE_SYSTEM_ENABLED
     //Create environment variables.
     IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
-    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
+//    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT, OS_LogLevelSet)) { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH, OS_NULL))             { return s; }
     IF_STATUS(s = OS_EnvVariableSet("config_file", OS_SETTINGS_FILE_PATH, OS_NULL))     { return s; }

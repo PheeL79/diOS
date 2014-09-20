@@ -172,8 +172,9 @@ Status          OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd)
 
 /// @brief      Init the file system media volume.
 /// @param[in]  fs_media_hd     Media handle.
+/// @param[in]  args_p          Media driver arguments.
 /// @return     #Status.
-Status          OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd);
+Status          OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd, void* args_p);
 
 /// @brief      Deinit the file system media volume.
 /// @param[in]  fs_media_hd     Media handle.

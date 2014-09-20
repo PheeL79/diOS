@@ -1,6 +1,6 @@
 /***************************************************************************//**
 * @file    task_usbhd.c
-* @brief   Shell and log\trace\dump task definitions.
+* @brief   USB Host daemon task definitions.
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
@@ -8,9 +8,7 @@
 #include "usbh_hid.h"
 #include "usbh_msc.h"
 #include "os_supervise.h"
-#include "os_environment.h"
 #include "os_driver.h"
-#include "os_shell.h"
 #include "os_message.h"
 #include "os_debug.h"
 #include "os_memory.h"
@@ -44,9 +42,9 @@ const OS_TaskConfig task_usbhd_cfg = {
     .attrs      = BIT(OS_TASK_ATTR_RECREATE),
     .timeout    = 3,
     .prio_init  = OS_TASK_PRIO_BELOW_NORMAL,
-    .prio_power = OS_PWR_PRIO_MAX,
+    .prio_power = OS_PWR_PRIO_MAX - 5,
     .stack_size = OS_STACK_SIZE_MIN * 3,
-    .stdin_len  = 250
+    .stdin_len  = 24
 };
 
 /******************************************************************************/

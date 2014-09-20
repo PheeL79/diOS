@@ -2213,6 +2213,9 @@
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\os_file_system.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\os_task_fsd.c</name>
+    </file>
   </group>
   <group>
     <name>mm</name>

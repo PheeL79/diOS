@@ -54,7 +54,7 @@ const OS_TaskConfig task_sv_cfg = {
     .prio_init  = OS_TASK_PRIO_MAX,
     .prio_power = OS_PWR_PRIO_MAX,
     .stack_size = OS_STACK_SIZE_MIN * 2,
-    .stdin_len  = OS_STDIO_LEN,
+    .stdin_len  = OS_STDIN_LEN,
 };
 
 /******************************************************************************/

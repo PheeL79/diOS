@@ -109,6 +109,10 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_FILE_SYSTEM_DIR_DELIM    '/'
 #define OS_FILE_SYSTEM_SYNC_OBJ     OS_MutexHd
 #define OS_FILE_SYSTEM_YEAR_BASE    1980U
+//File system media
+#define OS_FILE_SYSTEM_VOL_SD       1
+#define OS_FILE_SYSTEM_VOL_USB_FS   2
+#define OS_FILE_SYSTEM_VOL_USB_HS   3
 
 //Settings
 #define OS_SETTINGS_BROWSE_ENABLED  1
@@ -147,6 +151,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_StrCat   HAL_StrCat
 #define OS_StrToL   HAL_StrToL
 #define OS_StrToK   HAL_StrToK
+#define OS_StrToUL  HAL_StrToUL
 #define OS_StrNCpy  HAL_StrNCpy
 
 enum {

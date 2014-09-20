@@ -37,7 +37,7 @@ const OS_TaskConfig task_shell_cfg = {
     .attrs      = BIT(OS_TASK_ATTR_RECREATE),
     .timeout    = 10,
     .prio_init  = OS_TASK_PRIO_MAX,
-    .prio_power = OS_PWR_PRIO_MAX,
+    .prio_power = OS_PWR_PRIO_MAX - 30,
     .stack_size = OS_STACK_SIZE_MIN,
     .stdin_len  = 1,
 };
@@ -83,6 +83,8 @@ const OS_TaskHd usbhd_thd = OS_TaskByNameGet("UsbHostD");
                     case OS_SIG_USB_READY:
                         break;
 #endif //(1 == USBH_ENABLED)
+                    case OS_SIG_TASK_DISCONNECT:
+                        break;
                     default:
                         OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
                         break;

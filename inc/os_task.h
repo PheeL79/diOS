@@ -23,7 +23,7 @@ extern "C" {
 //------------------------------------------------------------------------------
 /// @brief Common declarations.
 #define OS_THIS_TASK    OS_NULL
-#define OS_STDIO_LEN    4
+#define OS_STDIN_LEN    4
 
 enum {
     OS_TASK_ATTR_UNDEF,

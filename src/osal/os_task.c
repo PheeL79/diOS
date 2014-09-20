@@ -10,6 +10,7 @@
 #include "os_list.h"
 #include "os_mutex.h"
 #include "os_memory.h"
+#include "os_signal.h"
 #include "os_message.h"
 #include "os_task.h"
 
@@ -188,8 +189,10 @@ Status s = S_OK;
                 OS_LOG_S(D_WARNING, s);
             }
         }
-        //TODO(A. Filyanov) OS_TasksDisconnect();!!!
         if (OS_NULL != cfg_dyn_p->slots_l_p) {
+            //Tasks disconnect signal;
+            const OS_Signal signal = OS_SignalCreateEx(cfg_dyn_p->id, OS_SIG_TASK_DISCONNECT, 0);
+            OS_MessageMulticastSend(cfg_dyn_p->slots_l_p, (OS_Message*)signal, OS_NO_BLOCK, OS_MSG_PRIO_NORMAL);
             OS_ListClear(cfg_dyn_p->slots_l_p);
             OS_Free(cfg_dyn_p->slots_l_p);
         }

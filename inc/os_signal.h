@@ -27,6 +27,7 @@ enum {
     OS_SIG_STDOUT,
     OS_SIG_REBOOT,
     OS_SIG_SHUTDOWN,
+    OS_SIG_TASK_DISCONNECT,
     OS_SIG_PWR = 16,                        // data == OS_PowerState;
     OS_SIG_PWR_ACK,                         // data == Status;
     OS_SIG_PWR_BATTERY_CONNECTED,

@@ -40,7 +40,7 @@ Status s;
         return s;
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
-    IF_STATUS(s = OS_FileSystemMediaInit(fs_media_hd)) {
+    IF_STATUS(s = OS_FileSystemMediaInit(fs_media_hd, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
         return s;
     }

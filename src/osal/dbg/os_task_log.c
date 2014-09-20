@@ -32,7 +32,7 @@ const OS_TaskConfig task_log_cfg = {
     .attrs      = BIT(OS_TASK_ATTR_RECREATE),
     .timeout    = 10,
     .prio_init  = OS_TASK_PRIO_MAX,
-    .prio_power = OS_PWR_PRIO_MAX,
+    .prio_power = OS_PWR_PRIO_MAX - 20,
     .stack_size = OS_STACK_SIZE_MIN + OS_SHELL_HEIGHT,
     .stdin_len  = 16,
 };

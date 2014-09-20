@@ -14,7 +14,6 @@
 #include "os_file_system.h"
 
 #if (1 == OS_FILE_SYSTEM_ENABLED)
-
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "file_system"
 #undef  MDL_STATUS_ITEMS
@@ -41,7 +40,6 @@ static Status       VolumeCheck(const S8 volume);
 //------------------------------------------------------------------------------
 static OS_List os_fs_list;
 static OS_MutexHd os_fs_mutex;
-static OS_DriverHd drv_led_fs;
 OS_DriverHd fs_media_dhd_v[OS_FILE_SYSTEM_VOLUMES_MAX];
 
 const StatusItem status_fs_v[] = {
@@ -92,31 +90,15 @@ Status s;
     OS_ListInit(&os_fs_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_fs_list)) { return S_INVALID_VALUE; }
     OS_MemSet(fs_media_dhd_v, 0, sizeof(fs_media_dhd_v));
-    //Led SD Init/Open
-    const OS_DriverConfig drv_cfg = {
-        .name       = "LED_FS",
-        .itf_p      = drv_led_v[DRV_ID_LED_FS],
-        .prio_power = OS_PWR_PRIO_DEFAULT
-    };
-    IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&drv_led_fs)) { return s; }
-    IF_STATUS(s = OS_DriverInit(drv_led_fs, OS_NULL)) { return s; }
-    IF_STATUS(s = OS_DriverOpen(drv_led_fs, OS_NULL)) { return s; }
     return s;
 }
 
 /******************************************************************************/
 Status OS_FileSystemDeInit(void)
 {
-Status s;
+Status s = S_OK;
     //TODO(A. Filyanov) Loop and delete over existed media handles.
-    //Led FS Close/Deinit
-    IF_STATUS(s = OS_DriverClose(drv_led_fs, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
-    }
-    IF_STATUS(s = OS_DriverDeInit(drv_led_fs, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
-    }
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -191,7 +173,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd)
+Status OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 {
 Status s = S_OK;
     if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
@@ -202,10 +184,10 @@ Status s = S_OK;
         OS_DriverStats stats;
         IF_STATUS(s = OS_DriverStatsGet(drv_media_hd, &stats)) { return s; }
         if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_INIT))) {
-            IF_STATUS(s = OS_DriverInit(drv_media_hd, OS_NULL)) { return s; }
+            IF_STATUS(s = OS_DriverInit(drv_media_hd, args_p)) { return s; }
         }
         if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
-            IF_STATUS(s = OS_DriverOpen(drv_media_hd, &drv_led_fs)) { return s; }
+            IF_STATUS(s = OS_DriverOpen(drv_media_hd, args_p)) { return s; }
         }
     }
     return s;

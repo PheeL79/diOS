@@ -21,7 +21,7 @@ DSTATUS disk_initialize (
     BYTE pdrv				/* Physical drive nmuber (0..) */
 )
 {
-    IF_STATUS_OK(OS_FileSystemMediaInit(OS_FileSystemMediaByVolumeGet(pdrv))) { return 0; }
+    IF_STATUS_OK(OS_FileSystemMediaInit(OS_FileSystemMediaByVolumeGet(pdrv), OS_NULL)) { return 0; }
     return STA_NOINIT;
 }
 

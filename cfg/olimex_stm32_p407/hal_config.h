@@ -96,6 +96,7 @@
 #define HAL_StrCat  strcat
 #define HAL_StrToK  strtok
 #define HAL_StrToL  strtol
+#define HAL_StrToUL strtoul
 #define HAL_StrNCpy strncpy
 
 // Locale
