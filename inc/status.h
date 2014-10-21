@@ -107,6 +107,8 @@ enum StatusType {
     S_UNDEF_QUEUE,
     S_UNDEF_EVENT,
     S_UNDEF_DEVICE,
+    S_UNDEF_CLASS,
+    S_UNDEF_ITF,
     S_UNDEF_DRV,
     S_UNDEF_CMD,
     S_UNDEF_MSG,

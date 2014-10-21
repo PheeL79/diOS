@@ -8,13 +8,6 @@
 
 //-----------------------------------------------------------------------------
 enum {
-    DRV_ID_USBD,
-    DRV_ID_USBD_FS_MSC,
-    DRV_ID_USBD_HS_MSC,
-    DRV_ID_USBH_LAST
-};
-
-enum {
     DRV_REQ_USBD_UNDEF = DRV_REQ_STD_LAST,
     DRV_REQ_USBD_LAST
 };

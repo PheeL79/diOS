@@ -246,7 +246,7 @@ Status s;
 void MessagesHandler(TaskArgs* task_args_p)
 {
 extern Status OS_TaskTimeoutReset(const OS_TaskHd thd);
-extern VBL is_idle;
+extern volatile BL is_idle;
 static State led_state = OFF;
 OS_Message* msg_p;
 
@@ -372,8 +372,8 @@ error:
 /******************************************************************************/
 Status TaskDeadLockAction(void)
 {
-extern U32  OS_TaskTimeoutGet(const OS_TaskHd thd);
-extern void OS_TaskTimeoutDec(const OS_TaskHd thd);
+extern U32      OS_TaskTimeoutGet(const OS_TaskHd thd);
+extern Status   OS_TaskTimeoutDec(const OS_TaskHd thd);
 const OS_TaskConfig* task_cfg_p = OS_TaskConfigGet(deadlock_thd);
 
     if (OS_NULL != task_cfg_p) {

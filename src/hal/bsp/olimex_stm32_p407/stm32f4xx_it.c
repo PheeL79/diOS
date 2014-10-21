@@ -186,6 +186,52 @@ void SysTick_Handler(void)
 {
 }*/
 
+#include "os_config.h"
+/******************************************************************************/
+/**
+* @brief This function handles USB On The Go FS global interrupt.
+*/
+void OTG_FS_IRQHandler(void);
+void OTG_FS_IRQHandler(void)
+{
+    HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
+#if (1 == USBD_ENABLED)
+#if (1 == USBD_FS_ENABLED)
+    extern PCD_HandleTypeDef pcd_fs_hd;
+    HAL_PCD_IRQHandler(&pcd_fs_hd);
+#endif //(1 == USBD_FS_ENABLED)
+#endif //(1 == USBD_ENABLED)
+
+#if (1 == USBH_ENABLED)
+#if (1 == USBH_FS_ENABLED)
+    extern HCD_HandleTypeDef hcd_fs_hd;
+    HAL_HCD_IRQHandler(&hcd_fs_hd);
+#endif //(1 == USBH_FS_ENABLED)
+#endif //(1 == USBH_ENABLED)
+}
+
+/******************************************************************************/
+/**
+* @brief This function handles USB On The Go HS global interrupt.
+*/
+void OTG_HS_IRQHandler(void);
+void OTG_HS_IRQHandler(void)
+{
+    HAL_NVIC_ClearPendingIRQ(OTG_HS_IRQn);
+#if (1 == USBD_ENABLED)
+#if (1 == USBD_HS_ENABLED)
+    extern PCD_HandleTypeDef pcd_hs_hd;
+    HAL_PCD_IRQHandler(&pcd_hs_hd);
+#endif //(1 == USBD_HS_ENABLED)
+#endif //(1 == USBD_ENABLED)
+
+#if (1 == USBH_ENABLED)
+#if (1 == USBH_HS_ENABLED)
+    extern HCD_HandleTypeDef hcd_hs_hd;
+    HAL_HCD_IRQHandler(&hcd_hs_hd);
+#endif //(1 == USBH_HS_ENABLED)
+#endif //(1 == USBH_ENABLED)
+}
 
 /**
   * @}

@@ -47,8 +47,6 @@
 #include "os_config.h"
 #include "os_memory.h"
 #include "os_task.h"
-#include "os_message.h"
-#include "os_signal.h"
 #include "os_usb.h"
 
 extern OS_QueueHd usbhd_stdin_qhd;
@@ -77,7 +75,7 @@ extern OS_QueueHd usbhd_stdin_qhd;
 #define USBH_MAX_SIZE_CONFIGURATION      255
 
 /*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER      512
+#define USBH_MAX_DATA_BUFFER      USBH_MSC_BLOCK_SIZE
 
 /*----------   -----------*/
 #define USBH_DEBUG_LEVEL      0

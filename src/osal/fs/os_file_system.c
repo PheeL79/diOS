@@ -83,7 +83,7 @@ OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListIt
 /******************************************************************************/
 Status OS_FileSystemInit(void)
 {
-Status s;
+Status s = S_OK;
     HAL_LOG(D_INFO, "Init");
     os_fs_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_fs_mutex) { return S_INVALID_REF; }
@@ -186,9 +186,6 @@ Status s = S_OK;
         if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_INIT))) {
             IF_STATUS(s = OS_DriverInit(drv_media_hd, args_p)) { return s; }
         }
-        if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
-            IF_STATUS(s = OS_DriverOpen(drv_media_hd, args_p)) { return s; }
-        }
     }
     return s;
 }
@@ -248,7 +245,7 @@ Status OS_FileSystemMediaStatusGet(const OS_FileSystemMediaHd fs_media_hd)
 {
     if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
-    return OS_DriverIoCtl(cfg_dyn_p->dhd, DRV_REQ_FS_MEDIA_STATUS_GET, OS_NULL);
+    return OS_DriverIoCtl(cfg_dyn_p->dhd, DRV_REQ_MEDIA_STATUS_GET, OS_NULL);
 }
 
 /******************************************************************************/
@@ -270,7 +267,7 @@ OS_DriverHd OS_FileSystemMediaDriverGet(const OS_FileSystemMediaHd fs_media_hd)
 
 #if (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
 /******************************************************************************/
-Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const U32 size)
+Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const SIZE size)
 {
 const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
                         (OS_FS_PART_RULE_SFD   == part_rule) ? 1 : U8_MAX;
@@ -283,7 +280,7 @@ const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
 #endif // (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
 
 /******************************************************************************/
-Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd)
+Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 {
     if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
     OS_LOG(D_DEBUG, "FS mount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
@@ -291,6 +288,12 @@ Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd)
 #ifndef NDEBUG
     OS_MemSet(cfg_dyn_p->fshd, 0xF5, sizeof(FATFS));
 #endif // NDEBUG
+    OS_DriverStats stats;
+    Status s;
+    IF_STATUS(s = OS_DriverStatsGet(cfg_dyn_p->dhd, &stats)) { return s; }
+    if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
+        IF_STATUS(s = OS_DriverOpen(cfg_dyn_p->dhd, args_p)) { return s; }
+    }
     return FResultTranslate(f_mount(cfg_dyn_p->fshd, (const char*)cfg_dyn_p->volume, 1));
 }
 
@@ -300,7 +303,14 @@ Status OS_FileSystemUnMount(const OS_FileSystemMediaHd fs_media_hd)
     if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
     OS_LOG(D_DEBUG, "FS unmount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
-    return FResultTranslate(f_mount(OS_NULL, (const char*)cfg_dyn_p->volume, 1));
+    OS_DriverStats stats;
+    Status s;
+    IF_STATUS(s = FResultTranslate(f_mount(OS_NULL, (const char*)cfg_dyn_p->volume, 1))) { return s; }
+    IF_STATUS(s = OS_DriverStatsGet(cfg_dyn_p->dhd, &stats)) { return s; }
+    if (BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
+        IF_STATUS(s = OS_DriverClose(cfg_dyn_p->dhd, OS_NULL)) { return s; }
+    }
+    return s;
 }
 
 /******************************************************************************/

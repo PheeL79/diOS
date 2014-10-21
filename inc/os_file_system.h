@@ -23,12 +23,6 @@ typedef FATFS*  OS_FileSystemHd;
 typedef FIL*    OS_FileHd;
 typedef DIR*    OS_DirHd;
 
-enum {
-    DRV_REQ_FS_UNDEF = DRV_REQ_STD_LAST,
-    DRV_REQ_FS_MEDIA_STATUS_GET,
-    DRV_REQ_FS_LAST
-};
-
 typedef enum {
     S_FS_UNDEF = S_MODULE,
     S_FS_UNMOUNTED,
@@ -172,7 +166,7 @@ Status          OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd)
 
 /// @brief      Init the file system media volume.
 /// @param[in]  fs_media_hd     Media handle.
-/// @param[in]  args_p          Media driver arguments.
+/// @param[in]  args_p          Media driver init arguments.
 /// @return     #Status.
 Status          OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd, void* args_p);
 
@@ -203,12 +197,13 @@ ConstStrPtr     OS_FileSystemMediaNameGet(const OS_FileSystemMediaHd fs_media_hd
 /// @param[in]  part_rule       Make partition rule.
 /// @param[in]  size            Partition size.
 /// @return     #Status.
-Status          OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const U32 size);
+Status          OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const SIZE size);
 
 /// @brief      Mount file system on media volume.
 /// @param[in]  fs_media_hd     Media handle.
+/// @param[in]  args_p          Media driver open arguments.
 /// @return     #Status.
-Status          OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd);
+Status          OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p);
 
 /// @brief      Unmount file system on media volume.
 /// @param[in]  fs_media_hd     Media handle.

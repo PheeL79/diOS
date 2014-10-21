@@ -9,6 +9,7 @@
 
 #include "ffconf.h"
 #include "diskio.h"		/* FatFs lower layer API */
+#include "drv_media.h"
 #include "os_file_system.h"
 
 extern OS_DriverHd fs_media_dhd_v[];
@@ -35,7 +36,7 @@ DSTATUS disk_status (
     BYTE pdrv		/* Physical drive nmuber (0..) */
 )
 {
-    IF_STATUS_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], DRV_REQ_FS_MEDIA_STATUS_GET, OS_NULL)) { return 0; }
+    IF_STATUS_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], DRV_REQ_MEDIA_STATUS_GET, OS_NULL)) { return 0; }
     return STA_NOINIT;
 }
 
@@ -76,7 +77,7 @@ DRESULT disk_write (
 )
 {
 DRESULT res;
-    IF_STATUS_OK(OS_DriverWrite(fs_media_dhd_v[pdrv], (void *)buff, count, &sector)) {
+    IF_STATUS_OK(OS_DriverWrite(fs_media_dhd_v[pdrv], (void*)buff, count, &sector)) {
         res = RES_OK;
     } else {
         res = RES_ERROR;

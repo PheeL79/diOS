@@ -213,7 +213,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state></state>
+          <state>Pe301</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -4121,6 +4121,18 @@
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_iwdg.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media_sdcard.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media_sdram.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media_usbh.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_nvic.c</name>
     </file>
     <file>
@@ -4128,9 +4140,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_rtc.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_sdio_sd.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_timer.c</name>
@@ -4154,13 +4163,13 @@
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd_msc.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd_msc_desc.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh_hid.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbh_msc.c</name>
     </file>
   </group>
   <file>

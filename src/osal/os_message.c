@@ -46,31 +46,31 @@ Status OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message* msg_p, 
 {
 OS_Message* msg_inst_p = OS_NULL;
 Status s = S_OK;
-    if (OS_NULL != slots_qhd_l_p) {
-        OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(slots_qhd_l_p));
-        while (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
-            const OS_QueueHd slot_qhd = (OS_QueueHd)OS_ListItemValueGet(iter_li_p);
-            iter_li_p = OS_ListItemNextGet(iter_li_p);
-            if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) { // if the next item is present...
-                if (OS_TRUE != OS_SignalIs(msg_p)) { // ...and it isn't a signal...
-                    const SIZE msg_size = sizeof(OS_Message) + msg_p->size;
-                    msg_inst_p = OS_Malloc(msg_size); // ...make an instance of the message.
-                    OS_MemCpy(msg_inst_p, msg_p, msg_size);
+    if (OS_NULL != msg_p) {
+        if (OS_NULL != slots_qhd_l_p) {
+            OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(slots_qhd_l_p));
+            while (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
+                const OS_QueueHd slot_qhd = (OS_QueueHd)OS_ListItemValueGet(iter_li_p);
+                iter_li_p = OS_ListItemNextGet(iter_li_p);
+                if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) { // if the next item is present...
+                    if (OS_TRUE != OS_SignalIs(msg_p)) { // ...and it isn't a signal...
+                        const SIZE msg_size = sizeof(OS_Message) + msg_p->size;
+                        msg_inst_p = OS_Malloc(msg_size); // ...make an instance of the message.
+                        OS_MemCpy(msg_inst_p, msg_p, msg_size);
+                    }
                 }
-            }
-            IF_STATUS(s = OS_QueueSend(slot_qhd, &msg_p, timeout, priority)) {
+                IF_STATUS(s = OS_QueueSend(slot_qhd, &msg_p, timeout, priority)) {
+                    if (OS_NULL != msg_inst_p) {
+                        OS_MessageDelete(msg_inst_p);
+                    }
+                    return s;
+                }
                 if (OS_NULL != msg_inst_p) {
-                    OS_MessageDelete(msg_inst_p);
+                    msg_p = msg_inst_p;
                 }
-                return s;
             }
-            if (OS_NULL != msg_inst_p) {
-                msg_p = msg_inst_p;
-            }
-        }
-    } else {
-        s = S_INVALID_REF;
-    }
+        } else { s = S_INVALID_REF; }
+    } else { s = S_INVALID_REF; }
     return s;
 }
 

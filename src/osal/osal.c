@@ -30,7 +30,7 @@ volatile OS_Env os_env = {
     .drv_stdout     = OS_NULL,
     .drv_rtc        = OS_NULL,
 };
-VBL is_idle;
+volatile BL is_idle;
 
 //------------------------------------------------------------------------------
 static Status OSAL_DriversCreate(void);
@@ -317,7 +317,7 @@ void vApplicationIdleHook(void)
 {
     is_idle = OS_TRUE;
 #if (0 == OS_TICKLESS_MODE_ENABLED)
-    OS_POWER_STATE_SLEEP();
+//    OS_POWER_STATE_SLEEP(); //TURNED OFF. AFFECTED ON USBD!!!!
 #endif // OS_TICKLESS_MODE_ENABLED
 }
 

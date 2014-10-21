@@ -21,9 +21,9 @@ typedef U32 OS_MemoryType;
 
 /// @brief   Memory description.
 typedef struct {
-    U32             addr;
-    U32             size;
-    U32             block_size;
+    UINT            addr;
+    SIZE            size;
+    SIZE            block_size;
     OS_MemoryType   type;
     ConstStrPtr     name_p;
 } OS_MemoryDesc;
@@ -31,8 +31,8 @@ typedef struct {
 /// @brief   Memory statistics.
 typedef struct {
     OS_MemoryDesc   desc;
-    U32             used;
-    U32             free;
+    SIZE            used;
+    SIZE            free;
 } OS_MemoryStat;
 
 //------------------------------------------------------------------------------

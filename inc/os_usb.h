@@ -7,35 +7,40 @@
 #define _OS_USB_H_
 
 #include "os_common.h"
+#include "os_signal.h"
+#include "os_message.h"
 
 /**
 * \defgroup OS_Usb OS_Usb
 * @{
 */
 //------------------------------------------------------------------------------
-#define OS_USBH_SIG_ITF_GET(itf)        BF_GET(itf, 0,  BIT_SIZE(U8))
-#define OS_USBH_SIG_MSG_GET(msg)        BF_GET(msg, 8,  BIT_SIZE(U8))
+#define OS_USB_SIG_ITF_GET(itf)         BF_GET(itf, 0,  BIT_SIZE(U8))
+#define OS_USB_SIG_MSG_GET(msg)         BF_GET(msg, 8,  BIT_SIZE(U8))
 
-#define OS_USBH_SIG_ITF_SET(sig, itf)   BF_SET(sig, itf, 0, BIT_SIZE(U8));
-#define OS_USBH_SIG_MSG_SET(sig, msg)   BF_SET(sig, msg, 8, BIT_SIZE(U8));
+#define OS_USB_SIG_ITF_SET(sig, itf)    BF_SET(sig, itf, 0, BIT_SIZE(U8));
+#define OS_USB_SIG_MSG_SET(sig, msg)    BF_SET(sig, msg, 8, BIT_SIZE(U8));
 
 enum {
-    USBH_ID_FS,
-    USBH_ID_HS
+    DRV_ID_USBH,
+    DRV_ID_USBH_FS_MSC,
+    DRV_ID_USBH_HS_MSC,
+    DRV_ID_USBD,
+    DRV_ID_USBD_FS_MSC,
+    DRV_ID_USBD_HS_MSC,
+    DRV_ID_USBX_LAST
 };
 
 enum {
 //USB Common
     OS_SIG_USB_CONNECT = OS_SIG_APP,
     OS_SIG_USB_DISCONNECT,
-    OS_SIG_USB_READY,
 //USB Host
-    OS_SIG_USBH_PORT_EVENT,
-    OS_SIG_USBH_STATE_CHANGED_EVENT,
-    OS_SIG_USBH_CONTROL_EVENT,
-    OS_SIG_USBH_CLASS_EVENT,
-    OS_SIG_USBH_URB_EVENT,
-//USB Device
+    OS_SIG_USBH_EVENT_PORT,
+    OS_SIG_USBH_EVENT_STATE_CHANGED,
+    OS_SIG_USBH_EVENT_CONTROL,
+    OS_SIG_USBH_EVENT_CLASS,
+    OS_SIG_USBH_EVENT_URB,
 //USB Class
     OS_SIG_USB_HID_MOUSE,
     OS_SIG_USB_HID_KEYBOARD,
@@ -44,12 +49,23 @@ enum {
 };
 
 enum {
-    OS_MSG_USB_HID_MOUSE = OS_MSG_APP,
+//USB Common
+    OS_MSG_USB_CONNECT = OS_MSG_APP,
+    OS_MSG_USB_DISCONNECT,
+//USB Class
+    OS_MSG_USB_HID_MOUSE,
     OS_MSG_USB_HID_KEYBOARD
 };
 
+typedef enum {
+    OS_USB_ID_UNDEF,
+    OS_USB_ID_FS,
+    OS_USB_ID_HS,
+    OS_USB_ID_LAST
+} OS_UsbItfId;
+
 //http://www.usb.org/developers/defined_class
-enum {
+typedef enum {
     OS_USB_CLASS_UNDEF,
     OS_USB_CLASS_AUDIO  = 0x01,
     OS_USB_CLASS_HID    = 0x03,
@@ -57,15 +73,15 @@ enum {
     OS_USB_CLASS_MSC    = 0x08,
     OS_USB_CLASS_CDC    = 0x0A,
     OS_USB_CLASS_LAST
-};
+} OS_UsbClass;
 
-enum {
+typedef enum {
     OS_USB_HID_MOUSE_BUTTON_LEFT,
     OS_USB_HID_MOUSE_BUTTON_RIGHT,
     OS_USB_HID_MOUSE_BUTTON_MIDDLE
-};
+} OS_UsbHidMouseButton;
 
-enum {
+typedef enum {
     OS_USB_HID_KEY_LEFT_CTRL,
     OS_USB_HID_KEY_LEFT_SHIFT,
     OS_USB_HID_KEY_LEFT_ALT,
@@ -74,14 +90,20 @@ enum {
     OS_USB_HID_KEY_RIGHT_SHIFT,
     OS_USB_HID_KEY_RIGHT_ALT,
     OS_USB_HID_KEY_RIGHT_GUI
-};
+} OS_UsbHidKeyboardModKey;
 
-typedef const void* OS_UsbHd;
+typedef const void* OS_UsbItfHd;
 
 typedef struct {
-    OS_UsbHd usbh_fs_hd;
-    OS_UsbHd usbh_hs_hd;
-} OS_UsbhHd;
+    OS_UsbItfHd itf_fs_hd;
+    OS_UsbItfHd itf_hs_hd;
+} OS_UsbHItfHd, OS_UsbDItfHd;
+
+typedef struct {
+    OS_UsbItfHd itf_hd;
+    OS_UsbItfId itf_id;
+    OS_UsbClass class;
+} OS_UsbEventData;
 
 typedef struct {
     S16  x;

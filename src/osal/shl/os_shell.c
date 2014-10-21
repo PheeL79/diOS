@@ -34,7 +34,7 @@ static OS_MutexHd os_shell_mutex;
 //------------------------------------------------------------------------------
 static ConstStr shell_prompt[] = OS_SHELL_PROMPT_CREATE("\n", OS_SHELL_PROMPT, " ");
 static Str shell_cl[OS_SHELL_CL_LEN] = { OS_ASCII_EOL };
-static VS32 shell_cr_pos = 0;
+static S32 shell_cr_pos = 0;
 static ConstStrPtr argv[OS_SHELL_CL_ARGS_MAX];
 
 //------------------------------------------------------------------------------

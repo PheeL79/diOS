@@ -35,6 +35,7 @@
 #include <string.h>
 #include "os_config.h"
 #include "os_memory.h"
+#include "os_usb.h"
 
 /* Includes ------------------------------------------------------------------*/
 

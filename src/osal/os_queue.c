@@ -24,7 +24,7 @@ typedef struct {
 //------------------------------------------------------------------------------
 static OS_List os_queues_list;
 static OS_MutexHd os_queue_mutex;
-static VU32 queues_count = 0;
+static U32 queues_count = 0;
 
 /******************************************************************************/
 Status OS_QueueInit(void);

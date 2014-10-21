@@ -16,7 +16,6 @@ extern Status   DMA_Init_(void);
 extern Status   RTC_Init_(void);
 extern Status   NVIC_Init_(void);
 extern Status   GPIO_Init_(void);
-extern Status   SDIO__Init(void);
 extern Status   USBH__Init(void);
 extern Status   USBD__Init(void);
 extern Status   TIMER_Init_(void);
@@ -26,6 +25,7 @@ extern Status   POWER_Init_(void);
 extern Status   MEM_EXT_Init_(void);
 extern Status   BUTTON_Init_(void);
 extern Status   LED_Init_(void);
+extern Status   MEDIA_Init_(void);
 
 extern volatile HAL_Env hal_env;
 
@@ -54,7 +54,6 @@ Status s = S_OK;
     IF_STATUS(s = TIMER_Init_()) { return s; }
     IF_STATUS(s = drv_timer_v[DRV_ID_TIMER5]->Init(OS_NULL)) { return s; }
     IF_STATUS(s = drv_timer_v[DRV_ID_TIMER10]->Init(OS_NULL)) { return s; }
-    IF_STATUS(s = SDIO__Init()) { return s; }
 #if (1 == USBH_ENABLED)
     IF_STATUS(s = USBH__Init()) { return s; }
 #endif // USBH_ENABLED
@@ -70,5 +69,6 @@ Status s = S_OK;
     IF_STATUS(s = BUTTON_Init_()) { return s; }
     IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_WAKEUP]->Init(OS_NULL)) { return s; }
     IF_STATUS(s = drv_button_v[DRV_ID_BUTTON_TAMPER]->Init(OS_NULL)) { return s; }
+    IF_STATUS(s = MEDIA_Init_()) { return s; }
     return s;
 }

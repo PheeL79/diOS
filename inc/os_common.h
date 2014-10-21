@@ -15,7 +15,7 @@ extern "C" {
 //------------------------------------------------------------------------------
 #define OS_DELAY_MAX            portMAX_DELAY
 #define OS_BLOCK                OS_DELAY_MAX
-#define OS_NO_BLOCK             ((U32)0)
+#define OS_NO_BLOCK             0U
 
 //------------------------------------------------------------------------------
 typedef portBASE_TYPE           OS_BaseType;

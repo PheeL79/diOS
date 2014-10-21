@@ -8,7 +8,6 @@
 
 //-----------------------------------------------------------------------------
 enum {
-    DRV_ID_UNDEF,
     DRV_ID_TIMER_IWDG,
     DRV_ID_TIMER1,
     DRV_ID_TIMER2,

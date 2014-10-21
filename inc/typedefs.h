@@ -42,23 +42,17 @@
     #define DEV_ID_SIZE         6
 
     typedef size_t              SIZE;
-    typedef volatile SIZE       VSIZE;
 
     typedef float               FLT;
     typedef double              DBL;
 
-    typedef volatile FLT        VFLT;
-    typedef volatile DBL        VDBL;
-
-//    typedef int                 INT;
-//    typedef unsigned int        UINT;
+    typedef int                 INT;
+    typedef unsigned int        UINT;
 
     typedef long                LNG;
-    typedef volatile LNG        VLNG;
-//    typedef unsigned long       ULNG;
+    typedef unsigned long       ULNG;
 
     typedef uint8_t             BL;
-    typedef volatile BL         VBL;
 
     // plain types
     typedef uint8_t             U8;
@@ -70,16 +64,6 @@
     typedef int16_t             S16;
     typedef int32_t             S32;
     typedef int64_t             S64;
-
-    typedef volatile U8         VU8;
-    typedef volatile U16        VU16;
-    typedef volatile U32        VU32;
-    typedef volatile U64        VU64;
-
-    typedef volatile S8         VS8;
-    typedef volatile S16        VS16;
-    typedef volatile S32        VS32;
-    typedef volatile S64        VS64;
 
     // fast types
     typedef uint_fast8_t        UF8;

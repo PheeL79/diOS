@@ -35,6 +35,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc.h"
+#include "os_file_system.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -42,37 +43,31 @@
 /* Private variables ---------------------------------------------------------*/
 /* USB handler declaration */
 
-/* Handle for USB High Speed IP */
-USBD_HandleTypeDef  *hUsbDevice_1;
-
-extern USBD_HandleTypeDef hUsbDeviceHS;
-
 /* Private function prototypes -----------------------------------------------*/
 /* Extern function prototypes ------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-#define STORAGE_BLK_NBR                  0x10000
-#define STORAGE_BLK_SIZ                  0x200
+extern OS_DriverHd fs_media_dhd_v[];
 
-static int8_t STORAGE_Init_HS (uint8_t lun);
-static int8_t STORAGE_GetCapacity_HS (uint8_t lun,
+static int8_t STORAGE_Init (uint8_t lun);
+static int8_t STORAGE_GetCapacity (uint8_t lun,
                            uint32_t *block_num,
                            uint16_t *block_size);
-static int8_t  STORAGE_IsReady_HS (uint8_t lun);
-static int8_t  STORAGE_IsWriteProtected_HS (uint8_t lun);
-static int8_t STORAGE_Read_HS (uint8_t lun,
+static int8_t  STORAGE_IsReady (uint8_t lun);
+static int8_t  STORAGE_IsWriteProtected (uint8_t lun);
+static int8_t STORAGE_Read (uint8_t lun,
                         uint8_t *buf,
                         uint32_t blk_addr,
                         uint16_t blk_len);
-static int8_t STORAGE_Write_HS (uint8_t lun,
+static int8_t STORAGE_Write (uint8_t lun,
                         uint8_t *buf,
                         uint32_t blk_addr,
                         uint16_t blk_len);
-static int8_t STORAGE_GetMaxLun_HS (void);
+static int8_t STORAGE_GetMaxLun (void);
 
 /* USER CODE BEGIN 1 */
 /* USB Mass storage Standard Inquiry Data */
-int8_t  STORAGE_Inquirydata_HS[] = {//36
+int8_t  STORAGE_Inquirydata[] = {//36
 
   /* LUN 0 */
   0x00,
@@ -90,121 +85,117 @@ int8_t  STORAGE_Inquirydata_HS[] = {//36
 };
 /* USER CODE END 1 */
 
-USBD_StorageTypeDef USBD_Storage_Interface_fops_HS =
+USBD_StorageTypeDef usbd_hs_msc_itf =
 {
-  STORAGE_Init_HS,
-  STORAGE_GetCapacity_HS,
-  STORAGE_IsReady_HS,
-  STORAGE_IsWriteProtected_HS,
-  STORAGE_Read_HS,
-  STORAGE_Write_HS,
-  STORAGE_GetMaxLun_HS,
-  STORAGE_Inquirydata_HS,
+  STORAGE_Init,
+  STORAGE_GetCapacity,
+  STORAGE_IsReady,
+  STORAGE_IsWriteProtected,
+  STORAGE_Read,
+  STORAGE_Write,
+  STORAGE_GetMaxLun,
+  STORAGE_Inquirydata,
 };
 
 /*******************************************************************************
-* Function Name  : STORAGE_Init_HS
+* Function Name  : STORAGE_Init
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_Init_HS (uint8_t lun)
+int8_t STORAGE_Init (uint8_t lun)
 {
-  /* USER CODE BEGIN 9 */
-  return (USBD_OK);
-  /* USER CODE END 9 */
+    return (USBD_OK);
 }
 
 /*******************************************************************************
-* Function Name  : STORAGE_GetCapacity_HS
+* Function Name  : STORAGE_GetCapacity
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_GetCapacity_HS (uint8_t lun, uint32_t *block_num, uint16_t *block_size)
+int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
-  /* USER CODE BEGIN 10 */
-  *block_num  = STORAGE_BLK_NBR;
-  *block_size = STORAGE_BLK_SIZ;
-  return (USBD_OK);
-  /* USER CODE END 10 */
+    IF_STATUS(OS_DriverIoCtl(fs_media_dhd_v[lun], DRV_REQ_MEDIA_SECTOR_COUNT_GET, block_num)) {
+        return (USBD_FAIL);
+    }
+    IF_STATUS(OS_DriverIoCtl(fs_media_dhd_v[lun], DRV_REQ_MEDIA_BLOCK_SIZE_GET, block_size)) {
+        return (USBD_FAIL);
+    }
+    return (USBD_OK);
 }
 
 /*******************************************************************************
-* Function Name  : STORAGE_IsReady_HS
+* Function Name  : STORAGE_IsReady
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t  STORAGE_IsReady_HS (uint8_t lun)
+int8_t  STORAGE_IsReady (uint8_t lun)
 {
-  /* USER CODE BEGIN 11 */
-  return (USBD_OK);
-  /* USER CODE END 11 */
+    return (USBD_OK);
 }
 
 /*******************************************************************************
-* Function Name  : STORAGE_IsWriteProtected_HS
+* Function Name  : STORAGE_IsWriteProtected
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t  STORAGE_IsWriteProtected_HS (uint8_t lun)
+int8_t  STORAGE_IsWriteProtected (uint8_t lun)
 {
-  /* USER CODE BEGIN 12 */
-  return (USBD_OK);
-  /* USER CODE END 12 */
+    return (USBD_OK);
 }
 
 /*******************************************************************************
-* Function Name  : STORAGE_Read_HS
+* Function Name  : STORAGE_Read
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_Read_HS (uint8_t lun,
+int8_t STORAGE_Read (uint8_t lun,
                         uint8_t *buf,
                         uint32_t blk_addr,
                         uint16_t blk_len)
 {
-  /* USER CODE BEGIN 13 */
-  return (USBD_OK);
-  /* USER CODE END 13 */
+    IF_STATUS(OS_DriverRead(fs_media_dhd_v[lun], buf, blk_len, &blk_addr)) {
+        return (USBD_FAIL);
+    }
+    return (USBD_OK);
 }
 
 /*******************************************************************************
-* Function Name  : STORAGE_Write_HS
+* Function Name  : STORAGE_Write
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_Write_HS (uint8_t lun,
+int8_t STORAGE_Write (uint8_t lun,
                          uint8_t *buf,
                          uint32_t blk_addr,
                          uint16_t blk_len)
 {
-  /* USER CODE BEGIN 14 */
-  return (USBD_OK);
-  /* USER CODE END 14 */
+    IF_STATUS(OS_DriverWrite(fs_media_dhd_v[lun], (void*)buf, blk_len, &blk_addr)) {
+        return (USBD_FAIL);
+    }
+    return (USBD_OK);
 }
 
 /*******************************************************************************
-* Function Name  : STORAGE_GetMaxLun_HS
+* Function Name  : STORAGE_GetMaxLun
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_GetMaxLun_HS (void)
+int8_t STORAGE_GetMaxLun (void)
 {
-  /* USER CODE BEGIN 15 */
-  return (OS_FILE_SYSTEM_VOLUMES_MAX - 1);
-  /* USER CODE END 15 */
+    return 0;//(OS_MEDIA_VOL_LAST - 1);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -153,8 +153,8 @@
 */
 
 
-#define	_MIN_SS		SD_CARD_SECTOR_SIZE
-#define	_MAX_SS		SD_CARD_SECTOR_SIZE
+#define	_MIN_SS		OS_FILE_SYSTEM_SECTOR_SIZE_MIN
+#define	_MAX_SS		OS_FILE_SYSTEM_SECTOR_SIZE_MAX
 /* These options configure the range of sector size to be supported. (512, 1024, 2048 or
 /  4096) Always set both 512 for most systems, all memory card and harddisk. But a larger
 /  value may be required for on-board flash memory and some type of optical media.

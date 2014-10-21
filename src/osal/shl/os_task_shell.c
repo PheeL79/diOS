@@ -1,6 +1,6 @@
 /***************************************************************************//**
 * @file    task_shell.c
-* @brief   Shell and log\trace\dump task definitions.
+* @brief   Shell task definitions.
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
@@ -15,6 +15,7 @@
 #if (1 == USBH_ENABLED)
 #if (1 == USBH_HID_ENABLED)
 #include "os_usb.h"
+#include "os_task_usbd.h"
 #endif //(1 == USBH_HID_ENABLED)
 #endif //(1 == USBH_ENABLED)
 
@@ -59,8 +60,8 @@ OS_Message* msg_p;
     OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
 #if (1 == USBH_ENABLED)
 #if (1 == USBH_HID_ENABLED)
-const OS_TaskHd usbhd_thd = OS_TaskByNameGet("UsbHostD");
-    OS_ASSERT(S_OK == OS_TasksConnect(usbhd_thd, OS_THIS_TASK));
+const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
+    OS_ASSERT(S_OK == OS_TasksConnect(usbd_thd, OS_THIS_TASK));
 #endif //(1 == USBH_HID_ENABLED)
 #endif //(1 == USBH_ENABLED)
     //Init stdin_qhd before all other tasks and return to the base priority.
@@ -79,10 +80,6 @@ const OS_TaskHd usbhd_thd = OS_TaskByNameGet("UsbHostD");
                         break;
                     case OS_SIG_DRV:
                         break;
-#if (1 == USBH_ENABLED)
-                    case OS_SIG_USB_READY:
-                        break;
-#endif //(1 == USBH_ENABLED)
                     case OS_SIG_TASK_DISCONNECT:
                         break;
                     default:
@@ -94,6 +91,7 @@ const OS_TaskHd usbhd_thd = OS_TaskByNameGet("UsbHostD");
 #if (1 == USBH_ENABLED)
 #if (1 == USBH_HID_ENABLED)
                     case OS_MSG_USB_HID_MOUSE:
+                        OS_LOG(D_DEBUG, "mouse event");
                         break;
                     case OS_MSG_USB_HID_KEYBOARD: {
                         const OS_UsbHidKeyboardData* keyboard_data_p = (OS_UsbHidKeyboardData*)&(msg_p->data);

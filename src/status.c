@@ -45,6 +45,8 @@ const StatusItem status_items_v[] = {
     {"Undefined queue"},
     {"Undefined event"},
     {"Undefined device"},
+    {"Undefined class"},
+    {"Undefined interface"},
     {"Undefined driver"},
     {"Undefined command"},
     {"Undefined message"},

@@ -49,7 +49,7 @@ enum {
 };
 #define OS_MEM_HEAP_SYS             OS_MEM_RAM_INT_SRAM
 #define OS_MEM_HEAP_APP             OS_MEM_RAM_INT_SRAM
-#define OS_STACK_SIZE_MIN           0x100
+#define OS_STACK_SIZE_MIN           0x200
 #define OS_HEAP_SIZE                0x19FFF //0x1BFFF
 
 /*__no_init*/ static U8 heap_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
@@ -67,7 +67,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_TIMERS_ENABLED           1
 #define OS_TIMERS_TASK_PRIO         2
 #define OS_TIMERS_QUEUE_LEN         10
-#define OS_TIMERS_STACK_SIZE        OS_STACK_SIZE_MIN * 2
+#define OS_TIMERS_STACK_SIZE        (OS_STACK_SIZE_MIN * 2)
 
 // Names length
 #define OS_DRIVER_NAME_LEN          9
@@ -77,42 +77,61 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_LOG_LEVEL_DEFAULT        "debug"
 #define OS_LOG_STRING_LEN           128
 #define OS_LOG_TIMER_STEP           3000
-#define OS_LOG_FILE_PATH            "1:/log.txt"
+#define OS_LOG_FILE_PATH            "0:/log.txt"
 
 //File system
 //Look in ffconf.h for details
-#define OS_FILE_SYSTEM_ENABLED      1
-#define OS_FILE_SYSTEM_MAKE_ENABLED 1
-#define OS_FILE_SYSTEM_TINY         0
-#define OS_FILE_SYSTEM_READONLY     0
-#define OS_FILE_SYSTEM_MINIMIZE     0
-#define OS_FILE_SYSTEM_STRFUNC_EN   1
-#define OS_FILE_SYSTEM_FASTSEEK     0
-#define OS_FILE_SYSTEM_LABEL_EN     1
-#define OS_FILE_SYSTEM_FORWARD_EN   0
-#define OS_FILE_SYSTEM_CODEPAGE     1251
-#define OS_FILE_SYSTEM_STRF_ENCODE  3
-#define OS_FILE_SYSTEM_REL_PATH     2
-#define OS_FILE_SYSTEM_MULTI_PART   0
-#define OS_FILE_SYSTEM_ERASE_SEC_EN 0
-#define OS_FILE_SYSTEM_NO_INFO      0
-#define OS_FILE_SYSTEM_WORD_ACCESS  0
-#define OS_FILE_SYSTEM_LOCK         0
-#define OS_FILE_SYSTEM_REENTRANT    1
-#define OS_FILE_SYSTEM_VOLUMES_MAX  4
+#define OS_FILE_SYSTEM_ENABLED              1
+#define OS_FILE_SYSTEM_MAKE_ENABLED         1
+#define OS_FILE_SYSTEM_TINY                 0
+#define OS_FILE_SYSTEM_READONLY             0
+#define OS_FILE_SYSTEM_MINIMIZE             0
+#define OS_FILE_SYSTEM_STRFUNC_EN           1
+#define OS_FILE_SYSTEM_FASTSEEK             0
+#define OS_FILE_SYSTEM_LABEL_EN             1
+#define OS_FILE_SYSTEM_FORWARD_EN           0
+#define OS_FILE_SYSTEM_CODEPAGE             1251
+#define OS_FILE_SYSTEM_STRF_ENCODE          3
+#define OS_FILE_SYSTEM_REL_PATH             2
+#define OS_FILE_SYSTEM_MULTI_PART           0
+#define OS_FILE_SYSTEM_ERASE_SEC_EN         0
+#define OS_FILE_SYSTEM_NO_INFO              0
+#define OS_FILE_SYSTEM_WORD_ACCESS          0
+#define OS_FILE_SYSTEM_LOCK                 0
+#define OS_FILE_SYSTEM_REENTRANT            1
+#define OS_FILE_SYSTEM_SECTOR_SIZE_MIN      0x200
+#define OS_FILE_SYSTEM_SECTOR_SIZE_MAX      0x200
+#define OS_FILE_SYSTEM_VOLUMES_MAX          4
+//OS_FILE_SYSTEM_VOLUMES_MAX == OS_MEDIA_VOL_LAST !!!
 #define OS_FILE_SYSTEM_VOLUME_STR_LEN       4
 #define OS_FILE_SYSTEM_VOLUME_NAME_LEN      12
 #define OS_FILE_SYSTEM_LONG_NAMES_ENABLED   3
 #define OS_FILE_SYSTEM_LONG_NAMES_LEN       255
 #define OS_FILE_SYSTEM_LONG_NAMES_UNICODE   0
-#define OS_FILE_SYSTEM_DRV_DELIM    ':'
-#define OS_FILE_SYSTEM_DIR_DELIM    '/'
-#define OS_FILE_SYSTEM_SYNC_OBJ     OS_MutexHd
-#define OS_FILE_SYSTEM_YEAR_BASE    1980U
-//File system media
-#define OS_FILE_SYSTEM_VOL_SD       1
-#define OS_FILE_SYSTEM_VOL_USB_FS   2
-#define OS_FILE_SYSTEM_VOL_USB_HS   3
+#define OS_FILE_SYSTEM_DRV_DELIM            ':'
+#define OS_FILE_SYSTEM_DIR_DELIM            '/'
+#define OS_FILE_SYSTEM_SYNC_OBJ             OS_MutexHd
+#define OS_FILE_SYSTEM_YEAR_BASE            1980U
+
+//Media
+enum {
+        OS_MEDIA_VOL_SDRAM,
+#define OS_MEDIA_VOL_SDRAM          OS_MEDIA_VOL_SDRAM
+#define OS_MEDIA_VOL_SDRAM_MEM      OS_MEM_RAM_EXT_SRAM
+#define OS_MEDIA_VOL_SDRAM_SIZE     0x70000
+#define OS_MEDIA_VOL_SDRAM_BLOCK_SIZE OS_FILE_SYSTEM_SECTOR_SIZE_MIN
+
+        OS_MEDIA_VOL_SDCARD,
+#define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
+
+        OS_MEDIA_VOL_USBH_FS,
+#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
+
+//        OS_MEDIA_VOL_USBH_HS,
+//#define OS_MEDIA_VOL_USBH_HS        OS_MEDIA_VOL_USBH_HS
+
+        OS_MEDIA_VOL_LAST = OS_FILE_SYSTEM_VOLUMES_MAX
+};
 
 //Settings
 #define OS_SETTINGS_BROWSE_ENABLED  1

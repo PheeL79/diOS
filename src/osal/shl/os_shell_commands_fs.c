@@ -84,7 +84,7 @@ Status s;
         return s;
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
-    IF_STATUS(s = OS_FileSystemMount(fs_media_hd)) {
+    IF_STATUS(s = OS_FileSystemMount(fs_media_hd, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
         return s;
     }
@@ -445,7 +445,7 @@ static ConstStr cmd_help_brief_fm[] = "File system make.";
 static Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[])
 {
-U32 size = 0;
+SIZE size = 0;
 OS_FileSystemPartitionRule part_rule = OS_FS_PART_RULE_UNDEF;
 Status s = S_OK;
 const S8 volume = OS_AtoI((const char*)argv[0]);
@@ -470,7 +470,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     if (3 == argc) {
         const U8* size_str = (const U8*)argv[3];
         const U8 base = ('x' == *(U8*)(size_str + 1)) ? 16 : 10;
-        size = (U32)OS_StrToL((const char*)size_str, OS_NULL, base);
+        size = (SIZE)OS_StrToL((const char*)size_str, OS_NULL, base);
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     printf("\nThe %s will be formatted. Are you sure? (Y/n) ", OS_FileSystemMediaNameGet(fs_media_hd));
@@ -514,7 +514,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     if ('Y' == c_buf[0]) {
         printf("Formating...");
         const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
-        IF_STATUS(s = OS_FileSystemMake(fs_media_hd, part_rule, (U32)size)) {
+        IF_STATUS(s = OS_FileSystemMake(fs_media_hd, part_rule, (SIZE)size)) {
             OS_LOG_S(D_WARNING, s);
         }
     }

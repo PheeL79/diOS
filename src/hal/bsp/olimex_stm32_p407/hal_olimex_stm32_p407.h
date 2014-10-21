@@ -17,12 +17,13 @@
 #include "drv_timer.h"
 #include "drv_usart.h"
 #include "drv_power.h"
-#include "drv_sdio.h"
 #include "drv_usbh.h"
+#include "drv_usbd.h"
 //BSP
 #include "drv_mem_ext.h"
 #include "drv_button.h"
 #include "drv_led.h"
+#include "drv_media.h"
 
 //-----------------------------------------------------------------------------
 #define HAL_CRITICAL_SECTION_ENTER()    __disable_irq()
@@ -66,7 +67,7 @@ extern U32 SystemCoreClockKHz;
 ///         D_LOG(D_DEBUG, "%d(ms)", CYCLES_TO_MS(cycles_diff));
 #define CYCLES_TO_MS(cycles)            ((U32)((cycles) / SystemCoreClockKHz))
 
-typedef VU32 HAL_IO_Reg;
+typedef volatile U32 HAL_IO_Reg;
 
 //-----------------------------------------------------------------------------
 /// @brief      Init HAL.

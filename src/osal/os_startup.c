@@ -33,7 +33,7 @@ OS_ListItem* iter_li_p;
 Status s = S_OK;
 
     OS_LOG(D_INFO, "OS startup run...");
-    // Create and suspend startup tasks.
+    // Create startup tasks.
     for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_startup_list));
          OS_DELAY_MAX != (OS_Value)OS_ListItemValueGet(iter_li_p);
          iter_li_p = OS_ListItemNextGet(iter_li_p)) {
@@ -43,18 +43,8 @@ Status s = S_OK;
             IF_STATUS(s = OS_TaskCreate(task_cfg_p, &thd)) {
                 OS_ASSERT(OS_FALSE);
             }
-            OS_TaskSuspend(thd);
         }
         OS_ListItemValueSet(iter_li_p, (OS_Value)thd);
-    }
-    // Run tasks.
-    for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_startup_list));
-         OS_DELAY_MAX != (OS_Value)OS_ListItemValueGet(iter_li_p);
-         iter_li_p = OS_ListItemNextGet(iter_li_p)) {
-        const OS_TaskHd thd = (const OS_TaskHd)OS_ListItemValueGet(iter_li_p);
-        if (OS_NULL != thd) {
-            OS_TaskResume(thd);
-        }
     }
     return s;
 }
@@ -66,15 +56,15 @@ extern const OS_TaskConfig task_sv_cfg, task_log_cfg, task_shell_cfg;
 const OS_PowerState power = OS_PowerStateGet();
 Status s;
     IF_STATUS(s = task_sv_cfg.func_power(task_sv_cfg.args_p, power)) { return s; }
-#if (1 == USBH_ENABLED)
-    extern const OS_TaskConfig task_usbhd_cfg;
-    IF_STATUS(s = OS_StartupTaskAdd(&task_usbhd_cfg)) { return s; }
-#endif //(1 == USBH_ENABLED)
+    IF_STATUS(s = OS_StartupTaskAdd(&task_log_cfg)) { return s; }
+#if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
+    extern const OS_TaskConfig task_usbd_cfg;
+    IF_STATUS(s = OS_StartupTaskAdd(&task_usbd_cfg)) { return s; }
+#endif //(1 == USBH_ENABLED) || (1 == USBD_ENABLED)
 #if (1 == OS_FILE_SYSTEM_ENABLED)
     extern const OS_TaskConfig task_fsd_cfg;
     IF_STATUS(s = OS_StartupTaskAdd(&task_fsd_cfg)) { return s; }
 #endif //(1 == OS_FILE_SYSTEM_ENABLED)
-    IF_STATUS(s = OS_StartupTaskAdd(&task_log_cfg)) { return s; }
     IF_STATUS(s = OS_StartupTaskAdd(&task_shell_cfg)) { return s; }
     return s;
 }

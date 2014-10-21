@@ -213,7 +213,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state></state>
+          <state>Pe301</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -311,13 +311,18 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\usb</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\fs</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\set\min_ini</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
@@ -1268,7 +1273,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\osal\mem_mng\tlsf\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800\cm4f</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
         </option>
@@ -1988,7 +1993,7 @@
               </option>
               <option>
                 <name>CCDiagSuppress</name>
-                <state></state>
+                <state>Pe301</state>
               </option>
               <option>
                 <name>CCDiagRemark</name>
@@ -2084,7 +2089,11 @@
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Inc</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
@@ -2218,7 +2227,7 @@
     </file>
   </group>
   <group>
-    <name>mm</name>
+    <name>mem</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\MemMang\heap_4.c</name>
       <excluded>
@@ -2226,10 +2235,10 @@
       </excluded>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\mm\os_memory.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\mem\os_memory.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf\tlsf.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf\tlsf.c</name>
     </file>
   </group>
   <group>
@@ -2300,7 +2309,7 @@
             </option>
             <option>
               <name>CCDiagSuppress</name>
-              <state></state>
+              <state>Pe301</state>
             </option>
             <option>
               <name>CCDiagRemark</name>
@@ -2396,7 +2405,11 @@
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\cm4\CMSIS\401\CMSIS\Device\ST\STM32F4xx\Include</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32F4xx_HAL_Driver\110\Inc</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Core\Inc</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\HID\Inc</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Host_Library\220\Class\MSC\Inc</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Inc</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Inc</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Inc</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.10b\src</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
@@ -2561,7 +2574,7 @@
   <group>
     <name>usb</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\usb\os_task_usbhd.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\usb\os_task_usbd.c</name>
     </file>
   </group>
   <file>
