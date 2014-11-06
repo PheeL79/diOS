@@ -4,7 +4,6 @@
 * @author  A. Filyanov
 ******************************************************************************/
 #include <stdlib.h>
-#include <string.h>
 #include "hal.h"
 #include "osal.h"
 #include "os_shell_commands_net.h"

@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+#include <string.h>
 #include "typedefs.h"
 
 /**

@@ -1,5 +1,5 @@
 /***************************************************************************//**
-* @file    task_fsd.c
+* @file    task_fs.c
 * @brief   File system daemon task.
 * @author  A. Filyanov
 *******************************************************************************/
@@ -10,12 +10,12 @@
 #include "os_driver.h"
 #include "os_message.h"
 #include "os_file_system.h"
-#include "os_task_fsd.h"
-#include "os_task_usbd.h"
+#include "os_task_fs.h"
+#include "os_task_usb.h"
 
 #if (1 == OS_FILE_SYSTEM_ENABLED)
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "task_fsd"
+#define MDL_NAME            "task_fs_d"
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -38,8 +38,8 @@ typedef struct {
 static TaskArgs task_args;
 
 //-----------------------------------------------------------------------------
-const OS_TaskConfig task_fsd_cfg = {
-    .name       = OS_DAEMON_NAME_FSD,
+const OS_TaskConfig task_fs_cfg = {
+    .name       = OS_DAEMON_NAME_FS,
     .func_main  = OS_TaskMain,
     .func_power = OS_TaskPower,
     .args_p     = (void*)&task_args,
@@ -136,10 +136,12 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 TaskArgs* task_args_p = (TaskArgs*)args_p;
 OS_Message* msg_p;
 const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
-const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
+#if (1 == USBD_ENABLED)
+const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USB);
 const OS_SignalSrc usbd_tid = OS_TaskIdGet(usbd_thd);
 
     OS_ASSERT(S_OK == OS_TasksConnect(usbd_thd, OS_THIS_TASK));
+#endif //(1 == USBD_ENABLED)
     OS_SignalEmit(OS_SignalCreate(OS_SIG_FSD_READY, 0), OS_MSG_PRIO_NORMAL);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {

@@ -51,7 +51,7 @@
 #define SD_CARD_SECTOR_SIZE             SD_CARD_BLOCK_SIZE
 
 //USB Host
-#define USBH_ENABLED                    1
+#define USBH_ENABLED                    0
 #define USBH_FS_ENABLED                 1
 #define USBH_HS_ENABLED                 0
 
@@ -62,7 +62,7 @@
 #define USBH_MSC_SECTOR_SIZE            USBH_MSC_BLOCK_SIZE
 
 //USB Device
-#define USBD_ENABLED                    1
+#define USBD_ENABLED                    0
 #define USBD_FS_ENABLED                 0
 #define USBD_HS_ENABLED                 1
 
@@ -83,20 +83,22 @@
 // APP ------------------------------------------------------------------------
 // cstdlib redefenitions
 // Memory
-#define HAL_MemSet  memset
-#define HAL_MemCpy  memcpy
-#define HAL_MemMov  memmove
+#define HAL_MemSet      memset
+#define HAL_MemCpy      memcpy
+#define HAL_MemMov      memmove
 // String
-#define HAL_AtoI    atoi
-#define HAL_StrLen  strlen
-#define HAL_StrChr  strchr
-#define HAL_StrCmp  strcmp
-#define HAL_StrCpy  strcpy
-#define HAL_StrCat  strcat
-#define HAL_StrToK  strtok
-#define HAL_StrToL  strtol
-#define HAL_StrToUL strtoul
-#define HAL_StrNCpy strncpy
+#define HAL_AtoI        atoi
+#define HAL_StrLen      strlen
+#define HAL_StrChr      strchr
+#define HAL_StrCmp      strcmp
+#define HAL_StrCpy      strcpy
+#define HAL_StrCat      strcat
+#define HAL_StrToK      strtok
+#define HAL_StrToL      strtol
+#define HAL_StrToUL     strtoul
+#define HAL_StrNCpy     strncpy
+#define HAL_SPrintF     sprintf
+#define HAL_SNPrintF    snprintf
 
 // Locale
 #define LOCALE_STRING_EN                "en"

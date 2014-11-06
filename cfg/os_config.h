@@ -35,7 +35,7 @@
 #define OS_PRIORITY_MIN             0x1
 #define OS_PRIORITY_MAX             0x8
 #define OS_PRIORITY_INT_MIN         0xF
-#define OS_PRIORITY_INT_MAX         OS_PRIORITY_MAX
+#define OS_PRIORITY_INT_MAX         (OS_PRIORITY_MAX + 1)
 
 #ifdef __ICCARM__
 //Memory
@@ -71,6 +71,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 
 // Names length
 #define OS_DRIVER_NAME_LEN          9
+#define OS_AUDIO_DEVICE_NAME_LEN    9
 #define OS_TASK_NAME_LEN            12
 #define OS_TIMER_NAME_LEN           12
 
@@ -124,14 +125,19 @@ enum {
         OS_MEDIA_VOL_SDCARD,
 #define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
 
-        OS_MEDIA_VOL_USBH_FS,
-#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
+//        OS_MEDIA_VOL_USBH_FS,
+//#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
 
 //        OS_MEDIA_VOL_USBH_HS,
 //#define OS_MEDIA_VOL_USBH_HS        OS_MEDIA_VOL_USBH_HS
 
         OS_MEDIA_VOL_LAST = OS_FILE_SYSTEM_VOLUMES_MAX
 };
+
+//Audio
+#define OS_AUDIO_ENABLED            1
+#define OS_AUDIO_OUT_FREQ_DEFAULT   44100
+#define OS_AUDIO_OUT_VOLUME_DEFAULT 50
 
 //Settings
 #define OS_SETTINGS_BROWSE_ENABLED  1
@@ -159,7 +165,7 @@ enum {
 #define OS_LOCALE_TIME_DELIM_RU     OS_LOCALE_TIME_DELIM_EN
 
 //Tests
-//#define OS_TEST
+#define OS_TEST_ENABLED             0
 
 // cstdlib
 #define OS_AtoI     HAL_AtoI
@@ -172,6 +178,8 @@ enum {
 #define OS_StrToK   HAL_StrToK
 #define OS_StrToUL  HAL_StrToUL
 #define OS_StrNCpy  HAL_StrNCpy
+#define OS_SPrintF  HAL_SPrintF
+#define OS_SNPrintF HAL_SNPrintF
 
 enum {
     OS_SHELL_BUTTON_UP              = 'A',

@@ -22,7 +22,6 @@ static DeviceState device_state;    ///< Device state.
 /// @brief      Init the device description.
 /// @return     #Status.
 static Status   HAL_DeviceDescriptionInit(void);
-
 static void     SystemClock_Config(void);
 
 /*****************************************************************************/

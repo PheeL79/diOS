@@ -15,12 +15,14 @@ extern "C" {
 #include "os_debug.h"
 #include "os_driver.h"
 #include "os_power.h"
+#include "os_audio.h"
 
 /**
 * \defgroup OSAL OSAL
 * @{
 */
 //------------------------------------------------------------------------------
+#define OS_SIGNATURE                0xd105
 #define OS_STORAGE_ITEM_OWNERS_MAX  U8_MAX
 
 typedef struct {
@@ -28,6 +30,9 @@ typedef struct {
     OS_DriverHd         drv_stdin;
     OS_DriverHd         drv_stdout;
     OS_DriverHd         drv_rtc;
+#if (1 == OS_AUDIO_ENABLED)
+    OS_AudioVolume      volume;
+#endif // (1 == OS_AUDIO_ENABLED)
 } OS_Env;
 
 typedef struct {

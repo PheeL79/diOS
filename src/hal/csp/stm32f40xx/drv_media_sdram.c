@@ -23,10 +23,10 @@ static Status SDRAM_DeInit_(void* args_p);
 //static Status SDRAM_LL_DeInit(void* args_p);
 static Status SDRAM_Open(void* args_p);
 static Status SDRAM_Close(void* args_p);
-static Status SDRAM_Read(U8* data_in_p, U32 size, void* args_p);
-static Status SDRAM_Write(U8* data_out_p, U32 size, void* args_p);
-static Status SDRAM_DMA_Read(U8* data_in_p, U32 size, void* args_p);
-static Status SDRAM_DMA_Write(U8* data_out_p, U32 size, void* args_p);
+static Status SDRAM_Read(void* data_in_p, SIZE size, void* args_p);
+static Status SDRAM_Write(void* data_out_p, SIZE size, void* args_p);
+static Status SDRAM_DMA_Read(void* data_in_p, SIZE size, void* args_p);
+static Status SDRAM_DMA_Write(void* data_out_p, SIZE size, void* args_p);
 static Status SDRAM_IoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SDRAM_Read(U8* data_in_p, U32 size, void* args_p)
+Status SDRAM_Read(void* data_in_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State led_fs_state = ON;
@@ -103,7 +103,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SDRAM_Write(U8* data_out_p, U32 size, void* args_p)
+Status SDRAM_Write(void* data_out_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State led_fs_state = ON;
@@ -123,7 +123,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SDRAM_DMA_Read(U8* data_in_p, U32 size, void* args_p)
+Status SDRAM_DMA_Read(void* data_in_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State led_fs_state = ON;
@@ -142,7 +142,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SDRAM_DMA_Write(U8* data_out_p, U32 size, void* args_p)
+Status SDRAM_DMA_Write(void* data_out_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State led_fs_state = ON;

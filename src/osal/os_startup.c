@@ -58,13 +58,17 @@ Status s;
     IF_STATUS(s = task_sv_cfg.func_power(task_sv_cfg.args_p, power)) { return s; }
     IF_STATUS(s = OS_StartupTaskAdd(&task_log_cfg)) { return s; }
 #if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
-    extern const OS_TaskConfig task_usbd_cfg;
-    IF_STATUS(s = OS_StartupTaskAdd(&task_usbd_cfg)) { return s; }
+    extern const OS_TaskConfig task_usb_cfg;
+    IF_STATUS(s = OS_StartupTaskAdd(&task_usb_cfg)) { return s; }
 #endif //(1 == USBH_ENABLED) || (1 == USBD_ENABLED)
 #if (1 == OS_FILE_SYSTEM_ENABLED)
-    extern const OS_TaskConfig task_fsd_cfg;
-    IF_STATUS(s = OS_StartupTaskAdd(&task_fsd_cfg)) { return s; }
+    extern const OS_TaskConfig task_fs_cfg;
+    IF_STATUS(s = OS_StartupTaskAdd(&task_fs_cfg)) { return s; }
 #endif //(1 == OS_FILE_SYSTEM_ENABLED)
+#if (1 == OS_AUDIO_ENABLED)
+    extern const OS_TaskConfig task_audio_cfg;
+    IF_STATUS(s = OS_StartupTaskAdd(&task_audio_cfg)) { return s; }
+#endif //(1 == OS_AUDIO_ENABLED)
     IF_STATUS(s = OS_StartupTaskAdd(&task_shell_cfg)) { return s; }
     return s;
 }

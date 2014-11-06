@@ -44,9 +44,11 @@ static HAL_DriverItf drv_dma2 = {
 /*****************************************************************************/
 Status DMA_Init_(void)
 {
+Status s = S_UNDEF;
     HAL_MemSet(drv_dma_v, 0x0, sizeof(drv_dma_v));
     drv_dma_v[DRV_ID_DMA2] = &drv_dma2;
-    return S_OK;
+    IF_STATUS(s = drv_dma_v[DRV_ID_DMA2]->Init(OS_NULL)) { return s; }
+    return s;
 }
 
 /*****************************************************************************/

@@ -11,7 +11,7 @@
 #include "os_usb.h"
 
 #if (1 == OS_FILE_SYSTEM_ENABLED)
-#define OS_DAEMON_NAME_FSD          "FileSysD"
+#define OS_DAEMON_NAME_FS           "FileSysD"
 #define OS_SIG_FSD_READY            OS_SIG_USB_LAST
 #endif //(1 == OS_FILE_SYSTEM_ENABLED)
 

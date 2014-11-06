@@ -35,8 +35,8 @@ static Status   RTC_LL_Init(void);
 //static Status   RTC_LL_DeInit(void* args_p);
 static Status   RTC_Open(void* args_p);
 static Status   RTC_Close(void* args_p);
-static Status   RTC_Read(U8* data_in_p, U32 size, void* args_p);
-static Status   RTC_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   RTC_Read(void* data_in_p, SIZE size, void* args_p);
+static Status   RTC_Write(void* data_out_p, SIZE size, void* args_p);
 static Status   RTC_IoCtl(const U32 request_id, void* args_p);
 
 static void     RTC_SRAM_BACKUP_Init(void);
@@ -79,9 +79,11 @@ static HAL_DriverItf drv_rtc = {
 /*****************************************************************************/
 Status RTC_Init_(void)
 {
+Status s = S_UNDEF;
     HAL_MemSet(drv_rtc_v, 0x0, sizeof(drv_rtc_v));
     drv_rtc_v[DRV_ID_RTC] = &drv_rtc;
-    return S_OK;
+    s = S_OK; //IF_STATUS(s = drv_rtc[DRV_ID_RTC]->Init()) { return s; }
+    return s;
 }
 
 /*****************************************************************************/
@@ -291,20 +293,21 @@ Status RTC_Close(void* args_p)
 
 /******************************************************************************/
 /// @details RTC Backup SRAM read.
-Status RTC_Read(U8* data_in_p, U32 size, void* args_p)
+Status RTC_Read(void* data_in_p, SIZE size, void* args_p)
 {
 Status s = S_OK;
     __IO U8* sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
     /* Read the SRAM Backup Data */
     while (size--) {
-        *data_in_p++ = *sram_bkup_p++;
+        U8* data_in_8p = (U8*)data_in_p;
+        *data_in_8p++ = *sram_bkup_p++;
     }
     return s;
 }
 
 /******************************************************************************/
 /// @details RTC Backup SRAM write.
-Status RTC_Write(U8* data_out_p, U32 size, void* args_p)
+Status RTC_Write(void* data_out_p, SIZE size, void* args_p)
 {
 Status s = S_OK;
     __IO U8* sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
@@ -319,7 +322,8 @@ Status s = S_OK;
     sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
     /* Check the written Data */
     while (size--) {
-        if (*sram_bkup_p++ != *data_out_p++) { s = S_HARDWARE_FAULT; }
+        U8* data_out_8p = (U8*)data_out_p;
+        if (*sram_bkup_p++ != *data_out_8p++) { s = S_HARDWARE_FAULT; }
     }
     return s;
 }

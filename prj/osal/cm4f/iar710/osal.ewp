@@ -319,6 +319,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\usb</state>
@@ -1918,6 +1919,15 @@
     </settings>
   </configuration>
   <group>
+    <name>aud</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\aud\os_audio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\aud\os_task_audio.c</name>
+    </file>
+  </group>
+  <group>
     <name>dbg</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\osal\dbg\os_debug.c</name>
@@ -2099,8 +2109,11 @@
                 <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
                 <state>$PROJ_DIR$\..\..\..\..\inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\src</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
                 <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
-                <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\usb</state>
+                <state>$PROJ_DIR$\..\..\..\..\src\osal\fs</state>
                 <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
                 <state>$PROJ_DIR$\..\..\..\..\src\osal\set\min_ini</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg</state>
@@ -2223,7 +2236,7 @@
       <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\os_file_system.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\os_task_fsd.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\fs\os_task_fs.c</name>
     </file>
   </group>
   <group>
@@ -2415,8 +2428,11 @@
               <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\src</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
               <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
-              <state>$PROJ_DIR$\..\..\..\..\src\osal\mm\tlsf</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\usb</state>
+              <state>$PROJ_DIR$\..\..\..\..\src\osal\fs</state>
               <state>$PROJ_DIR$\..\..\..\..\src\osal\fs\fat_fs</state>
               <state>$PROJ_DIR$\..\..\..\..\src\osal\set\min_ini</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg</state>
@@ -2574,8 +2590,11 @@
   <group>
     <name>usb</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\osal\usb\os_task_usbd.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\src\osal\usb\os_task_usb.c</name>
     </file>
+  </group>
+  <group>
+    <name>vid</name>
   </group>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_driver.c</name>

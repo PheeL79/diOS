@@ -58,10 +58,10 @@ static Status SDIO_LL_Init(void* args_p);
 //static Status SDIO_LL_DeInit(void* args_p);
 static Status SDIO_Open(void* args_p);
 static Status SDIO_Close(void* args_p);
-//static Status SDIO_Read(U8* data_in_p, U32 size, void* args_p);
-//static Status SDIO_Write(U8* data_out_p, U32 size, void* args_p);
-static Status SDIO_DMA_Read(U8* data_in_p, U32 size, void* args_p);
-static Status SDIO_DMA_Write(U8* data_out_p, U32 size, void* args_p);
+//static Status SDIO_Read(void* data_in_p, SIZE size, void* args_p);
+//static Status SDIO_Write(void* data_out_p, SIZE size, void* args_p);
+static Status SDIO_DMA_Read(void* data_in_p, SIZE size, void* args_p);
+static Status SDIO_DMA_Write(void* data_out_p, SIZE size, void* args_p);
 static Status SDIO_IoCtl(const U32 request_id, void* args_p);
 
 static BL SD_IsDetected(void);
@@ -264,7 +264,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-//Status SDIO_Read(U8* data_in_p, U32 size, void* args_p)
+//Status SDIO_Read(void* data_in_p, SIZE size, void* args_p)
 //{
 //U32 sector = *(U32*)args_p;
 //State led_fs_state = ON;
@@ -277,7 +277,7 @@ Status s = S_OK;
 //}
 
 /******************************************************************************/
-//Status SDIO_Write(U8* data_out_p, U32 size, void* args_p)
+//Status SDIO_Write(void* data_out_p, SIZE size, void* args_p)
 //{
 //U32 sector = *(U32*)args_p;
 //State led_fs_state = ON;
@@ -291,7 +291,7 @@ Status s = S_OK;
 
 //https://my.st.com/public/STe2ecommunities/mcu/Lists/cortex_mx_stm32/Flat.aspx?RootFolder=https%3a%2f%2fmy.st.com%2fpublic%2fSTe2ecommunities%2fmcu%2fLists%2fcortex_mx_stm32%2fST32f4discovery%2bsdcard%2bfatfs%20problem
 /******************************************************************************/
-Status SDIO_DMA_Read(U8* data_in_p, U32 size, void* args_p)
+Status SDIO_DMA_Read(void* data_in_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 HAL_SD_ErrorTypedef sd_status;
@@ -303,9 +303,10 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
+            U8* data_in_8p = (U8*)data_in_p;
             IF_STATUS(s = drv_media_sdcard.Read((U8*)scratch_p, 1, &sector)) { break; }
             OS_MemCpy(data_in_p, scratch_p, SD_CARD_BLOCK_SIZE);
-            data_in_p += SD_CARD_BLOCK_SIZE;
+            data_in_8p += SD_CARD_BLOCK_SIZE;
             ++sector;
         }
         OS_Free(scratch_p);
@@ -327,7 +328,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SDIO_DMA_Write(U8* data_out_p, U32 size, void* args_p)
+Status SDIO_DMA_Write(void* data_out_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 HAL_SD_ErrorTypedef sd_status;
@@ -339,9 +340,10 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
+            U8* data_out_8p = (U8*)data_out_p;
             OS_MemCpy(data_out_p, scratch_p, SD_CARD_BLOCK_SIZE);
             IF_STATUS(s = drv_media_sdcard.Write((U8*)scratch_p, 1, &sector)) { break; }
-            data_out_p += SD_CARD_BLOCK_SIZE;
+            data_out_8p += SD_CARD_BLOCK_SIZE;
             ++sector;
         }
         OS_Free(scratch_p);

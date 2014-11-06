@@ -29,6 +29,9 @@ volatile OS_Env os_env = {
     .drv_stdin      = OS_NULL,
     .drv_stdout     = OS_NULL,
     .drv_rtc        = OS_NULL,
+#if (1 == OS_AUDIO_ENABLED)
+    .volume         = OS_AUDIO_VOLUME_MIN
+#endif // (1 == OS_AUDIO_ENABLED)
 };
 volatile BL is_idle;
 
@@ -47,6 +50,7 @@ extern Status OS_TimerInit(void);
 extern Status OS_DriverInit_(void);
 extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
+extern Status OS_AudioInit(void);
 Status s;
     //Init OSAL.
     HAL_CRITICAL_SECTION_ENTER();
@@ -71,6 +75,9 @@ Status s;
 #if (1 == OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_FileSystemInit())  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
+#if (1 == OS_AUDIO_ENABLED)
+    IF_STATUS(s = OS_AudioInit())       { return s; }
+#endif //(1 == OS_AUDIO_ENABLED)
     //Create environment variables.
     IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
 //    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
@@ -80,6 +87,11 @@ Status s;
 #if (1 == OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_EnvVariableSet("media_automount", "on", OS_NULL))                  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
+#if (1 == OS_AUDIO_ENABLED)
+    IF_STATUS(s = OS_EnvVariableSet("volume", "0", OS_VolumeSet)) {
+        if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio device is created so far.
+    }
+#endif //(1 == OS_AUDIO_ENABLED)
     //Init environment variables.
     const OS_PowerState power = PWR_STARTUP;
     os_env.hal_env_p->power = power;
@@ -158,6 +170,23 @@ OS_DriverHd OS_DriverStdOutGet(void)
 OS_DriverHd OS_DriverRtcGet(void)
 {
     return os_env.drv_rtc;
+}
+
+/******************************************************************************/
+OS_AudioVolume OS_VolumeGet(void)
+{
+    return os_env.volume;
+}
+
+/******************************************************************************/
+Status OS_VolumeSet(ConstStrPtr volume_p)
+{
+    os_env.volume = (OS_AudioVolume)OS_StrToUL((const char*)volume_p, OS_NULL, 10);
+    OS_AudioDeviceHd dev_hd = OS_AudioDeviceCurrentGet();
+    if (OS_NULL == dev_hd) {
+        return S_INVALID_REF;
+    }
+    return OS_AudioVolumeSet(dev_hd, os_env.volume);
 }
 
 /******************************************************************************/

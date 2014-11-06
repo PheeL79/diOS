@@ -10,7 +10,6 @@
 #define MDL_NAME                    "drv_timer10"
 
 //-----------------------------------------------------------------------------
-#define TIMER_TIMESTAMP             TIM10
 #define TIMER_TIMESTAMP_IRQ         TIM1_UP_TIM10_IRQn
 #define TIMER_TIMESTAMP_IRQ_HANDLER TIM1_UP_TIM10_IRQHandler
 #define TIMER_TIMESTAMP_TIMEOUT     (HAL_TIMEOUT_TIMER_TIMESTAMP * KHZ) //ms
@@ -18,10 +17,10 @@
 //-----------------------------------------------------------------------------
 Status          TIMER10_Init(void* args_p);
 static void     TIMER10_Init_(void);
-static void     TIMER10_MutexSet(const MutexState state);
+void            TIMER10_MutexSet(const MutexState state);
 
 //-----------------------------------------------------------------------------
-static TIM_HandleTypeDef tim_handle;
+static TIM_HandleTypeDef timer_hd;
 static volatile MutexState mutex_timer_timestamp = UNLOCKED;
 
 //-----------------------------------------------------------------------------
@@ -38,53 +37,37 @@ Status TIMER10_Init(void* args_p)
     return S_OK;
 }
 
-// TIMER Timestamp ------------------------------------------------------------
 /*****************************************************************************/
 void TIMER10_Init_(void)
 {
     /* TIMx Peripheral clock enable */
     __TIM10_CLK_ENABLE();
-
+    /* Set TIMx instance */
+    timer_hd.Instance = TIMER_TIMESTAMP;
+    /* Initialize TIMx peripheral */
+    timer_hd.Init.Period          = TIMER_TIMESTAMP_TIMEOUT - 1;
+    timer_hd.Init.Prescaler       = ((SystemCoreClock / 2) / TIMER_TIMESTAMP_TIMEOUT) - 1;
+    timer_hd.Init.ClockDivision   = TIM_CLOCKDIVISION_DIV1;
+    timer_hd.Init.CounterMode     = TIM_COUNTERMODE_UP;
+    HAL_ASSERT(HAL_OK == HAL_TIM_Base_Init(&timer_hd));
     /*##-2- Configure the NVIC for TIMx ########################################*/
     /* Set Interrupt Group Priority */
     HAL_NVIC_SetPriority(TIMER_TIMESTAMP_IRQ, OS_PRIORITY_INT_MIN, 0);
-
     /* Enable the TIMx global Interrupt */
     HAL_NVIC_EnableIRQ(TIMER_TIMESTAMP_IRQ);
-
-    /* Set TIMx instance */
-    tim_handle.Instance = TIMER_TIMESTAMP;
-
-    /* Initialize TIM3 peripheral as follow:
-       + Period = 10000 - 1
-       + Prescaler = ((SystemCoreClock/2)/10000) - 1
-       + ClockDivision = 0
-       + Counter direction = Up
-    */
-    tim_handle.Init.Period          = TIMER_TIMESTAMP_TIMEOUT - 1;
-    tim_handle.Init.Prescaler       = (U32)((SystemCoreClock / 2) / TIMER_TIMESTAMP_TIMEOUT) - 1;
-    tim_handle.Init.ClockDivision   = TIM_CLOCKDIVISION_DIV1;
-    tim_handle.Init.CounterMode     = TIM_COUNTERMODE_UP;
-    if (HAL_OK != HAL_TIM_Base_Init(&tim_handle)) {
-        HAL_ASSERT(OS_FALSE);
-    }
 }
 
 /*****************************************************************************/
 void TIMER10_Reset(void)
 {
-    if (HAL_OK != HAL_TIM_Base_Stop_IT(&tim_handle)) {
-        HAL_ASSERT(OS_FALSE);
-    }
+    HAL_ASSERT(HAL_OK == HAL_TIM_Base_Stop_IT(&timer_hd));
 }
 
 /*****************************************************************************/
 void TIMER10_Start(void)
 {
     TIMER10_MutexSet(LOCKED);
-    if (HAL_OK != HAL_TIM_Base_Start_IT(&tim_handle)) {
-        HAL_ASSERT(OS_FALSE);
-    }
+    HAL_ASSERT(HAL_OK == HAL_TIM_Base_Start_IT(&timer_hd));
 }
 
 /*****************************************************************************/
@@ -101,18 +84,10 @@ void TIMER10_MutexSet(const MutexState state)
     } HAL_CRITICAL_SECTION_EXIT();
 }
 
-/*****************************************************************************/
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (TIMER_TIMESTAMP == htim->Instance) {
-        TIMER10_MutexSet(UNLOCKED);
-    }
-}
-
 // TIMERS IRQ handlers---------------------------------------------------------
 /*****************************************************************************/
 void TIMER_TIMESTAMP_IRQ_HANDLER(void);
 void TIMER_TIMESTAMP_IRQ_HANDLER(void)
 {
-    HAL_TIM_IRQHandler(&tim_handle);
+    HAL_TIM_IRQHandler(&timer_hd);
 }

@@ -26,8 +26,8 @@ static Status   USBH_FS_MSC_Init(void* args_p);
 static Status   USBH_FS_MSC_DeInit(void* args_p);
 static Status   USBH_FS_MSC_Open(void* args_p);
 static Status   USBH_FS_MSC_Close(void* args_p);
-static Status   USBH_FS_MSC_Read(U8* data_in_p, U32 size, void* args_p);
-static Status   USBH_FS_MSC_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   USBH_FS_MSC_Read(void* data_in_p, SIZE size, void* args_p);
+static Status   USBH_FS_MSC_Write(void* data_out_p, SIZE size, void* args_p);
 static Status   USBH_FS_MSC_IoCtl(const U32 request_id, void* args_p);
 #endif //defined(OS_MEDIA_VOL_USBH_FS) && (1 == USBH_FS_ENABLED)
 #if (1 == USBH_HS_ENABLED)
@@ -35,8 +35,8 @@ static Status   USBH_HS_MSC_Init(void* args_p);
 static Status   USBH_HS_MSC_DeInit(void* args_p);
 static Status   USBH_HS_MSC_Open(void* args_p);
 static Status   USBH_HS_MSC_Close(void* args_p);
-static Status   USBH_HS_MSC_Read(U8* data_in_p, U32 size, void* args_p);
-static Status   USBH_HS_MSC_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   USBH_HS_MSC_Read(void* data_in_p, SIZE size, void* args_p);
+static Status   USBH_HS_MSC_Write(void* data_out_p, SIZE size, void* args_p);
 static Status   USBH_HS_MSC_IoCtl(const U32 request_id, void* args_p);
 #endif //(1 == USBH_HS_ENABLED)
 
@@ -51,7 +51,7 @@ static USBH_HandleTypeDef* usbh_hs_hd_p;
 static U8 usbh_hs_msc_lun = 0; //!!!Driver (currently) supports only logical unit 0!!!
 #endif //(1 == USBH_HS_ENABLED)
 
-#if (1 == USBH_FS_ENABLED)
+#if defined(OS_MEDIA_VOL_USBH_FS) && (1 == USBH_FS_ENABLED)
 /*static*/ HAL_DriverItf drv_media_usbh_fs = {
     .Init   = USBH_FS_MSC_Init,
     .DeInit = USBH_FS_MSC_DeInit,
@@ -61,7 +61,7 @@ static U8 usbh_hs_msc_lun = 0; //!!!Driver (currently) supports only logical uni
     .Write  = USBH_FS_MSC_Write,
     .IoCtl  = USBH_FS_MSC_IoCtl
 };
-#endif //(1 == USBH_FS_ENABLED)
+#endif //defined(OS_MEDIA_VOL_USBH_FS) && (1 == USBH_FS_ENABLED)
 
 #if (1 == USBH_HS_ENABLED)
 /*static*/ HAL_DriverItf drv_media_usbh_hs = {
@@ -77,7 +77,7 @@ static U8 usbh_hs_msc_lun = 0; //!!!Driver (currently) supports only logical uni
 
 static OS_DriverHd drv_led_fs;
 
-#if (1 == USBH_FS_ENABLED)
+#if defined(OS_MEDIA_VOL_USBH_FS) && (1 == USBH_FS_ENABLED)
 /******************************************************************************/
 Status USBH_FS_MSC_Init(void* args_p)
 {
@@ -114,7 +114,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_FS_MSC_Read(U8* data_in_p, U32 size, void* args_p)
+Status USBH_FS_MSC_Read(void* data_in_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -125,9 +125,10 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
+            U8* data_in_8p = (U8*)data_in_p;
             IF_STATUS(s = drv_media_usbh_fs.Read((U8*)scratch_p, 1, &sector)) { break; }
             OS_MemCpy(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
-            data_in_p += USBH_MSC_BLOCK_SIZE;
+            data_in_8p += USBH_MSC_BLOCK_SIZE;
             ++sector;
         }
         OS_Free(scratch_p);
@@ -156,7 +157,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_FS_MSC_Write(U8* data_out_p, U32 size, void* args_p)
+Status USBH_FS_MSC_Write(void* data_out_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -167,9 +168,10 @@ Status s = S_OK;
         U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
+            U8* data_out_8p = (U8*)data_out_p;
             OS_MemCpy(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             IF_STATUS(s = drv_media_usbh_fs.Write((U8*)scratch_p, 1, &sector)) { break; }
-            data_out_p += USBH_MSC_BLOCK_SIZE;
+            data_out_8p += USBH_MSC_BLOCK_SIZE;
             ++sector;
         }
         OS_Free(scratch_p);
@@ -286,7 +288,7 @@ Status s = S_OK;
     }
     return s;
 }
-#endif //(1 == USBH_FS_ENABLED)
+#endif //defined(OS_MEDIA_VOL_USBH_FS) && (1 == USBH_FS_ENABLED)
 
 #if (1 == USBH_HS_ENABLED)
 /******************************************************************************/
@@ -325,7 +327,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_HS_MSC_Read(U8* data_in_p, U32 size, void* args_p)
+Status USBH_HS_MSC_Read(void* data_in_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -367,7 +369,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_HS_MSC_Write(U8* data_out_p, U32 size, void* args_p)
+Status USBH_HS_MSC_Write(void* data_out_p, SIZE size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;

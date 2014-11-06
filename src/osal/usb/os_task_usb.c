@@ -1,10 +1,9 @@
 /***************************************************************************//**
-* @file    task_usbd.c
+* @file    task_usb.c
 * @brief   USB Host/Device daemon task.
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
-#include <string.h>
 #include "usbh_hid.h"
 #include "usbh_msc.h"
 //#include "usbd_hid.h"
@@ -16,12 +15,12 @@
 #include "os_memory.h"
 #include "os_signal.h"
 #include "os_usb.h"
-#include "os_task_usbd.h"
-#include "os_task_fsd.h"
+#include "os_task_usb.h"
+#include "os_task_fs.h"
 
 #if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "task_usbd"
+#define MDL_NAME            "task_usb_d"
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -37,8 +36,8 @@ typedef struct {
 static TaskArgs task_args;
 
 //-----------------------------------------------------------------------------
-const OS_TaskConfig task_usbd_cfg = {
-    .name       = OS_DAEMON_NAME_USBD,
+const OS_TaskConfig task_usb_cfg = {
+    .name       = OS_DAEMON_NAME_USB,
     .func_main  = OS_TaskMain,
     .func_power = OS_TaskPower,
     .args_p     = (void*)&task_args,
@@ -96,7 +95,7 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 TaskArgs* task_args_p = (TaskArgs*)args_p;
 OS_Message* msg_p;
 const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
-const OS_TaskHd fsd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_FSD);
+const OS_TaskHd fsd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_FS);
 
     OS_ASSERT(S_OK == OS_TasksConnect(fsd_thd, OS_THIS_TASK));
 	for(;;) {
@@ -219,7 +218,7 @@ Status s = S_OK;
             }
             break;
         case PWR_ON: {
-            const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(OS_DAEMON_NAME_USBD));
+            const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(OS_DAEMON_NAME_USB));
 #if (1 == USBH_ENABLED)
             IF_STATUS_OK(s = OS_DriverOpen(task_args_p->drv_usbh, stdin_qhd)) {
 #if (1 == USBH_FS_ENABLED)

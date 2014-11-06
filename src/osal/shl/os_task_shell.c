@@ -4,7 +4,6 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
-#include <string.h>
 #include "os_environment.h"
 #include "os_driver.h"
 #include "os_shell.h"

@@ -34,9 +34,11 @@ static HAL_DriverItf drv_nvic = {
 /*****************************************************************************/
 Status NVIC_Init_(void)
 {
+Status s = S_UNDEF;
     HAL_MemSet(drv_nvic_v, 0x0, sizeof(drv_nvic_v));
     drv_nvic_v[DRV_ID_NVIC] = &drv_nvic;
-    return S_OK;
+    IF_STATUS(s = drv_nvic_v[DRV_ID_NVIC]->Init(OS_NULL)) { return s; }
+    return s;
 }
 
 /*****************************************************************************/

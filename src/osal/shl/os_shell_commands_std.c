@@ -4,7 +4,6 @@
 * @author  A. Filyanov
 ******************************************************************************/
 #include <stdlib.h>
-#include <string.h>
 #include "hal.h"
 #include "osal.h"
 #include "os_debug.h"
@@ -44,7 +43,7 @@ OS_ShellCommandHd cmd_hd = OS_ShellCommandNextGet(SHELL_COMMAND_UNDEF);
 #endif // OS_SHELL_HELP_ENABLED
 
 //------------------------------------------------------------------------------
-#define OS_CMD_CLEAR_STRING         "clear"
+#define OS_CMD_CLEAR_STRING             "clear"
 static ConstStr cmd_clear[]             = OS_CMD_CLEAR_STRING;
 static ConstStr cmd_help_brief_clear[]  = "Clear screen.";
 

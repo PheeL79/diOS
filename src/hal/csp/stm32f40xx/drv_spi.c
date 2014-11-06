@@ -1,0 +1,32 @@
+/**************************************************************************//**
+* @file    drv_spi.c
+* @brief   SPI driver.
+* @author  A. Filyanov
+******************************************************************************/
+#include <string.h>
+#include "hal.h"
+
+#include "os_supervise.h"
+#include "os_time.h"
+#include "os_signal.h"
+#include "os_message.h"
+
+//-----------------------------------------------------------------------------
+#define MDL_NAME    "drv_spi"
+
+//-----------------------------------------------------------------------------
+/// @brief   Init SPI.
+/// @return  #Status.
+Status SPI_Init_(void);
+
+//-----------------------------------------------------------------------------
+HAL_DriverItf* drv_spi_v[DRV_ID_SPI_LAST];
+
+/*****************************************************************************/
+Status SPI_Init_(void)
+{
+//extern HAL_DriverItf drv_spi3;
+    HAL_MemSet(drv_spi_v, 0x0, sizeof(drv_spi_v));
+//    drv_spi_v[DRV_ID_SPI3] = &drv_spi3;
+    return S_OK;
+}

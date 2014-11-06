@@ -19,14 +19,14 @@ static Status LED_PulseInit(void* args_p);
 static Status LED_PulseDeInit(void* args_p);
 static Status LED_PulseOpen(void* args_p);
 static Status LED_PulseClose(void* args_p);
-static Status LED_PulseWrite(U8* data_out_p, U32 size, void* args_p);
+static Status LED_PulseWrite(void* data_out_p, SIZE size, void* args_p);
 static Status LED_PulseIoCtl(const U32 request_id, void* args_p);
 
 static Status LED_FsInit(void* args_p);
 static Status LED_FsDeInit(void* args_p);
 static Status LED_FsOpen(void* args_p);
 static Status LED_FsClose(void* args_p);
-static Status LED_FsWrite(U8* data_out_p, U32 size, void* args_p);
+static Status LED_FsWrite(void* data_out_p, SIZE size, void* args_p);
 static Status LED_FsIoCtl(const U32 request_id, void* args_p);
 
 static Status LED_AssertInit(void* args_p);
@@ -35,7 +35,7 @@ static Status LED_UserInit(void* args_p);
 static Status LED_UserDeInit(void* args_p);
 static Status LED_UserOpen(void* args_p);
 static Status LED_UserClose(void* args_p);
-static Status LED_UserWrite(U8* data_out_p, U32 size, void* args_p);
+static Status LED_UserWrite(void* data_out_p, SIZE size, void* args_p);
 static Status LED_UserIoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
@@ -85,11 +85,20 @@ static HAL_DriverItf drv_led_user = {
 /*****************************************************************************/
 Status LED_Init_(void)
 {
+Status s = S_UNDEF;
     HAL_MemSet(drv_led_v, 0x0, sizeof(drv_led_v));
     drv_led_v[DRV_ID_LED_PULSE] = &drv_led_pulse;
     drv_led_v[DRV_ID_LED_FS]    = &drv_led_fs;
     drv_led_v[DRV_ID_LED_ASSERT]= &drv_led_assert;
     drv_led_v[DRV_ID_LED_USER]  = &drv_led_user;
+    for (SIZE i = 0; i < ITEMS_COUNT_GET(drv_led_v, drv_led_v[0]); ++i) {
+        //Ignore specific driver(s).
+        if ((DRV_ID_LED_PULSE == i) ||
+            (DRV_ID_LED_FS == i)) { continue; }
+        if (OS_NULL != drv_led_v[i]) {
+            IF_STATUS(s = drv_led_v[i]->Init(OS_NULL)) { return s; }
+        }
+    }
     return S_OK;
 }
 
@@ -129,10 +138,10 @@ Status LED_PulseClose(void* args_p)
 }
 
 /******************************************************************************/
-Status LED_PulseWrite(U8* data_out_p, U32 size, void* args_p)
+Status LED_PulseWrite(void* data_out_p, SIZE size, void* args_p)
 {
 Status s = S_OK;
-    if (ON == *data_out_p) {
+    if (ON == *(State*)data_out_p) {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
     } else {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
@@ -204,10 +213,10 @@ Status LED_FsClose(void* args_p)
 }
 
 /******************************************************************************/
-Status LED_FsWrite(U8* data_out_p, U32 size, void* args_p)
+Status LED_FsWrite(void* data_out_p, SIZE size, void* args_p)
 {
 Status s = S_OK;
-    if (ON == *data_out_p) {
+    if (ON == *(State*)data_out_p) {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_SET);
     } else {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
@@ -296,10 +305,10 @@ Status LED_UserClose(void* args_p)
 }
 
 /******************************************************************************/
-Status LED_UserWrite(U8* data_out_p, U32 size, void* args_p)
+Status LED_UserWrite(void* data_out_p, SIZE size, void* args_p)
 {
 Status s = S_OK;
-    if (ON == *data_out_p) {
+    if (ON == *(State*)data_out_p) {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_SET);
     } else {
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);

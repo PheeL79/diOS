@@ -10,6 +10,8 @@
 #include "common.h"
 
 //CSP
+#include "drv_adc.h"
+#include "drv_spi.h"
 #include "drv_dma.h"
 #include "drv_rtc.h"
 #include "drv_gpio.h"
@@ -21,9 +23,13 @@
 #include "drv_usbd.h"
 //BSP
 #include "drv_mem_ext.h"
+#include "drv_trimmer.h"
 #include "drv_button.h"
 #include "drv_led.h"
+#include "drv_audio.h"
+#include "drv_audio_bsp.h"
 #include "drv_media.h"
+#include "drv_media_bsp.h"
 
 //-----------------------------------------------------------------------------
 #define HAL_CRITICAL_SECTION_ENTER()    __disable_irq()

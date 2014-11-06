@@ -1,86 +1,49 @@
 /**************************************************************************//**
-* @file    drv_usart6.c
-* @brief   USART6 driver.
+* @file    drv_spi3.c
+* @brief   SPI3 driver.
 * @author  A. Filyanov
 ******************************************************************************/
-#include <stdarg.h>
 #include "hal.h"
 
-#include "os_supervise.h"
-#include "os_time.h"
-#include "os_signal.h"
-#include "os_message.h"
-
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "drv_usart6"
-
-#define USARTx                          USART6
-#define USARTx_CLK_ENABLE()             __USART6_CLK_ENABLE()
-#define DMAx_CLK_ENABLE()               __DMA2_CLK_ENABLE()
-#define USARTx_RX_GPIO_CLK_ENABLE()     __GPIOG_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()     __GPIOC_CLK_ENABLE()
-
-#define USARTx_FORCE_RESET()            __USART6_FORCE_RESET()
-#define USARTx_RELEASE_RESET()          __USART6_RELEASE_RESET()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                   GPIO_PIN_6
-#define USARTx_TX_GPIO_PORT             GPIOC
-#define USARTx_TX_AF                    GPIO_AF8_USART6
-#define USARTx_RX_PIN                   GPIO_PIN_9
-#define USARTx_RX_GPIO_PORT             GPIOG
-#define USARTx_RX_AF                    GPIO_AF8_USART6
-
-/* Definition for USARTx's DMA */
-#define USARTx_TX_DMA_CHANNEL           DMA_CHANNEL_5
-#define USARTx_TX_DMA_STREAM            DMA2_Stream7
-#define USARTx_RX_DMA_CHANNEL           DMA_CHANNEL_5
-#define USARTx_RX_DMA_STREAM            DMA2_Stream2
-
-/* Definition for USARTx's NVIC */
-#define USARTx_IRQn                     USART6_IRQn
-#define USARTx_IRQHandler               USART6_IRQHandler
-#define USARTx_DMA_TX_IRQn              DMA2_Stream7_IRQn
-#define USARTx_DMA_RX_IRQn              DMA2_Stream2_IRQn
-#define USARTx_DMA_TX_IRQHandler        DMA2_Stream7_IRQHandler
-#define USARTx_DMA_RX_IRQHandler        DMA2_Stream2_IRQHandler
+#define MDL_NAME            "drv_spi3"
 
 //------------------------------------------------------------------------------
-static Status   USART6_Init(void* args_p);
-static Status   USART6_DeInit(void* args_p);
-static Status   USART6_LL_Init(void* args_p);
-//static Status   USART6_LL_DeInit(void* args_p);
-static Status   USART6_Open(void* args_p);
-static Status   USART6_Close(void* args_p);
-static Status   USART6_Read(void* data_in_p, SIZE size, void* args_p);
-static Status   USART6_Write(void* data_out_p, SIZE size, void* args_p);
-//static Status   USART6_IT_Read(void* data_in_p, SIZE size, void* args_p);
-//static Status   USART6_IT_Write(void* data_out_p, SIZE size, void* args_p);
-static Status   USART6_DMA_Read(void* data_in_p, SIZE size, void* args_p);
-//static Status   USART6_DMA_Write(void* data_out_p, SIZE size, void* args_p);
-static Status   USART6_IoCtl(const U32 request_id, void* args_p);
+static Status   SPI3_Init(void* args_p);
+static Status   SPI3_DeInit(void* args_p);
+static Status   SPI3_LL_Init(void* args_p);
+//static Status   SPI3_LL_DeInit(void* args_p);
+static Status   SPI3_Open(void* args_p);
+static Status   SPI3_Close(void* args_p);
+//static Status   SPI3_Read(U8* data_in_p, U32 size, void* args_p);
+//static Status   SPI3_Write(U8* data_out_p, U32 size, void* args_p);
+//static Status   SPI3_IT_Read(U8* data_in_p, U32 size, void* args_p);
+//static Status   SPI3_IT_Write(U8* data_out_p, U32 size, void* args_p);
+//static Status   SPI3_DMA_Read(U8* data_in_p, U32 size, void* args_p);
+static Status   SPI3_DMA_Write(U8* data_out_p, U32 size, void* args_p);
+static Status   SPI3_IoCtl(const U32 request_id, void* args_p);
 
 //------------------------------------------------------------------------------
-static UART_HandleTypeDef   uart_hd;
-static DMA_HandleTypeDef    dma_tx_hd;
-static DMA_HandleTypeDef    dma_rx_hd;
+static UART_HandleTypeDef   uart_handle;
+static DMA_HandleTypeDef    hdma_tx;
+static DMA_HandleTypeDef    hdma_rx;
 
-/*static is excluded for stdio*/ HAL_DriverItf drv_usart6 = {
-    .Init   = USART6_Init,
-    .DeInit = USART6_DeInit,
-    .Open   = USART6_Open,
-    .Close  = USART6_Close,
-    .Read   = USART6_Read,
-    .Write  = USART6_Write,
-    .IoCtl  = USART6_IoCtl
+static HAL_DriverItf drv_spi3 = {
+    .Init   = SPI3_Init,
+    .DeInit = SPI3_DeInit,
+    .Open   = SPI3_Open,
+    .Close  = SPI3_Close,
+    .Read   = OS_NULL,
+    .Write  = SPI3_DMA_Write,
+    .IoCtl  = SPI3_IoCtl
 };
 
 /******************************************************************************/
-Status USART6_Init(void* args_p)
+Status SPI3_Init(void* args_p)
 {
 Status s = S_OK;
     //HAL_LOG(D_INFO, "Init: ");
-    IF_STATUS(s = USART6_LL_Init(args_p)) { return s; }
+    IF_STATUS(s = SPI3_LL_Init(args_p)) { return s; }
     /* Enable USARTx clock */
     USARTx_CLK_ENABLE();
     /*##-1- Configure the UART peripheral ######################################*/
@@ -91,23 +54,23 @@ Status s = S_OK;
       - Parity      = NO parity
       - BaudRate    = 115200 baud
       - Hardware flow control disabled (RTS and CTS signals) */
-    uart_hd.Instance        = USARTx;
-    uart_hd.Init.BaudRate   = 115200;
-    uart_hd.Init.WordLength = UART_WORDLENGTH_8B;
-    uart_hd.Init.StopBits   = UART_STOPBITS_1;
-    uart_hd.Init.Parity     = UART_PARITY_NONE;
-    uart_hd.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-    uart_hd.Init.Mode       = UART_MODE_TX_RX;
+    uart_handle.Instance        = USARTx;
+    uart_handle.Init.BaudRate   = 115200;
+    uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
+    uart_handle.Init.StopBits   = UART_STOPBITS_1;
+    uart_handle.Init.Parity     = UART_PARITY_NONE;
+    uart_handle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
+    uart_handle.Init.Mode       = UART_MODE_TX_RX;
 
-    if (HAL_OK == HAL_UART_Init(&uart_hd)) {
+    if (HAL_OK == HAL_UART_Init(&uart_handle)) {
         /* Enable the UART Data Register not empty Interrupt */
-        __HAL_UART_ENABLE_IT(&uart_hd, UART_IT_RXNE);
+        __HAL_UART_ENABLE_IT(&uart_handle, UART_IT_RXNE);
     } else { s = S_HARDWARE_FAULT; }
     return s;
 }
 
 /******************************************************************************/
-Status USART6_LL_Init(void* args_p)
+Status SPI3_LL_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
     /* Enable GPIO clock */
@@ -133,46 +96,46 @@ GPIO_InitTypeDef GPIO_InitStruct;
     DMAx_CLK_ENABLE();
       /*##-3- Configure the DMA streams ##########################################*/
     /* Configure the DMA handler for Transmission process */
-    dma_tx_hd.Instance                 = USARTx_TX_DMA_STREAM;
+    hdma_tx.Instance                 = USARTx_TX_DMA_STREAM;
 
-    dma_tx_hd.Init.Channel             = USARTx_TX_DMA_CHANNEL;
-    dma_tx_hd.Init.Direction           = DMA_MEMORY_TO_PERIPH;
-    dma_tx_hd.Init.PeriphInc           = DMA_PINC_DISABLE;
-    dma_tx_hd.Init.MemInc              = DMA_MINC_ENABLE;
-    dma_tx_hd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    dma_tx_hd.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    dma_tx_hd.Init.Mode                = DMA_NORMAL;
-    dma_tx_hd.Init.Priority            = DMA_PRIORITY_LOW;
-    dma_tx_hd.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
-    dma_tx_hd.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    dma_tx_hd.Init.MemBurst            = DMA_MBURST_INC4;
-    dma_tx_hd.Init.PeriphBurst         = DMA_PBURST_INC4;
+    hdma_tx.Init.Channel             = USARTx_TX_DMA_CHANNEL;
+    hdma_tx.Init.Direction           = DMA_MEMORY_TO_PERIPH;
+    hdma_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
+    hdma_tx.Init.MemInc              = DMA_MINC_ENABLE;
+    hdma_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
+    hdma_tx.Init.Mode                = DMA_NORMAL;
+    hdma_tx.Init.Priority            = DMA_PRIORITY_LOW;
+    hdma_tx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+    hdma_tx.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    hdma_tx.Init.MemBurst            = DMA_MBURST_INC4;
+    hdma_tx.Init.PeriphBurst         = DMA_PBURST_INC4;
 
-    HAL_DMA_Init(&dma_tx_hd);
+    HAL_DMA_Init(&hdma_tx);
 
     /* Associate the initialized DMA handle to the UART handle */
-    __HAL_LINKDMA(&uart_hd, hdmatx, dma_tx_hd);
+    __HAL_LINKDMA(&uart_handle, hdmatx, hdma_tx);
 
     /* Configure the DMA handler for reception process */
-    dma_rx_hd.Instance                 = USARTx_RX_DMA_STREAM;
+    hdma_rx.Instance                 = USARTx_RX_DMA_STREAM;
 
-    dma_rx_hd.Init.Channel             = USARTx_RX_DMA_CHANNEL;
-    dma_rx_hd.Init.Direction           = DMA_PERIPH_TO_MEMORY;
-    dma_rx_hd.Init.PeriphInc           = DMA_PINC_DISABLE;
-    dma_rx_hd.Init.MemInc              = DMA_MINC_ENABLE;
-    dma_rx_hd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    dma_rx_hd.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    dma_rx_hd.Init.Mode                = DMA_NORMAL;
-    dma_rx_hd.Init.Priority            = DMA_PRIORITY_HIGH;
-    dma_rx_hd.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
-    dma_rx_hd.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    dma_rx_hd.Init.MemBurst            = DMA_MBURST_INC4;
-    dma_rx_hd.Init.PeriphBurst         = DMA_PBURST_INC4;
+    hdma_rx.Init.Channel             = USARTx_RX_DMA_CHANNEL;
+    hdma_rx.Init.Direction           = DMA_PERIPH_TO_MEMORY;
+    hdma_rx.Init.PeriphInc           = DMA_PINC_DISABLE;
+    hdma_rx.Init.MemInc              = DMA_MINC_ENABLE;
+    hdma_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_rx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
+    hdma_rx.Init.Mode                = DMA_NORMAL;
+    hdma_rx.Init.Priority            = DMA_PRIORITY_HIGH;
+    hdma_rx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+    hdma_rx.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    hdma_rx.Init.MemBurst            = DMA_MBURST_INC4;
+    hdma_rx.Init.PeriphBurst         = DMA_PBURST_INC4;
 
-    HAL_DMA_Init(&dma_rx_hd);
+    HAL_DMA_Init(&hdma_rx);
 
     /* Associate the initialized DMA handle to the the UART handle */
-    __HAL_LINKDMA(&uart_hd, hdmarx, dma_rx_hd);
+    __HAL_LINKDMA(&uart_handle, hdmarx, hdma_rx);
 
     /*##-3- Configure the NVIC for IRQ #########################################*/
     /* NVIC configuration for interrupt (USARTx) */
@@ -191,9 +154,8 @@ GPIO_InitTypeDef GPIO_InitStruct;
 }
 
 /******************************************************************************/
-Status USART6_DeInit(void* args_p)
+Status SPI3_DeInit(void* args_p)
 {
-    if (HAL_OK != HAL_UART_DeInit(&uart_hd)) { return S_HARDWARE_FAULT; }
     /*##-1- Reset peripherals ##################################################*/
     USARTx_FORCE_RESET();
     USARTx_RELEASE_RESET();
@@ -206,9 +168,9 @@ Status USART6_DeInit(void* args_p)
 
     /*##-3- Disable the DMA Streams ############################################*/
     /* De-Initialize the DMA Stream associate to transmission process */
-    HAL_DMA_DeInit(&dma_tx_hd);
+    HAL_DMA_DeInit(&hdma_tx);
     /* De-Initialize the DMA Stream associate to reception process */
-    HAL_DMA_DeInit(&dma_rx_hd);
+    HAL_DMA_DeInit(&hdma_rx);
 
     /*##-4- Disable the NVIC for IRQ ###########################################*/
     HAL_NVIC_DisableIRQ(USARTx_IRQn);
@@ -219,45 +181,45 @@ Status USART6_DeInit(void* args_p)
 }
 
 /******************************************************************************/
-Status USART6_Open(void* args_p)
+Status SPI3_Open(void* args_p)
 {
     //TODO(A. Filyanov)
     return S_OK;
 }
 
 /******************************************************************************/
-Status USART6_Close(void* args_p)
+Status SPI3_Close(void* args_p)
 {
     //TODO(A. Filyanov)
     return S_OK;
 }
 
 /******************************************************************************/
-Status USART6_Read(void* data_in_p, SIZE size, void* args_p)
+Status SPI3_Read(U8* data_in_p, U32 size, void* args_p)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_UART_Receive(&uart_hd, data_in_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_UART_Receive(&uart_handle, data_in_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
     return s;
 }
 
 /******************************************************************************/
-Status USART6_Write(void* data_out_p, SIZE size, void* args_p)
+Status SPI3_Write(U8* data_out_p, U32 size, void* args_p)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_UART_Transmit(&uart_hd, data_out_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_UART_Transmit(&uart_handle, data_out_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
     return s;
 }
 
 /******************************************************************************/
-Status USART6_DMA_Read(void* data_in_p, SIZE size, void* args_p)
+Status SPI3_DMA_Read(U8* data_in_p, U32 size, void* args_p)
 {
 Status s = S_OK;
     /*##-4- Wait for the end of the transfer ###################################*/
-    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_hd)) {};
+    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_handle)) {};
     /*##-3- Put UART peripheral in reception process ###########################*/
     /* Any data received will be stored in "RxBuffer" buffer : the number max of
      data received is 10 */
-    if (HAL_OK != HAL_UART_Receive_DMA(&uart_hd, data_in_p, size)) {
+    if (HAL_OK != HAL_UART_Receive_DMA(&uart_handle, data_in_p, size)) {
         /* Transfer error in reception process */
         s = S_HARDWARE_FAULT;
     }
@@ -265,13 +227,13 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USART6_DMA_Write(void* data_out_p, SIZE size, void* args_p)
+Status SPI3_DMA_Write(U8* data_out_p, U32 size, void* args_p)
 {
 Status s = S_OK;
     /*##-4- Wait for the end of the transfer ###################################*/
-    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_hd)) {};
+    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_handle)) {};
     /*##-5- Send the received Buffer ###########################################*/
-    if (HAL_OK != HAL_UART_Transmit_DMA(&uart_hd, data_out_p, size)) {
+    if (HAL_OK != HAL_UART_Transmit_DMA(&uart_handle, data_out_p, size)) {
         /* Transfer error in transmission process */
         s = S_HARDWARE_FAULT;
     }
@@ -279,12 +241,12 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USART6_IoCtl(const U32 request_id, void* args_p)
+Status SPI3_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_OK;
     switch (request_id) {
         case DRV_REQ_STD_SYNC:
-            while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_hd)) {};
+            while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_handle)) {};
             break;
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
@@ -296,7 +258,7 @@ Status s = S_OK;
                 case PWR_STANDBY:
                 case PWR_HIBERNATE:
                 case PWR_SHUTDOWN:
-                    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_hd)) {};
+                    while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_handle)) {};
                     break;
                 default:
                     break;
@@ -321,11 +283,11 @@ Status s = S_OK;
 void USARTx_IRQHandler(void);
 void USARTx_IRQHandler(void)
 {
-    HAL_UART_IRQHandler(&uart_hd);
+    HAL_UART_IRQHandler(&uart_handle);
 
     extern OS_QueueHd stdin_qhd;
     const OS_SignalData sig_data = (U16)(USARTx->DR & (U16)0x01FF);
-    const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
+    const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_SPI3, OS_SIG_STDIN, sig_data);
     if (1 == OS_ISR_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
         OS_ContextSwitchForce();
     }
@@ -342,7 +304,7 @@ void USARTx_IRQHandler(void)
 void USARTx_DMA_RX_IRQHandler(void);
 void USARTx_DMA_RX_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(uart_hd.hdmarx);
+    HAL_DMA_IRQHandler(uart_handle.hdmarx);
 }
 
 /******************************************************************************/
@@ -356,6 +318,5 @@ void USARTx_DMA_RX_IRQHandler(void)
 void USARTx_DMA_TX_IRQHandler(void);
 void USARTx_DMA_TX_IRQHandler(void)
 {
-    HAL_NVIC_ClearPendingIRQ(USARTx_DMA_TX_IRQn);
-    HAL_DMA_IRQHandler(uart_hd.hdmatx);
+    HAL_DMA_IRQHandler(uart_handle.hdmatx);
 }

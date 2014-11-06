@@ -75,28 +75,31 @@ const StatusItem status_fs_v[] = {
 static OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd);
 OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd)
 {
-const OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
-OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListItemValueGet(item_l_p);
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
+    const OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
+    OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListItemValueGet(item_l_p);
+    OS_ASSERT_VALUE(OS_DELAY_MAX != (OS_Value)cfg_dyn_p);
     return cfg_dyn_p;
 }
 
 /******************************************************************************/
 Status OS_FileSystemInit(void)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
     os_fs_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_fs_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_fs_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_fs_list)) { return S_INVALID_VALUE; }
     OS_MemSet(fs_media_dhd_v, 0, sizeof(fs_media_dhd_v));
+s = S_OK;
     return s;
 }
 
 /******************************************************************************/
 Status OS_FileSystemDeInit(void)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     //TODO(A. Filyanov) Loop and delete over existed media handles.
     return s;
 }
@@ -104,7 +107,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_FileSystemMediaCreate(const OS_FileSystemMediaConfig* cfg_p, OS_FileSystemMediaHd* fs_media_hd_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     if (OS_NULL == cfg_p) { return S_INVALID_REF; }
     IF_STATUS(s = VolumeCheck(cfg_p->volume)) { return s; }
     if (OS_NULL != OS_FileSystemMediaByVolumeGet(cfg_p->volume)) { return S_FS_MEDIA_INVALID; }
@@ -157,7 +160,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
         OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListItemValueGet(item_l_p);
@@ -175,8 +178,8 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 {
-Status s = S_OK;
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+Status s = S_UNDEF;
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS media init: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     {
         const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
@@ -194,7 +197,7 @@ Status s = S_OK;
 Status OS_FileSystemMediaDeInit(const OS_FileSystemMediaHd fs_media_hd)
 {
 Status s;
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS media deinit: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     const OS_DriverHd drv_media_hd = cfg_dyn_p->dhd;
@@ -231,7 +234,7 @@ OS_FileSystemMediaHd fs_media_hd = OS_NULL;
 Status OS_FileSystemMediaCurrentSet(const OS_FileSystemMediaHd fs_media_hd)
 {
 Status s;
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS media set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     IF_STATUS_OK(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) {
@@ -243,7 +246,7 @@ Status s;
 /******************************************************************************/
 Status OS_FileSystemMediaStatusGet(const OS_FileSystemMediaHd fs_media_hd)
 {
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return OS_DriverIoCtl(cfg_dyn_p->dhd, DRV_REQ_MEDIA_STATUS_GET, OS_NULL);
 }
@@ -271,7 +274,7 @@ Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSy
 {
 const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
                         (OS_FS_PART_RULE_SFD   == part_rule) ? 1 : U8_MAX;
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS make: %s, rule: %d, size: %u", OS_FileSystemMediaNameGet(fs_media_hd), part_rule, size);
     if (U8_MAX == fpart_rule) { return S_FS_INVALID_PARAMETER; }
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
@@ -282,7 +285,7 @@ const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
 /******************************************************************************/
 Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 {
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS mount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
 #ifndef NDEBUG
@@ -300,7 +303,7 @@ Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 /******************************************************************************/
 Status OS_FileSystemUnMount(const OS_FileSystemMediaHd fs_media_hd)
 {
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS unmount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     OS_DriverStats stats;
@@ -335,7 +338,7 @@ U8 OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd)
 /******************************************************************************/
 Status OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p, U32* serial_p)
 {
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS vol label get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return FResultTranslate(f_getlabel((const char*)cfg_dyn_p->volume,
@@ -347,7 +350,7 @@ Status OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrPt
 Status OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p)
 {
 Str vol_label[OS_FILE_SYSTEM_VOLUME_STR_LEN + OS_FILE_SYSTEM_VOLUME_NAME_LEN];
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS vol label set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     OS_StrNCpy(vol_label, (char const*)cfg_dyn_p->volume, OS_FILE_SYSTEM_VOLUME_STR_LEN);
@@ -358,8 +361,8 @@ Str vol_label[OS_FILE_SYSTEM_VOLUME_STR_LEN + OS_FILE_SYSTEM_VOLUME_NAME_LEN];
 /******************************************************************************/
 Status OS_FileSystemVolumeStatsGet(const OS_FileSystemMediaHd fs_media_hd, OS_FileSystemVolumeStats* stats_p)
 {
-Status s = S_OK;
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+Status s = S_UNDEF;
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     if (OS_NULL == stats_p) { return S_INVALID_REF; }
     OS_LOG(D_DEBUG, "FS vol stats get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
@@ -394,7 +397,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media_hd, const StrPtr path_p, U32* clusters_free_count_p)
 {
-    if (OS_NULL == fs_media_hd) { return S_INVALID_REF; }
+    OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS clusters free: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return FResultTranslate(f_getfree((const char*)path_p, (DWORD*)clusters_free_count_p, (FATFS**)&cfg_dyn_p->fshd));
@@ -407,7 +410,7 @@ OS_DirHd dir_hd;
 OS_FileStats stats_file;
 SIZE path_len;
 StrPtr file_name_p;
-Status s = S_OK;
+Status s = S_UNDEF;
     OS_LOG(D_DEBUG, "FS volume scan: %s", path_p);
     if (OS_NULL == stats_p) { return S_INVALID_REF; }
     dir_hd = OS_Malloc(sizeof(DIR));
@@ -755,7 +758,7 @@ BYTE fs_attrs = 0;
 /******************************************************************************/
 Status FResultTranslate(const FRESULT r)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (r) {
         case FR_OK:
             break;

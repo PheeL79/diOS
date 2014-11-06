@@ -158,6 +158,8 @@ void DebugMon_Handler(void)
   * @brief  This function handles SysTick Handler.
   * @param  None
   * @retval None
+  * @note   The application need to ensure that the SysTick time base is always set to 1 millisecond
+            to have correct HAL operation.
   */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -231,6 +233,17 @@ void OTG_HS_IRQHandler(void)
     HAL_HCD_IRQHandler(&hcd_hs_hd);
 #endif //(1 == USBH_HS_ENABLED)
 #endif //(1 == USBH_ENABLED)
+}
+
+/******************************************************************************/
+/**
+  * @brief  This function handles ADC interrupt request.
+*/
+void ADC_IRQHandler(void);
+void ADC_IRQHandler(void)
+{
+extern ADC_HandleTypeDef adc3_hd;
+    HAL_ADC_IRQHandler(&adc3_hd);
 }
 
 /**

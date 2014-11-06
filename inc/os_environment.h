@@ -14,6 +14,7 @@ extern "C" {
 #include "os_task.h"
 #include "os_signal.h"
 #include "os_driver.h"
+#include "os_audio.h"
 
 /**
 * \defgroup OS_Environment OS_Environment
@@ -64,6 +65,15 @@ OS_LogLevel     OS_LogLevelGet(void);
 /// @param[in]  log_level_p     Log level name.
 /// @return     #Status.
 Status          OS_LogLevelSet(ConstStrPtr log_level_p);
+
+/// @brief      Get current audio device volume.
+/// @return     Volume.
+OS_AudioVolume  OS_VolumeGet(void);
+
+/// @brief      Set current audio device volume.
+/// @param[in]  volume_p        Volume.
+/// @return     #Status.
+Status          OS_VolumeSet(ConstStrPtr volume_p);
 
 /**
 * \addtogroup OS_EnvironmentUser Environment variables user access functions.

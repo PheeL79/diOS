@@ -25,6 +25,6 @@ enum {
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_usart_v[];
 
-Status   USART6_DMA_Write(U8* data_out_p, U32 size, void* args_p);
+Status   USART6_DMA_Write(void* data_out_p, SIZE size, void* args_p);
 
 #endif // _DRV_USART_H_

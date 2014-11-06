@@ -1,16 +1,16 @@
 /**************************************************************************//**
-* @file    drv_media.c
-* @brief   MEDIA driver.
+* @file    drv_media_bsp.c
+* @brief   Media driver.
 * @author  A. Filyanov
 ******************************************************************************/
 #include <string.h>
 #include "hal.h"
 
 //-----------------------------------------------------------------------------
-#define MDL_NAME    "drv_media"
+#define MDL_NAME    "drv_media_bsp"
 
 //-----------------------------------------------------------------------------
-/// @brief   Init MEDIA.
+/// @brief   Init media.
 /// @return  #Status.
 Status MEDIA_Init_(void);
 

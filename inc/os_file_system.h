@@ -155,6 +155,7 @@ Status          OS_FileSystemInit(void);
 Status          OS_FileSystemDeInit(void);
 
 /// @brief      Create the file system media volume.
+/// @param[in]  cfg_p           Media config.
 /// @param[out] fs_media_hd_p   Media handle.
 /// @return     #Status.
 Status          OS_FileSystemMediaCreate(const OS_FileSystemMediaConfig* cfg_p, OS_FileSystemMediaHd* fs_media_hd_p);

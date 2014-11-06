@@ -40,6 +40,7 @@ const StatusItem status_items_v[] = {
     {"FSM invalid state"},
     {"Invalid number of arguments"},
     {"Invalid reference"},
+    {"Undefined status"},
     {"Undefined parameter"},
     {"Undefined function"},
     {"Undefined queue"},

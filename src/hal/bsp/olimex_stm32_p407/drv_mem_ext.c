@@ -59,9 +59,11 @@ static HAL_DriverItf drv_mem_ext_sram512k = {
 /*****************************************************************************/
 Status MEM_EXT_Init_(void)
 {
+Status s = S_UNDEF;
     HAL_MemSet(drv_mem_ext_v, 0x0, sizeof(drv_mem_ext_v));
     drv_mem_ext_v[DRV_ID_MEM_EXT_SRAM512K] = &drv_mem_ext_sram512k;
-    return S_OK;
+    IF_STATUS(s = drv_mem_ext_v[DRV_ID_MEM_EXT_SRAM512K]->Init(OS_NULL)) { return s; }
+    return s;
 }
 
 /*****************************************************************************/

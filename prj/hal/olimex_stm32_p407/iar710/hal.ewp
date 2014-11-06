@@ -317,6 +317,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
@@ -3827,7 +3828,6 @@
     </settings>
   </configuration>
   <mfc>
-    <configuration>Debug FLASH</configuration>
     <configuration>Release FLASH</configuration>
     <configuration>Debug SRAM</configuration>
     <configuration>Release SRAM</configuration>
@@ -3836,14 +3836,38 @@
     <name>bsp</name>
     <group>
       <name>olimex_stm32_p407</name>
+      <group>
+        <name>system</name>
+        <mfc>
+          <configuration>Debug FLASH</configuration>
+        </mfc>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\stm32f4xx_it.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\system_stm32f4xx.c</name>
+        </file>
+      </group>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_audio_bsp.c</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_button.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_buzzer.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_led.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_media_bsp.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_mem_ext.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_trimmer.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\hal_olimex_stm32_p407.c</name>
@@ -3855,13 +3879,13 @@
           <configuration>Debug SRAM</configuration>
         </excluded>
       </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\stm32f4xx_it.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\system_stm32f4xx.c</name>
-      </file>
     </group>
+  </group>
+  <group>
+    <name>com</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\com\cs4344\drv_audio_cs4344.c</name>
+    </file>
   </group>
   <group>
     <name>csp</name>
@@ -4112,6 +4136,12 @@
       </file>
     </group>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_adc.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_adc3.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_dma.c</name>
     </file>
     <file>
@@ -4119,9 +4149,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_iwdg.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media_sdcard.c</name>
@@ -4142,6 +4169,9 @@
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_rtc.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_spi.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_timer.c</name>
     </file>
     <file>
@@ -4149,6 +4179,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_timer5.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_timer8.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usart.c</name>

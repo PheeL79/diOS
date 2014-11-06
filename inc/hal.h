@@ -28,8 +28,8 @@ typedef struct {
     Status  (*DeInit)(void* args_p);
     Status  (*Open)(void* args_p);
     Status  (*Close)(void* args_p);
-    Status  (*Read)(U8* data_in_p, U32 size, void* args_p);
-    Status  (*Write)(U8* data_out_p, U32 size, void* args_p);
+    Status  (*Read)(void* data_in_p, SIZE size, void* args_p);
+    Status  (*Write)(void* data_out_p, SIZE size, void* args_p);
     Status  (*IoCtl)(const U32 request_id, void* args_p);
 } HAL_DriverItf;
 

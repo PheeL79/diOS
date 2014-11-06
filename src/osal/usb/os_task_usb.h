@@ -9,7 +9,7 @@
 #include "os_config.h"
 
 #if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
-#define OS_DAEMON_NAME_USBD         "UsbD"
+#define OS_DAEMON_NAME_USB          "UsbD"
 #endif //(1 == USBH_ENABLED) || (1 == USBD_ENABLED)
 
 #endif // _OS_TASK_USBD_H_
