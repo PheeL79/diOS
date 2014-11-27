@@ -33,7 +33,7 @@ volatile OS_Env os_env = {
     .volume         = OS_AUDIO_VOLUME_MIN
 #endif // (1 == OS_AUDIO_ENABLED)
 };
-volatile BL is_idle;
+volatile Bool is_idle;
 
 //------------------------------------------------------------------------------
 static Status OSAL_DriversCreate(void);
@@ -46,7 +46,9 @@ extern Status OS_SettingsInit(void);
 extern Status OS_EnvInit(void);
 extern Status OS_EventInit(void);
 extern Status OS_TimeInit(void);
+#if (1 == OS_TIMERS_ENABLED)
 extern Status OS_TimerInit(void);
+#endif //(1 == OS_TIMERS_ENABLED)
 extern Status OS_DriverInit_(void);
 extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
@@ -57,7 +59,9 @@ Status s;
     is_idle = OS_FALSE;
     // uxCriticalNesting = 0; !!! Variables are created before OS Engine scheduler is started! Affects on divers interrupts!
     IF_STATUS(s = OS_MemoryInit())      { return s; }
+#if (1 == OS_TIMERS_ENABLED)
     IF_STATUS(s = OS_TimerInit())       { return s; }
+#endif //(1 == OS_TIMERS_ENABLED)
     IF_STATUS(s = OS_TimeInit())        { return s; }
     IF_STATUS(s = OS_DriverInit_())     { return s; }
     IF_STATUS(s = OS_DebugInit())       { return s; }
@@ -65,7 +69,9 @@ Status s;
     IF_STATUS(s = OS_TaskInit_())       { return s; }
     IF_STATUS(s = OS_ShellInit())       { return s; }
     IF_STATUS(s = OS_EnvInit())         { return s; }
+#if (1 == OS_EVENTS_ENABLED)
     IF_STATUS(s = OS_EventInit())       { return s; }
+#endif //(1 == OS_EVENTS_ENABLED)
     IF_STATUS(s = OS_SettingsInit())    { return s; }
     IF_STATUS(s = OS_PowerInit())       { return s; }
     IF_STATUS(s = OSAL_DriversCreate()) { return s; }
@@ -88,8 +94,12 @@ Status s;
     IF_STATUS(s = OS_EnvVariableSet("media_automount", "on", OS_NULL))                  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
 #if (1 == OS_AUDIO_ENABLED)
-    IF_STATUS(s = OS_EnvVariableSet("volume", "0", OS_VolumeSet)) {
-        if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio device is created so far.
+    Str volume_str[4];
+    if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%u", OS_AUDIO_OUT_VOLUME_DEFAULT)) {
+        return S_INVALID_VALUE;
+    }
+    IF_STATUS(s = OS_EnvVariableSet("volume", volume_str, OS_VolumeSet)) {
+        if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio device are created so far.
     }
 #endif //(1 == OS_AUDIO_ENABLED)
     //Init environment variables.
@@ -182,7 +192,7 @@ OS_AudioVolume OS_VolumeGet(void)
 Status OS_VolumeSet(ConstStrPtr volume_p)
 {
     os_env.volume = (OS_AudioVolume)OS_StrToUL((const char*)volume_p, OS_NULL, 10);
-    OS_AudioDeviceHd dev_hd = OS_AudioDeviceCurrentGet();
+    OS_AudioDeviceHd dev_hd = OS_AudioDeviceDefaultGet(DIR_OUT);
     if (OS_NULL == dev_hd) {
         return S_INVALID_REF;
     }
@@ -345,9 +355,6 @@ void vApplicationIdleHook(void);
 void vApplicationIdleHook(void)
 {
     is_idle = OS_TRUE;
-#if (0 == OS_TICKLESS_MODE_ENABLED)
-//    OS_POWER_STATE_SLEEP(); //TURNED OFF. AFFECTED ON USBD!!!!
-#endif // OS_TICKLESS_MODE_ENABLED
 }
 
 /******************************************************************************/

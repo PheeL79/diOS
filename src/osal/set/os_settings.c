@@ -51,7 +51,8 @@ Status OS_SettingsRead(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrP
 Status s = S_OK;
     if (!ini_gets((char const*)section_p, (char const*)key_p,
                   OS_SETTINGS_VALUE_DEFAULT, (char*)value_p, OS_SETTINGS_VALUE_LEN, (const char*)file_path_p)) {
-        OS_LOG_S(D_WARNING, s = S_SETT_READ);
+        s = S_SETT_READ;
+        OS_LOG_S(D_WARNING, s);
     }
     OS_LOG(D_DEBUG, "Sett read: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
     return s;
@@ -63,7 +64,8 @@ Status OS_SettingsWrite(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStr
 Status s = S_OK;
     OS_LOG(D_DEBUG, "Sett write: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
     if (!ini_puts((char const*)section_p, (char const*)key_p, (char*)value_p, (const char*)file_path_p)) {
-        OS_LOG_S(D_WARNING, s = S_SETT_WRITE);
+        s = S_SETT_WRITE;
+        OS_LOG_S(D_WARNING, s);
     }
     return s;
 }

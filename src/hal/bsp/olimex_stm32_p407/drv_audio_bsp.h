@@ -7,10 +7,13 @@
 #define _DRV_AUDIO_BSP_H_
 
 #include "os_config.h"
+#include "com/cs4344/drv_audio_cs4344.h"
 
 //-----------------------------------------------------------------------------
 enum {
-    DRV_ID_AUDIO_CS4344,
+#if defined(OS_AUDIO_DEV_CS4344)
+    DRV_ID_AUDIO_CS4344  = OS_AUDIO_DEV_CS4344,
+#endif
     DRV_ID_AUDIO_LAST
 };
 

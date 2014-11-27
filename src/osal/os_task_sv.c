@@ -131,20 +131,20 @@ Status SystemPowerStateSet(TaskArgs* task_args_p, const OS_PowerState state)
 HAL_DriverItf* drv_power_itf_p = drv_power_v[DRV_ID_POWER];
 extern volatile OS_Env os_env;
 Status s;
-    if ((PWR_ON == state) || (PWR_STARTUP == state)) {
+    if (PWR_ON == state) {
         //Direct call to IoCtl func bypass OS_Driver interface.
         //(no API func calls are allowed with the suspended scheduler).
-        IF_STATUS_OK(s = drv_power_itf_p->IoCtl(DRV_REQ_STD_POWER_SET, (void*)&state)) {
-            IF_STATUS_OK(s = SystemPowerStateForDriversSet(state)) {
-                IF_STATUS_OK(s = SystemPowerStateForTasksSet(state)) {
+        IF_OK(s = drv_power_itf_p->IoCtl(DRV_REQ_STD_POWER_SET, (void*)&state)) {
+            IF_OK(s = SystemPowerStateForDriversSet(state)) {
+                IF_OK(s = SystemPowerStateForTasksSet(state)) {
                     os_env.hal_env_p->power = state;
                     OS_LOG(D_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
                 }
             }
         } else { OS_LOG_S(D_WARNING, s); }
     } else {
-        IF_STATUS_OK(s = SystemPowerStateForTasksSet(state)) {
-            IF_STATUS_OK(s = SystemPowerStateForDriversSet(state)) {
+        IF_OK(s = SystemPowerStateForTasksSet(state)) {
+            IF_OK(s = SystemPowerStateForDriversSet(state)) {
                 os_env.hal_env_p->power = state;
                 OS_LOG(D_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
                 //Direct call to IoCtl func bypass OS_Driver interface.
@@ -178,20 +178,20 @@ Status s = S_OK; //!
         if ((par_thd != OS_NULL) && (sv_thd != thd)) { //ignore OS system tasks.
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(thd);
             if (OS_NULL != stdin_qhd) {
-                IF_STATUS_OK(s = OS_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+                IF_OK(s = OS_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
                     OS_Message* msg_p;
-                    IF_STATUS_OK(s = OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_TIMEOUT_POWER)) {
+                    IF_OK(s = OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_TIMEOUT_POWER)) {
                         if (OS_SignalIs(msg_p)) {
                             switch (OS_SignalIdGet(msg_p)) {
                                 case OS_SIG_PWR_ACK:
-                                    IF_STATUS_OK(s = (Status)OS_SignalDataGet(msg_p)) {
+                                    IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
                                         if (PWR_SHUTDOWN == state) {
                                             IF_STATUS(s = OS_TaskDelete(thd)) {
                                                 //TODO(A.Filyanov) Status handler!
                                             }
                                         }
 //                                        } else {
-//                                            if ((PWR_ON == state) || (PWR_STARTUP == state)) {
+//                                            if (PWR_ON == state) {
 //                                                OS_TaskResume(thd);
 //                                            } else {
 //                                                OS_TaskSuspend(thd);
@@ -246,11 +246,11 @@ Status s;
 void MessagesHandler(TaskArgs* task_args_p)
 {
 extern Status OS_TaskTimeoutReset(const OS_TaskHd thd);
-extern volatile BL is_idle;
+extern volatile Bool is_idle;
 static State led_state = OFF;
 OS_Message* msg_p;
 
-    IF_STATUS_OK(OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_PULSE_RATE)) {
+    IF_OK(OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_PULSE_RATE)) {
         if (OS_SignalIs(msg_p)) {
             switch (OS_SignalIdGet(msg_p)) {
                 case OS_SIG_PULSE_ACK:
@@ -285,8 +285,8 @@ OS_Message* msg_p;
 #if (1 == OS_TASK_DEADLOCK_TEST_ENABLED)
     if (OS_TRUE != is_idle) {
         Status s;
-        IF_STATUS_OK(s = TaskDeadLockTest()) {
-            IF_STATUS_OK(s = TaskDeadLockAction()) {
+        IF_OK(s = TaskDeadLockTest()) {
+            IF_OK(s = TaskDeadLockAction()) {
             } else { OS_LOG_S(D_WARNING, s); }
         } else { OS_LOG_S(D_WARNING, s); }
     } else {
@@ -312,7 +312,8 @@ OS_TaskStats* task_stats_old_p;
 OS_TaskStats* task_stats_new_p;
 Status s = S_OK;
     if (OS_NULL == run_stats_old_buf_p) {
-        OS_LOG_S(D_CRITICAL, (s = S_NO_MEMORY));
+        s = S_NO_MEMORY;
+        OS_LOG_S(D_CRITICAL, s);
         goto error;
     }
     //Get current tasks stats.
@@ -329,7 +330,8 @@ Status s = S_OK;
         register U32 tasks_count_new = OS_TasksCountGet();
         run_stats_new_buf_p = (OS_TaskStats*)OS_Malloc(task_inf_approx_mem_size * tasks_count_new);
         if (OS_NULL == run_stats_new_buf_p) {
-            OS_LOG_S(D_CRITICAL, (s = S_NO_MEMORY));
+            s = S_NO_MEMORY;
+            OS_LOG_S(D_CRITICAL, s);
             goto error;
         }
         if (tasks_count_new != OS_TasksStatsGet(run_stats_new_buf_p, tasks_count_new, OS_NULL)) {

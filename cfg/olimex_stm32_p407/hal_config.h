@@ -84,6 +84,7 @@
 // cstdlib redefenitions
 // Memory
 #define HAL_MemSet      memset
+#define HAL_MemCmp      memcmp
 #define HAL_MemCpy      memcpy
 #define HAL_MemMov      memmove
 // String

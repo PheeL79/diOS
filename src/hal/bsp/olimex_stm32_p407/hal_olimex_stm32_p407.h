@@ -12,6 +12,7 @@
 //CSP
 #include "drv_adc.h"
 #include "drv_spi.h"
+#include "drv_i2s.h"
 #include "drv_dma.h"
 #include "drv_rtc.h"
 #include "drv_gpio.h"
@@ -26,8 +27,7 @@
 #include "drv_trimmer.h"
 #include "drv_button.h"
 #include "drv_led.h"
-#include "drv_audio.h"
-#include "drv_audio_bsp.h"
+//#include "drv_audio_bsp.h"
 #include "drv_media.h"
 #include "drv_media_bsp.h"
 
@@ -38,12 +38,19 @@
 #define HAL_SYSTICK_START()             HAL_ResumeTick()
 #define HAL_SYSTICK_STOP()              HAL_SuspendTick()
 
-//#define HAL_DEBUG_PIN_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
-//#define HAL_DEBUG_PIN                   GPIO_PIN_5
-//#define HAL_DEBUG_PIN_PORT              GPIOC
-//#define HAL_DEBUG_PIN_UP                HAL_GPIO_WritePin(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN, GPIO_PIN_SET)
-//#define HAL_DEBUG_PIN_DOWN              HAL_GPIO_WritePin(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN, GPIO_PIN_RESET)
-//#define HAL_DEBUG_PIN_TOGGLE            HAL_GPIO_TogglePin(HAL_DEBUG_PIN_PORT, HAL_DEBUG_PIN)
+#define HAL_DEBUG_PIN1_CLK_ENABLE()     __GPIOA_CLK_ENABLE()
+#define HAL_DEBUG_PIN1                  GPIO_PIN_4
+#define HAL_DEBUG_PIN1_PORT             GPIOA
+#define HAL_DEBUG_PIN1_UP               HAL_GPIO_WritePin(HAL_DEBUG_PIN1_PORT, HAL_DEBUG_PIN1, GPIO_PIN_SET)
+#define HAL_DEBUG_PIN1_DOWN             HAL_GPIO_WritePin(HAL_DEBUG_PIN1_PORT, HAL_DEBUG_PIN1, GPIO_PIN_RESET)
+#define HAL_DEBUG_PIN1_TOGGLE           HAL_GPIO_TogglePin(HAL_DEBUG_PIN1_PORT, HAL_DEBUG_PIN1)
+
+#define HAL_DEBUG_PIN2_CLK_ENABLE()     __GPIOA_CLK_ENABLE()
+#define HAL_DEBUG_PIN2                  GPIO_PIN_6
+#define HAL_DEBUG_PIN2_PORT             GPIOA
+#define HAL_DEBUG_PIN2_UP               HAL_GPIO_WritePin(HAL_DEBUG_PIN2_PORT, HAL_DEBUG_PIN2, GPIO_PIN_SET)
+#define HAL_DEBUG_PIN2_DOWN             HAL_GPIO_WritePin(HAL_DEBUG_PIN2_PORT, HAL_DEBUG_PIN2, GPIO_PIN_RESET)
+#define HAL_DEBUG_PIN2_TOGGLE           HAL_GPIO_TogglePin(HAL_DEBUG_PIN2_PORT, HAL_DEBUG_PIN2)
 
 #define HAL_ASSERT_PIN_CLK_ENABLE()     __GPIOF_CLK_ENABLE()
 #define HAL_ASSERT_PIN                  GPIO_PIN_8

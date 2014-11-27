@@ -3,7 +3,7 @@
 * @brief   Audio daemon task.
 * @author  A. Filyanov
 *******************************************************************************/
-#include "com/cs4344/drv_audio_cs4344.h"
+#include "drv_audio_bsp.h"
 #include "os_debug.h"
 #include "os_environment.h"
 #include "os_driver.h"
@@ -43,7 +43,6 @@ Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 TaskArgs* task_args_p = (TaskArgs*)args_p;
 Status s = S_UNDEF;
-//TODO(A. Filyanov) Make a config for an audio(in/out) devices. Like OS FileSystem Media one.
     {
         const OS_DriverConfig drv_cfg = {
             .name       = "TRIMMER",
@@ -61,6 +60,7 @@ Status s = S_UNDEF;
         const OS_AudioDeviceConfig audio_dev_cfg = {
             .name       = "CS4344",
             .drv_cfg_p  = &drv_cfg,
+            .caps       = cs4344_caps
         };
         IF_STATUS(s = OS_AudioDeviceCreate(&audio_dev_cfg, &(task_args_p->audio_dev_hd))) { return s; }
     }
@@ -73,14 +73,8 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 TaskArgs* task_args_p = (TaskArgs*)args_p;
 const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 OS_Message* msg_p;
+OS_TaskHd this_thd = OS_TaskGet();
 Status s = S_UNDEF;
-
-    IF_STATUS_OK(s = OS_DriverInit(task_args_p->drv_trimmer_hd, (void*)&stdin_qhd)) {
-        IF_STATUS(s = OS_DriverOpen(task_args_p->drv_trimmer_hd, OS_NULL)) {
-        }
-    } else {
-        s = (S_INIT == s) ? S_OK : s;
-    }
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
@@ -88,11 +82,16 @@ Status s = S_UNDEF;
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
+                    case OS_SIG_AUDIO_TX_COMPLETE:
+                    case OS_SIG_AUDIO_TX_COMPLETE_HALF:
+                    case OS_SIG_AUDIO_ERROR:
+                        OS_SignalEmit(msg_p, OS_MSG_PRIO_NORMAL);
+                        break;
                     case OS_SIG_DRV: {
                         ConstStrPtr env_var_str_p = "volume";
                         const OS_AudioVolume volume = (OS_AudioVolume)OS_SignalDataGet(msg_p);
                         Str volume_str[4];
-                        if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%d", volume)) {
+                        if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%u", volume)) {
                             OS_LOG_S(D_WARNING, S_INVALID_VALUE);
                         }
                         IF_STATUS(s = OS_EnvVariableSet(env_var_str_p, volume_str, OS_NULL)) {
@@ -130,18 +129,26 @@ Status s = S_UNDEF;
             break;
         case PWR_OFF:
         case PWR_STOP:
-        case PWR_SHUTDOWN: {
-            IF_STATUS(s = OS_AudioDeviceClose(task_args_p->audio_dev_hd))  { goto error; }
-            IF_STATUS(s = OS_AudioDeviceDeInit(task_args_p->audio_dev_hd)) { goto error; }
-            }
+        case PWR_SHUTDOWN:
+            IF_STATUS(s = OS_AudioDeviceClose(task_args_p->audio_dev_hd))       { goto error; }
+            IF_STATUS(s = OS_AudioDeviceDeInit(task_args_p->audio_dev_hd))      { goto error; }
+            IF_STATUS(s = OS_DriverDeInit(task_args_p->drv_trimmer_hd, OS_NULL)){ goto error; }
             break;
         case PWR_ON: {
+            const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
+            IF_OK(s = OS_DriverInit(task_args_p->drv_trimmer_hd, (void*)&stdin_qhd)) {
+                IF_STATUS(s = OS_DriverOpen(task_args_p->drv_trimmer_hd, OS_NULL)) {
+                }
+            } else {
+                s = (S_INIT == s) ? S_OK : s;
+            }
             const CS4344_DrvAudioArgsInit drv_args = {
-                .freq   = 44100,
-                .volume = OS_VolumeGet()
+                .freq   = OS_AUDIO_OUT_FREQ_DEFAULT,
+                .bits   = OS_AUDIO_OUT_BITS_DEFAULT,
+                .volume = OS_AUDIO_OUT_VOLUME_DEFAULT
             };
-            IF_STATUS(s = OS_AudioDeviceInit(task_args_p->audio_dev_hd, (void*)&drv_args)) { goto error; }
-            IF_STATUS(s = OS_AudioDeviceOpen(task_args_p->audio_dev_hd, (void*)&drv_args)) { goto error; }
+            IF_STATUS(s = OS_AudioDeviceInit(task_args_p->audio_dev_hd, (void*)&drv_args))  { goto error; }
+            IF_STATUS(s = OS_AudioDeviceOpen(task_args_p->audio_dev_hd, (void*)&stdin_qhd)) { goto error; }
             }
             break;
         default:

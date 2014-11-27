@@ -6,9 +6,9 @@
 #ifndef _OS_TASK_FSD_H_
 #define _OS_TASK_FSD_H_
 
+#include "drv_usb.h"
 #include "os_common.h"
 #include "os_signal.h"
-#include "os_usb.h"
 
 #if (1 == OS_FILE_SYSTEM_ENABLED)
 #define OS_DAEMON_NAME_FS           "FileSysD"

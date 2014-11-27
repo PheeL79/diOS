@@ -17,12 +17,12 @@ enum {
 extern HAL_DriverItf* drv_dma_v[];
 
 //-----------------------------------------------------------------------------
-void DMA_MemCpy8(void* dst_p, const void* src_p, SIZE size8);
-void DMA_MemCpy8Async(void* dst_p, const void* src_p, SIZE size8);
+void DMA_MemCpy8(void* dst_p, const void* src_p, Size size8);
+void DMA_MemCpy8Async(void* dst_p, const void* src_p, Size size8);
 void DMA_MemCpy8IsDoneWait(void);
 
-void DMA_MemCpy32(void* dst_p, const void* src_p, SIZE size32);
-void DMA_MemCpy32Async(void* dst_p, const void* src_p, SIZE size32);
+void DMA_MemCpy32(void* dst_p, const void* src_p, Size size32);
+void DMA_MemCpy32Async(void* dst_p, const void* src_p, Size size32);
 void DMA_MemCpy32IsDoneWait(void);
 
 #endif // _DRV_DMA_H_

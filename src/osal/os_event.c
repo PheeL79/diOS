@@ -10,6 +10,7 @@
 #include "os_list.h"
 #include "os_event.h"
 
+#if (1 == OS_EVENTS_ENABLED)
 //------------------------------------------------------------------------------
 typedef struct {
     OS_TimerHd      timer_hd;
@@ -284,3 +285,5 @@ OS_ListItem* iter_li_p = (OS_ListItem*)ehd;
     }
     return (OS_EventHd)iter_li_p;
 }
+
+#endif //(1 == OS_EVENTS_ENABLED)

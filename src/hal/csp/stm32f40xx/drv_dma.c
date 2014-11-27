@@ -136,7 +136,7 @@ void DMA_MemCpy8IsDoneWait(void)
 
 /*****************************************************************************/
 #pragma inline
-void DMA_MemCpy8Async(void* dst_p, const void* src_p, SIZE size8)
+void DMA_MemCpy8Async(void* dst_p, const void* src_p, Size size8)
 {
 //    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM8)) {};
 //    DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8);
@@ -148,7 +148,7 @@ void DMA_MemCpy8Async(void* dst_p, const void* src_p, SIZE size8)
 }
 
 /*****************************************************************************/
-void DMA_MemCpy8(void* dst_p, const void* src_p, SIZE size8)
+void DMA_MemCpy8(void* dst_p, const void* src_p, Size size8)
 {
     DMA_MemCpy8Async(dst_p, src_p, size8);
     DMA_MemCpy8IsDoneWait();
@@ -163,7 +163,7 @@ void DMA_MemCpy32IsDoneWait(void)
 
 /*****************************************************************************/
 #pragma inline
-void DMA_MemCpy32Async(void* dst_p, const void* src_p, SIZE size32)
+void DMA_MemCpy32Async(void* dst_p, const void* src_p, Size size32)
 {
 //    while (DISABLE != DMA_GetCmdStatus(DMA_STREAM_MEM2MEM32)) {};
 //    DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32);
@@ -175,7 +175,7 @@ void DMA_MemCpy32Async(void* dst_p, const void* src_p, SIZE size32)
 }
 
 /*****************************************************************************/
-void DMA_MemCpy32(void* dst_p, const void* src_p, SIZE size32)
+void DMA_MemCpy32(void* dst_p, const void* src_p, Size size32)
 {
     DMA_MemCpy32Async(dst_p, src_p, size32);
     DMA_MemCpy32IsDoneWait();

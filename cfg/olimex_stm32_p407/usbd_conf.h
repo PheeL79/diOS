@@ -33,9 +33,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "drv_usb.h"
 #include "os_config.h"
 #include "os_memory.h"
-#include "os_usb.h"
 
 /* Includes ------------------------------------------------------------------*/
 

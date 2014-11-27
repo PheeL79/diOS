@@ -21,6 +21,27 @@ extern "C" {
 //------------------------------------------------------------------------------
 #define SHELL_COMMAND_UNDEF     OS_NULL
 
+enum {
+    OS_SHELL_BUTTON_UP              = 'A',
+    OS_SHELL_BUTTON_DOWN            = 'B',
+    OS_SHELL_BUTTON_RIGHT           = 'C',
+    OS_SHELL_BUTTON_LEFT            = 'D',
+    OS_SHELL_BUTTON_HOME            = '1',
+    OS_SHELL_BUTTON_END             = '4',
+    OS_SHELL_BUTTON_DELETE          = '3',
+
+    OS_ASCII_EOL                    = '\0',
+    OS_ASCII_SPACE                  = ' ',
+    OS_ASCII_EXC_MARK               = '!',
+    OS_ASCII_TILDE                  = '~',
+    OS_ASCII_DOUBLE_QUOTE           = '\"',
+    OS_ASCII_ESC_CR                 = '\r',
+    OS_ASCII_ESC_LF                 = '\n',
+    OS_ASCII_ESC_BACKSPACE          = 0x7F,
+    OS_ASCII_ESC_NOT_ECHO_NEXT      = 0x1B,
+    OS_ASCII_ESC_OP_SQUARE_BRAC     = 0x5B
+};
+
 //------------------------------------------------------------------------------
 typedef Status (*OS_ShellCommandHandler)(const U32 argc, ConstStrPtr argv[]);
 

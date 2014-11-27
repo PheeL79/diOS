@@ -59,10 +59,10 @@ Status          OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const TimeMs
 /// @return     #Status.
 Status          OS_QueueSend(const OS_QueueHd qhd, const void* item_p, const TimeMs timeout, const OS_MessagePrio priority);
 
-/// @brief      Flush the queue.
+/// @brief      Clear the queue.
 /// @param[in]  qhd             Queue handle.
 /// @return     #Status.
-Status          OS_QueueFlush(const OS_QueueHd qhd);
+Status          OS_QueueClear(const OS_QueueHd qhd);
 
 /// @brief      Get queue items count.
 /// @param[in]  qhd             Queue handle.

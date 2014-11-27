@@ -94,7 +94,7 @@ void* p = OS_NULL;
 //        }
 //        // ...otherwise - next descriptor.
 //    } while (OS_MEM_LAST != (++mem_desc_p)->type);
-    IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+    IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         p = malloc_ex(size, (void*)mem_desc_p->addr);
         OS_MutexUnlock(os_mem_mutex);
     }
@@ -107,7 +107,7 @@ void* OS_MallocEx(const U32 size, const OS_MemoryType mem_type)
 const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
 void* p = OS_NULL;
     if (mem_desc_p) {
-        IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+        IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
             p = malloc_ex(size, (void*)mem_desc_p->addr);
             OS_MutexUnlock(os_mem_mutex);
         }
@@ -124,7 +124,7 @@ void* p = OS_NULL;
 void OS_Free(void* addr_p)
 {
     if (addr_p) {
-        IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+        IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
             tlsf_free(addr_p);
             OS_MutexUnlock(os_mem_mutex);
         }
@@ -137,7 +137,7 @@ void OS_FreeEx(void* addr_p, const OS_MemoryType mem_type)
 const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
     if (mem_desc_p) {
         if (addr_p) {
-            IF_STATUS_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+            IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
                 free_ex(addr_p, (void*)mem_desc_p->addr);
                 OS_MutexUnlock(os_mem_mutex);
             }

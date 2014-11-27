@@ -131,6 +131,7 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil			1
 #define INCLUDE_vTaskDelay				1
 #define INCLUDE_pcTaskGetTaskName       1
+#define INCLUDE_xTaskGetSchedulerState  1
 #define INCLUDE_eTaskGetState           OS_STATS_ENABLED
 
 /* Cortex-M specific definitions. */

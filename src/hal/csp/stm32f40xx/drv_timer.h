@@ -48,7 +48,7 @@ Status      TIMER_IWDG_Start(void);
 void        TIMER_IWDG_Reset(void);
 
 void        TIMER_DWT_Init(void);
-LNG         TIMER_DWT_Get(void);
+Long        TIMER_DWT_Get(void);
 //TODO(A. Filyanov) Move to the driver's private interface.
 void        TIMER10_Reset(void);
 void        TIMER10_Start(void);

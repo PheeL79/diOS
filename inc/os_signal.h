@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 //------------------------------------------------------------------------------
-typedef U32         OS_Signal;
+typedef OS_Message* OS_Signal;
 typedef U8          OS_SignalId;
 typedef OS_TaskId   OS_SignalSrc;
 typedef U16         OS_SignalData;
@@ -44,22 +44,22 @@ enum {
 };
 
 //------------------------------------------------------------------------------
-#define OS_SignalCreateEx(src, id, data)                        (OS_SIGNAL_TOKEN_BM | \
-                                                                ((((OS_Signal)(id) & OS_SIGNAL_ID_BM)  << 24) | \
-                                                                (((OS_Signal)(src) & OS_SIGNAL_SRC_BM) << 16) | \
-                                                                ((OS_Signal)(data) & OS_SIGNAL_DATA_BM)))
+#define OS_SignalCreateEx(src, id, data)                        ((OS_Signal)(OS_SIGNAL_TOKEN_BM | \
+                                                                ((((UInt)(id) & OS_SIGNAL_ID_BM)  << 24) | \
+                                                                (((UInt)(src) & OS_SIGNAL_SRC_BM) << 16) | \
+                                                                ((UInt)(data) & OS_SIGNAL_DATA_BM))))
 
 #define OS_SignalCreate(id, data)                               OS_SignalCreateEx(OS_TaskIdGet(OS_THIS_TASK), id, data)
-#define OS_SignalEmit(signal, prio)                             OS_MessageEmit((OS_Message*)signal, OS_NO_BLOCK, prio)
-#define OS_SignalSend(qhd, signal, prio)                        OS_MessageSend(qhd, (OS_Message*)signal, OS_NO_BLOCK, prio)
-#define OS_SignalMulticastSend(slots_qhd_l_p, signal, prio)     OS_MessageMulticastSend(slots_qhd_l_p, (OS_Message*)signal, OS_NO_BLOCK, prio)
-#define OS_SignalIs(msg_p)                                      (OS_SIGNAL_TOKEN_BM == ((OS_Signal)(msg_p) & OS_SIGNAL_TOKEN_BM))
-#define OS_SignalIdGet(signal)                                  ((OS_SignalId)(((OS_Signal)(signal) >> 24) & OS_SIGNAL_ID_BM))
-#define OS_SignalSrcGet(signal)                                 ((OS_SignalSrc)(((OS_Signal)(signal) >> 16) & OS_SIGNAL_SRC_BM))
-#define OS_SignalDataGet(signal)                                ((OS_SignalData)(((OS_Signal)(signal)) & OS_SIGNAL_DATA_BM))
+#define OS_SignalEmit(signal, prio)                             OS_MessageEmit(signal, OS_NO_BLOCK, prio)
+#define OS_SignalSend(qhd, signal, prio)                        OS_MessageSend(qhd, signal, OS_NO_BLOCK, prio)
+#define OS_SignalMulticastSend(slots_qhd_l_p, signal, prio)     OS_MessageMulticastSend(slots_qhd_l_p, signal, OS_NO_BLOCK, prio)
+#define OS_SignalIs(msg_p)                                      (OS_SIGNAL_TOKEN_BM == ((UInt)(msg_p) & OS_SIGNAL_TOKEN_BM))
+#define OS_SignalIdGet(signal)                                  ((OS_SignalId)(((UInt)(signal) >> 24) & OS_SIGNAL_ID_BM))
+#define OS_SignalSrcGet(signal)                                 ((OS_SignalSrc)(((UInt)(signal) >> 16) & OS_SIGNAL_SRC_BM))
+#define OS_SignalDataGet(signal)                                ((OS_SignalData)(((UInt)(signal)) & OS_SIGNAL_DATA_BM))
 
 #define OS_ISR_SignalCreate                                     OS_SignalCreateEx
-#define OS_ISR_SignalSend(qhd, signal, prio)                    OS_ISR_MessageSend(qhd, (OS_Message*)signal, prio)
+#define OS_ISR_SignalSend(qhd, signal, prio)                    OS_ISR_MessageSend(qhd, signal, prio)
 
 #ifdef __cplusplus
 }

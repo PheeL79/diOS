@@ -31,8 +31,8 @@
 #define SD_POWER_STATE_ON               0x03
 
 /* DMA definitions for SD DMA transfer */
-#define SD_NVIC_IRQ_PRIORITY            (OS_PRIORITY_INT_MIN + 1)
-#define SD_NVIC_DMA_IRQ_PRIORITY        (OS_PRIORITY_INT_MIN + 2)
+#define SD_NVIC_IRQ_PRIORITY            (OS_PRIORITY_INT_MIN - 1)
+#define SD_NVIC_DMA_IRQ_PRIORITY        (OS_PRIORITY_INT_MIN)
 #define __DMAx_TxRx_CLK_ENABLE          __DMA2_CLK_ENABLE
 #define SD_DMAx_Tx_CHANNEL              DMA_CHANNEL_4
 #define SD_DMAx_Rx_CHANNEL              DMA_CHANNEL_4
@@ -58,16 +58,16 @@ static Status SDIO_LL_Init(void* args_p);
 //static Status SDIO_LL_DeInit(void* args_p);
 static Status SDIO_Open(void* args_p);
 static Status SDIO_Close(void* args_p);
-//static Status SDIO_Read(void* data_in_p, SIZE size, void* args_p);
-//static Status SDIO_Write(void* data_out_p, SIZE size, void* args_p);
-static Status SDIO_DMA_Read(void* data_in_p, SIZE size, void* args_p);
-static Status SDIO_DMA_Write(void* data_out_p, SIZE size, void* args_p);
+//static Status SDIO_Read(void* data_in_p, Size size, void* args_p);
+//static Status SDIO_Write(void* data_out_p, Size size, void* args_p);
+static Status SDIO_DMA_Read(void* data_in_p, Size size, void* args_p);
+static Status SDIO_DMA_Write(void* data_out_p, Size size, void* args_p);
 static Status SDIO_IoCtl(const U32 request_id, void* args_p);
 
-static BL SD_IsDetected(void);
+static Bool SD_IsDetected(void);
 
 //-----------------------------------------------------------------------------
-static SD_HandleTypeDef sd_handle;
+static SD_HandleTypeDef sd_hd;
 static DMA_HandleTypeDef sd_dma_rx_handle;
 static DMA_HandleTypeDef sd_dma_tx_handle;
 static OS_DriverHd drv_led_fs;
@@ -96,22 +96,22 @@ Status s;
     if (OS_TRUE == SD_IsDetected()) {
         HAL_SD_CardInfoTypedef sd_card_info;
 
-        sd_handle.Instance                = SDIO;
-        sd_handle.Init.ClockEdge          = SDIO_CLOCK_EDGE_RISING;
-        sd_handle.Init.ClockBypass        = SDIO_CLOCK_BYPASS_DISABLE;
-        sd_handle.Init.ClockPowerSave     = SDIO_CLOCK_POWER_SAVE_DISABLE;
-        sd_handle.Init.BusWide            = SDIO_BUS_WIDE_1B;
+        sd_hd.Instance                = SDIO;
+        sd_hd.Init.ClockEdge          = SDIO_CLOCK_EDGE_RISING;
+        sd_hd.Init.ClockBypass        = SDIO_CLOCK_BYPASS_DISABLE;
+        sd_hd.Init.ClockPowerSave     = SDIO_CLOCK_POWER_SAVE_DISABLE;
+        sd_hd.Init.BusWide            = SDIO_BUS_WIDE_1B;
         //Do _NOT_ use HardwareFlowControl due 2.9.1 SDIO HW flow control errata.
-        sd_handle.Init.HardwareFlowControl= SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-        sd_handle.Init.ClockDiv           = SDIO_TRANSFER_CLK_DIV;
-        if (SD_OK != HAL_SD_Init(&sd_handle, &sd_card_info)) { s = S_HARDWARE_FAULT; }
+        sd_hd.Init.HardwareFlowControl= SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+        sd_hd.Init.ClockDiv           = SDIO_TRANSFER_CLK_DIV;
+        if (SD_OK != HAL_SD_Init(&sd_hd, &sd_card_info)) { s = S_HARDWARE_FAULT; }
 
 //TODO(A. Filyanov) Wrong bus width detection!
 //        HAL_SD_CardStatusTypedef sd_card_status;
-//        HAL_SD_GetCardStatus(&sd_handle, &sd_card_status);
+//        HAL_SD_GetCardStatus(&sd_hd, &sd_card_status);
 //
 //        if (4 == sd_card_status.DAT_BUS_WIDTH) {
-            if (SD_OK != HAL_SD_WideBusOperation_Config(&sd_handle, SDIO_BUS_WIDE_4B)) {
+            if (SD_OK != HAL_SD_WideBusOperation_Config(&sd_hd, SDIO_BUS_WIDE_4B)) {
                 s = S_HARDWARE_FAULT;
             }
 //        }
@@ -171,7 +171,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
 
     /* Associate the DMA handle */
-    __HAL_LINKDMA(&sd_handle, hdmarx, sd_dma_rx_handle);
+    __HAL_LINKDMA(&sd_hd, hdmarx, sd_dma_rx_handle);
 
     /* Deinitialize the stream for new transfer */
     HAL_DMA_DeInit(&sd_dma_rx_handle);
@@ -196,7 +196,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
 
     /* Associate the DMA handle */
-    __HAL_LINKDMA(&sd_handle, hdmatx, sd_dma_tx_handle);
+    __HAL_LINKDMA(&sd_hd, hdmatx, sd_dma_tx_handle);
 
     /* Deinitialize the stream for new transfer */
     HAL_DMA_DeInit(&sd_dma_tx_handle);
@@ -222,7 +222,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 Status SDIO_DeInit_(void* args_p)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_SD_DeInit(&sd_handle)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_SD_DeInit(&sd_hd)) { s = S_HARDWARE_FAULT; }
     /* Peripheral clock disable */
     __SDIO_CLK_DISABLE();
 
@@ -240,8 +240,8 @@ Status s = S_OK;
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
     /* Peripheral DMA DeInit*/
-    HAL_DMA_DeInit(sd_handle.hdmarx);
-    HAL_DMA_DeInit(sd_handle.hdmatx);
+    HAL_DMA_DeInit(sd_hd.hdmarx);
+    HAL_DMA_DeInit(sd_hd.hdmatx);
     return s;
 }
 
@@ -257,33 +257,33 @@ Status s = S_OK;
 Status SDIO_Close(void* args_p)
 {
 Status s = S_OK;
-    IF_STATUS_OK(s = drv_media_sdcard.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
-        IF_STATUS_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
+    IF_OK(s = drv_media_sdcard.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
+        IF_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
     }
     return s;
 }
 
 /******************************************************************************/
-//Status SDIO_Read(void* data_in_p, SIZE size, void* args_p)
+//Status SDIO_Read(void* data_in_p, Size size, void* args_p)
 //{
 //U32 sector = *(U32*)args_p;
 //State led_fs_state = ON;
 //Status s = S_OK;
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
-//    if (SD_OK != HAL_SD_ReadBlocks(&sd_handle, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size)) {}
+//    if (SD_OK != HAL_SD_ReadBlocks(&sd_hd, (U32*)data_in_p, (sector * SD_CARD_SECTOR_Size), SD_CARD_BLOCK_Size, size)) {}
 //    led_fs_state = OFF;
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
 //    return s;
 //}
 
 /******************************************************************************/
-//Status SDIO_Write(void* data_out_p, SIZE size, void* args_p)
+//Status SDIO_Write(void* data_out_p, Size size, void* args_p)
 //{
 //U32 sector = *(U32*)args_p;
 //State led_fs_state = ON;
 //Status s = S_OK;
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
-//    if (SD_OK != HAL_SD_WriteBlocks(&sd_handle, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size)) {}
+//    if (SD_OK != HAL_SD_WriteBlocks(&sd_hd, (U32*)data_out_p, (sector * SD_CARD_SECTOR_Size), SD_CARD_BLOCK_Size, size)) {}
 //    led_fs_state = OFF;
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
 //    return s;
@@ -291,7 +291,7 @@ Status s = S_OK;
 
 //https://my.st.com/public/STe2ecommunities/mcu/Lists/cortex_mx_stm32/Flat.aspx?RootFolder=https%3a%2f%2fmy.st.com%2fpublic%2fSTe2ecommunities%2fmcu%2fLists%2fcortex_mx_stm32%2fST32f4discovery%2bsdcard%2bfatfs%20problem
 /******************************************************************************/
-Status SDIO_DMA_Read(void* data_in_p, SIZE size, void* args_p)
+Status SDIO_DMA_Read(void* data_in_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 HAL_SD_ErrorTypedef sd_status;
@@ -313,9 +313,9 @@ Status s = S_OK;
         return s;
     }
 
-    sd_status = HAL_SD_ReadBlocks_DMA(&sd_handle, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
+    sd_status = HAL_SD_ReadBlocks_DMA(&sd_hd, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
     if (SD_OK == sd_status) {
-        sd_status = HAL_SD_CheckReadOperation(&sd_handle, (U32)HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
+        sd_status = HAL_SD_CheckReadOperation(&sd_hd, HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
         if (SD_OK != sd_status) {
             s = S_FS_TRANSFER_FAIL;
         }
@@ -328,7 +328,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SDIO_DMA_Write(void* data_out_p, SIZE size, void* args_p)
+Status SDIO_DMA_Write(void* data_out_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 HAL_SD_ErrorTypedef sd_status;
@@ -350,9 +350,9 @@ Status s = S_OK;
         return s;
     }
 
-    sd_status = HAL_SD_WriteBlocks_DMA(&sd_handle, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
+    sd_status = HAL_SD_WriteBlocks_DMA(&sd_hd, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
     if (SD_OK == sd_status) {
-        sd_status = HAL_SD_CheckWriteOperation(&sd_handle, (U32)HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
+        sd_status = HAL_SD_CheckWriteOperation(&sd_hd, HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
         if (SD_OK != sd_status) {
             s = S_FS_TRANSFER_FAIL;
         }
@@ -367,30 +367,34 @@ Status s = S_OK;
 /******************************************************************************/
 Status SDIO_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
 //    OS_LOG(D_DEBUG, "ioctl req_id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
             HAL_StatusTypeDef hal_status = HAL_OK;
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
-                    if (SD_POWER_STATE_OFF == SDIO_GetPowerState(sd_handle.Instance)) {
-                        hal_status = SDIO_PowerState_ON(sd_handle.Instance);
+                    if (SD_POWER_STATE_OFF == SDIO_GetPowerState(sd_hd.Instance)) {
+                        hal_status = SDIO_PowerState_ON(sd_hd.Instance);
                     }
                     break;
                 case PWR_OFF: {
-                    if (SD_POWER_STATE_ON == SDIO_GetPowerState(sd_handle.Instance)) {
-                        hal_status = SDIO_PowerState_OFF(sd_handle.Instance);
-                    } else if (SD_POWER_STATE_UP == SDIO_GetPowerState(sd_handle.Instance)) {
-                        while (SD_POWER_STATE_ON != SDIO_GetPowerState(sd_handle.Instance)) {};
-                        hal_status = SDIO_PowerState_OFF(sd_handle.Instance);
+                    if (SD_POWER_STATE_ON == SDIO_GetPowerState(sd_hd.Instance)) {
+                        hal_status = SDIO_PowerState_OFF(sd_hd.Instance);
+                    } else if (SD_POWER_STATE_UP == SDIO_GetPowerState(sd_hd.Instance)) {
+                        while (SD_POWER_STATE_ON != SDIO_GetPowerState(sd_hd.Instance)) {};
+                        hal_status = SDIO_PowerState_OFF(sd_hd.Instance);
                     }
                     }
                     break;
                 default:
                     break;
             }
-            if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+            if (HAL_OK == hal_status) {
+                s = S_OK;
+            } else {
+                s = S_FS_UNDEF;
+            }
             }
             break;
         case CTRL_POWER: {
@@ -401,32 +405,40 @@ Status s = S_OK;
             const U8 power_state = (*(U8*)args_p) & 0xFF;
                 switch (power_state) {
                     case PWR_ON:
-                        hal_status = SDIO_PowerState_ON(sd_handle.Instance);
+                        hal_status = SDIO_PowerState_ON(sd_hd.Instance);
                         break;
                     case PWR_OFF:
-                        hal_status = SDIO_PowerState_OFF(sd_handle.Instance);
+                        hal_status = SDIO_PowerState_OFF(sd_hd.Instance);
                         break;
                     default:
                         break;
                 }
-                if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+                if (HAL_OK == hal_status) {
+                    s = S_OK;
+                } else {
+                    s = S_FS_UNDEF;
+                }
             }
             break;
         case DRV_REQ_STD_SYNC:
         case CTRL_SYNC:
-            while (SD_TRANSFER_OK != HAL_SD_GetStatus(&sd_handle)) {};
+            while (SD_TRANSFER_OK != HAL_SD_GetStatus(&sd_hd)) {};
+            s = S_OK;
             break;
         case DRV_REQ_MEDIA_STATUS_GET:
             if (OS_TRUE != SD_IsDetected()) {
                 s = S_FS_NOT_READY;
+            } else {
+                s = S_OK;
             }
             break;
         case DRV_REQ_MEDIA_SECTOR_COUNT_GET:
         case GET_SECTOR_COUNT: {
             HAL_SD_CardInfoTypedef card_info;
 
-            if (SD_OK == HAL_SD_Get_CardInfo(&sd_handle, &card_info)) {
+            if (SD_OK == HAL_SD_Get_CardInfo(&sd_hd, &card_info)) {
                 *(U32*)args_p = card_info.CardCapacity / SD_CARD_BLOCK_SIZE;
+                s = S_OK;
             } else {
                 *(U32*)args_p = 0;
             }
@@ -435,17 +447,21 @@ Status s = S_OK;
         case DRV_REQ_MEDIA_SECTOR_SIZE_GET:
         case GET_SECTOR_SIZE:
             *(U16*)args_p = SD_CARD_SECTOR_SIZE;
+            s = S_OK;
             break;
         case DRV_REQ_MEDIA_BLOCK_SIZE_GET:
         case GET_BLOCK_SIZE:
             *(U16*)args_p = SD_CARD_BLOCK_SIZE;
+            s = S_OK;
             break;
         case CTRL_ERASE_SECTOR: {
             //TODO(A. Filyanov) Check SDHC capability!
             U32 start_sector= ((U32*)args_p)[0] * SD_CARD_SECTOR_SIZE;
             U32 end_sector  = ((U32*)args_p)[1] * SD_CARD_SECTOR_SIZE;
-            if (SD_OK != HAL_SD_Erase(&sd_handle, start_sector, end_sector)) {
+            if (SD_OK != HAL_SD_Erase(&sd_hd, start_sector, end_sector)) {
                 s = S_FS_UNDEF;
+            } else {
+                s = S_OK;
             }
             }
             break;
@@ -457,7 +473,7 @@ Status s = S_OK;
 }
 
 /*****************************************************************************/
-BL SD_IsDetected(void)
+Bool SD_IsDetected(void)
 {
 #ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
     /* Check SD card detect pin */
@@ -473,21 +489,21 @@ BL SD_IsDetected(void)
 void SDIO_IRQHandler(void);
 void SDIO_IRQHandler(void)
 {
-    HAL_SD_IRQHandler(&sd_handle);
+    HAL_SD_IRQHandler(&sd_hd);
 }
 
 /*****************************************************************************/
 void SD_DMAx_Rx_IRQHandler(void);
 void SD_DMAx_Rx_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(sd_handle.hdmarx);
+    HAL_DMA_IRQHandler(sd_hd.hdmarx);
 }
 
 /*****************************************************************************/
 void SD_DMAx_Tx_IRQHandler(void);
 void SD_DMAx_Tx_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(sd_handle.hdmatx);
+    HAL_DMA_IRQHandler(sd_hd.hdmatx);
 }
 
 #endif //defined(OS_MEDIA_VOL_SDCARD) && (1 == SDIO_SD_ENABLED)

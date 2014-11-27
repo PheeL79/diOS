@@ -198,7 +198,7 @@ ConstStrPtr     OS_FileSystemMediaNameGet(const OS_FileSystemMediaHd fs_media_hd
 /// @param[in]  part_rule       Make partition rule.
 /// @param[in]  size            Partition size.
 /// @return     #Status.
-Status          OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const SIZE size);
+Status          OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const Size size);
 
 /// @brief      Mount file system on media volume.
 /// @param[in]  fs_media_hd     Media handle.
@@ -285,14 +285,14 @@ Status          OS_FileClose(OS_FileHd* fhd_p);
 /// @param[out] data_in_p       Data input buffer.
 /// @param[in]  size            Input buffer size.
 /// @return     #Status.
-Status          OS_FileRead(const OS_FileHd fhd, U8* data_in_p, U32 size);
+Status          OS_FileRead(const OS_FileHd fhd, void* data_in_p, Size size);
 
 /// @brief      Write file.
 /// @param[in]  fhd             File handle.
 /// @param[in]  data_out_p      Data output buffer.
 /// @param[in]  size            Output buffer size.
 /// @return     #Status.
-Status          OS_FileWrite(const OS_FileHd fhd, U8* data_out_p, U32 size);
+Status          OS_FileWrite(const OS_FileHd fhd, void* data_out_p, Size size);
 
 /// @brief      Rename file.
 /// @param[in]  name_old_p      Old name path.

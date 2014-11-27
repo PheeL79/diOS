@@ -55,11 +55,13 @@ Status s = S_OK;
     cfg_dyn_p->parent_thd           = parent_thd;
     cfg_dyn_p->cfg.len              = cfg_p->len;
     cfg_dyn_p->cfg.item_size        = cfg_p->item_size;
+#if (1 == OS_STATS_ENABLED)
     cfg_dyn_p->stats.received       = 0;
     cfg_dyn_p->stats.sended         = 0;
+#endif // OS_STATS_ENABLED
     OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
     OS_ListItemOwnerSet(item_l_p, (OS_Owner)queue_hd);
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         ++queues_count;
         OS_ListAppend(&os_queues_list, item_l_p);
         OS_MutexRecursiveUnlock(os_queue_mutex);
@@ -78,7 +80,7 @@ Status OS_QueueDelete(const OS_QueueHd qhd)
 Status s = S_OK;
 
     if (OS_NULL == qhd) { return S_UNDEF_QUEUE; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)qhd;
         OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_ListItemValueGet(item_l_p);
         vQueueDelete((QueueHandle_t)OS_ListItemOwnerGet(item_l_p));
@@ -101,7 +103,9 @@ const OS_Tick ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? time
     if (pdTRUE != xQueueReceive(queue_hd, item_p, ticks)) {
         return S_MODULE;
     }
+#if (1 == OS_STATS_ENABLED)
     cfg_dyn_p->stats.received++;
+#endif //(1 == OS_STATS_ENABLED)
     return S_OK;
 }
 
@@ -132,7 +136,9 @@ Status s = S_OK;
             }
 //            OS_LOG_S(D_WARNING, s);
         }
+#if (1 == OS_STATS_ENABLED)
         cfg_dyn_p->stats.sended++;
+#endif //(1 == OS_STATS_ENABLED)
     } else {
         s = S_UNDEF_QUEUE;
 //        OS_LOG_S(D_WARNING, s);
@@ -141,7 +147,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_QueueFlush(const OS_QueueHd qhd)
+Status OS_QueueClear(const OS_QueueHd qhd)
 {
     if (OS_NULL == qhd) { return S_UNDEF_QUEUE; }
     QueueHandle_t queue_hd = (QueueHandle_t)OS_ListItemOwnerGet((OS_ListItem*)qhd);
@@ -176,10 +182,13 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_QueueStatsGet(const OS_QueueHd qhd, OS_QueueStats* stats_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     if ((OS_NULL == qhd) || (OS_NULL == stats_p)) { return S_INVALID_REF; }
+#if (1 == OS_STATS_ENABLED)
     OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_ListItemValueGet((OS_ListItem*)qhd);
     OS_MemCpy(stats_p, &cfg_dyn_p->stats, sizeof(cfg_dyn_p->stats));
+    s = S_OK;
+#endif //(1 == OS_STATS_ENABLED)
     return s;
 }
 
@@ -195,7 +204,7 @@ OS_TaskHd OS_QueueParentGet(const OS_QueueHd qhd)
 OS_QueueHd OS_QueueNextGet(const OS_QueueHd qhd)
 {
 OS_ListItem* iter_li_p = (OS_ListItem*)qhd;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         if (OS_NULL == iter_li_p) {
             iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_queues_list));
             if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
@@ -232,7 +241,9 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     if (pdTRUE != xQueueReceiveFromISR(queue_hd, item_p, &xHigherPriorityTaskWoken)) {
         return S_MODULE;
     }
+#if (1 == OS_STATS_ENABLED)
     cfg_dyn_p->stats.received++;
+#endif //(1 == OS_STATS_ENABLED)
     if (xHigherPriorityTaskWoken) {
         return 1;
     }
@@ -265,7 +276,9 @@ Status s = S_OK;
                 s = S_MODULE;
             }
         } else {
+#if (1 == OS_STATS_ENABLED)
             cfg_dyn_p->stats.sended++;
+#endif //(1 == OS_STATS_ENABLED)
             if (xHigherPriorityTaskWoken) {
                 s = 1;
             }

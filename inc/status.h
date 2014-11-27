@@ -73,7 +73,7 @@
 ///          Status s = S_MDL;
 ///          IF_STATUS(s) { D_LOG_S(D_WARNING, s); return s; }
 #define IF_STATUS(s)                        if (IS_STATUS_(s))
-#define IF_STATUS_OK(s)                     if (!IS_STATUS_(s))
+#define IF_OK(s)                            if (!IS_STATUS_(s))
 
 // Common status
 #define S_COMMON                            (-64)

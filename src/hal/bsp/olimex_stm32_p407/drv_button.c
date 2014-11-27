@@ -66,7 +66,7 @@ Status s = S_UNDEF;
     HAL_MemSet(drv_button_v, 0x0, sizeof(drv_button_v));
     drv_button_v[DRV_ID_BUTTON_WAKEUP] = &drv_button_wakeup;
     drv_button_v[DRV_ID_BUTTON_TAMPER] = &drv_button_tamper;
-    for (SIZE i = 0; i < ITEMS_COUNT_GET(drv_button_v, drv_button_v[0]); ++i) {
+    for (Size i = 0; i < ITEMS_COUNT_GET(drv_button_v, drv_button_v[0]); ++i) {
         if (OS_NULL != drv_button_v[i]) {
             IF_STATUS(s = drv_button_v[i]->Init(OS_NULL)) { return s; }
         }
@@ -137,11 +137,12 @@ Status s = S_OK;
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 default:
+                    s = S_OK;
                     break;
             }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;
@@ -218,11 +219,12 @@ Status s = S_OK;
 /******************************************************************************/
 Status BUTTON_TamperIoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 default:
+                    s = S_OK;
                     break;
             }
             break;
@@ -230,10 +232,14 @@ Status s = S_OK;
             s = BUTTON_TamperInit(OS_NULL);
             break;
         case DRV_REQ_BUTTON_TAMPER_DISABLE:
-            if (HAL_OK != HAL_RTCEx_DeactivateTamper(&rtc_handle, RTC_TAMPER_1))   { s = S_HARDWARE_FAULT; }
+            if (HAL_OK == HAL_RTCEx_DeactivateTamper(&rtc_handle, RTC_TAMPER_1)) {
+                s = S_OK;
+            } else {
+                s = S_HARDWARE_FAULT;
+            }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;

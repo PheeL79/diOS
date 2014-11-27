@@ -43,7 +43,7 @@ Status OS_DebugDeInit(void)
 /******************************************************************************/
 void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
 {
-    IF_STATUS_OK(OS_MutexLock(print_mut, timeout_def)) {
+    IF_OK(OS_MutexLock(print_mut, timeout_def)) {
         if (OS_LogLevelGet() >= level) {
             va_list args;
             va_start(args, format_str_p);
@@ -68,7 +68,7 @@ void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
 /******************************************************************************/
 void OS_Trace(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
 {
-    IF_STATUS_OK(OS_MutexLock(print_mut, timeout_def)) {
+    IF_OK(OS_MutexLock(print_mut, timeout_def)) {
         if (OS_LogLevelGet() >= level) {
             va_list args;
             va_start(args, format_str_p);

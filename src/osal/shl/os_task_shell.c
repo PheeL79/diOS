@@ -13,7 +13,7 @@
 #include "os_signal.h"
 #if (1 == USBH_ENABLED)
 #if (1 == USBH_HID_ENABLED)
-#include "os_usb.h"
+#include "drv_usb.h"
 #include "os_task_usbd.h"
 #endif //(1 == USBH_HID_ENABLED)
 #endif //(1 == USBH_ENABLED)
@@ -126,6 +126,6 @@ Status s = S_OK;
         default:
             break;
     }
-    s = OS_QueueFlush(OS_TaskStdInGet(OS_THIS_TASK));
+    s = OS_QueueClear(OS_TaskStdInGet(OS_THIS_TASK));
     return s;
 }

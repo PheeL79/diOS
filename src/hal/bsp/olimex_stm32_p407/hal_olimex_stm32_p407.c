@@ -3,8 +3,6 @@
 * @brief   BSP Hardware Abstraction Layer.
 * @author  A. Filyanov
 ******************************************************************************/
-#include <yfuns.h>
-#include <string.h>
 #include "hal.h"
 #include "hal_config.h"
 
@@ -16,6 +14,7 @@ extern Status   DMA_Init_(void);
 extern Status   RTC_Init_(void);
 extern Status   ADC_Init_(void);
 extern Status   SPI_Init_(void);
+extern Status   I2S_Init_(void);
 extern Status   NVIC_Init_(void);
 extern Status   GPIO_Init_(void);
 extern Status   USBH__Init(void);
@@ -51,6 +50,7 @@ Status s = S_UNDEF;
     IF_STATUS(s = ADC_Init_())      { return s; }
     IF_STATUS(s = TIMER_Init_())    { return s; }
     IF_STATUS(s = SPI_Init_())      { return s; }
+    IF_STATUS(s = I2S_Init_())      { return s; }
 #if (1 == USBH_ENABLED)
     IF_STATUS(s = USBH__Init())     { return s; }
 #endif // USBH_ENABLED

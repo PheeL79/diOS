@@ -3,13 +3,7 @@
 * @brief   SPI driver.
 * @author  A. Filyanov
 ******************************************************************************/
-#include <string.h>
 #include "hal.h"
-
-#include "os_supervise.h"
-#include "os_time.h"
-#include "os_signal.h"
-#include "os_message.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_spi"

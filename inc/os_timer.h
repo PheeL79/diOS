@@ -104,7 +104,7 @@ Status          OS_TimerPeriodSet(const OS_TimerHd timer_hd, const TimeMs new_pe
 /// @brief      Check the timer is active.
 /// @param[in]  timer_hd        Timer handle.
 /// @return     Bool.
-BL              OS_TimerIsActive(const OS_TimerHd timer_hd);
+Bool            OS_TimerIsActive(const OS_TimerHd timer_hd);
 
 /// @brief      Get the timer's id.
 /// @param[in]  timer_hd        Timer handle.

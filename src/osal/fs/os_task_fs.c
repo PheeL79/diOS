@@ -136,12 +136,12 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 TaskArgs* task_args_p = (TaskArgs*)args_p;
 OS_Message* msg_p;
 const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
-#if (1 == USBD_ENABLED)
-const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USB);
-const OS_SignalSrc usbd_tid = OS_TaskIdGet(usbd_thd);
+#if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
+const OS_TaskHd usb_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USB);
+const OS_SignalSrc usb_tid = OS_TaskIdGet(usb_thd);
 
-    OS_ASSERT(S_OK == OS_TasksConnect(usbd_thd, OS_THIS_TASK));
-#endif //(1 == USBD_ENABLED)
+    OS_ASSERT(S_OK == OS_TasksConnect(usb_thd, OS_THIS_TASK));
+#endif //(1 == USBH_ENABLED) || (1 == USBD_ENABLED)
     OS_SignalEmit(OS_SignalCreate(OS_SIG_FSD_READY, 0), OS_MSG_PRIO_NORMAL);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
@@ -149,7 +149,7 @@ const OS_SignalSrc usbd_tid = OS_TaskIdGet(usbd_thd);
         } else {
             if (OS_SignalIs(msg_p)) {
 //#if defined(OS_MEDIA_VOL_USBH_FS) || defined(OS_MEDIA_VOL_USBH_HS)
-//                if (usbd_tid == OS_SignalSrcGet(msg_p)) {
+//                if (usb_tid == OS_SignalSrcGet(msg_p)) {
                     const OS_SignalId sig_id = OS_SignalIdGet(msg_p);
 //                    const OS_SignalData sig_data = OS_SignalDataGet(msg_p);
 //                    const U8 usb_itf_id = OS_USB_SIG_ITF_GET(sig_data);
@@ -208,14 +208,14 @@ const OS_SignalSrc usbd_tid = OS_TaskIdGet(usbd_thd);
                     } else { OS_LOG_S(D_WARNING, S_UNDEF_ITF); }
                     if (OS_USB_CLASS_MSC == usb_ev_data_p->class) {
                         if (OS_MSG_USB_CONNECT == msg_p->id) {
-                            IF_STATUS_OK(s = OS_FileSystemMediaInit(fs_media_usb_hd, (void*)&drv_args)) {
+                            IF_OK(s = OS_FileSystemMediaInit(fs_media_usb_hd, (void*)&drv_args)) {
                                 if (!OS_StrCmp(OS_EnvVariableGet("media_automount"), "on")) {
-                                    IF_STATUS_OK(s = OS_FileSystemMount(fs_media_usb_hd, OS_NULL)) {
+                                    IF_OK(s = OS_FileSystemMount(fs_media_usb_hd, OS_NULL)) {
                                     } else { OS_LOG_S(D_WARNING, s); }
                                 }
                             } else { OS_LOG_S(D_WARNING, s); }
                         } else if (OS_MSG_USB_DISCONNECT == msg_p->id) {
-                            IF_STATUS_OK(s = OS_FileSystemUnMount(fs_media_usb_hd)) {
+                            IF_OK(s = OS_FileSystemUnMount(fs_media_usb_hd)) {
                             }
                         } else { OS_LOG_S(D_WARNING, S_UNDEF_CLASS); }
                     }
@@ -243,7 +243,7 @@ Status s = S_OK;
             //TODO(A. Filyanov) Emit signal from the driver!
             if (!OS_StrCmp(OS_EnvVariableGet("media_automount"), "on")) {
                 IF_STATUS(S_FS_NO_FILESYSTEM == OS_FileSystemMount(task_args_p->fs_media_sdram_hd, OS_NULL)) {
-                    IF_STATUS_OK(OS_FileSystemMake(task_args_p->fs_media_sdram_hd, OS_FS_PART_RULE_FDISK, 0)) {
+                    IF_OK(OS_FileSystemMake(task_args_p->fs_media_sdram_hd, OS_FS_PART_RULE_FDISK, 0)) {
                     }
                 }
             }
@@ -252,7 +252,7 @@ Status s = S_OK;
             IF_STATUS(s = OS_FileSystemMediaInit(task_args_p->fs_media_sdcard_hd, &(task_args_p->drv_led_fs))) { goto error; }
             //TODO(A. Filyanov) Emit signal from the driver!
             if (!OS_StrCmp(OS_EnvVariableGet("media_automount"), "on")) {
-                IF_STATUS_OK(OS_FileSystemMount(task_args_p->fs_media_sdcard_hd, OS_NULL)) {
+                IF_OK(OS_FileSystemMount(task_args_p->fs_media_sdcard_hd, OS_NULL)) {
                 }
             }
 #endif //defined(OS_MEDIA_VOL_SDCARD)

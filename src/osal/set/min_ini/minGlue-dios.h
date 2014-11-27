@@ -11,7 +11,7 @@
 
 #include <string.h>
 #include "os_settings.h"
-     
+
 //#define INI_READONLY
 #if (1 != OS_SETTINGS_BROWSE_ENABLED)
 #define INI_NOBROWSE
@@ -22,7 +22,7 @@
 //#define INI_LINETERM                  "\r\n"
 
 #if defined(CM4F)
-#define INI_REAL FLT
+#define INI_REAL Float
 #define ini_ftoa(string,value) sprintf((string),"%f",(value))
 #define ini_atof(string) (INI_REAL)strtod((string),NULL)
 #endif // CM4F
@@ -38,7 +38,7 @@
 #define ini_write(buffer,file)          (OS_FilePutS(*(file), (StrPtr)(buffer)) == S_OK)
 #define ini_remove(filename)            (OS_FileDelete(filename) == S_OK)
 
-#define INI_FILEPOS                     U32
+#define INI_FILEPOS                     UInt
 #define ini_tell(file,pos)              (*(pos) = OS_FileTell(*(file)))
 #define ini_seek(file,pos)              (OS_FileLSeek(*(file), *(pos)) == S_OK)
 

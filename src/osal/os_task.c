@@ -15,7 +15,7 @@
 #include "os_task.h"
 
 //------------------------------------------------------------------------------
-#define OS_TASKS_COUNT_MAX          BIT_MASK(BIT_SIZE(OS_TaskId))
+#define OS_TASKS_COUNT_MAX          TYPE_VALUE_MAX(OS_TaskId)
 
 //------------------------------------------------------------------------------
 typedef struct {
@@ -41,6 +41,11 @@ Status          OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState st
 /// @return     Slots list.
 const OS_List*  OS_TaskSlotsGet(const OS_TaskHd thd);
 
+/// @brief      Is a single instance task?
+/// @param[in]  cfg_p           Task config.
+/// @return     #Bool.
+static Bool OS_TaskIsSingle(const OS_TaskConfig* cfg_p);
+
 //------------------------------------------------------------------------------
 static OS_List os_tasks_list;
 static OS_MutexHd os_task_mutex;
@@ -63,7 +68,7 @@ OS_TaskHd OS_TaskHdGet(const TaskHandle_t task_hd);
 OS_TaskHd OS_TaskHdGet(const TaskHandle_t task_hd)
 {
 OS_ListItem* iter_li_p;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         iter_li_p = OS_ListItemByOwnerGet(&os_tasks_list, task_hd);
         OS_MutexRecursiveUnlock(os_task_mutex);
     }
@@ -91,23 +96,48 @@ OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
 }
 
 /******************************************************************************/
+Bool OS_TaskIsSingle(const OS_TaskConfig* cfg_p)
+{
+OS_TaskHd thd = OS_TaskNextGet(OS_NULL); //get first task in the list.
+    while (OS_NULL != thd) {
+        OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
+        if (OS_NULL == cfg_dyn_p) {
+            OS_LOG_S(D_DEBUG, S_INVALID_REF);
+            return OS_FALSE;
+        }
+        if (!OS_MemCmp(cfg_p, cfg_dyn_p->cfg_p, sizeof(OS_TaskConfig))) {
+            return OS_FALSE;
+        }
+        thd = OS_TaskNextGet(thd);
+    }
+    return OS_TRUE;
+}
+
+/******************************************************************************/
 Status OS_TaskInit_(void);
 Status OS_TaskInit_(void)
 {
+Status s = S_OK;
     id_curr = 1;
     //tasks_count = 0;
     os_task_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_task_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_tasks_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_tasks_list)) { return S_INVALID_VALUE; }
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
 Status OS_TaskCreate(const OS_TaskConfig* cfg_p, OS_TaskHd* thd_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     if (OS_NULL == cfg_p) { return S_INVALID_REF; }
+    if (BIT_TEST(cfg_p->attrs, BIT(OS_TASK_ATTR_SINGLE))) {
+        if (OS_TRUE != OS_TaskIsSingle(cfg_p)) {
+            OS_LOG(D_DEBUG, "Task is already created!");
+            return S_INVALID_TASK;
+        }
+    }
     OS_ListItem* item_l_p = OS_ListItemCreate();
     if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
     const OS_TaskHd thd = (OS_TaskHd)item_l_p;
@@ -116,6 +146,10 @@ Status s = S_OK;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
+    const OS_QueueConfig que_cfg = {
+        .len        = (0 == cfg_p->stdin_len) ? 1 : cfg_p->stdin_len, //At least one item queue to create!
+        .item_size  = sizeof(OS_Message*)
+    };
     const TaskHandle_t task_hd_curr = xTaskGetCurrentTaskHandle();
     if (OS_NULL != task_hd_curr) {
         // TODO(A. Filyanov) Workaround for the sv task in startup sequence.
@@ -127,14 +161,7 @@ Status s = S_OK;
         (0 == ++id_curr) ? ++id_curr : id_curr; // except zero id.
     }
     // Creating StdIo task queues.
-    OS_QueueConfig que_cfg;
-    que_cfg.len = cfg_p->stdin_len;
-    que_cfg.item_size = sizeof(OS_Message*);
-    if (que_cfg.len > 0) {
-        IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdin_qhd))  { goto error; }
-    } else {
-        cfg_dyn_p->stdin_qhd = OS_NULL;
-    }
+    IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdin_qhd))  { goto error; }
     cfg_dyn_p->cfg_p    = cfg_p;
     cfg_dyn_p->id       = id_curr;
     cfg_dyn_p->parent   = OS_TaskGet();
@@ -151,22 +178,61 @@ Status s = S_OK;
         OS_ListItemOwnerSet(item_l_p, (OS_Owner)task_hd);
         OS_ListAppend(&os_tasks_list, item_l_p);
     } OS_CriticalSectionExit();
+    if (OS_NULL != task_hd_curr) {
+        s = OS_MutexRecursiveUnlock(os_task_mutex);
+    }
     if (OS_NULL != thd_p) {
         *thd_p = thd;
     }
     //++tasks_count;
+    IF_OK(s) {
+        if (OS_NULL != task_hd_curr) {
+            const OS_QueueHd this_task_qhd = OS_TaskStdInGet(OS_THIS_TASK);
+            OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, PWR_STARTUP); //Task power "startup" state set.
+            IF_OK(s = OS_SignalSend(cfg_dyn_p->stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+                OS_Message* msg_p;
+                IF_OK(s = OS_MessageReceive(this_task_qhd, &msg_p, OS_TIMEOUT_POWER)) {
+                    if (OS_SignalIs(msg_p)) {
+                        if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
+                            IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
+                                signal = OS_SignalCreate(OS_SIG_PWR, PWR_ON); //Task power "on" state set.
+                                IF_OK(s = OS_SignalSend(cfg_dyn_p->stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+                                    IF_OK(s = OS_MessageReceive(this_task_qhd, &msg_p, OS_TIMEOUT_POWER)) {
+                                        if (OS_SignalIs(msg_p)) {
+                                            if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
+                                                IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
+                                                    OS_LOG(D_DEBUG, "[TID:%u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
+                                                }
+                                            } else {
+                                                s = S_UNDEF_SIG;
+                                                OS_LOG_S(D_WARNING, s);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            s = S_UNDEF_SIG;
+                            OS_LOG_S(D_WARNING, s);
+                        }
+                    }
+                }
+            }
+        }
+    }
 error:
     IF_STATUS(s) {
-        //--tasks_count;
-        OS_Free(cfg_dyn_p);
-        OS_ListItemDelete(item_l_p);
-    }
-    IF_STATUS_OK(s) {
-        s = OS_TaskPowerStateSet(thd, PWR_ON);
-        OS_LOG(D_DEBUG, "[TID:%u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
-    }
-    if (OS_NULL != task_hd_curr) {
-        s = OS_MutexRecursiveUnlock(os_task_mutex);
+        if (OS_NULL != task_hd_curr) {
+            // TODO(A. Filyanov) Workaround for the sv task in startup sequence.
+            IF_OK(s = OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+                //--tasks_count;
+                OS_Free(cfg_dyn_p);
+                OS_ListItemDelete(item_l_p);
+                if (OS_NULL != task_hd_curr) {
+                    s = OS_MutexRecursiveUnlock(os_task_mutex);
+                }
+            }
+        }
     }
     return s;
 }
@@ -179,7 +245,7 @@ OS_TaskConfigDyn* cfg_dyn_p = (OS_TaskConfigDyn*)OS_ListItemValueGet(item_l_p);
 Status s = S_OK;
 
     if (OS_NULL == item_l_p) { return S_INVALID_REF; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         const OS_TaskConfig* cfg_p = cfg_dyn_p->cfg_p;
         const TaskHandle_t task_hd = (TaskHandle_t)OS_ListItemOwnerGet(item_l_p);
         const OS_TaskId tid = cfg_dyn_p->id;
@@ -261,7 +327,7 @@ const OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
 OS_TaskHd OS_TaskByIdGet(const OS_TaskId tid)
 {
 OS_ListItem* iter_li_p;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list));
         while (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) {
             if (tid == OS_TaskIdGet((OS_TaskHd)iter_li_p)) {
@@ -408,7 +474,7 @@ const TaskHandle_t task_hd = OS_TaskHandleGet(thd);
 void OS_TaskPowerPrioritySort(const SortDirection sort_dir);
 void OS_TaskPowerPrioritySort(const SortDirection sort_dir)
 {
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         //TODO(A.Filyanov) Optimize selective sort function.
         OS_ListItem* item_curr_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list));
         OS_ListItem* item_next_p;
@@ -538,7 +604,7 @@ const TaskHandle_t task_hd = OS_TaskHandleGet(thd);
 OS_TaskHd OS_TaskByNameGet(ConstStr* name_p)
 {
 OS_TaskHd thd = OS_NULL;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         OS_ListItem* iter_li_p = (OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list);
         OS_TaskConfigDyn* cfg_dyn_p;
 
@@ -559,7 +625,7 @@ OS_TaskHd thd = OS_NULL;
 OS_TaskHd OS_TaskNextGet(const OS_TaskHd thd)
 {
 OS_ListItem* iter_li_p = (OS_ListItem*)thd;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         if (OS_NULL == iter_li_p) {
             iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_tasks_list));
             if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
@@ -586,7 +652,7 @@ OS_ListItem* iter_li_p = (OS_ListItem*)thd;
 Status OS_TasksConnect(const OS_TaskHd signal_thd, const OS_TaskHd slot_thd)
 {
 Status s = S_OK;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         OS_TaskConfigDyn* cfg_dyn_p;
         OS_ListItem* item_l_p;
         const OS_QueueHd slot_qhd = OS_TaskStdInGet(slot_thd);
@@ -624,7 +690,7 @@ error:
 Status OS_TasksDisconnect(const OS_TaskHd signal_thd, const OS_TaskHd slot_thd)
 {
 Status s = S_OK;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         OS_ListItem* item_l_p;
         OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(signal_thd);
         if (OS_NULL == cfg_dyn_p) { s = S_INVALID_REF; goto error; }

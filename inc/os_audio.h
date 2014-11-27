@@ -7,6 +7,7 @@
 #define _OS_AUDIO_H_
 
 #include "os_common.h"
+#include "os_signal.h"
 #include "os_driver.h"
 
 #if (1 == OS_AUDIO_ENABLED)
@@ -15,51 +16,84 @@
 * @{
 */
 //------------------------------------------------------------------------------
+#define OS_AUDIO_IN_DEVICE_CURRENT          OS_NULL
+#define OS_AUDIO_OUT_DEVICE_CURRENT         OS_NULL
+
 #define OS_AUDIO_VOLUME_MIN                 0
 #define OS_AUDIO_VOLUME_MAX                 100
 #define OS_AUDIO_VOLUME_STEP                BIT_MASK(2)
 
-#define OS_AUDIO_VOLUME_CONVERT(volume)     ((OS_AudioVolume)(((FLT)volume / ((FLT)U8_MAX * 1.0)) * ((FLT)OS_AUDIO_VOLUME_MAX * 1.0)))
+#define OS_AUDIO_VOLUME_CONVERT(volume)     ((OS_AudioVolume)(((Float)volume / ((Float)U8_MAX * 1.0)) * ((Float)OS_AUDIO_VOLUME_MAX * 1.0)))
 
 //------------------------------------------------------------------------------
 typedef void*   OS_AudioDeviceHd;
-typedef U8      OS_AudioVolume;
+typedef S8      OS_AudioVolume;
 typedef S8      OS_AudioSampleBits;
 typedef S32     OS_AudioSampleRate;
 typedef OS_AudioSampleRate OS_AudioFreq;
+typedef OS_AudioSampleBits OS_AudioBits;
 
 enum {
-    OS_AUDIO_IO_UNDEF,
-    OS_AUDIO_IO_MONO,
-    OS_AUDIO_IO_STEREO,
-    OS_AUDIO_IO_LAST
+    OS_SIG_AUDIO_TX_COMPLETE = OS_SIG_APP,
+    OS_SIG_AUDIO_TX_COMPLETE_HALF,
+    OS_SIG_AUDIO_ERROR,
+    OS_SIG_AUDIO_LAST
 };
-typedef S8      OS_AudioModeIo;
 
 enum {
+    OS_AUDIO_CHANNELS_UNDEF,
+    OS_AUDIO_CHANNELS_MONO,
+    OS_AUDIO_CHANNELS_STEREO,
+    OS_AUDIO_CHANNELS_LAST
+};
+typedef S8 OS_AudioChannels;
+
+enum {
+    OS_AUDIO_DEVICE_IN_NONE,
     OS_AUDIO_DEVICE_IN_MICROPHONE,
+    OS_AUDIO_DEVICE_LAST
 };
-typedef S8      OS_AudioDeviceIn;
+typedef S8 OS_AudioDeviceIn;
 
 enum {
+    OS_AUDIO_DEVICE_OUT_NONE,
     OS_AUDIO_DEVICE_OUT_ALL,
     OS_AUDIO_DEVICE_OUT_AUTO,
     OS_AUDIO_DEVICE_OUT_SPEAKER,
-    OS_AUDIO_DEVICE_OUT_HEADPHONE
+    OS_AUDIO_DEVICE_OUT_HEADPHONE,
+    OS_AUDIO_DEVICE_OUT_LAST
 };
-typedef S8      OS_AudioDeviceOut;
+typedef S8 OS_AudioDeviceOut;
 
 typedef struct {
-//    OS_AudioSampleRate  sample_rate_v[0];
+    OS_AudioSampleRate  sample_rate;
     OS_AudioSampleBits  sample_bits;
-    OS_AudioModeIo      mode_io;
-    Direction           dir;
+    OS_AudioChannels    channels;
+} OS_AudioInfo;
+
+typedef struct {
+    const OS_AudioSampleRate*   sample_rates_vp;
+    const OS_AudioSampleBits*   sample_bits_vp;
+    OS_AudioChannels            channels;
+    OS_AudioDeviceIn            in;
+} OS_AudioDeviceCapsInput;
+
+typedef struct {
+    const OS_AudioSampleRate*   sample_rates_vp;
+    const OS_AudioSampleBits*   sample_bits_vp;
+    OS_AudioChannels            channels;
+    OS_AudioDeviceOut           out;
+} OS_AudioDeviceCapsOutput;
+
+typedef struct {
+    const OS_AudioDeviceCapsInput*  input_p;
+    const OS_AudioDeviceCapsOutput* output_p;
 } OS_AudioDeviceCaps;
 
 typedef struct {
-    Str             name[OS_AUDIO_DEVICE_NAME_LEN];
-    OS_DriverConfig*drv_cfg_p;
-//    OS_AudioDeviceCaps caps;
+    Str                     name[OS_AUDIO_DEVICE_NAME_LEN];
+    OS_DriverConfig*        drv_cfg_p;
+    OS_AudioDeviceCaps      caps;
 } OS_AudioDeviceConfig;
 
 typedef struct {
@@ -108,19 +142,34 @@ Status          OS_AudioDeviceOpen(const OS_AudioDeviceHd dev_hd, void* args_p);
 /// @return     #Status.
 Status          OS_AudioDeviceClose(const OS_AudioDeviceHd dev_hd);
 
-/// @brief      Get the current system audio device.
+/// @brief      Get the system default audio device.
+/// @param[in]  dir             Audio direction.
 /// @return     Device handle.
-OS_AudioDeviceHd OS_AudioDeviceCurrentGet(void);
+OS_AudioDeviceHd OS_AudioDeviceDefaultGet(const Direction dir);
 
-/// @brief      Set the current system audio device.
+/// @brief      Set the system default audio device.
 /// @param[in]  dev_hd          Device handle.
+/// @param[in]  dir             Audio direction.
 /// @return     #Status.
-Status          OS_AudioDeviceCurrentSet(const OS_AudioDeviceHd dev_hd);
+Status          OS_AudioDeviceDefaultSet(const OS_AudioDeviceHd dev_hd, const Direction dir);
 
 /// @brief      Get the audio device current status.
 /// @param[in]  dev_hd          Device handle.
 /// @return     #Status.
 Status          OS_AudioDeviceStatusGet(const OS_AudioDeviceHd dev_hd);
+
+/// @brief      Get the audio device capabilities.
+/// @param[in]  dev_hd          Device handle.
+/// @param[out] caps_p          Capabilities.
+/// @return     #Status.
+Status          OS_AudioDeviceCapsGet(const OS_AudioDeviceHd dev_hd, OS_AudioDeviceCaps* caps_p);
+
+/// @brief      Setup I/O for the audio device.
+/// @param[in]  dev_hd          Device handle.
+/// @param[in]  info            Audio info.
+/// @param[in]  dir             Audio direction.
+/// @return     #Status.
+Status          OS_AudioDeviceIoSetup(const OS_AudioDeviceHd dev_hd, const OS_AudioInfo info, const Direction dir);
 
 /// @brief      Get the audio device name.
 /// @param[in]  dev_hd          Device handle.
@@ -160,7 +209,7 @@ Status          OS_AudioMuteSet(const OS_AudioDeviceHd dev_hd, const State state
 /// @param[in]  data_p          Audio buffer data.
 /// @param[in]  size            Buffer data size.
 /// @return     #Status.
-Status          OS_AudioPlay(const OS_AudioDeviceHd dev_hd, U8* data_p, SIZE size);
+Status          OS_AudioPlay(const OS_AudioDeviceHd dev_hd, void* data_p, Size size);
 
 /// @brief      Stop audio device playback.
 /// @param[in]  dev_hd          Device handle.
@@ -180,7 +229,7 @@ Status          OS_AudioResume(const OS_AudioDeviceHd dev_hd);
 /// @brief      Seek through audio device playback.
 /// @param[in]  dev_hd          Device handle.
 /// @return     #Status.
-Status          OS_AudioSeek(const OS_AudioDeviceHd dev_hd, const SIZE offset);
+Status          OS_AudioSeek(const OS_AudioDeviceHd dev_hd, const Size offset);
 
 /**@}*/ //OS_Audio
 

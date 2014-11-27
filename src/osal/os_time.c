@@ -12,8 +12,8 @@
 #include "os_time.h"
 
 //------------------------------------------------------------------------------
-static BL OS_DateYearIsLeap(const U16 year);
-static BL OS_DateIsWeekDay(const U8 week_day);
+static Bool OS_DateYearIsLeap(const U16 year);
+static Bool OS_DateIsWeekDay(const U8 week_day);
 
 //------------------------------------------------------------------------------
 extern volatile OS_Env os_env;
@@ -63,7 +63,7 @@ Status s;
 }
 
 /******************************************************************************/
-BL OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds)
+Bool OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds)
 {
     //WARNING!!! Currently only for 24H mode!
     if (24 < hours)     { return OS_FALSE; }
@@ -107,7 +107,7 @@ Status s = S_OK;
 
 /******************************************************************************/
 //http://www.glenmccl.com/004.htm#tag04
-BL OS_DateIsValid(const U16 year, const U8 month, const U8 day)
+Bool OS_DateIsValid(const U16 year, const U8 month, const U8 day)
 {
 const U8 days_in_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     //STM32 RTC limitation.
@@ -128,7 +128,7 @@ const U8 days_in_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 /******************************************************************************/
 // return 1 if year is a leap year, else 0
-BL OS_DateYearIsLeap(const U16 year)
+Bool OS_DateYearIsLeap(const U16 year)
 {
     if (year % 4) {
         return OS_FALSE;
@@ -146,7 +146,7 @@ BL OS_DateYearIsLeap(const U16 year)
 //http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date/6057429#6057429
 OS_TimeWeekDay OS_DateWeekDayGet(const U16 year, const U8 month, const U8 day)
 {
-SIZE JND =                                                         \
+Size JND =                                                         \
           day                                                      \
         + ((153 * (month + 12 * ((14 - month) / 12) - 3) + 2) / 5) \
         + (365 * (year + 4800 - ((14 - month) / 12)))              \
@@ -158,7 +158,7 @@ SIZE JND =                                                         \
 }
 
 /******************************************************************************/
-BL OS_DateIsWeekDay(const U8 week_day)
+Bool OS_DateIsWeekDay(const U8 week_day)
 {
     if ((week_day < OS_WEEK_DAY_MONDAY) ||
         (week_day > OS_WEEK_DAY_SUNDAY)) {
@@ -199,9 +199,9 @@ OS_DateTime time;
                                  OS_LOCALE_TIME_DELIM_RU;
         char* time_str_p = (char*)time_p;
         char* time_item_p = OS_StrToK(time_str_p, delim_str);
-        LNG time_val[3];
+        Long time_val[3];
 
-        for (SIZE i = 0; OS_NULL != time_item_p; ++i) {
+        for (Size i = 0; OS_NULL != time_item_p; ++i) {
             //TODO(A. Filyanov) Check for valid digits.
             time_val[i] = OS_StrToL((const char*)time_item_p, OS_NULL, 10);
             time_item_p = OS_StrToK(OS_NULL, delim_str);
@@ -227,9 +227,9 @@ OS_DateTime date;
                                  OS_LOCALE_DATE_DELIM_RU;
         char* date_str_p = (char*)date_p;
         char* date_item_p = OS_StrToK(date_str_p, delim_str);
-        LNG date_val[3];
+        Long date_val[3];
 
-        for (SIZE i = 0; OS_NULL != date_item_p; ++i) {
+        for (Size i = 0; OS_NULL != date_item_p; ++i) {
             date_val[i] = OS_StrToL((const char*)date_item_p, OS_NULL, 10);
             date_item_p = OS_StrToK(OS_NULL, delim_str);
         }

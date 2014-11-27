@@ -44,10 +44,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
+#include "drv_usb.h"
 #include "os_config.h"
 #include "os_memory.h"
 #include "os_task.h"
-#include "os_usb.h"
 
 extern OS_QueueHd usbhd_stdin_qhd;
 

@@ -28,7 +28,7 @@ extern HAL_DriverItf drv_adc3;
 Status s = S_UNDEF;
     HAL_MemSet(drv_adc_v, 0x0, sizeof(drv_adc_v));
     drv_adc_v[DRV_ID_ADC3] = &drv_adc3;
-    for (SIZE i = 0; i < ITEMS_COUNT_GET(drv_adc_v, drv_adc_v[0]); ++i) {
+    for (Size i = 0; i < ITEMS_COUNT_GET(drv_adc_v, drv_adc_v[0]); ++i) {
         //Ignore specific driver(s).
         if (DRV_ID_ADC3 == i) { continue; }
         if (OS_NULL != drv_adc_v[i]) {
@@ -39,10 +39,11 @@ Status s = S_UNDEF;
 }
 
 /*****************************************************************************/
-static U8 MovingAverage8s8b(const U8 value);
-U8 MovingAverage8s8b(const U8 value)
+static U8 MovingAverage16s8b(const U8 value);
+U8 MovingAverage16s8b(const U8 value)
 {
 static U8 buf[] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
 static U8 buf_idx = 0;
@@ -53,7 +54,7 @@ U16 buf_sum = 0;
     for (register U8 i = 0; i < sizeof(buf); ++i) {
         buf_sum += buf[i];
     }
-    return (buf_sum >> 3);
+    return (buf_sum >> 4);
 }
 
 /*****************************************************************************/
@@ -70,7 +71,7 @@ extern OS_QueueHd trimmer_stdin_qhd;
         register OS_AudioVolume volume_curr = OS_AUDIO_VOLUME_CONVERT(HAL_ADC_GetValue(adc_hd_p));
         //First pass.
         if (volume_curr != volume_last) {
-            volume_curr = MovingAverage8s8b((U8)volume_curr);
+            volume_curr = MovingAverage16s8b((U8)volume_curr);
             //Second pass.
             if (volume_curr != volume_last) {
                 volume_last = volume_curr;

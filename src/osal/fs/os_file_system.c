@@ -134,14 +134,14 @@ Status s = S_UNDEF;
     cfg_dyn_p->volume[0]= cfg_p->volume + '0';
     cfg_dyn_p->volume[1]= OS_FILE_SYSTEM_DRV_DELIM;
     cfg_dyn_p->volume[2]= OS_FILE_SYSTEM_DIR_DELIM;
-    cfg_dyn_p->volume[3]= OS_ASCII_EOL;
+    cfg_dyn_p->volume[3]= '\0'; //EOL
     OS_StrNCpy(cfg_dyn_p->name, (const char*)cfg_p->name, sizeof(cfg_dyn_p->name));
     OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
     OS_ListItemOwnerSet(item_l_p, (OS_Owner)cfg_p->volume);
     if (OS_NULL != fs_media_hd_p) {
         *fs_media_hd_p = (OS_FileSystemMediaHd)item_l_p;
     }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListAppend(&os_fs_list, item_l_p);
         OS_MutexRecursiveUnlock(os_fs_mutex);
     }
@@ -161,7 +161,7 @@ Status s = S_UNDEF;
 Status OS_FileSystemMediaDelete(const OS_FileSystemMediaHd fs_media_hd)
 {
 Status s = S_UNDEF;
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
         OS_FileSystemMediaConfigDyn* cfg_dyn_p = (OS_FileSystemMediaConfigDyn*)OS_ListItemValueGet(item_l_p);
         const U8 volume = (U8)OS_ListItemOwnerGet(item_l_p);
@@ -223,7 +223,7 @@ Status s;
 OS_FileSystemMediaHd OS_FileSystemMediaByVolumeGet(const U8 volume)
 {
 OS_FileSystemMediaHd fs_media_hd = OS_NULL;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_fs_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         fs_media_hd = (OS_FileSystemMediaHd)OS_ListItemByOwnerGet(&os_fs_list, (OS_Owner)volume);
         OS_MutexRecursiveUnlock(os_fs_mutex);
     }
@@ -237,7 +237,7 @@ Status s;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     OS_LOG(D_DEBUG, "FS media set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
-    IF_STATUS_OK(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) {
+    IF_OK(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) {
 //        volume_curr = volume;
     }
     return s;
@@ -270,7 +270,7 @@ OS_DriverHd OS_FileSystemMediaDriverGet(const OS_FileSystemMediaHd fs_media_hd)
 
 #if (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
 /******************************************************************************/
-Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const SIZE size)
+Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const Size size)
 {
 const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
                         (OS_FS_PART_RULE_SFD   == part_rule) ? 1 : U8_MAX;
@@ -408,7 +408,7 @@ Status OS_FileSystemVolumeScan(const StrPtr path_p, OS_FileSystemStats* stats_p)
 {
 OS_DirHd dir_hd;
 OS_FileStats stats_file;
-SIZE path_len;
+Size path_len;
 StrPtr file_name_p;
 Status s = S_UNDEF;
     OS_LOG(D_DEBUG, "FS volume scan: %s", path_p);
@@ -422,7 +422,7 @@ Status s = S_UNDEF;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     IF_STATUS(s = OS_DirectoryOpen(dir_hd, path_p)) { s = S_FS_PATH_NOT_FOUND; goto error; }
     path_len = OS_StrLen((const char*)path_p);
-    while ((S_OK == (s = OS_DirectoryRead(dir_hd, &stats_file))) && (OS_ASCII_EOL != stats_file.name[0])) {
+    while ((S_OK == (s = OS_DirectoryRead(dir_hd, &stats_file))) && ('\0' != stats_file.name[0])) {
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
         file_name_p = (*stats_file.long_name_p) ? stats_file.long_name_p : stats_file.name;
 #else
@@ -435,7 +435,7 @@ Status s = S_UNDEF;
             *(path_p + path_len) = OS_FILE_SYSTEM_DIR_DELIM;
             OS_StrCpy((char*)(path_p + path_len + 1), (const char*)file_name_p);
             s = OS_FileSystemVolumeScan(path_p, stats_p);
-            *(path_p + path_len) = OS_ASCII_EOL;
+            *(path_p + path_len) = '\0'; //EOL;
             IF_STATUS(s) { break; }
         } else {
             stats_p->files_count++;
@@ -491,19 +491,21 @@ Status s = FResultTranslate(f_close(fhd));
 }
 
 /******************************************************************************/
-Status OS_FileRead(const OS_FileHd fhd, U8* data_in_p, U32 size)
+Status OS_FileRead(const OS_FileHd fhd, void* data_in_p, Size size)
 {
 UINT bytes_read;
     OS_LOG(D_DEBUG, "File read: 0x%X", fhd);
 Status s = FResultTranslate(f_read(fhd, data_in_p, size, &bytes_read));
-    if (bytes_read != size) {
+    if (0 == bytes_read) {
+        s = S_FS_EOF;
+    } else if (size != bytes_read) {
         s = S_SIZE_MISMATCH;
     }
     return s;
 }
 
 /******************************************************************************/
-Status OS_FileWrite(const OS_FileHd fhd, U8* data_out_p, U32 size)
+Status OS_FileWrite(const OS_FileHd fhd, void* data_out_p, Size size)
 {
 UINT bytes_written;
     OS_LOG(D_DEBUG, "File write: 0x%X", fhd);
@@ -620,7 +622,7 @@ FILINFO file_info;
     file_info.lfsize = file_stats_p->long_name_size;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     Status s = FResultTranslate(f_readdir(dhd, &file_info));
-    IF_STATUS_OK(s) {
+    IF_OK(s) {
         OS_MemCpy(file_stats_p->name, file_info.fname, sizeof(file_stats_p->name));
         file_stats_p->size          = file_info.fsize;
         file_stats_p->date_time     = FDateTimeTranslate(file_info.fdate, file_info.ftime);
@@ -761,6 +763,7 @@ Status FResultTranslate(const FRESULT r)
 Status s = S_UNDEF;
     switch (r) {
         case FR_OK:
+            s = S_OK;
             break;
         case FR_DISK_ERR:
             s = S_FS_MEDIA_FAULT;

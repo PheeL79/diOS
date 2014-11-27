@@ -321,6 +321,7 @@
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\mem\tlsf</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\usb</state>
           <state>$PROJ_DIR$\..\..\..\..\src\osal\fs</state>
@@ -1919,7 +1920,7 @@
     </settings>
   </configuration>
   <group>
-    <name>aud</name>
+    <name>audio</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\osal\aud\os_audio.c</name>
     </file>
@@ -1928,7 +1929,7 @@
     </file>
   </group>
   <group>
-    <name>dbg</name>
+    <name>debug</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\osal\dbg\os_debug.c</name>
     </file>
@@ -1937,7 +1938,7 @@
     </file>
   </group>
   <group>
-    <name>fs</name>
+    <name>filesystem</name>
     <group>
       <name>fat_fs</name>
       <file>
@@ -2240,7 +2241,7 @@
     </file>
   </group>
   <group>
-    <name>mem</name>
+    <name>memory</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\MemMang\heap_4.c</name>
       <excluded>
@@ -2255,7 +2256,7 @@
     </file>
   </group>
   <group>
-    <name>net</name>
+    <name>network</name>
     <group>
       <name>lwip</name>
     </group>
@@ -2264,7 +2265,7 @@
     </file>
   </group>
   <group>
-    <name>set</name>
+    <name>settings</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b\minIni.c</name>
       <configuration>
@@ -2549,7 +2550,7 @@
     </file>
   </group>
   <group>
-    <name>shl</name>
+    <name>shell</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\osal\shl\os_shell.c</name>
     </file>
@@ -2567,7 +2568,7 @@
     </file>
   </group>
   <group>
-    <name>tst</name>
+    <name>test</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\tst\test_hal.c</name>
       <excluded>
@@ -2594,7 +2595,7 @@
     </file>
   </group>
   <group>
-    <name>vid</name>
+    <name>video</name>
   </group>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\osal\os_driver.c</name>

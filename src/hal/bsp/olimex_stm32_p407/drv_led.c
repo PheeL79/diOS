@@ -19,14 +19,14 @@ static Status LED_PulseInit(void* args_p);
 static Status LED_PulseDeInit(void* args_p);
 static Status LED_PulseOpen(void* args_p);
 static Status LED_PulseClose(void* args_p);
-static Status LED_PulseWrite(void* data_out_p, SIZE size, void* args_p);
+static Status LED_PulseWrite(void* data_out_p, Size size, void* args_p);
 static Status LED_PulseIoCtl(const U32 request_id, void* args_p);
 
 static Status LED_FsInit(void* args_p);
 static Status LED_FsDeInit(void* args_p);
 static Status LED_FsOpen(void* args_p);
 static Status LED_FsClose(void* args_p);
-static Status LED_FsWrite(void* data_out_p, SIZE size, void* args_p);
+static Status LED_FsWrite(void* data_out_p, Size size, void* args_p);
 static Status LED_FsIoCtl(const U32 request_id, void* args_p);
 
 static Status LED_AssertInit(void* args_p);
@@ -35,7 +35,7 @@ static Status LED_UserInit(void* args_p);
 static Status LED_UserDeInit(void* args_p);
 static Status LED_UserOpen(void* args_p);
 static Status LED_UserClose(void* args_p);
-static Status LED_UserWrite(void* data_out_p, SIZE size, void* args_p);
+static Status LED_UserWrite(void* data_out_p, Size size, void* args_p);
 static Status LED_UserIoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ Status s = S_UNDEF;
     drv_led_v[DRV_ID_LED_FS]    = &drv_led_fs;
     drv_led_v[DRV_ID_LED_ASSERT]= &drv_led_assert;
     drv_led_v[DRV_ID_LED_USER]  = &drv_led_user;
-    for (SIZE i = 0; i < ITEMS_COUNT_GET(drv_led_v, drv_led_v[0]); ++i) {
+    for (Size i = 0; i < ITEMS_COUNT_GET(drv_led_v, drv_led_v[0]); ++i) {
         //Ignore specific driver(s).
         if ((DRV_ID_LED_PULSE == i) ||
             (DRV_ID_LED_FS == i)) { continue; }
@@ -138,7 +138,7 @@ Status LED_PulseClose(void* args_p)
 }
 
 /******************************************************************************/
-Status LED_PulseWrite(void* data_out_p, SIZE size, void* args_p)
+Status LED_PulseWrite(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
     if (ON == *(State*)data_out_p) {
@@ -152,18 +152,19 @@ Status s = S_OK;
 /******************************************************************************/
 Status LED_PulseIoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
                 case PWR_SHUTDOWN:
                 case PWR_STOP:
                 case PWR_STANDBY: {
                     const State led_state = OFF;
-                    LED_PulseWrite((U8*)&led_state, 1, OS_NULL);
+                    s = LED_PulseWrite((U8*)&led_state, 1, OS_NULL);
                     }
                     break;
                 default:
@@ -171,7 +172,7 @@ Status s = S_OK;
             }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;
@@ -213,7 +214,7 @@ Status LED_FsClose(void* args_p)
 }
 
 /******************************************************************************/
-Status LED_FsWrite(void* data_out_p, SIZE size, void* args_p)
+Status LED_FsWrite(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
     if (ON == *(State*)data_out_p) {
@@ -227,18 +228,19 @@ Status s = S_OK;
 /******************************************************************************/
 Status LED_FsIoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
                 case PWR_SHUTDOWN:
                 case PWR_STOP:
                 case PWR_STANDBY: {
                     const State led_state = OFF;
-                    LED_FsWrite((U8*)&led_state, 1, OS_NULL);
+                    s = LED_FsWrite((U8*)&led_state, 1, OS_NULL);
                     }
                     break;
                 default:
@@ -246,7 +248,7 @@ Status s = S_OK;
             }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;
@@ -305,7 +307,7 @@ Status LED_UserClose(void* args_p)
 }
 
 /******************************************************************************/
-Status LED_UserWrite(void* data_out_p, SIZE size, void* args_p)
+Status LED_UserWrite(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
     if (ON == *(State*)data_out_p) {
@@ -319,18 +321,19 @@ Status s = S_OK;
 /******************************************************************************/
 Status LED_UserIoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
                 case PWR_SHUTDOWN:
                 case PWR_STOP:
                 case PWR_STANDBY: {
                     const State led_state = OFF;
-                    LED_UserWrite((U8*)&led_state, 1, OS_NULL);
+                    s = LED_UserWrite((U8*)&led_state, 1, OS_NULL);
                     }
                     break;
                 default:
@@ -338,7 +341,7 @@ Status s = S_OK;
             }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;

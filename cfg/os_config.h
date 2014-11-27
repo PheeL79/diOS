@@ -12,10 +12,11 @@
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
+#define OS_DEBUG_ENABLED                1
+
 #define OS_IS_PREEMPTIVE                1
 #define OS_MPU_ENABLED                  0
 #define OS_STATS_ENABLED                1
-#define OS_DEBUG_ENABLED                1
 #define OS_TASK_DEADLOCK_TEST_ENABLED   1
 
 // Timeouts.
@@ -64,10 +65,14 @@ static const OS_MemoryDesc memory_cfg_v[] = {
     { 0,                        0,                          0,                      OS_MEM_LAST,            ""          }
 };
 
-#define OS_TIMERS_ENABLED           1
+// Timers
+#define OS_TIMERS_ENABLED           0
 #define OS_TIMERS_TASK_PRIO         2
 #define OS_TIMERS_QUEUE_LEN         10
 #define OS_TIMERS_STACK_SIZE        (OS_STACK_SIZE_MIN * 2)
+
+// Events
+#define OS_EVENTS_ENABLED           OS_TIMERS_ENABLED
 
 // Names length
 #define OS_DRIVER_NAME_LEN          9
@@ -116,11 +121,11 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 
 //Media
 enum {
-        OS_MEDIA_VOL_SDRAM,
-#define OS_MEDIA_VOL_SDRAM          OS_MEDIA_VOL_SDRAM
-#define OS_MEDIA_VOL_SDRAM_MEM      OS_MEM_RAM_EXT_SRAM
-#define OS_MEDIA_VOL_SDRAM_SIZE     0x70000
-#define OS_MEDIA_VOL_SDRAM_BLOCK_SIZE OS_FILE_SYSTEM_SECTOR_SIZE_MIN
+//        OS_MEDIA_VOL_SDRAM,
+//#define OS_MEDIA_VOL_SDRAM          OS_MEDIA_VOL_SDRAM
+//#define OS_MEDIA_VOL_SDRAM_MEM      OS_MEM_RAM_EXT_SRAM
+//#define OS_MEDIA_VOL_SDRAM_SIZE     0x70000
+//#define OS_MEDIA_VOL_SDRAM_BLOCK_SIZE OS_FILE_SYSTEM_SECTOR_SIZE_MIN
 
         OS_MEDIA_VOL_SDCARD,
 #define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
@@ -137,10 +142,16 @@ enum {
 //Audio
 #define OS_AUDIO_ENABLED            1
 #define OS_AUDIO_OUT_FREQ_DEFAULT   44100
-#define OS_AUDIO_OUT_VOLUME_DEFAULT 50
+#define OS_AUDIO_OUT_BITS_DEFAULT   16
+#define OS_AUDIO_OUT_VOLUME_DEFAULT (OS_AUDIO_VOLUME_MAX / 2)
+
+enum {
+        OS_AUDIO_DEV_CS4344,
+#define OS_AUDIO_DEV_CS4344         OS_AUDIO_DEV_CS4344
+};
 
 //Settings
-#define OS_SETTINGS_BROWSE_ENABLED  1
+#define OS_SETTINGS_BROWSE_ENABLED  0
 #define OS_SETTINGS_BUFFER_LEN      256
 #define OS_SETTINGS_VALUE_LEN       16
 #define OS_SETTINGS_VALUE_DEFAULT   ""
@@ -180,27 +191,6 @@ enum {
 #define OS_StrNCpy  HAL_StrNCpy
 #define OS_SPrintF  HAL_SPrintF
 #define OS_SNPrintF HAL_SNPrintF
-
-enum {
-    OS_SHELL_BUTTON_UP              = 'A',
-    OS_SHELL_BUTTON_DOWN            = 'B',
-    OS_SHELL_BUTTON_RIGHT           = 'C',
-    OS_SHELL_BUTTON_LEFT            = 'D',
-    OS_SHELL_BUTTON_HOME            = '1',
-    OS_SHELL_BUTTON_END             = '4',
-    OS_SHELL_BUTTON_DELETE          = '3',
-
-    OS_ASCII_EOL                    = '\0',
-    OS_ASCII_SPACE                  = ' ',
-    OS_ASCII_EXC_MARK               = '!',
-    OS_ASCII_TILDE                  = '~',
-    OS_ASCII_DOUBLE_QUOTE           = '\"',
-    OS_ASCII_ESC_CR                 = '\r',
-    OS_ASCII_ESC_LF                 = '\n',
-    OS_ASCII_ESC_BACKSPACE          = 0x7F,
-    OS_ASCII_ESC_NOT_ECHO_NEXT      = 0x1B,
-    OS_ASCII_ESC_OP_SQUARE_BRAC     = 0x5B
-};
 
 #endif // __ICCARM__
 #endif // _OS_CONFIG_H_

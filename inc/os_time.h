@@ -114,14 +114,14 @@ Status          OS_DateSet(const OS_DateFormat format, OS_DateTime* os_date_p);
 /// @param[in]  seconds         Seconds.
 /// @return     Bool.
 /// @warning    Currently only for 24H mode!
-BL              OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds);
+Bool            OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds);
 
 /// @brief      Date validation.
 /// @param[in]  year            Year.
 /// @param[in]  month           Month.
 /// @param[in]  day             Day.
 /// @return     Bool.
-BL              OS_DateIsValid(const U16 year, const U8 month, const U8 day);
+Bool            OS_DateIsValid(const U16 year, const U8 month, const U8 day);
 
 /// @brief      Get the day of the week.
 /// @param[in]  year            Year.

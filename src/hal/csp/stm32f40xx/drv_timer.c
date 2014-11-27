@@ -29,7 +29,7 @@ Status s = S_UNDEF;
     drv_timer_v[DRV_ID_TIMER5]  = &drv_timer5;
     drv_timer_v[DRV_ID_TIMER8]  = &drv_timer8;
     drv_timer_v[DRV_ID_TIMER10] = &drv_timer10;
-    for (SIZE i = 0; i < ITEMS_COUNT_GET(drv_timer_v, drv_timer_v[0]); ++i) {
+    for (Size i = 0; i < ITEMS_COUNT_GET(drv_timer_v, drv_timer_v[0]); ++i) {
         //Ignore specific driver(s).
         if (DRV_ID_TIMER8 == i) { continue; }
         if (OS_NULL != drv_timer_v[i]) {
@@ -48,9 +48,9 @@ void TIMER_DWT_Init(void)
 }
 
 /*****************************************************************************/
-LNG TIMER_DWT_Get(void)
+Long TIMER_DWT_Get(void)
 {
-    return (LNG)HAL_CORE_CYCLES;
+    return (Long)HAL_CORE_CYCLES;
 }
 
 /*****************************************************************************/

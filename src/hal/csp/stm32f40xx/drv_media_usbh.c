@@ -26,8 +26,8 @@ static Status   USBH_FS_MSC_Init(void* args_p);
 static Status   USBH_FS_MSC_DeInit(void* args_p);
 static Status   USBH_FS_MSC_Open(void* args_p);
 static Status   USBH_FS_MSC_Close(void* args_p);
-static Status   USBH_FS_MSC_Read(void* data_in_p, SIZE size, void* args_p);
-static Status   USBH_FS_MSC_Write(void* data_out_p, SIZE size, void* args_p);
+static Status   USBH_FS_MSC_Read(void* data_in_p, Size size, void* args_p);
+static Status   USBH_FS_MSC_Write(void* data_out_p, Size size, void* args_p);
 static Status   USBH_FS_MSC_IoCtl(const U32 request_id, void* args_p);
 #endif //defined(OS_MEDIA_VOL_USBH_FS) && (1 == USBH_FS_ENABLED)
 #if (1 == USBH_HS_ENABLED)
@@ -35,8 +35,8 @@ static Status   USBH_HS_MSC_Init(void* args_p);
 static Status   USBH_HS_MSC_DeInit(void* args_p);
 static Status   USBH_HS_MSC_Open(void* args_p);
 static Status   USBH_HS_MSC_Close(void* args_p);
-static Status   USBH_HS_MSC_Read(void* data_in_p, SIZE size, void* args_p);
-static Status   USBH_HS_MSC_Write(void* data_out_p, SIZE size, void* args_p);
+static Status   USBH_HS_MSC_Read(void* data_in_p, Size size, void* args_p);
+static Status   USBH_HS_MSC_Write(void* data_out_p, Size size, void* args_p);
 static Status   USBH_HS_MSC_IoCtl(const U32 request_id, void* args_p);
 #endif //(1 == USBH_HS_ENABLED)
 
@@ -114,7 +114,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_FS_MSC_Read(void* data_in_p, SIZE size, void* args_p)
+Status USBH_FS_MSC_Read(void* data_in_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -122,10 +122,10 @@ Status s = S_OK;
 //    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
     OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
     if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
-        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
+        U32* scratch_p = OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            U8* data_in_8p = (U8*)data_in_p;
+            U8* data_in_8p = data_in_p;
             IF_STATUS(s = drv_media_usbh_fs.Read((U8*)scratch_p, 1, &sector)) { break; }
             OS_MemCpy(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             data_in_8p += USBH_MSC_BLOCK_SIZE;
@@ -157,7 +157,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_FS_MSC_Write(void* data_out_p, SIZE size, void* args_p)
+Status USBH_FS_MSC_Write(void* data_out_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -165,10 +165,10 @@ Status s = S_OK;
 //    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
     OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
     if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
-        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
+        U32* scratch_p = OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            U8* data_out_8p = (U8*)data_out_p;
+            U8* data_out_8p = data_out_p;
             OS_MemCpy(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
             IF_STATUS(s = drv_media_usbh_fs.Write((U8*)scratch_p, 1, &sector)) { break; }
             data_out_8p += USBH_MSC_BLOCK_SIZE;
@@ -205,7 +205,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBH_FS_MSC_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
 //    OS_LOG(D_DEBUG, "ioctl id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
@@ -228,7 +228,11 @@ Status s = S_OK;
                 default:
                     break;
             }
-            if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+            if (HAL_OK == hal_status) {
+                s = S_OK;
+            } else {
+                s = S_FS_UNDEF;
+            }
             }
             break;
         case CTRL_POWER: {
@@ -247,15 +251,22 @@ Status s = S_OK;
                     default:
                         break;
                 }
-                if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+                if (HAL_OK == hal_status) {
+                    s = S_OK;
+                } else {
+                    s = S_FS_UNDEF;
+                }
             }
             break;
         case DRV_REQ_STD_SYNC:
         case CTRL_SYNC:
+            s = S_OK;
             break;
         case DRV_REQ_MEDIA_STATUS_GET:
-            if(0 == USBH_MSC_UnitIsReady(usbh_fs_hd_p, usbh_fs_msc_lun)) {
+            if (0 == USBH_MSC_UnitIsReady(usbh_fs_hd_p, usbh_fs_msc_lun)) {
                 s = S_FS_NOT_READY;
+            } else {
+                s = S_OK;
             }
             break;
         case DRV_REQ_MEDIA_SECTOR_COUNT_GET:
@@ -263,6 +274,7 @@ Status s = S_OK;
             MSC_LUNTypeDef info;
             if (USBH_OK == USBH_MSC_GetLUNInfo(usbh_fs_hd_p, usbh_fs_msc_lun, &info)) {
                 *(U32*)args_p = info.capacity.block_nbr;
+                s = S_OK;
             } else {
                 s = S_FS_UNDEF;
             }
@@ -275,12 +287,14 @@ Status s = S_OK;
             MSC_LUNTypeDef info;
             if (USBH_OK == USBH_MSC_GetLUNInfo(usbh_fs_hd_p, usbh_fs_msc_lun, &info)) {
                 *(U16*)args_p = info.capacity.block_size;
+                s = S_OK;
             } else {
                 s = S_FS_UNDEF;
             }
             }
             break;
         case CTRL_ERASE_SECTOR:
+            s = S_OK;
             break;
         default:
             s = S_FS_UNDEF;
@@ -327,7 +341,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_HS_MSC_Read(void* data_in_p, SIZE size, void* args_p)
+Status USBH_HS_MSC_Read(void* data_in_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -335,12 +349,12 @@ Status s = S_OK;
 //    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
     OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
     if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
-        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
+        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_Size); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
             IF_STATUS(s = drv_media_usbh_hs.Read((U8*)scratch_p, 1, &sector)) { break; }
-            OS_MemCpy(data_in_p, scratch_p, USBH_MSC_BLOCK_SIZE);
-            data_in_p += USBH_MSC_BLOCK_SIZE;
+            OS_MemCpy(data_in_p, scratch_p, USBH_MSC_BLOCK_Size);
+            data_in_p += USBH_MSC_BLOCK_Size;
             ++sector;
         }
         OS_Free(scratch_p);
@@ -369,7 +383,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USBH_HS_MSC_Write(void* data_out_p, SIZE size, void* args_p)
+Status USBH_HS_MSC_Write(void* data_out_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
 State state = ON;
@@ -377,12 +391,12 @@ Status s = S_OK;
 //    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
     OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
     if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
-        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
+        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_Size); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
         while (size--) {
-            OS_MemCpy(data_out_p, scratch_p, USBH_MSC_BLOCK_SIZE);
+            OS_MemCpy(data_out_p, scratch_p, USBH_MSC_BLOCK_Size);
             IF_STATUS(s = drv_media_usbh_hs.Write((U8*)scratch_p, 1, &sector)) { break; }
-            data_out_p += USBH_MSC_BLOCK_SIZE;
+            data_out_p += USBH_MSC_BLOCK_Size;
             ++sector;
         }
         OS_Free(scratch_p);
@@ -416,7 +430,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBH_HS_MSC_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
 //    OS_LOG(D_DEBUG, "ioctl req_id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
@@ -439,7 +453,11 @@ Status s = S_OK;
                 default:
                     break;
             }
-            if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+            if (HAL_OK == hal_status) {
+                s = S_OK;
+            } else {
+                s = S_FS_UNDEF;
+            }
             }
             break;
         case CTRL_POWER: {
@@ -458,15 +476,22 @@ Status s = S_OK;
                     default:
                         break;
                 }
-                if (HAL_OK != hal_status) { s = S_FS_UNDEF; }
+                if (HAL_OK == hal_status) {
+                    s = S_OK;
+                } else {
+                    s = S_FS_UNDEF;
+                }
             }
             break;
         case DRV_REQ_STD_SYNC:
         case CTRL_SYNC:
+            s = S_OK;
             break;
         case DRV_REQ_MEDIA_STATUS_GET:
             if(0 == USBH_MSC_UnitIsReady(usbh_hs_hd_p, usbh_hs_msc_lun)) {
                 s = S_FS_NOT_READY;
+            } else {
+                s = S_OK;
             }
             break;
         case DRV_REQ_MEDIA_SECTOR_COUNT_GET:
@@ -474,24 +499,27 @@ Status s = S_OK;
             MSC_LUNTypeDef info;
             if (USBH_OK == USBH_MSC_GetLUNInfo(usbh_hs_hd_p, usbh_hs_msc_lun, &info)) {
                 *(U32*)args_p = info.capacity.block_nbr;
+                s = S_OK;
             } else {
                 s = S_FS_UNDEF;
             }
             }
             break;
-        case DRV_REQ_MEDIA_SECTOR_SIZE_GET:
-        case GET_SECTOR_SIZE:
-        case DRV_REQ_MEDIA_BLOCK_SIZE_GET:
-        case GET_BLOCK_SIZE: {
+        case DRV_REQ_MEDIA_SECTOR_Size_GET:
+        case GET_SECTOR_Size:
+        case DRV_REQ_MEDIA_BLOCK_Size_GET:
+        case GET_BLOCK_Size: {
             MSC_LUNTypeDef info;
             if (USBH_OK == USBH_MSC_GetLUNInfo(usbh_hs_hd_p, usbh_hs_msc_lun, &info)) {
                 *(U16*)args_p = info.capacity.block_size;
+                s = S_OK;
             } else {
                 s = S_FS_UNDEF;
             }
             }
             break;
         case CTRL_ERASE_SECTOR:
+            s = S_OK;
             break;
         default:
             s = S_FS_UNDEF;

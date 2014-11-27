@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 // Common definitions.
 //------------------------------------------------------------------------------
-#define OS_NULL                     ((void *)0)
+#define OS_NULL                     ((void*)0)
 #ifndef NULL
 #   define NULL                     OS_NULL
 #endif
@@ -47,6 +47,10 @@
 #define BF_GET(y, shift, len)       (((y) >> (shift)) & BIT_MASK(len))  ///< Retrieve a bitfield mask of length starting at bit shift from y.
 #define BF_PREP(x, shift, len)      (((x) & BIT_MASK(len)) << (shift))  ///< Prepare a bitmask for insertion or combining.
 #define BF_SET(y, x, shift, len)    (y = ((y) & ~BF_MASK(shift, len)) | BF_PREP(x, shift, len)) ///< Insert a new bitfield value x into y.
+
+// Get maximum value of the given type.
+//(Plain integer types only!)
+#define TYPE_VALUE_MAX(type)        BIT_MASK(BIT_SIZE(type))
 
 // Get count of elements table (sizeof(type) never 0)
 #define ITEMS_COUNT_GET(tab, item_type)     (sizeof(tab) / sizeof(item_type))

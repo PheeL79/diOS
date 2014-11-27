@@ -4,6 +4,7 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
+#include "drv_usb.h"
 #include "usbh_hid.h"
 #include "usbh_msc.h"
 //#include "usbd_hid.h"
@@ -14,7 +15,6 @@
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#include "os_usb.h"
 #include "os_task_usb.h"
 #include "os_task_fs.h"
 
@@ -95,9 +95,9 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 TaskArgs* task_args_p = (TaskArgs*)args_p;
 OS_Message* msg_p;
 const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
-const OS_TaskHd fsd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_FS);
+const OS_TaskHd fs_thd = OS_TaskByNameGet(OS_DAEMON_NAME_FS);
 
-    OS_ASSERT(S_OK == OS_TasksConnect(fsd_thd, OS_THIS_TASK));
+    OS_ASSERT(S_OK == OS_TasksConnect(fs_thd, OS_THIS_TASK));
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
             //OS_LOG_S(D_WARNING, S_UNDEF_MSG);

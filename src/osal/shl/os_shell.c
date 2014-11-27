@@ -113,7 +113,7 @@ Status s = S_OK;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
-    IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_MemCpy(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
         OS_ListItemValueSet(item_l_p, (OS_Value)cmd_cfg_dyn_p);
         OS_ListItemOwnerSet(item_l_p, OS_TaskGet());
@@ -135,7 +135,7 @@ OS_ListItem* item_l_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_c
 Status s = S_OK;
 
     if ((OS_NULL == cmd_cfg_p) || (OS_DELAY_MAX == (OS_Value)cmd_cfg_p)) { return S_INVALID_REF; }
-    IF_STATUS_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItemDelete(item_l_p);
         OS_Free(cmd_cfg_p);
         OS_MutexUnlock(os_shell_mutex);
@@ -150,7 +150,7 @@ Status OS_ShellCommandExecute(void)
 U32 argc = 0;
 StrPtr cl_p = shell_cl;
 U8 c =* cl_p;
-BL is_quoted = OS_FALSE;
+Bool is_quoted = OS_FALSE;
     //Parse command line.
     while (OS_ASCII_EOL != c) {
         if (OS_ASCII_DOUBLE_QUOTE == c) {
@@ -191,7 +191,7 @@ OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrPtr name_p)
 {
 OS_ShellCommandHd cmd_hd = SHELL_COMMAND_UNDEF;
 
-    IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_commands_list));
         OS_ShellCommandConfig* cmd_cfg_p;
 
@@ -213,7 +213,7 @@ OS_ShellCommandHd OS_ShellCommandNextGet(const OS_ShellCommandHd cmd_hd)
 {
 OS_ListItem* iter_li_p;
 OS_ShellCommandHd chd = SHELL_COMMAND_UNDEF;
-    IF_STATUS_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         if (SHELL_COMMAND_UNDEF == cmd_hd) {
             iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_commands_list));
             if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { goto error; }

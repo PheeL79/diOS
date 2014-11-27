@@ -22,7 +22,7 @@ DSTATUS disk_initialize (
     BYTE pdrv				/* Physical drive nmuber (0..) */
 )
 {
-    IF_STATUS_OK(OS_FileSystemMediaInit(OS_FileSystemMediaByVolumeGet(pdrv), OS_NULL)) { return 0; }
+    IF_OK(OS_FileSystemMediaInit(OS_FileSystemMediaByVolumeGet(pdrv), OS_NULL)) { return 0; }
     return STA_NOINIT;
 }
 
@@ -36,7 +36,7 @@ DSTATUS disk_status (
     BYTE pdrv		/* Physical drive nmuber (0..) */
 )
 {
-    IF_STATUS_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], DRV_REQ_MEDIA_STATUS_GET, OS_NULL)) { return 0; }
+    IF_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], DRV_REQ_MEDIA_STATUS_GET, OS_NULL)) { return 0; }
     return STA_NOINIT;
 }
 
@@ -54,7 +54,7 @@ DRESULT disk_read (
 )
 {
 DRESULT res;
-    IF_STATUS_OK(OS_DriverRead(fs_media_dhd_v[pdrv], buff, count, &sector)) {
+    IF_OK(OS_DriverRead(fs_media_dhd_v[pdrv], buff, count, &sector)) {
         res = RES_OK;
     } else {
         res = RES_ERROR;
@@ -77,7 +77,7 @@ DRESULT disk_write (
 )
 {
 DRESULT res;
-    IF_STATUS_OK(OS_DriverWrite(fs_media_dhd_v[pdrv], (void*)buff, count, &sector)) {
+    IF_OK(OS_DriverWrite(fs_media_dhd_v[pdrv], (void*)buff, count, &sector)) {
         res = RES_OK;
     } else {
         res = RES_ERROR;
@@ -99,7 +99,7 @@ DRESULT disk_ioctl (
 )
 {
 DRESULT res;
-    IF_STATUS_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], cmd, buff)) {
+    IF_OK(OS_DriverIoCtl(fs_media_dhd_v[pdrv], cmd, buff)) {
         res = RES_OK;
     } else {
         res = RES_ERROR;

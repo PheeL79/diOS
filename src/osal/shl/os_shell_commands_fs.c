@@ -252,9 +252,9 @@ Status s;
            files_count,
            total_size,
            dirs_count);
-    IF_STATUS_OK(OS_FileSystemClustersFreeGet(fs_media_hd_curr, path_p, &total_size)) {
+    IF_OK(OS_FileSystemClustersFreeGet(fs_media_hd_curr, path_p, &total_size)) {
         OS_FileSystemVolumeStats volume_stats;
-        IF_STATUS_OK(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &volume_stats)) {
+        IF_OK(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &volume_stats)) {
             printf(", %11u bytes free", (total_size * volume_stats.cluster_size));
         }
     }
@@ -381,7 +381,7 @@ Status OS_ShellCmdFoHandler(const U32 argc, ConstStrPtr argv[])
 Status s;
 OS_FileOpenMode op_mode = OS_FS_FILE_OP_MODE_UNDEF;
 U8 op = '\0';
-BL is_exists = OS_FALSE;
+Bool is_exists = OS_FALSE;
     { // Parse open mode
         StrPtr op_mode_p = (StrPtr)argv[0];
         while (OS_ASCII_EOL != *op_mode_p) {
@@ -444,7 +444,7 @@ static ConstStr cmd_help_brief_fm[] = "File system make.";
 static Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[]);
 Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[])
 {
-SIZE size = 0;
+Size size = 0;
 OS_FileSystemPartitionRule part_rule = OS_FS_PART_RULE_UNDEF;
 Status s = S_OK;
 const S8 volume = OS_AtoI((const char*)argv[0]);
@@ -469,7 +469,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     if (3 == argc) {
         const U8* size_str = (const U8*)argv[3];
         const U8 base = ('x' == *(U8*)(size_str + 1)) ? 16 : 10;
-        size = (SIZE)OS_StrToL((const char*)size_str, OS_NULL, base);
+        size = (Size)OS_StrToL((const char*)size_str, OS_NULL, base);
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     printf("\nThe %s will be formatted. Are you sure? (Y/n) ", OS_FileSystemMediaNameGet(fs_media_hd));
@@ -479,7 +479,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     char c_buf[2];
     {
     char c;
-    SIZE i = 0;
+    Size i = 0;
     const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
     OS_Message* msg_p;
         do {
@@ -513,7 +513,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     if ('Y' == c_buf[0]) {
         printf("Formating...");
         const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
-        IF_STATUS(s = OS_FileSystemMake(fs_media_hd, part_rule, (SIZE)size)) {
+        IF_STATUS(s = OS_FileSystemMake(fs_media_hd, part_rule, (Size)size)) {
             OS_LOG_S(D_WARNING, s);
         }
     }
@@ -546,7 +546,7 @@ static const OS_ShellCommandConfig cmd_cfg_fs[] = {
 Status OS_ShellCommandsFsInit(void)
 {
     //Create and register file system shell commands
-    for (SIZE i = 0; i < ITEMS_COUNT_GET(cmd_cfg_fs, OS_ShellCommandConfig); ++i) {
+    for (Size i = 0; i < ITEMS_COUNT_GET(cmd_cfg_fs, OS_ShellCommandConfig); ++i) {
         const OS_ShellCommandConfig* cmd_cfg_p = &cmd_cfg_fs[i];
         IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
             OS_ASSERT(OS_FALSE);

@@ -157,6 +157,11 @@ OS_TaskHd       OS_DriverParentGet(const OS_DriverHd dhd);
 
 //U32             OS_DriversCountGet(void);
 
+/// @brief      Get driver's owners count.
+/// @param[in]  dhd            Driver's handle.
+/// @return     Owners count.
+U16             OS_DriverOwnersCountGet(const OS_DriverHd dhd);
+
 /**
 * \addtogroup OS_ISR_Driver ISR specific functions.
 * @{

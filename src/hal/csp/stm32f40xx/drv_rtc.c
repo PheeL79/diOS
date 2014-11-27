@@ -35,8 +35,8 @@ static Status   RTC_LL_Init(void);
 //static Status   RTC_LL_DeInit(void* args_p);
 static Status   RTC_Open(void* args_p);
 static Status   RTC_Close(void* args_p);
-static Status   RTC_Read(void* data_in_p, SIZE size, void* args_p);
-static Status   RTC_Write(void* data_out_p, SIZE size, void* args_p);
+static Status   RTC_Read(void* data_in_p, Size size, void* args_p);
+static Status   RTC_Write(void* data_out_p, Size size, void* args_p);
 static Status   RTC_IoCtl(const U32 request_id, void* args_p);
 
 static void     RTC_SRAM_BACKUP_Init(void);
@@ -293,7 +293,7 @@ Status RTC_Close(void* args_p)
 
 /******************************************************************************/
 /// @details RTC Backup SRAM read.
-Status RTC_Read(void* data_in_p, SIZE size, void* args_p)
+Status RTC_Read(void* data_in_p, Size size, void* args_p)
 {
 Status s = S_OK;
     __IO U8* sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
@@ -307,7 +307,7 @@ Status s = S_OK;
 
 /******************************************************************************/
 /// @details RTC Backup SRAM write.
-Status RTC_Write(void* data_out_p, SIZE size, void* args_p)
+Status RTC_Write(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
     __IO U8* sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
@@ -331,13 +331,14 @@ Status s = S_OK;
 /******************************************************************************/
 Status RTC_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_RTC_BKUP_REG_READ: {
             HAL_RTC_BackupRegRead* io_args_p = (HAL_RTC_BackupRegRead*)args_p;
             const U32 reg   = rtc_backup_regs[io_args_p->reg];
             U32* val_p      = io_args_p->val_p;
             *val_p          = HAL_RTCEx_BKUPRead(&rtc_handle, reg);
+            s = S_OK;
             }
             break;
         case DRV_REQ_RTC_BKUP_REG_WRITE: {
@@ -345,16 +346,24 @@ Status s = S_OK;
             const U32 reg = rtc_backup_regs[io_args_p->reg];
             const U32 val = io_args_p->val;
             HAL_RTCEx_BKUPWrite(&rtc_handle, reg, val);
-            if (val != HAL_RTCEx_BKUPRead(&rtc_handle, reg)) { s = S_HARDWARE_FAULT; }
+            if (val == HAL_RTCEx_BKUPRead(&rtc_handle, reg)) {
+                s = S_OK;
+            } else {
+                s = S_HARDWARE_FAULT;
+            }
             }
             break;
         case DRV_REQ_RTC_BKUP_REGS_READ:
+            s = S_OK;
             break;
         case DRV_REQ_RTC_BKUP_REGS_WRITE:
+            s = S_OK;
             break;
         case DRV_REQ_RTC_ALARM_A_SET:
+            s = S_OK;
             break;
         case DRV_REQ_RTC_ALARM_B_SET:
+            s = S_OK;
             break;
         case DRV_REQ_RTC_TIME_GET: {
             RTC_TimeTypeDef time;
@@ -372,6 +381,7 @@ Status s = S_OK;
                     os_time_p->seconds      = time.Seconds;
                     os_time_p->daylight     = time.DayLightSaving;
                     os_time_p->hourformat   = time.TimeFormat;
+                    s = S_OK;
                 } else { s = S_INVALID_REF; }
             } else { s = S_HARDWARE_FAULT; }
             }
@@ -388,6 +398,7 @@ Status s = S_OK;
                 time.TimeFormat     = os_time_p->hourformat;
                 time.StoreOperation = RTC_STOREOPERATION_SET;
                 if (HAL_OK == HAL_RTC_SetTime(&rtc_handle, &time, FORMAT_BIN)) {
+                    s = S_OK;
                 } else { s = S_HARDWARE_FAULT; }
             } else { s = S_INVALID_REF; }
             }
@@ -401,6 +412,7 @@ Status s = S_OK;
                     os_date_p->month    = date.Month;
                     os_date_p->weekday  = date.WeekDay;
                     os_date_p->day      = date.Date;
+                    s = S_OK;
                 } else { s = S_INVALID_REF; }
             } else { s = S_HARDWARE_FAULT; }
             }
@@ -415,6 +427,7 @@ Status s = S_OK;
                 date.WeekDay        = os_date_p->weekday;
                 date.Date           = os_date_p->day;
                 if (HAL_OK == HAL_RTC_SetDate(&rtc_handle, &date, FORMAT_BIN)) {
+                    s = S_OK;
                 } else { s = S_HARDWARE_FAULT; }
             } else { s = S_INVALID_REF; }
             }
@@ -422,15 +435,17 @@ Status s = S_OK;
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
+                    s = S_OK;
                     break;
                 default:
                     break;
             }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;

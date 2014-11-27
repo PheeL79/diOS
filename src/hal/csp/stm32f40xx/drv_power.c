@@ -80,16 +80,19 @@ Status POWER_Close(void* args_p)
 /******************************************************************************/
 Status POWER_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
 const OS_PowerState state = *(OS_PowerState*)args_p;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET:
             switch (state) {
                 case PWR_STARTUP:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
+                    s = S_OK;
                     break;
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_SLEEP:
                     /* Suspend Tick increment to prevent wakeup by Systick interrupt.
@@ -99,6 +102,7 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                     HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
                     /* Resume Tick interrupt if disabled prior to sleep mode entry */
                     HAL_SYSTICK_START();
+                    s = S_OK;
                     break;
                 case PWR_STOP:
                     OS_CriticalSectionEnter(); {
@@ -137,14 +141,19 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                         HAL_SYSTICK_START();
                         OS_SchedulerResume();
                     } OS_CriticalSectionExit();
+                    s = S_OK;
                     break;
                 case PWR_STANDBY:
+                    s = S_OK;
                     break;
                 case PWR_HIBERNATE:
+                    s = S_OK;
                     break;
                 case PWR_SHUTDOWN:
+                    s = S_OK;
                     break;
                 case PWR_BATTERY:
+                    s = S_OK;
                     break;
                 default:
                     OS_LOG_S(D_WARNING, s = S_INVALID_STATE);

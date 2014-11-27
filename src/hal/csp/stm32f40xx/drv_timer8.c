@@ -17,7 +17,7 @@
 #define TIMx_FORCE_RESET()              __TIM8_FORCE_RESET()
 #define TIMx_RELEASE_RESET()            __TIM8_RELEASE_RESET()
 
-#define TIMx_TIMEOUT                    100
+#define TIMx_TIMEOUT                    1000
 
 //-----------------------------------------------------------------------------
 static Status TIMER8_Init(void* args_p);
@@ -41,10 +41,12 @@ HAL_DriverItf drv_timer8 = {
 /*****************************************************************************/
 Status TIMER8_Init(void* args_p)
 {
+Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
-    TIMER8_LL_Init(OS_NULL);
-    TIMER8_Close(OS_NULL);
-    return S_OK;
+    IF_OK(s = TIMER8_LL_Init(OS_NULL)) {
+        s = TIMER8_Close(OS_NULL);
+    }
+    return s;
 }
 
 /*****************************************************************************/
@@ -56,14 +58,14 @@ TIM_MasterConfigTypeDef master_cfg;
     /* Set TIMx instance */
     timer_hd.Instance = TIMx;
     /* Initialize TIMx peripheral */
-    timer_hd.Init.Period              = TIMx_TIMEOUT - 1;
-    timer_hd.Init.Prescaler           = ((SystemCoreClock / 2) / TIMx_TIMEOUT) - 1;
-    timer_hd.Init.ClockDivision       = TIM_CLOCKDIVISION_DIV1;
-    timer_hd.Init.CounterMode         = TIM_COUNTERMODE_UP;
+    timer_hd.Init.Period            = TIMx_TIMEOUT - 1;
+    timer_hd.Init.Prescaler         = ((SystemCoreClock / 2) / TIMx_TIMEOUT) - 1;
+    timer_hd.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    timer_hd.Init.CounterMode       = TIM_COUNTERMODE_UP;
     HAL_ASSERT(HAL_OK == HAL_TIM_Base_Init(&timer_hd));
     /* TIM8 TRGO selection */
-    master_cfg.MasterOutputTrigger      = TIM_TRGO_UPDATE;
-    master_cfg.MasterSlaveMode          = TIM_MASTERSLAVEMODE_DISABLE;
+    master_cfg.MasterOutputTrigger  = TIM_TRGO_UPDATE;
+    master_cfg.MasterSlaveMode      = TIM_MASTERSLAVEMODE_DISABLE;
     HAL_ASSERT(HAL_OK == HAL_TIMEx_MasterConfigSynchronization(&timer_hd, &master_cfg));
     return S_OK;
 }

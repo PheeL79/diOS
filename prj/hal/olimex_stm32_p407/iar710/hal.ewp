@@ -4148,6 +4148,9 @@
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_gpio.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_i2s.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_iwdg.c</name>
     </file>
     <file>

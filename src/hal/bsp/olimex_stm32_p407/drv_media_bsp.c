@@ -20,7 +20,7 @@ HAL_DriverItf* drv_media_v[DRV_ID_MEDIA_LAST];
 /*****************************************************************************/
 Status MEDIA_Init_(void)
 {
-    memset(drv_media_v, 0x0, sizeof(drv_media_v));
+    HAL_MemSet(drv_media_v, 0x0, sizeof(drv_media_v));
 #if defined(OS_MEDIA_VOL_SDRAM)
 extern HAL_DriverItf drv_media_sdram;
     drv_media_v[DRV_ID_MEDIA_SDRAM]     = &drv_media_sdram;

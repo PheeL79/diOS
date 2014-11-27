@@ -17,13 +17,13 @@
 //------------------------------------------------------------------------------
 // limits
     #define U8_MIN              0x0
-    #define U8_MAX              0xFF
+    #define U8_MAX              0xFFU
     #define U16_MIN             0x0
-    #define U16_MAX             0xFFFF
+    #define U16_MAX             0xFFFFU
     #define U32_MIN             0x0
-    #define U32_MAX             0xFFFFFFFF
+    #define U32_MAX             0xFFFFFFFFUL
     #define U64_MIN             0x0
-    #define U64_MAX             0xFFFFFFFFFFFFFFFF
+    #define U64_MAX             0xFFFFFFFFFFFFFFFFUL
 
     #define S8_MIN              0x80
     #define S8_MAX              0x7F
@@ -41,18 +41,18 @@
 
     #define DEV_ID_SIZE         6
 
-    typedef size_t              SIZE;
+    typedef size_t              Size;
 
-    typedef float               FLT;
-    typedef double              DBL;
+    typedef float               Float;
+    typedef double              Double;
 
-    typedef int                 INT;
-    typedef unsigned int        UINT;
+    typedef int                 Int;
+    typedef unsigned int        UInt;
 
-    typedef long                LNG;
-    typedef unsigned long       ULNG;
+    typedef long                Long;
+    typedef unsigned long       ULong;
 
-    typedef uint8_t             BL;
+    typedef uint8_t             Bool;
 
     // plain types
     typedef uint8_t             U8;

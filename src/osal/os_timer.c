@@ -13,6 +13,7 @@
 #include "os_message.h"
 #include "os_timer.h"
 
+#if (1 == OS_TIMERS_ENABLED)
 //------------------------------------------------------------------------------
 typedef TimerCallbackFunction_t OS_TimerCallbackFunc;
 typedef struct {
@@ -191,7 +192,7 @@ Status OS_TimerPeriodSet(const OS_TimerHd timer_hd, const TimeMs new_period, con
 }
 
 /******************************************************************************/
-BL OS_TimerIsActive(const OS_TimerHd timer_hd)
+Bool OS_TimerIsActive(const OS_TimerHd timer_hd)
 {
     if (OS_NULL == timer_hd) { return OS_FALSE; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
@@ -372,3 +373,5 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     }
     return S_OK;
 }
+
+#endif //(1 == OS_TIMERS_ENABLED)

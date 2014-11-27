@@ -52,12 +52,12 @@ static Status   USART6_LL_Init(void* args_p);
 //static Status   USART6_LL_DeInit(void* args_p);
 static Status   USART6_Open(void* args_p);
 static Status   USART6_Close(void* args_p);
-static Status   USART6_Read(void* data_in_p, SIZE size, void* args_p);
-static Status   USART6_Write(void* data_out_p, SIZE size, void* args_p);
-//static Status   USART6_IT_Read(void* data_in_p, SIZE size, void* args_p);
-//static Status   USART6_IT_Write(void* data_out_p, SIZE size, void* args_p);
-static Status   USART6_DMA_Read(void* data_in_p, SIZE size, void* args_p);
-//static Status   USART6_DMA_Write(void* data_out_p, SIZE size, void* args_p);
+static Status   USART6_Read(void* data_in_p, Size size, void* args_p);
+static Status   USART6_Write(void* data_out_p, Size size, void* args_p);
+//static Status   USART6_IT_Read(void* data_in_p, Size size, void* args_p);
+//static Status   USART6_IT_Write(void* data_out_p, Size size, void* args_p);
+static Status   USART6_DMA_Read(void* data_in_p, Size size, void* args_p);
+//static Status   USART6_DMA_Write(void* data_out_p, Size size, void* args_p);
 static Status   USART6_IoCtl(const U32 request_id, void* args_p);
 
 //------------------------------------------------------------------------------
@@ -163,7 +163,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     dma_rx_hd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     dma_rx_hd.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
     dma_rx_hd.Init.Mode                = DMA_NORMAL;
-    dma_rx_hd.Init.Priority            = DMA_PRIORITY_HIGH;
+    dma_rx_hd.Init.Priority            = DMA_PRIORITY_LOW;
     dma_rx_hd.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
     dma_rx_hd.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
     dma_rx_hd.Init.MemBurst            = DMA_MBURST_INC4;
@@ -181,7 +181,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 
     /*##-4- Configure the NVIC for DMA #########################################*/
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_TX) */
-    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, OS_PRIORITY_INT_MIN, 1);
+    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, OS_PRIORITY_INT_MIN, 0);
     HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
 
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_RX) */
@@ -233,7 +233,7 @@ Status USART6_Close(void* args_p)
 }
 
 /******************************************************************************/
-Status USART6_Read(void* data_in_p, SIZE size, void* args_p)
+Status USART6_Read(void* data_in_p, Size size, void* args_p)
 {
 Status s = S_OK;
     if (HAL_OK != HAL_UART_Receive(&uart_hd, data_in_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
@@ -241,7 +241,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USART6_Write(void* data_out_p, SIZE size, void* args_p)
+Status USART6_Write(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
     if (HAL_OK != HAL_UART_Transmit(&uart_hd, data_out_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
@@ -249,7 +249,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USART6_DMA_Read(void* data_in_p, SIZE size, void* args_p)
+Status USART6_DMA_Read(void* data_in_p, Size size, void* args_p)
 {
 Status s = S_OK;
     /*##-4- Wait for the end of the transfer ###################################*/
@@ -265,7 +265,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status USART6_DMA_Write(void* data_out_p, SIZE size, void* args_p)
+Status USART6_DMA_Write(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
     /*##-4- Wait for the end of the transfer ###################################*/
@@ -281,7 +281,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USART6_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_SYNC:
             while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_hd)) {};
@@ -289,6 +289,7 @@ Status s = S_OK;
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
                 case PWR_SLEEP:
@@ -297,13 +298,14 @@ Status s = S_OK;
                 case PWR_HIBERNATE:
                 case PWR_SHUTDOWN:
                     while (HAL_UART_STATE_READY != HAL_UART_GetState(&uart_hd)) {};
+                    s = S_OK;
                     break;
                 default:
                     break;
             }
             break;
         default:
-            HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);
+            s = S_UNDEF_REQ_ID;
             break;
     }
     return s;

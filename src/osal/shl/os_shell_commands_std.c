@@ -83,12 +83,12 @@ const U8 step = 16;
     //Convert address to number.
     const U8* addr_str = (const U8*)argv[0];
     U8 base = ('x' == *(U8*)(addr_str + 1)) ? 16 : 10;
-    LNG addr = OS_StrToL((const char*)addr_str, OS_NULL, base);
+    Long addr = OS_StrToL((const char*)addr_str, OS_NULL, base);
     if (0 > addr) { return S_INVALID_REF; }
 //    OS_MemoryType mem_type = OS_MEM_UNDEF;
 //    OS_MemoryStat mem_stat;
     //WARNING!!! Allow all of memory regions! Please be careful with the address value!
-    BL is_valid = OS_TRUE;//OS_FALSE;
+    Bool is_valid = OS_TRUE;//OS_FALSE;
     //Check address.
 //    while (OS_MEM_UNDEF != (mem_type = OS_MemoryTypeHeapNextGet(mem_type))) {
 //        IF_STATUS(OS_MemoryStatGet(mem_type, &mem_stat)) { return S_INVALID_VALUE; }
@@ -100,7 +100,7 @@ const U8 step = 16;
     if (OS_TRUE != is_valid) { return S_INVALID_VALUE; }
     const U8* size_str = (const U8*)argv[1];
     base = ('x' == *(U8*)(size_str + 1)) ? 16 : 10;
-    LNG size = OS_StrToL((const char*)size_str, OS_NULL, base);
+    Long size = OS_StrToL((const char*)size_str, OS_NULL, base);
     if (0 == size) { return S_OK; }
     while (0 < size) {
         U8* p;
@@ -312,6 +312,7 @@ OS_DriverHd dhd = OS_NULL;
 }
 
 /******************************************************************************/
+#if (1 == OS_TIMERS_ENABLED)
 static void OS_ShellCmdStHandlerTimHelper(void);
 void OS_ShellCmdStHandlerTimHelper(void)
 {
@@ -332,8 +333,10 @@ OS_TimerHd timer_hd = OS_NULL;
                OS_TaskIdGet(tim_stats.slot));
     }
 }
+#endif //(1 == OS_TIMERS_ENABLED)
 
 /******************************************************************************/
+#if (1 == OS_EVENTS_ENABLED)
 static void OS_ShellCmdStHandlerEvHelper(void);
 void OS_ShellCmdStHandlerEvHelper(void)
 {
@@ -359,6 +362,7 @@ OS_EventHd ehd = OS_NULL;
                event_stats.item_p);
     }
 }
+#endif //(1 == OS_EVENTS_ENABLED)
 
 /******************************************************************************/
 static Status OS_ShellCmdStHandler(const U32 argc, ConstStrPtr argv[]);
@@ -373,13 +377,17 @@ CommandHandler cmd_handlers_v[] = {
     { "tsk", OS_ShellCmdStHandlerTskHelper }, //tasks
     { "que", OS_ShellCmdStHandlerQueHelper }, //queues
     { "drv", OS_ShellCmdStHandlerDrvHelper }, //drivers
+#if (1 == OS_TIMERS_ENABLED)
     { "tim", OS_ShellCmdStHandlerTimHelper }, //timers
+#endif //(1 == OS_TIMERS_ENABLED)
+#if (1 == OS_EVENTS_ENABLED)
     { "ev",  OS_ShellCmdStHandlerEvHelper  }, //events
+#endif //(1 == OS_EVENTS_ENABLED)
 //    { "fs",  OS_ShellCmdStHandlerFsHelper  }, //file system
 //    { "net", OS_ShellCmdStHandlerNetHelper }, //network itf
     { OS_NULL }
 };
-    for (SIZE i = 0; OS_NULL != cmd_handlers_v[i].cmd; ++i) {
+    for (Size i = 0; OS_NULL != cmd_handlers_v[i].cmd; ++i) {
         if (!OS_StrCmp(cmd_handlers_v[i].cmd, (char const*)argv[0])) {
             cmd_handlers_v[i].handler();
             return S_OK;
@@ -399,7 +407,7 @@ Status s = S_OK;
     //Convert TaskId to number.
     const U8* tid_str = (const U8*)argv[0];
     U8 base = ('x' == *(U8*)(tid_str + 1)) ? 16 : 10;
-    LNG tid = OS_StrToL((const char*)tid_str, OS_NULL, base);
+    Long tid = OS_StrToL((const char*)tid_str, OS_NULL, base);
     if (0 > tid) { return S_INVALID_REF; }
 
     const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, PWR_SHUTDOWN);
@@ -551,7 +559,7 @@ static const OS_ShellCommandConfig cmd_cfg_std[] = {
 Status OS_ShellCommandsStdInit(void)
 {
     //Create and register standart shell commands.
-    for (SIZE i = 0; i < ITEMS_COUNT_GET(cmd_cfg_std, OS_ShellCommandConfig); ++i) {
+    for (Size i = 0; i < ITEMS_COUNT_GET(cmd_cfg_std, OS_ShellCommandConfig); ++i) {
         const OS_ShellCommandConfig* cmd_cfg_p = &cmd_cfg_std[i];
         IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
             OS_ASSERT(OS_FALSE);

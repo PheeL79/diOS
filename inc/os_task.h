@@ -26,7 +26,7 @@ extern "C" {
 #define OS_STDIN_LEN    4
 
 enum {
-    OS_TASK_ATTR_UNDEF,
+    OS_TASK_ATTR_SINGLE,
     OS_TASK_ATTR_RECREATE,
     OS_TASK_ATTR_LAST
 };

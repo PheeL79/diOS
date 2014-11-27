@@ -196,14 +196,16 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBD_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
             HAL_StatusTypeDef hal_status = HAL_OK;
             switch (*(OS_PowerState*)args_p) {
                 case PWR_ON:
+                    s = S_OK;
                     break;
                 case PWR_OFF:
+                    s = S_OK;
                     break;
                 default:
                     break;

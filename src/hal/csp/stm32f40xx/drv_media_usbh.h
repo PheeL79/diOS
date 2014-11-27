@@ -6,7 +6,7 @@
 #ifndef _DRV_MEDIA_USBH_H_
 #define _DRV_MEDIA_USBH_H_
 
-#include "os_usb.h"
+#include "drv_usb.h"
 #include "os_driver.h"
 
 //-----------------------------------------------------------------------------

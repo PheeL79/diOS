@@ -54,7 +54,7 @@ Status s = S_OK;
                 iter_li_p = OS_ListItemNextGet(iter_li_p);
                 if (OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p)) { // if the next item is present...
                     if (OS_TRUE != OS_SignalIs(msg_p)) { // ...and it isn't a signal...
-                        const SIZE msg_size = sizeof(OS_Message) + msg_p->size;
+                        const Size msg_size = sizeof(OS_Message) + msg_p->size;
                         msg_inst_p = OS_Malloc(msg_size); // ...make an instance of the message.
                         OS_MemCpy(msg_inst_p, msg_p, msg_size);
                     }
@@ -88,7 +88,7 @@ Status OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const TimeMs
 extern Status OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state);
 Status s;
 signal_filter: //Prevent recursion calls.
-    IF_STATUS_OK(s = OS_QueueReceive(qhd, msg_pp, timeout)) {
+    IF_OK(s = OS_QueueReceive(qhd, msg_pp, timeout)) {
         const OS_Message* msg_p = *msg_pp;
         if (OS_SignalIs(msg_p)) { //Filter system signals.
             const OS_SignalId signal_id = OS_SignalIdGet(msg_p);
@@ -101,7 +101,7 @@ signal_filter: //Prevent recursion calls.
                 if (OS_NULL != thd) {
                     const OS_PowerState state =
                         (OS_PowerState)BF_GET(OS_SignalDataGet(msg_p), 0, BIT_SIZE(OS_PowerState));
-                    IF_STATUS_OK(s = OS_TaskPowerStateSet(thd, state)) {
+                    IF_OK(s = OS_TaskPowerStateSet(thd, state)) {
                         const OS_TaskId src_tid = (OS_TaskId)OS_SignalSrcGet(msg_p);
                         SignalSend(src_tid, s, OS_SIG_PWR_ACK);
                         goto signal_filter;

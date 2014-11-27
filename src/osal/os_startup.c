@@ -39,10 +39,8 @@ Status s = S_OK;
          iter_li_p = OS_ListItemNextGet(iter_li_p)) {
         const OS_TaskConfig* task_cfg_p = (const OS_TaskConfig*)OS_ListItemOwnerGet(iter_li_p);
         OS_TaskHd thd = OS_NULL;
-        IF_STATUS_OK(s = task_cfg_p->func_power(task_cfg_p->args_p, PWR_STARTUP)) {
-            IF_STATUS(s = OS_TaskCreate(task_cfg_p, &thd)) {
-                OS_ASSERT(OS_FALSE);
-            }
+        IF_STATUS(s = OS_TaskCreate(task_cfg_p, &thd)) {
+            OS_ASSERT(OS_FALSE);
         }
         OS_ListItemValueSet(iter_li_p, (OS_Value)thd);
     }
