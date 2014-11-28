@@ -359,7 +359,11 @@ Status OS_AudioPlay(const OS_AudioDeviceHd dev_hd, void* data_p, Size size)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
     const OS_DriverHd dhd = OS_AudioDeviceConfigDynGet(dev_hd)->dhd;
-    return OS_DriverWrite(dhd, data_p, size, OS_NULL);
+    const DrvAudioPlayArgs args = {
+        .data_p = data_p,
+        .size   = size
+    };
+    return OS_DriverIoCtl(dhd, DRV_REQ_AUDIO_PLAY, (void*)&args);
 }
 
 /*****************************************************************************/

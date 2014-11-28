@@ -4,8 +4,9 @@
 * @author  A. Filyanov
 ******************************************************************************/
 #include "hal.h"
-#include "com/cs4344/drv_audio_cs4344.h"
+#include "drv_audio_bsp.h"
 #include "os_debug.h"
+#include "os_supervise.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_cs4344"
@@ -42,11 +43,14 @@ static Status   CS4344_LL_Init(void* args_p);
 //static Status   CS4344_LL_DeInit(void* args_p);
 static Status   CS4344_Open(void* args_p);
 static Status   CS4344_Close(void* args_p);
-static Status   CS4344_DMA_Write(void* data_out_p, Size size, void* args_p);
+//static Status   CS4344_DMA_Write(void* data_out_p, Size size, void* args_p);
 static Status   CS4344_IoCtl(const U32 request_id, void* args_p);
 
 static S8       FrequencyIdxGet(const OS_AudioFreq freq);
 static Status   OutputSetup(const OS_AudioInfo info);
+
+static void     CS4344_XferCpltCallback(DMA_HandleTypeDef* hdma);
+static void     CS4344_XferM1CpltCallback(DMA_HandleTypeDef* hdma);
 
 //------------------------------------------------------------------------------
 /* These PLL parameters are valide when the f(VCO clock) = 1Mhz */
@@ -79,7 +83,7 @@ HAL_DriverItf drv_audio_cs4344 = {
     .Open   = CS4344_Open,
     .Close  = CS4344_Close,
     .Read   = OS_NULL,
-    .Write  = CS4344_DMA_Write,
+    .Write  = OS_NULL,
     .IoCtl  = CS4344_IoCtl
 };
 
@@ -135,11 +139,9 @@ const S8 freq_idx = FrequencyIdxGet(drv_args_p->freq);
     HAL_GPIO_Init(CS4344_I2Sx_SCK_SD_GPIO_PORT, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin         = CS4344_I2Sx_SD_PIN;
-    GPIO_InitStruct.Speed       = GPIO_SPEED_MEDIUM;
     HAL_GPIO_Init(CS4344_I2Sx_SCK_SD_GPIO_PORT, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin         = CS4344_I2Sx_WS_PIN;
-    GPIO_InitStruct.Speed       = GPIO_SPEED_LOW;
     HAL_GPIO_Init(CS4344_I2Sx_WS_GPIO_PORT, &GPIO_InitStruct);
 
     /* Enable MCK GPIO clock */
@@ -162,8 +164,8 @@ const S8 freq_idx = FrequencyIdxGet(drv_args_p->freq);
     dma_tx_hd.Init.MemInc               = DMA_MINC_ENABLE;
     dma_tx_hd.Init.PeriphDataAlignment  = (16 >= drv_args_p->bits) ? DMA_PDATAALIGN_HALFWORD : DMA_PDATAALIGN_WORD;
     dma_tx_hd.Init.MemDataAlignment     = (16 >= drv_args_p->bits) ? DMA_MDATAALIGN_HALFWORD : DMA_MDATAALIGN_WORD;
-    dma_tx_hd.Init.Mode                 = DMA_NORMAL;
-    dma_tx_hd.Init.Priority             = DMA_PRIORITY_HIGH;
+    dma_tx_hd.Init.Mode                 = DMA_CIRCULAR;
+    dma_tx_hd.Init.Priority             = DMA_PRIORITY_VERY_HIGH;
     dma_tx_hd.Init.FIFOMode             = DMA_FIFOMODE_ENABLE;
     dma_tx_hd.Init.FIFOThreshold        = DMA_FIFO_THRESHOLD_FULL;
     dma_tx_hd.Init.MemBurst             = DMA_MBURST_SINGLE;
@@ -246,17 +248,17 @@ Status CS4344_Close(void* args_p)
 }
 
 /******************************************************************************/
-Status CS4344_DMA_Write(void* data_out_p, Size size, void* args_p)
-{
-Status s = S_UNDEF;
-    while (HAL_I2S_STATE_READY != HAL_I2S_GetState(&i2s_hd)) {};
-    if (HAL_OK != HAL_I2S_Transmit_DMA(&i2s_hd, (U16*)data_out_p, (size / sizeof(U16)))) {
-        s = S_HARDWARE_FAULT;
-    } else {
-        s = S_OK;
-    }
-    return s;
-}
+//Status CS4344_DMA_Write(void* data_out_p, Size size, void* args_p)
+//{
+//Status s = S_UNDEF;
+//    while (HAL_I2S_STATE_READY != HAL_I2S_GetState(&i2s_hd)) {};
+//    if (HAL_OK != HAL_I2S_Transmit_DMA(&i2s_hd, (U16*)data_out_p, (size / sizeof(U16)))) {
+//        s = S_HARDWARE_FAULT;
+//    } else {
+//        s = S_OK;
+//    }
+//    return s;
+//}
 
 /******************************************************************************/
 Status CS4344_IoCtl(const U32 request_id, void* args_p)
@@ -285,8 +287,76 @@ Status s = S_UNDEF;
             }
             break;
 // Audio driver's requests.
-        case DRV_REQ_AUDIO_PLAY:
-            s = S_OK;
+        case DRV_REQ_AUDIO_PLAY: {
+            const DrvAudioPlayArgs* drv_args_p = (DrvAudioPlayArgs*)args_p;
+//HAL_StatusTypeDef HAL_I2S_Transmit_DMA(I2S_HandleTypeDef *hi2s, uint16_t *pData, uint16_t Size);
+            U32 tmp1 = 0, tmp2 = 0;
+
+            if ((drv_args_p->data_p == NULL) || (drv_args_p->size == 0)) {
+                s = S_HARDWARE_FAULT;
+                break;
+            }
+
+            if (i2s_hd.State == HAL_I2S_STATE_READY) {
+                i2s_hd.pTxBuffPtr = drv_args_p->data_p;
+                tmp1 = i2s_hd.Instance->I2SCFGR & (SPI_I2SCFGR_DATLEN | SPI_I2SCFGR_CHLEN);
+                tmp2 = i2s_hd.Instance->I2SCFGR & (SPI_I2SCFGR_DATLEN | SPI_I2SCFGR_CHLEN);
+
+                if((tmp1 == I2S_DATAFORMAT_24B)|| \
+                   (tmp2 == I2S_DATAFORMAT_32B)) {
+                    i2s_hd.TxXferSize  = drv_args_p->size / 8;
+                    i2s_hd.TxXferCount = drv_args_p->size / 8;
+                } else {
+                    i2s_hd.TxXferSize  = drv_args_p->size / 4;
+                    i2s_hd.TxXferCount = drv_args_p->size / 4;
+                }
+
+                /* Process Locked */
+                __HAL_LOCK(&i2s_hd);
+
+                i2s_hd.State = HAL_I2S_STATE_BUSY_TX;
+                i2s_hd.ErrorCode = HAL_I2S_ERROR_NONE;
+
+                /* Set the I2S Tx DMA Half transfert complete callback */
+                //i2s_hd.hdmatx->XferHalfCpltCallback = I2S_DMATxHalfCplt;
+
+                /* Set the I2S Tx DMA transfert complete callback */
+                i2s_hd.hdmatx->XferCpltCallback = CS4344_XferCpltCallback;
+
+                /* Set the I2S Tx DMA transfert complete callback */
+                i2s_hd.hdmatx->XferM1CpltCallback = CS4344_XferM1CpltCallback;
+
+                /* Set the DMA error callback */
+                i2s_hd.hdmatx->XferErrorCallback = I2S_DMAError;
+
+                /* Enable the Tx DMA Stream */
+//                HAL_DMA_Start_IT(i2s_hd.hdmatx, *(U32*)tmp, (U32)&i2s_hd.Instance->DR, i2s_hd.TxXferSize);
+                HAL_DMAEx_MultiBufferStart_IT(i2s_hd.hdmatx, (U32)drv_args_p->data_p, (U32)&i2s_hd.Instance->DR,
+                                              (U32)((U8*)drv_args_p->data_p + (drv_args_p->size / 2)), i2s_hd.TxXferSize);
+
+                /* Disable the Half transfer interrupt */
+                __HAL_DMA_DISABLE_IT(i2s_hd.hdmatx, DMA_IT_HT);
+
+                /* Check if the I2S is already enabled */
+                if ((i2s_hd.Instance->I2SCFGR &SPI_I2SCFGR_I2SE) != SPI_I2SCFGR_I2SE) {
+                    /* Enable I2S peripheral */
+                    __HAL_I2S_ENABLE(&i2s_hd);
+                }
+
+                 /* Check if the I2S Tx request is already enabled */
+                if ((i2s_hd.Instance->CR2 & SPI_CR2_TXDMAEN) != SPI_CR2_TXDMAEN) {
+                    /* Enable Tx DMA Request */
+                    i2s_hd.Instance->CR2 |= SPI_CR2_TXDMAEN;
+                }
+
+                /* Process Unlocked */
+                __HAL_UNLOCK(&i2s_hd);
+
+                s = S_OK;
+            } else {
+                s = S_BUSY;
+            }
+            }
             break;
         case DRV_REQ_AUDIO_STOP:
             if (HAL_OK != HAL_I2S_DMAStop(&i2s_hd)) {
@@ -390,6 +460,23 @@ Status s = S_UNDEF;
 void CS4344_I2Sx_DMAx_IRQHandler(void);
 void CS4344_I2Sx_DMAx_IRQHandler(void)
 {
-    //HAL_NVIC_ClearPendingIRQ(CS4344_I2Sx_DMAx_IRQn);
     HAL_DMA_IRQHandler(i2s_hd.hdmatx);
+}
+
+/******************************************************************************/
+void CS4344_XferCpltCallback(DMA_HandleTypeDef* hdma)
+{
+    const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_AUDIO_CS4344, OS_SIG_AUDIO_TX_COMPLETE, 0);
+    if (1 == OS_ISR_SignalSend(audio_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
+        OS_ContextSwitchForce();
+    }
+}
+
+/******************************************************************************/
+void CS4344_XferM1CpltCallback(DMA_HandleTypeDef* hdma)
+{
+    const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_AUDIO_CS4344, OS_SIG_AUDIO_TX_COMPLETE, 1);
+    if (1 == OS_ISR_SignalSend(audio_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
+        OS_ContextSwitchForce();
+    }
 }

@@ -30,28 +30,6 @@ Status I2S_Init_(void)
 }
 
 /******************************************************************************/
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
-{
-    if (CS4344_I2Sx == hi2s->Instance) {
-        const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_AUDIO_CS4344, OS_SIG_AUDIO_TX_COMPLETE, 0);
-        if (1 == OS_ISR_SignalSend(audio_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-            OS_ContextSwitchForce();
-        }
-    }
-}
-
-/******************************************************************************/
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
-{
-    if (CS4344_I2Sx == hi2s->Instance) {
-        const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_AUDIO_CS4344, OS_SIG_AUDIO_TX_COMPLETE_HALF, 0);
-        if (1 == OS_ISR_SignalSend(audio_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-            OS_ContextSwitchForce();
-        }
-    }
-}
-
-/******************************************************************************/
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s)
 {
     if (CS4344_I2Sx == hi2s->Instance) {

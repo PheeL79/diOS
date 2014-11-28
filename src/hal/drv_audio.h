@@ -28,6 +28,11 @@ enum {
     DRV_REQ_AUDIO_LAST
 };
 
+typedef struct {
+    void*   data_p;
+    Size    size;
+} DrvAudioPlayArgs;
+
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_audio_v[];
 
