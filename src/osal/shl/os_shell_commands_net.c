@@ -13,8 +13,8 @@
 static ConstStr cmd_net[]      = "net";
 static ConstStr cmd_help_net[] = "Display the message.";
 /******************************************************************************/
-static Status OS_ShellCmdNetHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdNetHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdNetHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdNetHandler(const U32 argc, ConstStrP argv[])
 {
 register U32 argc_count = 0;
     while (argc > argc_count) {

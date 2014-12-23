@@ -168,7 +168,7 @@ Bool OS_DateIsWeekDay(const U8 week_day)
 }
 
 /******************************************************************************/
-ConstStrPtr OS_TimeNameDayOfWeekGet(const OS_TimeWeekDay week_day, const Locale locale)
+ConstStrP OS_TimeNameDayOfWeekGet(const OS_TimeWeekDay week_day, const Locale locale)
 {
 const LocaleString week_days[] = {
     { "Monday",     "Понедельник"   },
@@ -189,7 +189,7 @@ OS_Tick OS_TickCountGet(void)
 }
 
 /******************************************************************************/
-OS_DateTime OS_TimeStringParse(ConstStrPtr time_p)
+OS_DateTime OS_TimeStringParse(ConstStrP time_p)
 {
 OS_DateTime time;
     OS_MemSet(&time, 0, sizeof(time));
@@ -216,7 +216,7 @@ OS_DateTime time;
 }
 
 /******************************************************************************/
-OS_DateTime OS_DateStringParse(ConstStrPtr date_p)
+OS_DateTime OS_DateStringParse(ConstStrP date_p)
 {
 const Locale locale = OS_LocaleGet();
 OS_DateTime date;

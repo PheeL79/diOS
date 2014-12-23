@@ -28,14 +28,14 @@
 #endif // CM4F
 
 #define INI_FILETYPE                    OS_FileHd
-#define ini_openread(filename,file)     (OS_FileOpen((file), (ConstStrPtr)(filename),\
+#define ini_openread(filename,file)     (OS_FileOpen((file), (ConstStrP)(filename),\
                                          (OS_FileOpenMode)(BIT(OS_FS_FILE_OP_MODE_OPEN_EXISTS) | BIT(OS_FS_FILE_OP_MODE_READ))) == S_OK)
-#define ini_openwrite(filename,file)    (OS_FileOpen((file), (ConstStrPtr)(filename),\
+#define ini_openwrite(filename,file)    (OS_FileOpen((file), (ConstStrP)(filename),\
                                          (OS_FileOpenMode)(BIT(OS_FS_FILE_OP_MODE_OPEN_EXISTS) | BIT(OS_FS_FILE_OP_MODE_OPEN_NEW) |\
                                           BIT(OS_FS_FILE_OP_MODE_WRITE))) == S_OK)
 #define ini_close(file)                 (OS_FileClose(file) == S_OK)
-#define ini_read(buffer,size,file)      (OS_FileGetS(*(file), (StrPtr)(buffer), (size)) == S_OK)
-#define ini_write(buffer,file)          (OS_FilePutS(*(file), (StrPtr)(buffer)) == S_OK)
+#define ini_read(buffer,size,file)      (OS_FileGetS(*(file), (StrP)(buffer), (size)) == S_OK)
+#define ini_write(buffer,file)          (OS_FilePutS(*(file), (StrP)(buffer)) == S_OK)
 #define ini_remove(filename)            (OS_FileDelete(filename) == S_OK)
 
 #define INI_FILEPOS                     UInt
@@ -47,5 +47,5 @@ static int ini_rename(TCHAR *source, const TCHAR *dest)
   /* Function f_rename() does not allow drive letters in the destination file */
   char *drive = strchr(dest, ':');
   drive = (drive == NULL) ? (char *)dest : drive + 1;
-  return (OS_FileRename((ConstStrPtr)source, (ConstStrPtr)drive) == S_OK);
+  return (OS_FileRename((ConstStrP)source, (ConstStrP)drive) == S_OK);
 }

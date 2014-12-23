@@ -55,23 +55,23 @@ Status          OS_DebugDeInit(void);
 /// @param[in]  format_str_p   Format string pointer.
 /// @return     None.
 /// @note       Writes log message to the STDOUT with the debug level and the task name.
-void            OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...);
+void            OS_Log(const OS_LogLevel level, ConstStrP format_str_p, ...);
 
 /// @brief      Trace the message.
 /// @param[in]  level          Level of details.
 /// @param[in]  format_str_p   Format string pointer.
 /// @return     None.
 /// @note       Writes trace message to the STDOUT.
-void            OS_Trace(const OS_LogLevel level, ConstStrPtr format_str_p, ...);
+void            OS_Trace(const OS_LogLevel level, ConstStrP format_str_p, ...);
 
 /**
 * \addtogroup OS_ISR_Debug ISR specific functions.
 * @{
 */
 //------------------------------------------------------------------------------
-//void OS_ISR_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...);
+//void OS_ISR_Log(const OS_LogLevel level, ConstStrP format_str_p, ...);
 //void OS_ISR_LogS(const OS_LogLevel level, const Status status);
-//void OS_ISR_Trace(const OS_LogLevel level, ConstStrPtr format_str_p, ...);
+//void OS_ISR_Trace(const OS_LogLevel level, ConstStrP format_str_p, ...);
 
 /**@}*/ //OS_ISR_Debug
 

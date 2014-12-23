@@ -56,9 +56,14 @@ enum {
 };
 typedef U8 OS_TaskPrio;
 
-typedef OS_Owner    OS_TaskHd;  //Task handle
-typedef U8          OS_TaskId;  //Task identifier
-typedef void        OS_TaskArgs;//Task arguments
+typedef OS_Owner    OS_TaskHd;      //Task handle
+typedef TaskId      OS_TaskId;      //Task identifier
+typedef void        OS_TaskStorage; //Task storage
+
+typedef struct {
+    const void*     args_p;
+    OS_TaskStorage* stor_p;
+} OS_TaskArgs;
 
 //typedef struct {
 //    OS_TaskPrio     curr_prio;
@@ -70,13 +75,13 @@ typedef TaskStatus_t OS_TaskStats;
 
 typedef struct {
     ConstStr            name[OS_TASK_NAME_LEN];
-    void                (*func_main)(void*);
-    Status              (*func_power)(void*, const OS_PowerState);
-    void*               args_p;
+    void                (*func_main)(OS_TaskArgs*);
+    Status              (*func_power)(OS_TaskArgs*, const OS_PowerState);
     OS_TaskAttrs        attrs;
     OS_TaskPrio         prio_init;
     OS_PowerPrio        prio_power;
     U8                  timeout;
+    U16                 storage_size;
     U16                 stack_size;
     U8                  stdin_len;
 } OS_TaskConfig;
@@ -101,10 +106,11 @@ static Status   OS_TaskPower(OS_TaskArgs* args_p, const OS_PowerState state);
 #include "os_queue.h" //deps on above declarations
 //------------------------------------------------------------------------------
 /// @brief      Create a task.
+/// @param[in]  args_p          Task arguments.
 /// @param[in]  cfg_p           Task config.
 /// @param[out] thd_p           Task handle.
 /// @return     #Status.
-Status          OS_TaskCreate(const OS_TaskConfig* cfg_p, OS_TaskHd* thd_p);
+Status          OS_TaskCreate(const void* args_p, const OS_TaskConfig* cfg_p, OS_TaskHd* thd_p);
 
 /// @brief      Delete the task.
 /// @param[in]  thd             Task handle.
@@ -187,12 +193,12 @@ OS_TaskState    OS_TaskStateGet(const OS_TaskHd thd);
 /// @brief      Get task state name.
 /// @param[in]  state           Task state.
 /// @return     Name.
-ConstStrPtr     OS_TaskStateNameGet(const OS_TaskState state);
+ConstStrP       OS_TaskStateNameGet(const OS_TaskState state);
 
 /// @brief      Get task name.
 /// @param[in]  thd             Task handle.
 /// @return     Name.
-ConstStrPtr     OS_TaskNameGet(const OS_TaskHd thd);
+ConstStrP       OS_TaskNameGet(const OS_TaskHd thd);
 
 /// @brief      Get task attributes.
 /// @param[in]  thd             Task handle.
@@ -204,10 +210,15 @@ OS_TaskAttrs    OS_TaskAttrsGet(const OS_TaskHd thd);
 /// @return     Task configuration.
 const OS_TaskConfig* OS_TaskConfigGet(const OS_TaskHd thd);
 
+/// @brief      Get task arguments.
+/// @param[in]  thd             Task handle.
+/// @return     Task arguments.
+const void*     OS_TaskArgumentsGet(const OS_TaskHd thd);
+
 /// @brief      Get task storage.
 /// @param[in]  thd             Task handle.
 /// @return     Task storage.
-void*           OS_TaskStorageGet(const OS_TaskHd thd);
+OS_TaskStorage* OS_TaskStorageGet(const OS_TaskHd thd);
 
 /// @brief      Get task power state.
 /// @param[in]  thd             Task handle.
@@ -228,7 +239,7 @@ Status          OS_TaskPrioritySet(const OS_TaskHd thd, const OS_TaskPrio prio);
 /// @brief      Get task by it's name.
 /// @param[in]  name_p          Task name.
 /// @return     Task handle.
-OS_TaskHd       OS_TaskByNameGet(ConstStrPtr name_p);
+OS_TaskHd       OS_TaskByNameGet(ConstStrP name_p);
 
 /// @brief      Get the next task.
 /// @param[in]  thd             Task handle.

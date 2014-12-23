@@ -117,17 +117,17 @@ Status          OS_DriverItfSet(const OS_DriverHd dhd, HAL_DriverItf* itf_p);
 /// @brief      Get driver name.
 /// @param[in]  dhd            Driver's handle.
 /// @return     Name.
-ConstStrPtr     OS_DriverNameGet(const OS_DriverHd dhd);
+ConstStrP       OS_DriverNameGet(const OS_DriverHd dhd);
 
 /// @brief      Get driver's state name.
 /// @param[in]  state          Driver's state.
 /// @return     State name.
-ConstStrPtr     OS_DriverStateNameGet(const OS_DriverState state);
+ConstStrP       OS_DriverStateNameGet(const OS_DriverState state);
 
 /// @brief      Get driver by it's name.
 /// @param[in]  name_p         Driver's name.
 /// @return     Driver handle.
-OS_DriverHd     OS_DriverByNameGet(ConstStrPtr name_p);
+OS_DriverHd     OS_DriverByNameGet(ConstStrP name_p);
 
 /// @brief      Get the next driver.
 /// @param[in]  dhd            Driver's handle.

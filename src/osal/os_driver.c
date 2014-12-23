@@ -64,7 +64,7 @@ U16 OS_DriverOwnersCountGet(const OS_DriverHd dhd)
 }
 
 /******************************************************************************/
-OS_DriverHd OS_DriverByNameGet(ConstStrPtr name_p)
+OS_DriverHd OS_DriverByNameGet(ConstStrP name_p)
 {
 OS_ListItem* iter_li_p = OS_NULL;
     IF_OK(OS_MutexRecursiveLock(os_driver_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
@@ -373,20 +373,20 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-ConstStrPtr OS_DriverNameGet(const OS_DriverHd dhd)
+ConstStrP OS_DriverNameGet(const OS_DriverHd dhd)
 {
     if (OS_NULL == dhd) { return OS_NULL; }
     const OS_DriverConfigDyn* cfg_dyn_p = OS_DriverConfigDynGet(dhd);
-    return (ConstStrPtr)cfg_dyn_p->cfg.name;
+    return (ConstStrP)cfg_dyn_p->cfg.name;
 }
 
 /******************************************************************************/
-ConstStrPtr OS_DriverStateNameGet(const OS_DriverState state)
+ConstStrP OS_DriverStateNameGet(const OS_DriverState state)
 {
 static ConstStr undef_str[]= "undef";
 static ConstStr init_str[] = "init";
 static ConstStr open_str[] = "open";
-ConstStrPtr state_str = undef_str;
+ConstStrP state_str = undef_str;
 
     if (BIT_TEST(state, (OS_DriverState)BIT(OS_DRV_STATE_IS_INIT))) {
         state_str = init_str;

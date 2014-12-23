@@ -33,7 +33,7 @@ const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, state);
 }
 
 /******************************************************************************/
-ConstStrPtr OS_PowerStateNameGet(const OS_PowerState state)
+ConstStrP OS_PowerStateNameGet(const OS_PowerState state)
 {
 static ConstStr power_name_str[PWR_LAST][12] = {
     {"undef"},

@@ -72,7 +72,7 @@ typedef struct {
 } OS_FileSystemMediaConfig;
 
 typedef struct {
-    StrPtr              media_name_p;
+    StrP                media_name_p;
     Str                 name[OS_FILE_SYSTEM_VOLUME_NAME_LEN];
     U32                 serial;
     OS_FileSystemType   type;
@@ -125,7 +125,7 @@ typedef struct {
     OS_FileAttrs    attrs;
     Str             name[13];
 #if OS_FILE_SYSTEM_LONG_NAMES_ENABLED
-    StrPtr          long_name_p;
+    StrP            long_name_p;
     U32             long_name_size;
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
 } OS_FileStats;
@@ -137,10 +137,10 @@ typedef struct {
 //    U32             cluster_start;
 //    U32             cluster_curr;
 //    U32             sector_curr;
-//    StrPtr          dir_name_p;
-//    StrPtr          name_ext_stat_p;
+//    StrP          dir_name_p;
+//    StrP          name_ext_stat_p;
 //#if OS_FILE_SYSTEM_LONG_NAMES_ENABLED
-//    StrPtr          long_name_p;
+//    StrP          long_name_p;
 //    U16             long_name_idx;
 //#endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
 //} OS_DirStats;
@@ -191,7 +191,7 @@ Status          OS_FileSystemMediaStatusGet(const OS_FileSystemMediaHd fs_media_
 /// @brief      Get the media volume name.
 /// @param[in]  fs_media_hd     Media handle.
 /// @return     Volume name.
-ConstStrPtr     OS_FileSystemMediaNameGet(const OS_FileSystemMediaHd fs_media_hd);
+ConstStrP       OS_FileSystemMediaNameGet(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Make file system on media volume.
 /// @param[in]  fs_media_hd     Media handle.
@@ -216,7 +216,7 @@ OS_FileSystemMediaHd OS_FileSystemMediaByVolumeGet(const U8 volume);
 /// @brief      Get media handle by it's volume name.
 /// @param[in]  name_p          Media volume name.
 /// @return     Media handle.
-OS_FileSystemMediaHd OS_FileSystemMediaByNameGet(ConstStrPtr name_p);
+OS_FileSystemMediaHd OS_FileSystemMediaByNameGet(ConstStrP name_p);
 
 U8              OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd);
 
@@ -225,13 +225,13 @@ U8              OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd);
 /// @param[out] label_p         Media volume label.
 /// @param[out] serial_p        Media volume serial.
 /// @return     #Status.
-Status          OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p, U32* serial_p);
+Status          OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrP label_p, U32* serial_p);
 
 /// @brief      Set media volume label.
 /// @param[in]  fs_media_hd     Media handle.
 /// @param[in]  label_p         Media volume label.
 /// @return     #Status.
-Status          OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrPtr label_p);
+Status          OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrP label_p);
 
 /// @brief      Get media volume statistics.
 /// @param[in]  fs_media_hd     Media handle.
@@ -243,14 +243,14 @@ Status          OS_FileSystemVolumeStatsGet(const OS_FileSystemMediaHd fs_media_
 /// @param[in]  path_p          Volume path.
 /// @param[out] stats_p         File system statistics.
 /// @return     #Status.
-Status          OS_FileSystemVolumeScan(const StrPtr path_p, OS_FileSystemStats* stats_p);
+Status          OS_FileSystemVolumeScan(const StrP path_p, OS_FileSystemStats* stats_p);
 
 /// @brief      Get media volume free clusters.
 /// @param[in]  fs_media_hd     Media handle.
 /// @param[in]  path_p          Volume path.
 /// @param[out] clusters_free_count_p Free clusters count.
 /// @return     #Status.
-Status          OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media_hd, const StrPtr path_p, U32* clusters_free_count_p);
+Status          OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media_hd, const StrP path_p, U32* clusters_free_count_p);
 
 /**
 * \addtogroup OS_FileSystemFilesOps File system files operations.
@@ -261,19 +261,19 @@ Status          OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media
 /// @param[in]  file_path_p     File path.
 /// @param[in]  op_mode         File open mode.
 /// @return     #Status.
-Status          OS_FileCreate(OS_FileHd* fhd_p, ConstStrPtr file_path_p, const OS_FileOpenMode op_mode);
+Status          OS_FileCreate(OS_FileHd* fhd_p, ConstStrP file_path_p, const OS_FileOpenMode op_mode);
 
 /// @brief      Delete file.
 /// @param[in]  file_path_p     File path.
 /// @return     #Status.
-Status          OS_FileDelete(ConstStrPtr file_path_p);
+Status          OS_FileDelete(ConstStrP file_path_p);
 
 /// @brief      Open file.
 /// @param[out] fhd_p           File handle.
 /// @param[in]  file_path_p     File path.
 /// @param[in]  op_mode         File open mode.
 /// @return     #Status.
-Status          OS_FileOpen(OS_FileHd* fhd_p, ConstStrPtr file_path_p, const OS_FileOpenMode op_mode);
+Status          OS_FileOpen(OS_FileHd* fhd_p, ConstStrP file_path_p, const OS_FileOpenMode op_mode);
 
 /// @brief      Close file.
 /// @param[in]  fhd_p           File handle.
@@ -298,32 +298,32 @@ Status          OS_FileWrite(const OS_FileHd fhd, void* data_out_p, Size size);
 /// @param[in]  name_old_p      Old name path.
 /// @param[in]  name_new_p      New name path.
 /// @return     #Status.
-Status          OS_FileRename(ConstStrPtr name_old_p, ConstStrPtr name_new_p);
+Status          OS_FileRename(ConstStrP name_old_p, ConstStrP name_new_p);
 
 /// @brief      Set file date and time.
 /// @param[in]  file_path_p     File path.
 /// @param[in]  date_time       Date and time.
 /// @return     #Status.
-Status          OS_FileDateTimeSet(ConstStrPtr file_path_p, OS_DateTime date_time);
+Status          OS_FileDateTimeSet(ConstStrP file_path_p, OS_DateTime date_time);
 
 /// @brief      Set file attributes.
 /// @param[in]  file_path_p     File path.
 /// @param[in]  attrs           File attributes.
 /// @return     #Status.
-Status          OS_FileAttributesSet(ConstStrPtr file_path_p, const OS_FileAttrs attrs);
+Status          OS_FileAttributesSet(ConstStrP file_path_p, const OS_FileAttrs attrs);
 
 /// @brief      Get file string.
 /// @param[in]  fhd             File handle.
 /// @param[out] str_p           String.
 /// @param[in]  len             String length.
 /// @return     #Status.
-Status          OS_FileGetS(const OS_FileHd fhd, StrPtr str_p, U32 len);
+Status          OS_FileGetS(const OS_FileHd fhd, StrP str_p, U32 len);
 
 /// @brief      Put string to the file.
 /// @param[in]  fhd             File handle.
 /// @param[in]  str_p           String.
 /// @return     #Status.
-Status          OS_FilePutS(const OS_FileHd fhd, StrPtr str_p);
+Status          OS_FilePutS(const OS_FileHd fhd, StrP str_p);
 
 /// @brief      Put char to the file.
 /// @param[in]  fhd             File handle.
@@ -350,18 +350,18 @@ U32             OS_FileTell(const OS_FileHd fhd);
 /// @brief      Create a directory.
 /// @param[in]  path_p          Directory path.
 /// @return     #Status.
-Status OS_DirectoryCreate(ConstStrPtr path_p);
+Status OS_DirectoryCreate(ConstStrP path_p);
 
 /// @brief      Delete directory.
 /// @param[in]  path_p          Directory path.
 /// @return     #Status.
-Status OS_DirectoryDelete(ConstStrPtr path_p);
+Status OS_DirectoryDelete(ConstStrP path_p);
 
 /// @brief      Open directory.
 /// @param[in]  dhd             Directory handle.
 /// @param[in]  path_p          Directory path.
 /// @return     #Status.
-Status OS_DirectoryOpen(OS_DirHd dhd, StrPtr path_p);
+Status OS_DirectoryOpen(OS_DirHd dhd, StrP path_p);
 
 /// @brief      Read directory item.
 /// @param[in]  dhd             Directory handle.
@@ -373,13 +373,13 @@ Status OS_DirectoryRead(OS_DirHd dhd, OS_FileStats* file_stats_p);
 /// @param[in]  name_old_p      Old name path.
 /// @param[in]  name_new_p      New name path.
 /// @return     #Status.
-Status OS_DirectoryRename(ConstStrPtr name_old_p, ConstStrPtr name_new_p);
+Status OS_DirectoryRename(ConstStrP name_old_p, ConstStrP name_new_p);
 
 /// @brief      Set directory date and time.
 /// @param[in]  dir_path_p      Directory path.
 /// @param[in]  date_time       Date and time.
 /// @return     #Status.
-Status OS_DirectoryDateTimeSet(ConstStrPtr dir_path_p, const OS_DateTime date_time);
+Status OS_DirectoryDateTimeSet(ConstStrP dir_path_p, const OS_DateTime date_time);
 /**@}*/ //OS_FileSystemDirectoriesOps
 
 /**@}*/ //OS_FileSystem

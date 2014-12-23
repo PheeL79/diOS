@@ -6,7 +6,7 @@
 #ifndef _DRV_AUDIO_H_
 #define _DRV_AUDIO_H_
 
-#include "os_signal.h"
+#include "hal.h"
 
 //-----------------------------------------------------------------------------
 enum {
@@ -19,18 +19,22 @@ enum {
     DRV_REQ_AUDIO_MUTE_SET,
     DRV_REQ_AUDIO_VOLUME_GET,
     DRV_REQ_AUDIO_VOLUME_SET,
-    DRV_REQ_AUDIO_BITS_GET,
-    DRV_REQ_AUDIO_BITS_SET,
-    DRV_REQ_AUDIO_FREQUENCY_GET,
-    DRV_REQ_AUDIO_FREQUENCY_SET,
     DRV_REQ_AUDIO_INPUT_SETUP,
+    DRV_REQ_AUDIO_INPUT_BITS_GET,
+    DRV_REQ_AUDIO_INPUT_BITS_SET,
+    DRV_REQ_AUDIO_INPUT_FREQUENCY_GET,
+    DRV_REQ_AUDIO_INPUT_FREQUENCY_SET,
     DRV_REQ_AUDIO_OUTPUT_SETUP,
+    DRV_REQ_AUDIO_OUTPUT_BITS_GET,
+    DRV_REQ_AUDIO_OUTPUT_BITS_SET,
+    DRV_REQ_AUDIO_OUTPUT_FREQUENCY_GET,
+    DRV_REQ_AUDIO_OUTPUT_FREQUENCY_SET,
     DRV_REQ_AUDIO_LAST
 };
 
 typedef struct {
-    void*   data_p;
-    Size    size;
+    U8*  data_p;
+    Size size;
 } DrvAudioPlayArgs;
 
 //-----------------------------------------------------------------------------

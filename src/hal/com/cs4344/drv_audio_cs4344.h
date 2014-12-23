@@ -17,11 +17,8 @@ enum {
     DRV_REQ_AUDIO_CS4344_LAST
 };
 
-typedef struct {
-    OS_AudioFreq        freq;
-    OS_AudioBits        bits;
-    OS_AudioVolume      volume;
-} CS4344_DrvAudioArgsInit;
+typedef OS_AudioDeviceIoSetupArgs CS4344_DrvAudioArgsInit;
+typedef OS_AudioDeviceArgsOpen CS4344_DrvAudioArgsOpen;
 
 extern const OS_AudioDeviceCaps cs4344_caps;
 

@@ -39,14 +39,14 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_SettingsDelete(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrPtr key_p)
+Status OS_SettingsDelete(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p)
 {
     OS_LOG(D_DEBUG, "Sett del: %s, sect: %s, key: %s", file_path_p, section_p, key_p);
     return OS_SettingsWrite(file_path_p, section_p, key_p, OS_NULL);
 }
 
 /******************************************************************************/
-Status OS_SettingsRead(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrPtr key_p, StrPtr value_p)
+Status OS_SettingsRead(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p, StrP value_p)
 {
 Status s = S_OK;
     if (!ini_gets((char const*)section_p, (char const*)key_p,
@@ -59,7 +59,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_SettingsWrite(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrPtr key_p, ConstStrPtr value_p)
+Status OS_SettingsWrite(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p, ConstStrP value_p)
 {
 Status s = S_OK;
     OS_LOG(D_DEBUG, "Sett write: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
@@ -71,7 +71,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_SettingsItemsRead(ConstStrPtr file_path_p, OS_SettingsItem items[])
+Status OS_SettingsItemsRead(ConstStrP file_path_p, OS_SettingsItem items[])
 {
 OS_SettingsItem* items_it = &items[0];
 Status s;
@@ -83,7 +83,7 @@ Status s;
 }
 
 /******************************************************************************/
-Status OS_SettingsItemsWrite(ConstStrPtr file_path_p, OS_SettingsItem items[])
+Status OS_SettingsItemsWrite(ConstStrP file_path_p, OS_SettingsItem items[])
 {
 OS_SettingsItem* items_it = &items[0];
 Status s;

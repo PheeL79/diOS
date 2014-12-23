@@ -9,6 +9,7 @@
 //Ensure that is only used by the compiler, and not the assembler.
 #ifdef __ICCARM__
 #include "olimex_stm32_p407/hal_config.h"
+#include "os_config_tasks_prio.h"
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
@@ -130,8 +131,8 @@ enum {
         OS_MEDIA_VOL_SDCARD,
 #define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
 
-//        OS_MEDIA_VOL_USBH_FS,
-//#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
+        OS_MEDIA_VOL_USBH_FS,
+#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
 
 //        OS_MEDIA_VOL_USBH_HS,
 //#define OS_MEDIA_VOL_USBH_HS        OS_MEDIA_VOL_USBH_HS
@@ -140,10 +141,11 @@ enum {
 };
 
 //Audio
-#define OS_AUDIO_ENABLED            1
-#define OS_AUDIO_OUT_FREQ_DEFAULT   44100
-#define OS_AUDIO_OUT_BITS_DEFAULT   16
-#define OS_AUDIO_OUT_VOLUME_DEFAULT (OS_AUDIO_VOLUME_MAX / 2)
+#define OS_AUDIO_ENABLED                    1
+#define OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT    44100
+#define OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT    16
+#define OS_AUDIO_OUT_CHANNELS_DEFAULT       (OS_AUDIO_CHANNELS_STEREO)
+#define OS_AUDIO_OUT_VOLUME_DEFAULT         (OS_AUDIO_VOLUME_MAX / 2)
 
 enum {
         OS_AUDIO_DEV_CS4344,

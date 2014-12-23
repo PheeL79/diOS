@@ -250,7 +250,7 @@ RCC_OscInitTypeDef RCC_OscInitStruct;
 #pragma inline
 void assert_failed(uint8_t* file, uint32_t line)
 {
-    HAL_ASSERT_PIN_UP;
+    HAL_ASSERT_PIN_UP();
     /* User can add his own implementation to report the file name and line number,*/
     printf("\nASSERT: %s on line %d\r\n", file, line);
     HAL_CRITICAL_SECTION_ENTER();

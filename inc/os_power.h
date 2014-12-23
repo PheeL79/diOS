@@ -49,7 +49,7 @@ Status          OS_PowerStateSet(const OS_PowerState state);
 /// @brief      Get name of the current system power state.
 /// @param[in]  state           Power state.
 /// @return     Power state name.
-ConstStrPtr     OS_PowerStateNameGet(const OS_PowerState state);
+ConstStrP       OS_PowerStateNameGet(const OS_PowerState state);
 
 /**
 * \addtogroup OS_ISR_Power ISR specific functions.

@@ -19,22 +19,20 @@
 //-----------------------------------------------------------------------------
 //Task arguments
 //typedef struct {
-//} TaskArgs;
-
-//static const TaskArgs task_args;
+//} TaskStorage;
 
 //------------------------------------------------------------------------------
 const OS_TaskConfig task_log_cfg = {
-    .name       = "Log",
-    .func_main  = OS_TaskMain,
-    .func_power = OS_TaskPower,
-    .args_p     = OS_NULL,//(void*)&task_args,
-    .attrs      = BIT(OS_TASK_ATTR_RECREATE),
-    .timeout    = 10,
-    .prio_init  = OS_TASK_PRIO_MAX,
-    .prio_power = OS_PWR_PRIO_MAX - 20,
-    .stack_size = OS_STACK_SIZE_MIN + OS_SHELL_HEIGHT,
-    .stdin_len  = 16,
+    .name           = "Log",
+    .func_main      = OS_TaskMain,
+    .func_power     = OS_TaskPower,
+    .attrs          = BIT(OS_TASK_ATTR_RECREATE),
+    .timeout        = 10,
+    .prio_init      = OS_TASK_PRIO_LOG,
+    .prio_power     = OS_TASK_PRIO_PWR_LOG,
+    .storage_size   = 0,//sizeof(TaskStorage),
+    .stack_size     = OS_STACK_SIZE_MIN + OS_SHELL_HEIGHT,
+    .stdin_len      = 16,
 };
 
 /******************************************************************************/
@@ -49,7 +47,7 @@ Status s = S_OK;
 void OS_TaskMain(OS_TaskArgs* args_p)
 {
 extern volatile OS_QueueHd stdout_qhd;
-ConstStrPtr shell_prompt_p= OS_ShellPromptGet();
+ConstStrP shell_prompt_p  = OS_ShellPromptGet();
 const U8 shell_prompt_len = OS_StrLen((char const*)shell_prompt_p);
 const OS_DriverHd drv_log = OS_DriverStdOutGet();
 OS_Message* msg_p;

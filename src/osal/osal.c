@@ -189,7 +189,7 @@ OS_AudioVolume OS_VolumeGet(void)
 }
 
 /******************************************************************************/
-Status OS_VolumeSet(ConstStrPtr volume_p)
+Status OS_VolumeSet(ConstStrP volume_p)
 {
     os_env.volume = (OS_AudioVolume)OS_StrToUL((const char*)volume_p, OS_NULL, 10);
     OS_AudioDeviceHd dev_hd = OS_AudioDeviceDefaultGet(DIR_OUT);
@@ -206,7 +206,7 @@ Locale OS_LocaleGet(void)
 }
 
 /******************************************************************************/
-Status OS_LocaleSet(ConstStrPtr locale_p)
+Status OS_LocaleSet(ConstStrP locale_p)
 {
     if (OS_NULL == locale_p) { return S_INVALID_REF; }
     if (!OS_StrCmp(LOCALE_STRING_EN, (char const*)locale_p)) {
@@ -224,7 +224,7 @@ const HAL_DriverItf* OS_StdIoGet(void)
 }
 
 /******************************************************************************/
-Status OS_StdIoSet(ConstStrPtr drv_name_p)
+Status OS_StdIoSet(ConstStrP drv_name_p)
 {
     if (OS_NULL == drv_name_p) { return S_INVALID_REF; }
     OS_DriverHd dhd = OS_DriverByNameGet(drv_name_p);
@@ -240,7 +240,7 @@ OS_LogLevel OS_LogLevelGet(void)
 }
 
 /******************************************************************************/
-Status OS_LogLevelSet(ConstStrPtr log_level_p)
+Status OS_LogLevelSet(ConstStrP log_level_p)
 {
 ConstStr none_str[]     = "none";
 ConstStr critical_str[] = "critical";

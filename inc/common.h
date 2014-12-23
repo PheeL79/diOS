@@ -36,7 +36,8 @@
 // Bit operations.
 // http://www.coranac.com/man/tonclib/group__grpCoreBit.htm
 #define BIT(n)                      ((unsigned)1 << (n))                ///< Create value with bit n set.
-#define	BIT_SHIFT(a, n)             ((a) << (n))                        ///< Shift a by n.
+#define	BIT_SHIFT(a, n)             ((a) << (n))                        ///< Shift left a by n.
+#define BIT_SHIFT_RIGHT(a, n)       ((a) >> (n))                        ///< Shift right a by n.
 #define BIT_MASK(len)               (BIT(len) - 1)                      ///< Create a bitmask len bits long.
 #define BIT_SET(y, flag)            (y |= (flag))                       ///< Set the flag bits in word.
 #define BIT_CLEAR(y, flag)          (y &= ~(flag))                      ///< Clear the flag bits in word.

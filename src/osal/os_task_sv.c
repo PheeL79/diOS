@@ -26,40 +26,39 @@
 typedef struct {
 //    OS_DriverHd drv_power;
     OS_DriverHd drv_led_pulse;
-} TaskArgs;
+} TaskStorage;
 
-static TaskArgs task_args = {
-//    .drv_power      = OS_NULL,
-    .drv_led_pulse  = OS_NULL,
-};
+static TaskStorage tstor;
+
 volatile OS_QueueHd sv_stdin_qhd;
 static volatile OS_TaskHd deadlock_thd;
 
 //------------------------------------------------------------------------------
-static void     MessagesHandler(TaskArgs* task_args_p);
-static Status   SystemPowerStateSet(TaskArgs* task_args_p, const OS_PowerState state);
+static void     MessagesHandler(OS_TaskArgs* args_p);
+static Status   SystemPowerStateSet(TaskStorage* tstor_p, const OS_PowerState state);
 static Status   SystemPowerStateForTasksSet(const OS_PowerState state);
 static Status   SystemPowerStateForDriversSet(const OS_PowerState state);
 static Status   TaskDeadLockTest(void);
 static Status   TaskDeadLockAction(void);
-static void     Reboot(TaskArgs* task_args_p);
-static void     Shutdown(TaskArgs* task_args_p);
+static void     Reboot(OS_TaskArgs* args_p);
+static void     Shutdown(OS_TaskArgs* args_p);
 
 //------------------------------------------------------------------------------
 const OS_TaskConfig task_sv_cfg = {
-    .name       = "Sv",
-    .func_main  = OS_TaskMain,
-    .func_power = OS_TaskPower,
-    .args_p     = (void*)&task_args,
-    .prio_init  = OS_TASK_PRIO_MAX,
-    .prio_power = OS_PWR_PRIO_MAX,
-    .stack_size = OS_STACK_SIZE_MIN * 2,
-    .stdin_len  = OS_STDIN_LEN,
+    .name           = "Sv",
+    .func_main      = OS_TaskMain,
+    .func_power     = OS_TaskPower,
+    .prio_init      = OS_TASK_PRIO_MAX,
+    .prio_power     = OS_PWR_PRIO_MAX,
+    .storage_size   = 0,//sizeof(TaskStorage),
+    .stack_size     = OS_STACK_SIZE_MIN * 2,
+    .stdin_len      = OS_STDIN_LEN,
 };
 
 /******************************************************************************/
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
+TaskStorage* tstor_p = (TaskStorage*)&tstor;
 Status s;
     HAL_LOG(D_INFO, "Init");
 //    {
@@ -69,9 +68,9 @@ Status s;
 //            .mode_io    = DRV_MODE_IO_DEFAULT,
 //            .prio_power = OS_PWR_PRIO_MAX
 //        };
-//        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&task_args.drv_power)) { return s; }
-//        IF_STATUS(s = OS_DriverInit(task_args.drv_power)) { return s; }
-//        IF_STATUS(s = OS_DriverOpen(task_args.drv_power, OS_NULL)) { return s; }
+//        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor_p->drv_power)) { return s; }
+//        IF_STATUS(s = OS_DriverInit(tstor_p->drv_power)) { return s; }
+//        IF_STATUS(s = OS_DriverOpen(tstor_p->drv_power, OS_NULL)) { return s; }
 //    }
 
     {
@@ -80,18 +79,18 @@ Status s;
             .itf_p      = drv_led_v[DRV_ID_LED_PULSE],
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&task_args.drv_led_pulse)) { return s; }
-        IF_STATUS(s = OS_DriverInit(task_args.drv_led_pulse, OS_NULL)) { return s; }
-        IF_STATUS(s = OS_DriverOpen(task_args.drv_led_pulse, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor_p->drv_led_pulse)) { return s; }
+        IF_STATUS(s = OS_DriverInit(tstor_p->drv_led_pulse, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(tstor_p->drv_led_pulse, OS_NULL)) { return s; }
     }
-    OS_ASSERT(S_OK == (s = OS_TaskCreate(&task_sv_cfg, OS_NULL)));
+    OS_ASSERT(S_OK == (s = OS_TaskCreate(OS_NULL, &task_sv_cfg, OS_NULL)));
     return s;
 }
 
 /******************************************************************************/
 void OS_TaskMain(OS_TaskArgs* args_p)
 {
-TaskArgs* task_args_p = (TaskArgs*)args_p;
+TaskStorage* tstor_p = (TaskStorage*)&tstor;
     sv_stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
     OS_ASSERT(S_OK == OS_StartupApplication());
     OS_ASSERT(S_OK == OS_StartupDeInit());
@@ -99,24 +98,24 @@ TaskArgs* task_args_p = (TaskArgs*)args_p;
     OS_ASSERT(S_OK == TIMER_IWDG_Start());
 #endif // TIMER_IWDG_ENABLED
 	for(;;) {
-        MessagesHandler(task_args_p);
+        MessagesHandler(args_p);
     }
 }
 
 /******************************************************************************/
 Status OS_TaskPower(OS_TaskArgs* args_p, const OS_PowerState state)
 {
-TaskArgs* task_args_p = (TaskArgs*)args_p;
+TaskStorage* tstor_p = (TaskStorage*)&tstor;
 const OS_PowerState state_prev = OS_PowerStateGet();
 Status s = S_OK;
     if (PWR_STARTUP == state) {
-        IF_STATUS(s = OS_TaskInit((OS_TaskArgs*)task_args_p)) {
+        IF_STATUS(s = OS_TaskInit(args_p)) {
             return s;
         }
     } else {
-        IF_STATUS(s = SystemPowerStateSet(task_args_p, state)) {
+        IF_STATUS(s = SystemPowerStateSet(tstor_p, state)) {
             OS_LOG(D_INFO, "Attempt to rollback power state: %s", OS_PowerStateNameGet(state_prev));
-            IF_STATUS(s = SystemPowerStateSet(task_args_p, state_prev)) {
+            IF_STATUS(s = SystemPowerStateSet(tstor_p, state_prev)) {
             }
             return s;
         }
@@ -125,9 +124,9 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status SystemPowerStateSet(TaskArgs* task_args_p, const OS_PowerState state)
+Status SystemPowerStateSet(TaskStorage* tstor_p, const OS_PowerState state)
 {
-//const HAL_DriverItf* drv_power_itf_p = OS_DriverItfGet(task_args_p->drv_power);
+//const HAL_DriverItf* drv_power_itf_p = OS_DriverItfGet(tstor_p->drv_power);
 HAL_DriverItf* drv_power_itf_p = drv_power_v[DRV_ID_POWER];
 extern volatile OS_Env os_env;
 Status s;
@@ -243,7 +242,7 @@ Status s;
 }
 
 /******************************************************************************/
-void MessagesHandler(TaskArgs* task_args_p)
+void MessagesHandler(OS_TaskArgs* args_p)
 {
 extern Status OS_TaskTimeoutReset(const OS_TaskHd thd);
 extern volatile Bool is_idle;
@@ -258,10 +257,10 @@ OS_Message* msg_p;
                 case OS_SIG_PWR_ACK:
                     break;
                 case OS_SIG_REBOOT:
-                    Reboot(task_args_p);
+                    Reboot(args_p);
                     break;
                 case OS_SIG_SHUTDOWN:
-                    Shutdown(task_args_p);
+                    Shutdown(args_p);
                     break;
                 default:
                     OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
@@ -280,7 +279,7 @@ OS_Message* msg_p;
     TIMER_IWDG_Reset();
 #endif // TIMER_IWDG_ENABLED
     led_state = (ON == led_state) ? OFF : ON;
-    OS_DriverWrite(task_args_p->drv_led_pulse, (void*)&led_state, 1, OS_NULL);
+    OS_DriverWrite(tstor.drv_led_pulse, (void*)&led_state, 1, OS_NULL);
 
 #if (1 == OS_TASK_DEADLOCK_TEST_ENABLED)
     if (OS_TRUE != is_idle) {
@@ -377,33 +376,36 @@ Status TaskDeadLockAction(void)
 extern U32      OS_TaskTimeoutGet(const OS_TaskHd thd);
 extern Status   OS_TaskTimeoutDec(const OS_TaskHd thd);
 const OS_TaskConfig* task_cfg_p = OS_TaskConfigGet(deadlock_thd);
+Status s = S_UNDEF;
 
     if (OS_NULL != task_cfg_p) {
         if (OS_TaskTimeoutGet(deadlock_thd)) {
             OS_TaskTimeoutDec(deadlock_thd);
+            s = S_OK;
         } else {
             OS_LOG(D_CRITICAL, "Deadlock detected!");
-            OS_ASSERT(S_OK == OS_TaskDelete(deadlock_thd));
-            deadlock_thd = OS_NULL;
-            if (BIT_TEST(task_cfg_p->attrs, BIT(OS_TASK_ATTR_RECREATE))) {
-                OS_ASSERT(S_OK == OS_TaskCreate(task_cfg_p, OS_NULL));
+            const void* args_p = OS_TaskArgumentsGet(deadlock_thd);
+            IF_OK(s = OS_TaskDelete(deadlock_thd)) {
+                deadlock_thd = OS_NULL;
+                if (BIT_TEST(task_cfg_p->attrs, BIT(OS_TASK_ATTR_RECREATE))) {
+                    s = OS_TaskCreate(args_p, task_cfg_p, OS_NULL);
+                }
             }
         }
     } else {
-        Status s = S_INVALID_REF;
+        s = S_INVALID_REF;
         OS_LOG_S(D_DEBUG, s);
-        return s;
     }
-    return S_OK;
+    return s;
 }
 #endif // OS_TASK_DEADLOCK_TEST_ENABLED
 
 /******************************************************************************/
-void Reboot(TaskArgs* task_args_p)
+void Reboot(OS_TaskArgs* args_p)
 {
     OS_LOG(D_INFO, "Reboot system");
     //Prepare system to reboot.
-    OS_TaskPower(task_args_p, PWR_SHUTDOWN);
+    OS_TaskPower(args_p, PWR_SHUTDOWN);
     printf("\nReboot in");
     for (U8 i = 3; i > 0; --i) {
         printf(" ...%d", i);
@@ -415,10 +417,10 @@ void Reboot(TaskArgs* task_args_p)
 }
 
 /******************************************************************************/
-void Shutdown(TaskArgs* task_args_p) {
+void Shutdown(OS_TaskArgs* args_p) {
     OS_LOG(D_INFO, "Shutdown system");
     //Prepare system to shutdown.
-    OS_TaskPower(task_args_p, PWR_SHUTDOWN);
+    OS_TaskPower(args_p, PWR_SHUTDOWN);
     OS_SchedulerSuspend();
     OS_CriticalSectionEnter(); // Make sure that no exceptions are to occur until power off.
     //HAL_PowerOff();

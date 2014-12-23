@@ -43,17 +43,17 @@ enum {
 };
 
 //------------------------------------------------------------------------------
-typedef Status (*OS_ShellCommandHandler)(const U32 argc, ConstStrPtr argv[]);
+typedef Status (*OS_ShellCommandHandler)(const U32 argc, ConstStrP argv[]);
 
 typedef enum {
     OS_SHELL_OPT_UNDEF
 } OS_ShellOptions;
 
 typedef struct {
-    ConstStrPtr             command;
+    ConstStrP               command;
 #ifdef OS_SHELL_HELP_ENABLED
-    ConstStrPtr             help_brief;
-    ConstStrPtr             help_detail;
+    ConstStrP               help_brief;
+    ConstStrP               help_detail;
 #endif // OS_SHELL_HELP_ENABLED
     OS_ShellCommandHandler  handler;
     U8                      args_min;
@@ -75,7 +75,7 @@ Status          OS_ShellCommandCreate(const OS_ShellCommandConfig* cmd_cfg_p);
 /// @brief      Delete shell command.
 /// @param[in]  name_p          Shell command name.
 /// @return     #Status.
-Status          OS_ShellCommandDelete(ConstStrPtr name_p);
+Status          OS_ShellCommandDelete(ConstStrP name_p);
 
 /// @brief      Execute current shell command.
 /// @return     #Status.
@@ -90,7 +90,7 @@ Status          OS_ShellArgumentsNumberCheck(const OS_ShellCommandHd cmd_hd, con
 /// @brief      Get shell command by it's name.
 /// @param[in]  name_p          Shell command name.
 /// @return     Shell command handler.
-OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrPtr name_p);
+OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrP name_p);
 
 /// @brief      Get the next shell command.
 /// @param[in]  cmd_hd          Shell command handler.
@@ -99,7 +99,7 @@ OS_ShellCommandHd OS_ShellCommandNextGet(const OS_ShellCommandHd cmd_hd);
 
 /// @brief      Get shell command prompt.
 /// @return     Shell command prompt.
-ConstStrPtr     OS_ShellPromptGet(void);
+ConstStrP       OS_ShellPromptGet(void);
 
 /// @brief      Clear shell buffer.
 /// @return     #Status.

@@ -12,11 +12,12 @@
 #include "os_signal.h"
 #include "os_mutex.h"
 #include "os_message.h"
+#include "os_task.h"
 #include "os_debug.h"
 
 //------------------------------------------------------------------------------
-extern void TraceVaListPrint(ConstStrPtr format_str_p, va_list args);
-extern void LogVaListPrint(const LogLevel level, ConstStrPtr mdl_name_p, ConstStrPtr format_str_p, va_list args);
+extern void TraceVaListPrint(ConstStrP format_str_p, va_list args);
+extern void LogVaListPrint(const LogLevel level, OS_TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, va_list args);
 
 //------------------------------------------------------------------------------
 const TimeMs timeout_def = 100;
@@ -41,13 +42,16 @@ Status OS_DebugDeInit(void)
 }
 
 /******************************************************************************/
-void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
+void OS_Log(const OS_LogLevel level, ConstStrP format_str_p, ...)
 {
     IF_OK(OS_MutexLock(print_mut, timeout_def)) {
         if (OS_LogLevelGet() >= level) {
+            const OS_TaskHd thd = OS_TaskGet();
+            const OS_TaskId tid = OS_TaskIdGet(thd);
+            const ConstStrP task_name_cstr = OS_TaskNameGet(thd);
             va_list args;
             va_start(args, format_str_p);
-            LogVaListPrint(level, OS_TaskNameGet(OS_THIS_TASK), format_str_p, args);
+            LogVaListPrint(level, tid, task_name_cstr, format_str_p, args);
             va_end(args);
             const OS_Signal signal = OS_SignalCreate(OS_SIG_STDOUT, 0);
             OS_SignalSend(stdout_qhd, signal, OS_MSG_PRIO_NORMAL);
@@ -66,7 +70,7 @@ void OS_Log(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
 //}
 
 /******************************************************************************/
-void OS_Trace(const OS_LogLevel level, ConstStrPtr format_str_p, ...)
+void OS_Trace(const OS_LogLevel level, ConstStrP format_str_p, ...)
 {
     IF_OK(OS_MutexLock(print_mut, timeout_def)) {
         if (OS_LogLevelGet() >= level) {

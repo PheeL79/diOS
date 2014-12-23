@@ -28,8 +28,8 @@
 #ifdef OS_SHELL_HELP_ENABLED
 static ConstStr cmd_help[] = "help";
 /******************************************************************************/
-static Status OS_ShellCmdHelpHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdHelpHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdHelpHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdHelpHandler(const U32 argc, ConstStrP argv[])
 {
 OS_ShellCommandHd cmd_hd = OS_ShellCommandNextGet(SHELL_COMMAND_UNDEF);
     //Ignore 'help' command(first one).
@@ -50,8 +50,8 @@ static ConstStr cmd_help_brief_clear[]  = "Clear screen.";
 static ConstStr cmd_cls[]           = "cls";
 static ConstStr cmd_help_brief_cls[]= "Acronym of \'" OS_CMD_CLEAR_STRING "\' command.";
 /******************************************************************************/
-static Status OS_ShellCmdClearHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdClearHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdClearHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdClearHandler(const U32 argc, ConstStrP argv[])
 {
     return OS_ShellCls();
 }
@@ -60,8 +60,8 @@ Status OS_ShellCmdClearHandler(const U32 argc, ConstStrPtr argv[])
 static ConstStr cmd_echo[]              = "echo";
 static ConstStr cmd_help_brief_echo[]   = "Display the message.";
 /******************************************************************************/
-static Status OS_ShellCmdEchoHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdEchoHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdEchoHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdEchoHandler(const U32 argc, ConstStrP argv[])
 {
 register U32 argc_count = 0;
     while (argc > argc_count) {
@@ -75,8 +75,8 @@ register U32 argc_count = 0;
 static ConstStr cmd_d[]             = "d";
 static ConstStr cmd_help_brief_d[]  = "Memory dump.";
 /******************************************************************************/
-static Status OS_ShellCmdDHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdDHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdDHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdDHandler(const U32 argc, ConstStrP argv[])
 {
 #define IS_PRINT(c)     ((OS_ASCII_TILDE >= c) && (OS_ASCII_SPACE <= c))
 const U8 step = 16;
@@ -136,10 +136,10 @@ const U8 step = 16;
 static ConstStr cmd_printenv[]              = "printenv";
 static ConstStr cmd_help_brief_printenv[]   = "List all the environment variables.";
 /******************************************************************************/
-static Status OS_ShellCmdPrintEnvHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdPrintEnvHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdPrintEnvHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdPrintEnvHandler(const U32 argc, ConstStrP argv[])
 {
-ConstStrPtr var_name_p = OS_NULL;
+ConstStrP var_name_p = OS_NULL;
     while (OS_NULL != (var_name_p = OS_EnvVariableNextGet(var_name_p))) {
         printf("\n%-21s :%s", var_name_p, OS_EnvVariableGet(var_name_p));
     }
@@ -150,8 +150,8 @@ ConstStrPtr var_name_p = OS_NULL;
 static ConstStr cmd_setenv[]            = "setenv";
 static ConstStr cmd_help_brief_setenv[] = "Set the environment variable.";
 /******************************************************************************/
-static Status OS_ShellCmdSetEnvHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdSetEnvHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdSetEnvHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdSetEnvHandler(const U32 argc, ConstStrP argv[])
 {
 U32 value_idx = 1;
     if ((3 == argc) && ('=' != *argv[1])) { return S_INVALID_VALUE; }
@@ -165,8 +165,8 @@ U32 value_idx = 1;
 static ConstStr cmd_unsetenv[]              = "unsetenv";
 static ConstStr cmd_help_brief_unsetenv[]   = "Unset the environment variable.";
 /******************************************************************************/
-static Status OS_ShellCmdUnsetEnvHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdUnsetEnvHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdUnsetEnvHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdUnsetEnvHandler(const U32 argc, ConstStrP argv[])
 {
     return OS_EnvVariableDelete(argv[0]);
 }
@@ -178,20 +178,20 @@ static ConstStr cmd_help_brief_st[] = "System statistics.";
 static void OS_ShellCmdStHandlerMemHelper(void);
 void OS_ShellCmdStHandlerMemHelper(void)
 {
-OS_MemoryType mem_type = OS_MEM_UNDEF;
-OS_MemoryStat mem_stat;
+OS_MemoryType  mem_type = OS_MEM_UNDEF;
+OS_MemoryStats mem_stats;
 
     printf("\n%-16s %-12s %-12s %-6s %-12s %-12s",
            "Name", "Address", "Size", "Block", "Used", "Free");
     while (OS_MEM_UNDEF != (mem_type = OS_MemoryTypeHeapNextGet(mem_type))) {
-        IF_STATUS(OS_MemoryStatGet(mem_type, &mem_stat)) { return; }
+        IF_STATUS(OS_MemoryStatsGet(mem_type, &mem_stats)) { return; }
         printf("\n%-16s 0x%-10X %-12d %-6d %-12d %-12d",
-               mem_stat.desc.name_p,
-               mem_stat.desc.addr,
-               mem_stat.desc.size,
-               mem_stat.desc.block_size,
-               mem_stat.used,
-               mem_stat.free);
+               mem_stats.desc.name_p,
+               mem_stats.desc.addr,
+               mem_stats.desc.size,
+               mem_stats.desc.block_size,
+               mem_stats.used,
+               mem_stats.free);
     }
 }
 
@@ -206,8 +206,8 @@ OS_TaskStats* task_stats_p;
 U32 uptime;
 
     if (OS_NULL == run_stats_buf_p) { return; }
-    printf("\n%-12s %-3s %-4s %-3s %-4s %-7s %-10s %-4s %-5s %-4s %-5s",
-           "Name", "TId", "PTId", "Pri", "PriP", "Power", "State", "CPU", "Stack", "Free", "StdIn");
+    printf("\n%-12s %-3s %-4s %-3s %-4s %-7s %-10s %-4s %-5s %-5s %-4s %-5s",
+           "Name", "TId", "PTId", "Pri", "PriP", "Power", "State", "CPU", "Store", "Stack", "Free", "StdIn");
     if (tasks_count != OS_TasksStatsGet(run_stats_buf_p, tasks_count, &uptime)) { goto error; }
     uptime /= 100UL; //For percentage calculations.
     if (0 >= uptime) { goto error; } //Avoid divide by zero errors.
@@ -225,6 +225,7 @@ U32 uptime;
         OS_TaskId par_id = (OS_NULL == par_thd) ? 0 : OS_TaskIdGet(par_thd);
         OS_PowerPrio power_prio = cfg_p->prio_power;
         OS_PowerState power_state = OS_TaskPowerStateGet(thd);
+        U16 store_size = cfg_p->storage_size;
         U16 stack_size = cfg_p->stack_size;
         U8 stdin_len = cfg_p->stdin_len;
         if (OS_NULL == thd) { // OS Engine tasks.
@@ -232,13 +233,14 @@ U32 uptime;
             par_id      = 0;
             power_prio  = 0;
             power_state = 0;
+            store_size  = 0;
             stack_size  = 0;
             stdin_len   = 0;
         }
-        StrPtr cpu_str_buf[5];
+        StrP cpu_str_buf[5];
         //TODO(A. Filyanov) Check for timer counter overflow! Otherwise -> wrong cpu usage value!
         snprintf((char*)&cpu_str_buf, sizeof(cpu_str_buf), "%d%%", (U32)(task_stats_p->ulRunTimeCounter / uptime));
-        printf("\n%-12s %-3d %-4d %-3d %-4d %-7s %-10s %-4s %-5d %-4d %-3d",
+        printf("\n%-12s %-3d %-4d %-3d %-4d %-7s %-10s %-4s %-5d %-5d %-4d %-3d",
                task_stats_p->pcTaskName,
                tid,
                par_id,
@@ -247,6 +249,7 @@ U32 uptime;
                OS_PowerStateNameGet(power_state),
                OS_TaskStateNameGet(task_state),
                (const char*)cpu_str_buf,
+               store_size,
                stack_size,
                task_stats_p->usStackHighWaterMark,
                stdin_len);
@@ -365,11 +368,11 @@ OS_EventHd ehd = OS_NULL;
 #endif //(1 == OS_EVENTS_ENABLED)
 
 /******************************************************************************/
-static Status OS_ShellCmdStHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdStHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdStHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdStHandler(const U32 argc, ConstStrP argv[])
 {
 typedef struct {
-    ConstStrPtr cmd;
+    ConstStrP cmd;
     void (*handler)(void);
 } CommandHandler;
 CommandHandler cmd_handlers_v[] = {
@@ -400,8 +403,8 @@ CommandHandler cmd_handlers_v[] = {
 static ConstStr cmd_kill[]              = "kill";
 static ConstStr cmd_help_brief_kill[]   = "Kill the task.";
 /******************************************************************************/
-static Status OS_ShellCmdKillHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdKillHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdKillHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdKillHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_OK;
     //Convert TaskId to number.
@@ -456,8 +459,8 @@ Status s = S_OK;
 static ConstStr cmd_time[]              = "time";
 static ConstStr cmd_help_brief_time[]   = "Display current time.";
 /******************************************************************************/
-static Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_OK;
     if (!OS_StrCmp("set", (char const*)argv[0])) {
@@ -483,8 +486,8 @@ Status s = S_OK;
 static ConstStr cmd_date[]              = "date";
 static ConstStr cmd_help_brief_date[]   = "Display current date.";
 /******************************************************************************/
-static Status OS_ShellCmdDateHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdDateHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdDateHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdDateHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_OK;
     if (!OS_StrCmp("set", (char const*)argv[0])) {
@@ -512,8 +515,8 @@ Status s = S_OK;
 static ConstStr cmd_reboot[]            = "reboot";
 static ConstStr cmd_help_brief_reboot[] = "Reboot the device.";
 /******************************************************************************/
-static Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdRebootHandler(const U32 argc, ConstStrP argv[])
 {
 const OS_Signal signal = OS_SignalCreate(OS_SIG_REBOOT, 0);
 const OS_QueueHd sv_stdin_qhd = OS_TaskStdInGet(OS_TaskParentGet());
@@ -526,8 +529,8 @@ const OS_QueueHd sv_stdin_qhd = OS_TaskStdInGet(OS_TaskParentGet());
 static ConstStr cmd_shutdown[]              = "shutdown";
 static ConstStr cmd_help_brief_shutdown[]   = "Shutdown the device.";
 /******************************************************************************/
-static Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdShutdownHandler(const U32 argc, ConstStrP argv[])
 {
 const OS_Signal signal = OS_SignalCreate(OS_SIG_SHUTDOWN, 0);
 const OS_QueueHd sv_stdin_qhd = OS_TaskStdInGet(OS_TaskParentGet());

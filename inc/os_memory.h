@@ -26,7 +26,7 @@ typedef struct {
     Size            size;
     Size            block_size;
     OS_MemoryType   type;
-    ConstStrPtr     name_p;
+    ConstStrP       name_p;
 } OS_MemoryDesc;
 
 /// @brief   Memory statistics.
@@ -34,10 +34,13 @@ typedef struct {
     OS_MemoryDesc   desc;
     Size            used;
     Size            free;
-} OS_MemoryStat;
+} OS_MemoryStats;
 
 //------------------------------------------------------------------------------
 /// @brief   Common functions.
+#define malloc(s)   OS_Malloc(s)
+#define free(p)     OS_Free(p)
+
 #define OS_MemSet   HAL_MemSet
 #define OS_MemCmp   HAL_MemCmp
 #define OS_MemCpy   HAL_MemCpy
@@ -70,7 +73,15 @@ void            OS_FreeEx(void* addr_p, const OS_MemoryType mem_type);
 
 /// @brief      Flush memory caches.
 /// @return     None.
-void            OS_MemCacheFlush(void);
+#if defined(CM4F)
+#define         OS_MemCacheFlush()      do {\
+                                                __DMB();\
+                                                __DSB();\
+                                                __ISB();\
+                                        } while (0)
+#else
+                                        void()
+#endif // CM4F
 
 ///// @brief      Copy memory in bytes.
 ///// @param[out] dst_p           Destination address.
@@ -114,9 +125,9 @@ OS_MemoryType   OS_MemoryTypeHeapNextGet(const OS_MemoryType mem_type);
 
 /// @brief      Get the memory heap usage statistics.
 /// @param[in]  mem_type        Memory type.
-/// @param[out] mem_stat_p      Memory statistics.
+/// @param[out] mem_stats_p     Memory statistics.
 /// @return     #Status.
-Status          OS_MemoryStatGet(const OS_MemoryType mem_type, OS_MemoryStat* mem_stat_p);
+Status          OS_MemoryStatsGet(const OS_MemoryType mem_type, OS_MemoryStats* mem_stats_p);
 
 //------------------------------------------------------------------------------
 #ifdef USE_MPU

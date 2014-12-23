@@ -37,7 +37,7 @@ typedef enum {
 } OS_TimerOptions;
 
 typedef struct {
-    ConstStrPtr     name_p;
+    ConstStrP       name_p;
     OS_QueueHd      slot;
     TimeMs          period;
     OS_TimerId      id;
@@ -119,12 +119,12 @@ OS_TimerHd      OS_TimerByIdGet(const OS_TimerId timer_id);
 /// @brief      Get timer name.
 /// @param[in]  timer_hd        Timer handle.
 /// @return     Name.
-ConstStrPtr     OS_TimerNameGet(const OS_TimerHd timer_hd);
+ConstStrP       OS_TimerNameGet(const OS_TimerHd timer_hd);
 
 /// @brief      Get the timer by its name.
 /// @param[in]  name_p          Timer's name.
 /// @return     Timer handle.
-OS_TimerHd      OS_TimerByNameGet(ConstStrPtr name_p);
+OS_TimerHd      OS_TimerByNameGet(ConstStrP name_p);
 
 /// @brief      Get timer statistics.
 /// @param[in]  timer_hd        Timer handle.

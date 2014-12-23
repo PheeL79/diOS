@@ -22,7 +22,7 @@ extern "C" {
 */
 
 //------------------------------------------------------------------------------
-typedef Status (*OS_EnvVariableHandler)(ConstStrPtr variable_value_p);
+typedef Status (*OS_EnvVariableHandler)(ConstStrP variable_value_p);
 
 //------------------------------------------------------------------------------
 // System environment variables handlers.
@@ -46,7 +46,7 @@ Locale          OS_LocaleGet(void);
 /// @brief      Set the current system locale.
 /// @param[in]  locale_p        Locale.
 /// @return     #Status.
-Status          OS_LocaleSet(ConstStrPtr locale_p);
+Status          OS_LocaleSet(ConstStrP locale_p);
 
 /// @brief      Get system input/output driver interface.
 /// @return     Driver interface.
@@ -55,7 +55,7 @@ const HAL_DriverItf* OS_StdIoGet(void);
 /// @brief      Set system input/output driver.
 /// @param[in]  drv_name_p      Driver name.
 /// @return     #Status.
-Status          OS_StdIoSet(ConstStrPtr drv_name_p);
+Status          OS_StdIoSet(ConstStrP drv_name_p);
 
 /// @brief      Get current log level of trace details.
 /// @return     Log level.
@@ -64,7 +64,7 @@ OS_LogLevel     OS_LogLevelGet(void);
 /// @brief      Set current log level of trace details.
 /// @param[in]  log_level_p     Log level name.
 /// @return     #Status.
-Status          OS_LogLevelSet(ConstStrPtr log_level_p);
+Status          OS_LogLevelSet(ConstStrP log_level_p);
 
 /// @brief      Get current audio device volume.
 /// @return     Volume.
@@ -73,7 +73,7 @@ OS_AudioVolume  OS_VolumeGet(void);
 /// @brief      Set current audio device volume.
 /// @param[in]  volume_p        Volume.
 /// @return     #Status.
-Status          OS_VolumeSet(ConstStrPtr volume_p);
+Status          OS_VolumeSet(ConstStrP volume_p);
 
 /**
 * \addtogroup OS_EnvironmentUser Environment variables user access functions.
@@ -85,35 +85,35 @@ Status          OS_VolumeSet(ConstStrPtr volume_p);
 /// @brief      Get the variable owner.
 /// @param[in]  variable_name_p     Variable name.
 /// @return     Task handle.
-OS_TaskHd       OS_EnvVariableOwnerGet(ConstStrPtr variable_name_p);
+OS_TaskHd       OS_EnvVariableOwnerGet(ConstStrP variable_name_p);
 
 /// @brief      Get the variable handler.
 /// @param[in]  variable_name_p     Variable name.
 /// @return     Handle func.
-OS_EnvVariableHandler OS_EnvVariableHandlerGet(ConstStrPtr variable_name_p);
+OS_EnvVariableHandler OS_EnvVariableHandlerGet(ConstStrP variable_name_p);
 
 /// @brief      Get the environment variable value.
 /// @param[in]  variable_name_p     Variable name.
 /// @return     Value.
-ConstStrPtr     OS_EnvVariableGet(ConstStrPtr variable_name_p);
+ConstStrP       OS_EnvVariableGet(ConstStrP variable_name_p);
 
 /// @brief      Set the environment variable value.
 /// @param[in]  variable_name_p     Variable name.
 /// @param[in]  variable_value_p    Variable value.
 /// @param[in]  variable_handler_p  Variable handler func.
 /// @return     #Status.
-Status          OS_EnvVariableSet(ConstStrPtr variable_name_p, ConstStrPtr variable_value_p,
+Status          OS_EnvVariableSet(ConstStrP variable_name_p, ConstStrP variable_value_p,
                                   const OS_EnvVariableHandler variable_handler_p);
 
 /// @brief      Delete the environment variable.
 /// @param[in]  variable_name_p     Variable name.
 /// @return     #Status.
-Status          OS_EnvVariableDelete(ConstStrPtr variable_name_p);
+Status          OS_EnvVariableDelete(ConstStrP variable_name_p);
 
 /// @brief      Get the next environment variable.
 /// @param[in]  variable_name_p     Variable name.
 /// @return     Variable name.
-ConstStrPtr     OS_EnvVariableNextGet(ConstStrPtr variable_name_p);
+ConstStrP       OS_EnvVariableNextGet(ConstStrP variable_name_p);
 
 /**@}*/ //OS_EnvironmentUser
 

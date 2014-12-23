@@ -39,7 +39,7 @@ Status s = S_OK;
          iter_li_p = OS_ListItemNextGet(iter_li_p)) {
         const OS_TaskConfig* task_cfg_p = (const OS_TaskConfig*)OS_ListItemOwnerGet(iter_li_p);
         OS_TaskHd thd = OS_NULL;
-        IF_STATUS(s = OS_TaskCreate(task_cfg_p, &thd)) {
+        IF_STATUS(s = OS_TaskCreate(OS_NULL, task_cfg_p, &thd)) {
             OS_ASSERT(OS_FALSE);
         }
         OS_ListItemValueSet(iter_li_p, (OS_Value)thd);
@@ -53,7 +53,7 @@ Status OS_StartupSystem(void)
 extern const OS_TaskConfig task_sv_cfg, task_log_cfg, task_shell_cfg;
 const OS_PowerState power = OS_PowerStateGet();
 Status s;
-    IF_STATUS(s = task_sv_cfg.func_power(task_sv_cfg.args_p, power)) { return s; }
+    IF_STATUS(s = task_sv_cfg.func_power(OS_NULL, power)) { return s; }
     IF_STATUS(s = OS_StartupTaskAdd(&task_log_cfg)) { return s; }
 #if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
     extern const OS_TaskConfig task_usb_cfg;

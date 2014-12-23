@@ -4,8 +4,19 @@
 #include <limits.h>
 
 //------------------------------------------------------------------------------
+// inline
+#if defined(_MSC_VER)
+#   define INLINE
+#elif defined(__GNUC__)
+#   define INLINE                       __inline
+#elif defined(__ICCARM__)
+#   define INLINE                       inline
+#   define __inline                     INLINE
+#endif
+
 #define QUOTED(a)                       #a
 
+// packed structs
 #if defined(_MSC_VER)
 #   define PACKED(pack_val, _struct_)   __pragma (pack(push, pack_val)) _struct_; __pragma (pack(pop))
 #elif defined(__GNUC__)
@@ -76,7 +87,7 @@
     typedef int_fast32_t        SF32;
     typedef int_fast64_t        SF64;
 #else
-#   error "typedefs.h: Undefined compiler"
+#   error "typedefs.h: Undefined platform!"
 #endif
 
 typedef enum {
@@ -115,14 +126,14 @@ typedef S16 Status;
 
 // String type
 typedef char Str;                       ///< String (zero ended)
-typedef Str* StrPtr;                    ///< Pointer to string (zero ended)
+typedef Str* StrP;                      ///< Pointer to string (zero ended)
 typedef const Str ConstStr;             ///< Constant string (zero ended)
-typedef ConstStr* ConstStrPtr;          ///< Pointer to constant string (zero ended)
+typedef ConstStr* ConstStrP;            ///< Pointer to constant string (zero ended)
 
 typedef struct {
-    ConstStrPtr locale[LOC_LAST];
-//    ConstStrPtr en;                     ///< String English.
-//    ConstStrPtr ru;                     ///< String Russian.
+    ConstStrP locale[LOC_LAST];
+//    ConstStrP en;                       ///< String English.
+//    ConstStrP ru;                       ///< String Russian.
 } LocaleString;
 
 PACKED(PACK_VAL_PROTO,

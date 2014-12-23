@@ -35,7 +35,7 @@ static OS_MutexHd os_shell_mutex;
 static ConstStr shell_prompt[] = OS_SHELL_PROMPT_CREATE("\n", OS_SHELL_PROMPT, " ");
 static Str shell_cl[OS_SHELL_CL_LEN] = { OS_ASCII_EOL };
 static S32 shell_cr_pos = 0;
-static ConstStrPtr argv[OS_SHELL_CL_ARGS_MAX];
+static ConstStrP argv[OS_SHELL_CL_ARGS_MAX];
 
 //------------------------------------------------------------------------------
 #if (1 == OS_SHELL_EDIT_ENABLED)
@@ -128,7 +128,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_ShellCommandDelete(ConstStrPtr name_p)
+Status OS_ShellCommandDelete(ConstStrP name_p)
 {
 OS_ShellCommandConfig* cmd_cfg_p = OS_ShellCommandByNameGet(name_p);
 OS_ListItem* item_l_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_cfg_p);
@@ -148,7 +148,7 @@ Status OS_ShellCommandExecute(void)
 {
 //TODO(A. Filyanov) OS_STRTOK()?;
 U32 argc = 0;
-StrPtr cl_p = shell_cl;
+StrP cl_p = shell_cl;
 U8 c =* cl_p;
 Bool is_quoted = OS_FALSE;
     //Parse command line.
@@ -187,7 +187,7 @@ Bool is_quoted = OS_FALSE;
 }
 
 /******************************************************************************/
-OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrPtr name_p)
+OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrP name_p)
 {
 OS_ShellCommandHd cmd_hd = SHELL_COMMAND_UNDEF;
 
@@ -240,7 +240,7 @@ Status OS_ShellArgumentsNumberCheck(const OS_ShellCommandHd cmd_hd, const U8 arg
 }
 
 /******************************************************************************/
-ConstStrPtr OS_ShellPromptGet(void)
+ConstStrP OS_ShellPromptGet(void)
 {
     return shell_prompt;
 }
@@ -273,10 +273,10 @@ static BL is_ctrl = OS_FALSE;
             break;
 #if (1 == OS_SHELL_EDIT_ENABLED)
         case OS_ASCII_SPACE: {
-            const U32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]) + 1;
-            const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
+            const U32 str_len = OS_StrLen((char const*)&shell_cl[shell_cr_pos]) + 1;
+            const StrP cl_str_p = &shell_cl[shell_cr_pos];
             if ((shell_cr_pos + str_len + 1) < sizeof(shell_cl)) { //protect cl buffer
-                OS_MEMMOV(cl_str_p + 1, cl_str_p, str_len + 1);
+                OS_MemMov(cl_str_p + 1, cl_str_p, str_len + 1);
                 *cl_str_p = OS_ASCII_SPACE;
                 putchar(c); //echo
                 printf((char const*)cl_str_p + 1);
@@ -289,9 +289,9 @@ static BL is_ctrl = OS_FALSE;
             break;
         case OS_ASCII_ESC_BACKSPACE:
             if (0 < shell_cr_pos) {
-                const U32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]);
-                const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
-                OS_MEMMOV(cl_str_p - 1, cl_str_p, str_len + 1);
+                const U32 str_len = OS_StrLen((char const*)&shell_cl[shell_cr_pos]);
+                const StrP cl_str_p = &shell_cl[shell_cr_pos];
+                OS_MemMov(cl_str_p - 1, cl_str_p, str_len + 1);
                 putchar(c); //echo
                 printf("%s%c", (char const*)cl_str_p - 1, OS_ASCII_SPACE);
                 const S32 pos = --shell_cr_pos;
@@ -321,7 +321,7 @@ static BL is_ctrl = OS_FALSE;
         case OS_SHELL_BUTTON_HOME:
         case OS_SHELL_BUTTON_END:
         case OS_SHELL_BUTTON_DELETE:
-            if (OS_OS_TRUE == is_ctrl) {
+            if (OS_TRUE == is_ctrl) {
                 OS_ShellClControlHandler(c);
             } else {
                 goto echo;
@@ -331,7 +331,7 @@ static BL is_ctrl = OS_FALSE;
         case OS_SHELL_BUTTON_RIGHT:
         case OS_SHELL_BUTTON_UP:
         case OS_SHELL_BUTTON_DOWN:
-            if (OS_OS_TRUE == is_ctrl) {
+            if (OS_TRUE == is_ctrl) {
                 OS_ShellClControlHandler(c);
                 is_ctrl = OS_FALSE;
             } else {
@@ -347,10 +347,10 @@ static BL is_ctrl = OS_FALSE;
 #if (1 == OS_SHELL_EDIT_ENABLED)
 echo:
             {
-            const U32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]) + 1;
-            const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
+            const U32 str_len = OS_StrLen((char const*)&shell_cl[shell_cr_pos]) + 1;
+            const StrP cl_str_p = &shell_cl[shell_cr_pos];
             if ((shell_cr_pos + str_len + 1) < sizeof(shell_cl)) { //protect cl buffer
-                OS_MEMMOV(cl_str_p + 1, cl_str_p, str_len + 1);
+                OS_MemMov(cl_str_p + 1, cl_str_p, str_len + 1);
                 *cl_str_p = c;
                 putchar(c); //echo
                 printf((char const*)cl_str_p + 1);
@@ -378,13 +378,13 @@ void OS_ShellClControlHandler(const U8 c)
             OS_ShellCaretPositionSet(0);
             break;
         case OS_SHELL_BUTTON_END:
-            OS_ShellCaretPositionSet(OS_STRLEN((char const*)&shell_cl));
+            OS_ShellCaretPositionSet(OS_StrLen((char const*)&shell_cl));
             break;
         case OS_SHELL_BUTTON_DELETE: {
-            const S32 str_len = OS_STRLEN((char const*)&shell_cl[shell_cr_pos]);
+            const S32 str_len = OS_StrLen((char const*)&shell_cl[shell_cr_pos]);
             if (str_len) {
-                const StrPtr cl_str_p = &shell_cl[shell_cr_pos];
-                OS_MEMMOV(cl_str_p, cl_str_p + 1, str_len + 1);
+                const StrP cl_str_p = &shell_cl[shell_cr_pos];
+                OS_MemMov(cl_str_p, cl_str_p + 1, str_len + 1);
                 printf("%s%c", (char const*)cl_str_p, OS_ASCII_SPACE);
                 const S32 pos = shell_cr_pos;
                 shell_cr_pos += str_len;

@@ -16,9 +16,11 @@
 /// @return  #Status.
 Status I2S_Init_(void);
 
+extern OS_ISR_AudioDeviceCallback CS4344_ISR_DrvAudioDeviceCallback;
+extern OS_AudioDeviceCallbackArgs cs4344_callback_args;
+
 //-----------------------------------------------------------------------------
 HAL_DriverItf* drv_i2s_v[DRV_ID_I2S_LAST];
-OS_QueueHd audio_stdin_qhd;
 
 /*****************************************************************************/
 Status I2S_Init_(void)
@@ -30,12 +32,28 @@ Status I2S_Init_(void)
 }
 
 /******************************************************************************/
+//void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
+//{
+//    if (CS4344_I2Sx == hi2s->Instance) {
+//        cs4344_callback_args.signal_id = OS_SIG_AUDIO_TX_COMPLETE_HALF;
+//        CS4344_ISR_DrvAudioDeviceCallback(&cs4344_callback_args);
+//    }
+//}
+
+/******************************************************************************/
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
+{
+    if (CS4344_I2Sx == hi2s->Instance) {
+//        cs4344_callback_args.signal_id = OS_SIG_AUDIO_TX_COMPLETE;
+        CS4344_ISR_DrvAudioDeviceCallback(&cs4344_callback_args);
+    }
+}
+
+/******************************************************************************/
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s)
 {
     if (CS4344_I2Sx == hi2s->Instance) {
-        const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_AUDIO_CS4344, OS_SIG_AUDIO_ERROR, 0);
-        if (1 == OS_ISR_SignalSend(audio_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-            OS_ContextSwitchForce();
-        }
+        cs4344_callback_args.signal_id = OS_SIG_AUDIO_ERROR;
+        CS4344_ISR_DrvAudioDeviceCallback(&cs4344_callback_args);
     }
 }

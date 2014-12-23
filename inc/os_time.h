@@ -134,7 +134,7 @@ OS_TimeWeekDay  OS_DateWeekDayGet(const U16 year, const U8 month, const U8 day);
 /// @param[in]  week_day        Day of week.
 /// @param[in]  locale          Locale.
 /// @return     Day of the week string.
-ConstStrPtr     OS_TimeNameDayOfWeekGet(const OS_TimeWeekDay week_day, const Locale locale);
+ConstStrP       OS_TimeNameDayOfWeekGet(const OS_TimeWeekDay week_day, const Locale locale);
 
 /// @brief      Get tick count.
 /// @return     Tick count.
@@ -146,14 +146,14 @@ OS_Tick         OS_TickCountGet(void);
 /// @return     Time.
 /// @note       String delimiter format depends on the current locale settings.
 /// @details    Example string for the EN locale: HH:MM:SS
-OS_DateTime     OS_TimeStringParse(ConstStrPtr time_p);
+OS_DateTime     OS_TimeStringParse(ConstStrP time_p);
 
 /// @brief      Parse the date string.
 /// @param[in]  date_p           String of date.
 /// @return     Date.
 /// @note       String delimiter format depends on the current locale settings.
 /// @details    Example string for the EN locale: MM/DD/YYYY
-OS_DateTime     OS_DateStringParse(ConstStrPtr date_p);
+OS_DateTime     OS_DateStringParse(ConstStrP date_p);
 
 /**
 * \addtogroup OS_ISR_Time ISR specific functions.

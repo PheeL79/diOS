@@ -21,8 +21,9 @@
 typedef struct {
     const OS_TaskConfig* cfg_p;
     OS_QueueHd      stdin_qhd;
-    OS_TaskHd       parent;
     OS_List*        slots_l_p;
+    OS_TaskHd       parent;
+    OS_TaskArgs     args;
     OS_TaskStats    stats;
     OS_TaskId       id;
     OS_PowerState   power;
@@ -128,7 +129,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_TaskCreate(const OS_TaskConfig* cfg_p, OS_TaskHd* thd_p)
+Status OS_TaskCreate(const void* args_p, const OS_TaskConfig* cfg_p, OS_TaskHd* thd_p)
 {
 Status s = S_UNDEF;
     if (OS_NULL == cfg_p) { return S_INVALID_REF; }
@@ -146,6 +147,15 @@ Status s = S_UNDEF;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
+    if (cfg_p->storage_size) {
+        cfg_dyn_p->args.stor_p = OS_Malloc(cfg_p->storage_size);
+        if (OS_NULL == cfg_dyn_p->args.stor_p) {
+            OS_ListItemDelete(item_l_p);
+            OS_Free(cfg_dyn_p);
+            return S_NO_MEMORY;
+        }
+    }
+    OS_MemSet(cfg_dyn_p->args.stor_p, 0, cfg_p->storage_size);
     const OS_QueueConfig que_cfg = {
         .len        = (0 == cfg_p->stdin_len) ? 1 : cfg_p->stdin_len, //At least one item queue to create!
         .item_size  = sizeof(OS_Message*)
@@ -162,13 +172,15 @@ Status s = S_UNDEF;
     }
     // Creating StdIo task queues.
     IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdin_qhd))  { goto error; }
-    cfg_dyn_p->cfg_p    = cfg_p;
-    cfg_dyn_p->id       = id_curr;
-    cfg_dyn_p->parent   = OS_TaskGet();
-    cfg_dyn_p->slots_l_p= OS_NULL;
-    cfg_dyn_p->timeout  = cfg_dyn_p->cfg_p->timeout;
+    cfg_dyn_p->cfg_p        = cfg_p;
+    cfg_dyn_p->args.args_p  = args_p;
+    cfg_dyn_p->id           = id_curr;
+    cfg_dyn_p->parent       = OS_TaskGet();
+    cfg_dyn_p->slots_l_p    = OS_NULL;
+    cfg_dyn_p->timeout      = cfg_dyn_p->cfg_p->timeout;
     OS_CriticalSectionEnter(); { // Atomic section to prevent context switch right after task creation by OS Engine.
-        if (pdPASS != xTaskCreate(cfg_p->func_main, cfg_p->name, cfg_p->stack_size, cfg_p->args_p, cfg_p->prio_init, &task_hd)) {
+        if (pdPASS != xTaskCreate((TaskFunction_t)cfg_p->func_main, cfg_p->name, cfg_p->stack_size,
+                                  (void*)&cfg_dyn_p->args, cfg_p->prio_init, &task_hd)) {
             OS_CriticalSectionExit();
             s = S_MODULE;
             goto error;
@@ -201,7 +213,7 @@ Status s = S_UNDEF;
                                         if (OS_SignalIs(msg_p)) {
                                             if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
                                                 IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
-                                                    OS_LOG(D_DEBUG, "[TID:%u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
+                                                    OS_LOG(D_DEBUG, "[TID:%03u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
                                                 }
                                             } else {
                                                 s = S_UNDEF_SIG;
@@ -226,8 +238,9 @@ error:
             // TODO(A. Filyanov) Workaround for the sv task in startup sequence.
             IF_OK(s = OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
                 //--tasks_count;
-                OS_Free(cfg_dyn_p);
                 OS_ListItemDelete(item_l_p);
+                OS_Free(cfg_dyn_p->args.stor_p);
+                OS_Free(cfg_dyn_p);
                 if (OS_NULL != task_hd_curr) {
                     s = OS_MutexRecursiveUnlock(os_task_mutex);
                 }
@@ -263,12 +276,13 @@ Status s = S_OK;
             OS_Free(cfg_dyn_p->slots_l_p);
         }
         OS_ListItemDelete(item_l_p);
+        OS_Free(cfg_dyn_p->args.stor_p);
         OS_Free(cfg_dyn_p);
-        OS_LOG(D_DEBUG, "[TID:%u]%s: Goodbye cruel world!", tid, cfg_p->name);
-        vTaskDelete(task_hd);
         //--tasks_count;
 error:
         OS_MutexRecursiveUnlock(os_task_mutex);
+        OS_LOG(D_DEBUG, "[TID:%03u]%s: Goodbye cruel world!", tid, cfg_p->name);
+        vTaskDelete(task_hd); //Task (self-)delete.
     }
     return s;
 }
@@ -343,7 +357,7 @@ exit:
 }
 
 /******************************************************************************/
-ConstStrPtr OS_TaskNameGet(const OS_TaskHd thd)
+ConstStrP OS_TaskNameGet(const OS_TaskHd thd)
 {
 const TaskHandle_t task_hd = OS_TaskHandleGet(thd);
     if (OS_NULL == task_hd) { return OS_NULL; }
@@ -406,7 +420,7 @@ const eTaskState e_state = eDeleted + 1;
 }
 
 /******************************************************************************/
-ConstStrPtr OS_TaskStateNameGet(const OS_TaskState state)
+ConstStrP OS_TaskStateNameGet(const OS_TaskState state)
 {
 static ConstStr undef_str[]     = "undef";
 static ConstStr ready_str[]     = "ready";
@@ -414,7 +428,7 @@ static ConstStr run_str[]       = "run";
 static ConstStr block_str[]     = "block";
 static ConstStr suspend_str[]   = "suspend";
 static ConstStr deleted_str[]   = "deleted";
-ConstStrPtr state_str           = undef_str;
+ConstStrP state_str             = undef_str;
 
     switch (state) {
         case OS_TASK_STATE_READY:
@@ -453,14 +467,19 @@ OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
 }
 
 /******************************************************************************/
-void* OS_TaskStorageGet(const OS_TaskHd thd)
+const void* OS_TaskArgumentsGet(const OS_TaskHd thd)
 {
 OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
-const OS_TaskConfig* cfg_p = cfg_dyn_p->cfg_p;
-
     if (OS_NULL == cfg_dyn_p) { return OS_NULL; }
-    if (OS_NULL == cfg_p) { return OS_NULL; }
-    return cfg_p->args_p;
+    return cfg_dyn_p->args.args_p;
+}
+
+/******************************************************************************/
+OS_TaskStorage* OS_TaskStorageGet(const OS_TaskHd thd)
+{
+OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
+    if (OS_NULL == cfg_dyn_p) { return OS_NULL; }
+    return cfg_dyn_p->args.stor_p;
 }
 
 /******************************************************************************/
@@ -583,7 +602,7 @@ Status s = S_OK;
     if (state != cfg_dyn_p->power) {
         OS_LOG(D_DEBUG, "Power state: %s", OS_PowerStateNameGet(state));
         if (OS_NULL != cfg_dyn_p->cfg_p->func_power) {
-            IF_STATUS(s = cfg_dyn_p->cfg_p->func_power(cfg_dyn_p->cfg_p->args_p, state)) {
+            IF_STATUS(s = cfg_dyn_p->cfg_p->func_power((void*)&cfg_dyn_p->args, state)) {
                 return s;
             }
         }
@@ -683,6 +702,13 @@ Status s = S_OK;
 error:
         OS_MutexRecursiveUnlock(os_task_mutex);
     }
+    IF_OK(s) {
+        OS_LOG(D_DEBUG, "Tasks are connected:\r\nsignal [%03u] %s > slot [%03u] %s",
+               OS_TaskIdGet(signal_thd),
+               OS_TaskNameGet(signal_thd),
+               OS_TaskIdGet(slot_thd),
+               OS_TaskNameGet(slot_thd));
+    }
     return s;
 }
 
@@ -703,6 +729,13 @@ Status s = S_OK;
         }
 error:
         OS_MutexRecursiveUnlock(os_task_mutex);
+    }
+    IF_OK(s) {
+        OS_LOG(D_DEBUG, "Tasks are disconnected:\r\nsignal [%03u] %s | slot [%03u] %s",
+               OS_TaskIdGet(signal_thd),
+               OS_TaskNameGet(signal_thd),
+               OS_TaskIdGet(slot_thd),
+               OS_TaskNameGet(slot_thd));
     }
     return s;
 }

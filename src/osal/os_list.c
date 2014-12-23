@@ -76,11 +76,13 @@ OS_ListItem* iter_li_p;
     if (OS_NULL == list_p) { return OS_NULL; }
     if (OS_ListIsEmpty(list_p)) { return OS_NULL; }
     for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(list_p));
-         value != (OS_Value)OS_ListItemValueGet(iter_li_p);
+         OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p);
          iter_li_p = OS_ListItemNextGet(iter_li_p)) {
-        if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { return OS_NULL; }
+        if (value == (OS_Value)OS_ListItemValueGet(iter_li_p)) {
+            return iter_li_p;
+        }
     }
-    return (OS_ListItem* )iter_li_p;
+    return OS_NULL;
 }
 
 /******************************************************************************/
@@ -91,11 +93,13 @@ OS_ListItem* iter_li_p;
     if (OS_NULL == list_p) { return OS_NULL; }
     if (OS_ListIsEmpty(list_p)) { return OS_NULL; }
     for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(list_p));
-         owner != (OS_Owner*)OS_ListItemOwnerGet(iter_li_p);
+         OS_DELAY_MAX != OS_ListItemValueGet(iter_li_p);
          iter_li_p = OS_ListItemNextGet(iter_li_p)) {
-        if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { return OS_NULL; }
+        if (owner == (OS_Owner*)OS_ListItemOwnerGet(iter_li_p)) {
+            return iter_li_p;
+        }
     }
-    return (OS_ListItem*)iter_li_p;
+    return OS_NULL;
 }
 
 /******************************************************************************/

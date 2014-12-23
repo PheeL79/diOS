@@ -51,7 +51,7 @@
 #define SD_CARD_SECTOR_SIZE             SD_CARD_BLOCK_SIZE
 
 //USB Host
-#define USBH_ENABLED                    0
+#define USBH_ENABLED                    1
 #define USBH_FS_ENABLED                 1
 #define USBH_HS_ENABLED                 0
 

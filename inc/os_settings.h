@@ -18,7 +18,7 @@ extern "C" {
 */
 //------------------------------------------------------------------------------
 #if (1 == OS_SETTINGS_BROWSE_ENABLED)
-typedef Status (*OS_SettingsCallback)(ConstStrPtr section_p, ConstStrPtr key_p, ConstStrPtr value_p, const void* args_p);
+typedef Status (*OS_SettingsCallback)(ConstStrP section_p, ConstStrP key_p, ConstStrP value_p, const void* args_p);
 #endif // OS_SETTINGS_BROWSE_ENABLED
 
 typedef enum {
@@ -28,8 +28,8 @@ typedef enum {
 } OS_SettingsStatus;
 
 typedef struct {
-    ConstStrPtr section_p;
-    ConstStrPtr key_p;
+    ConstStrP   section_p;
+    ConstStrP   key_p;
     Str         value[OS_SETTINGS_VALUE_LEN];
 } OS_SettingsItem;
 
@@ -47,14 +47,14 @@ Status          OS_SettingsDeInit(void);
 /// @param[in]  section_p       Settings section.
 /// @param[in]  key_p           Key item.
 /// @return     #Status.
-Status          OS_SettingsDelete(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrPtr key_p);
+Status          OS_SettingsDelete(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p);
 
 /// @brief      Read settings item.
 /// @param[in]  file_path_p     Path to the settings file.
 /// @param[in]  key_p           Key item.
 /// @param[out] value_p         Key value.
 /// @return     #Status.
-Status          OS_SettingsRead(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrPtr key_p, StrPtr value_p);
+Status          OS_SettingsRead(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p, StrP value_p);
 
 /// @brief      Write settings item.
 /// @param[in]  file_path_p     Path to the settings file.
@@ -62,19 +62,19 @@ Status          OS_SettingsRead(ConstStrPtr file_path_p, ConstStrPtr section_p, 
 /// @param[in]  key_p           Key item.
 /// @param[in]  value_p         Key value.
 /// @return     #Status.
-Status          OS_SettingsWrite(ConstStrPtr file_path_p, ConstStrPtr section_p, ConstStrPtr key_p, ConstStrPtr value_p);
+Status          OS_SettingsWrite(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p, ConstStrP value_p);
 
 /// @brief      Read settings items.
 /// @param[in]  file_path_p     Path to the settings file.
 /// @param[out] items[]         Items vector.
 /// @return     #Status.
-Status          OS_SettingsItemsRead(ConstStrPtr file_path_p, OS_SettingsItem items[]);
+Status          OS_SettingsItemsRead(ConstStrP file_path_p, OS_SettingsItem items[]);
 
 /// @brief      Write settings items.
 /// @param[in]  file_path_p     Path to the settings file.
 /// @param[in]  items[]         Items vector.
 /// @return     #Status.
-Status          OS_SettingsItemsWrite(ConstStrPtr file_path_p, OS_SettingsItem items[]);
+Status          OS_SettingsItemsWrite(ConstStrP file_path_p, OS_SettingsItem items[]);
 
 #if (1 == OS_SETTINGS_BROWSE_ENABLED)
 //Status OS_SettingsBrowse(OS_SettingsCallback callback_func_p, );

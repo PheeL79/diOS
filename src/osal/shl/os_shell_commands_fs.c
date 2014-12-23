@@ -28,8 +28,8 @@ static OS_FileHd fhd = OS_NULL;
 static ConstStr cmd_mi[]            = "mi";
 static ConstStr cmd_help_brief_mi[] = "Disk media init.";
 /******************************************************************************/
-static Status OS_ShellCmdMiHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdMiHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdMiHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdMiHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     const S8 volume = OS_AtoI((const char*)argv[0]);
@@ -50,8 +50,8 @@ Status s;
 static ConstStr cmd_md[]            = "md";
 static ConstStr cmd_help_brief_md[] = "Disk media deinit.";
 /******************************************************************************/
-static Status OS_ShellCmdMdHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdMdHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdMdHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdMdHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     const S8 volume = OS_AtoI((const char*)argv[0]);
@@ -72,8 +72,8 @@ Status s;
 static ConstStr cmd_fi[]            = "fi";
 static ConstStr cmd_help_brief_fi[] = "File system init.";
 /******************************************************************************/
-static Status OS_ShellCmdFiHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFiHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFiHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFiHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     const S8 volume = OS_AtoI((const char*)argv[0]);
@@ -94,8 +94,8 @@ Status s;
 static ConstStr cmd_fd[]            = "fd";
 static ConstStr cmd_help_brief_fd[] = "File system deinit.";
 /******************************************************************************/
-static Status OS_ShellCmdFdHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFdHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFdHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFdHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     const S8 volume = OS_AtoI((const char*)argv[0]);
@@ -116,10 +116,10 @@ Status s;
 static ConstStr cmd_fs[]            = "fs";
 static ConstStr cmd_help_brief_fs[] = "File system volume status.";
 /******************************************************************************/
-static Status OS_ShellCmdFsHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFsHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFsHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFsHandler(const U32 argc, ConstStrP argv[])
 {
-StrPtr path_p = OS_NULL;
+StrP path_p = OS_NULL;
 OS_FileSystemVolumeStats stats_vol;
 OS_FileSystemStats stats_fs;
 S8 volume;
@@ -128,7 +128,7 @@ Status s;
         //Parse volume string.
         char const delim_str[] = ":";
         char* path_str_p = (char*)argv[0];
-        ConstStrPtr volume_label_p = (ConstStrPtr)OS_StrToK(path_str_p, delim_str);
+        ConstStrP volume_label_p = (ConstStrP)OS_StrToK(path_str_p, delim_str);
         volume = OS_AtoI((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
@@ -141,7 +141,7 @@ Status s;
         }
     }
     IF_STATUS(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &stats_vol)) { OS_LOG_S(D_WARNING, s); goto error; }
-    path_p = (StrPtr)OS_Malloc(OS_FILE_SYSTEM_LONG_NAMES_LEN * 2);
+    path_p = (StrP)OS_Malloc(OS_FILE_SYSTEM_LONG_NAMES_LEN * 2);
     if (OS_NULL == path_p) { s = S_NO_MEMORY; goto error; }
     *path_p = OS_ASCII_EOL;
     OS_MemSet(&stats_fs, 0, sizeof(stats_fs));
@@ -189,12 +189,12 @@ error:
 static ConstStr cmd_fl[]            = "fl";
 static ConstStr cmd_help_brief_fl[] = "Directory list.";
 /******************************************************************************/
-static Status OS_ShellCmdFlHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFlHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFlHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFlHandler(const U32 argc, ConstStrP argv[])
 {
 OS_DirHd dhd = OS_Malloc(sizeof(DIR));
 OS_FileStats stats;
-StrPtr path_p = "";
+StrP path_p = "";
 U32 dirs_count, files_count, total_size;
 Status s;
     if (OS_NULL == dhd) { return S_NO_MEMORY; }
@@ -202,16 +202,16 @@ Status s;
         //Parse volume string.
         char const delim_str[] = ":";
         char* path_str_p = (char*)argv[0];
-        ConstStrPtr volume_label_p = (ConstStrPtr)OS_StrToK(path_str_p, delim_str);
+        ConstStrP volume_label_p = (ConstStrP)OS_StrToK(path_str_p, delim_str);
         const S8 volume = (S8)OS_AtoI((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
             OS_LOG_S(D_DEBUG, s);
-            path_p = (StrPtr)argv[argc - 1];
+            path_p = (StrP)argv[argc - 1];
         } else {
             const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
             IF_STATUS(s = OS_FileSystemMediaCurrentSet(fs_media_hd)) { goto error; }
-            path_p = (StrPtr)(++path_str_p + OS_StrLen((const char*)volume_label_p));
+            path_p = (StrP)(++path_str_p + OS_StrLen((const char*)volume_label_p));
             fs_media_hd_curr = fs_media_hd;
         }
     }
@@ -271,8 +271,8 @@ error:
 static ConstStr cmd_fk[]            = "fk";
 static ConstStr cmd_help_brief_fk[] = "Directory create.";
 /******************************************************************************/
-static Status OS_ShellCmdFkHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFkHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFkHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFkHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     IF_STATUS(s = OS_DirectoryCreate(argv[0])) {
@@ -285,8 +285,8 @@ Status s;
 static ConstStr cmd_fu[]            = "fu";
 static ConstStr cmd_help_brief_fu[] = "Directory/file delete.";
 /******************************************************************************/
-static Status OS_ShellCmdFuHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFuHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFuHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFuHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     IF_STATUS(s = OS_DirectoryDelete(argv[0])) {
@@ -302,8 +302,8 @@ static ConstStr cmd_help_brief_fn[] = "Directory/file rename.";
 //"The logical drive number is determined by old name, new name must not contain a logical drive number. "\
 //"Do not rename open objects or directry table can be collapted.";
 /******************************************************************************/
-static Status OS_ShellCmdFnHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFnHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFnHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFnHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     IF_STATUS(s = OS_DirectoryRename(argv[0], argv[1])) {
@@ -316,13 +316,13 @@ Status s;
 static ConstStr cmd_fa[]            = "fa";
 static ConstStr cmd_help_brief_fa[] = "Directory/file attributes set.";
 /******************************************************************************/
-static Status OS_ShellCmdFaHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFaHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFaHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFaHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
 OS_FileAttrs attrs = OS_FS_FILE_ATTR_UNDEF;
     { // Parse attributes
-        StrPtr attrs_p = (StrPtr)argv[0];
+        StrP attrs_p = (StrP)argv[0];
         while (OS_ASCII_EOL != *attrs_p) {
             switch (*attrs_p) {
                 case 'a':
@@ -353,8 +353,8 @@ OS_FileAttrs attrs = OS_FS_FILE_ATTR_UNDEF;
 static ConstStr cmd_ft[]            = "ft";
 static ConstStr cmd_help_brief_ft[] = "Directory/file time stamp set.";
 /******************************************************************************/
-static Status OS_ShellCmdFtHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFtHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFtHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFtHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
     OS_DateTime date = OS_DateStringParse(argv[0]);
@@ -375,15 +375,15 @@ static ConstStr cmd_fo[]            = "fo";
 static ConstStr cmd_help_brief_fo[] = "File open.";
 //static ConstStr cmd_help_detail_fn[]= "Opens an object (file) and set it's mode. "\
 /******************************************************************************/
-static Status OS_ShellCmdFoHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFoHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFoHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFoHandler(const U32 argc, ConstStrP argv[])
 {
 Status s;
 OS_FileOpenMode op_mode = OS_FS_FILE_OP_MODE_UNDEF;
 U8 op = '\0';
 Bool is_exists = OS_FALSE;
     { // Parse open mode
-        StrPtr op_mode_p = (StrPtr)argv[0];
+        StrP op_mode_p = (StrP)argv[0];
         while (OS_ASCII_EOL != *op_mode_p) {
             switch (*op_mode_p) {
                 case 'c':
@@ -426,8 +426,8 @@ Bool is_exists = OS_FALSE;
 static ConstStr cmd_fc[]            = "fc";
 static ConstStr cmd_help_brief_fc[] = "File close.";
 /******************************************************************************/
-static Status OS_ShellCmdFcHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFcHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFcHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFcHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = OS_FileClose(&fhd);
     IF_STATUS(s) {
@@ -441,8 +441,8 @@ Status s = OS_FileClose(&fhd);
 static ConstStr cmd_fm[]            = "fm";
 static ConstStr cmd_help_brief_fm[] = "File system make.";
 /******************************************************************************/
-static Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[]);
-Status OS_ShellCmdFmHandler(const U32 argc, ConstStrPtr argv[])
+static Status OS_ShellCmdFmHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdFmHandler(const U32 argc, ConstStrP argv[])
 {
 Size size = 0;
 OS_FileSystemPartitionRule part_rule = OS_FS_PART_RULE_UNDEF;

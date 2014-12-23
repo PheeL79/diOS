@@ -24,22 +24,20 @@
 //-----------------------------------------------------------------------------
 //Task arguments
 //typedef struct {
-//} TaskArgs;
-
-//static const TaskArgs task_args;
+//} TaskStorage;
 
 //------------------------------------------------------------------------------
 const OS_TaskConfig task_shell_cfg = {
-    .name       = "Shell",
-    .func_main  = OS_TaskMain,
-    .func_power = OS_TaskPower,
-    .args_p     = OS_NULL,//(void*)&task_args,
-    .attrs      = BIT(OS_TASK_ATTR_RECREATE),
-    .timeout    = 10,
-    .prio_init  = OS_TASK_PRIO_MAX,
-    .prio_power = OS_PWR_PRIO_MAX - 30,
-    .stack_size = OS_STACK_SIZE_MIN,
-    .stdin_len  = 1,
+    .name           = "Shell",
+    .func_main      = OS_TaskMain,
+    .func_power     = OS_TaskPower,
+    .attrs          = BIT(OS_TASK_ATTR_RECREATE),
+    .timeout        = 10,
+    .prio_init      = OS_TASK_PRIO_SHELL,
+    .prio_power     = OS_TASK_PRIO_PWR_SHELL,
+    .storage_size   = 0,//sizeof(TaskStorage),
+    .stack_size     = OS_STACK_SIZE_MIN,
+    .stdin_len      = 1,
 };
 
 /******************************************************************************/

@@ -7,6 +7,7 @@
 #include "tlsf.h"
 #include "hal.h"
 #include "os_common.h"
+#include "os_debug.h"
 #include "os_supervise.h"
 #include "os_mutex.h"
 #include "os_memory.h"
@@ -143,18 +144,8 @@ const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
             }
         }
     } else {
-        //OS_LOG(D_DEBUG, "ERROR: Unknown memory type!");
+        OS_LOG(D_WARNING, "Unknown memory type!");
     }
-}
-
-/******************************************************************************/
-void OS_MemCacheFlush(void)
-{
-#if defined(CM4F)
-    __DMB();    //Memory barrier.
-	__DSB();    //Data barrier.
-	__ISB();    //Instructions barrier.
-#endif // CM4F
 }
 
 ///******************************************************************************/
@@ -212,7 +203,7 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v;
 }
 
 /******************************************************************************/
-Status OS_MemoryStatGet(const OS_MemoryType mem_type, OS_MemoryStat* mem_stat_p)
+Status OS_MemoryStatsGet(const OS_MemoryType mem_type, OS_MemoryStats* mem_stats_p)
 {
 OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
     while (memory_cfg_p->type != mem_type) {
@@ -221,8 +212,8 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
         }
         ++memory_cfg_p;
     }
-    OS_MemCpy((void*)&mem_stat_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
-    mem_stat_p->used = get_used_size((void*)mem_stat_p->desc.addr);
-    mem_stat_p->free = mem_stat_p->desc.size - mem_stat_p->used;
+    OS_MemCpy((void*)&mem_stats_p->desc, memory_cfg_p, sizeof(OS_MemoryDesc));
+    mem_stats_p->used = get_used_size((void*)mem_stats_p->desc.addr);
+    mem_stats_p->free = mem_stats_p->desc.size - mem_stats_p->used;
     return S_OK;
 }
