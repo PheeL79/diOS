@@ -49,7 +49,7 @@ Status          OS_QueueDelete(const OS_QueueHd qhd);
 /// @param[out] item_p          Item.
 /// @param[in]  timeout         Item receiving timeout.
 /// @return     #Status.
-Status          OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const TimeMs timeout);
+Status          OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const OS_TimeMs timeout);
 
 /// @brief      Send the item.
 /// @param[in]  qhd             Receiver queue handle.
@@ -57,7 +57,7 @@ Status          OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const TimeMs
 /// @param[in]  timeout         Item sending timeout.
 /// @param[in]  priority        Item sending priority.
 /// @return     #Status.
-Status          OS_QueueSend(const OS_QueueHd qhd, const void* item_p, const TimeMs timeout, const OS_MessagePrio priority);
+Status          OS_QueueSend(const OS_QueueHd qhd, const void* item_p, const OS_TimeMs timeout, const OS_MessagePrio priority);
 
 /// @brief      Clear the queue.
 /// @param[in]  qhd             Queue handle.

@@ -8,6 +8,7 @@
 #include "os_debug.h"
 #include "os_supervise.h"
 
+#if (OS_AUDIO_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_cs4344"
 
@@ -238,8 +239,9 @@ Status CS4344_Open(void* args_p)
     if (OS_NULL != args_p) {
         const CS4344_DrvAudioArgsOpen* open_args_p = (CS4344_DrvAudioArgsOpen*)args_p;
         CS4344_ISR_DrvAudioDeviceCallback = open_args_p->isr_callback_func;
+        cs4344_callback_args.tstor_p = open_args_p->tstor_p;
         cs4344_callback_args.slot_qhd = open_args_p->slot_qhd;
-        cs4344_callback_args.signal_id = OS_SIG_AUDIO_TX_COMPLETE;
+        cs4344_callback_args.signal_id = OS_SIG_UNDEF;
     }
     return S_OK;
 }
@@ -446,11 +448,15 @@ void CS4344_I2Sx_DMAx_IRQHandler(void)
 /******************************************************************************/
 void CS4344_XferCpltCallback(DMA_HandleTypeDef* hdma)
 {
+    cs4344_callback_args.signal_id = OS_SIG_AUDIO_TX_COMPLETE;
     CS4344_ISR_DrvAudioDeviceCallback(&cs4344_callback_args);
 }
 
 /******************************************************************************/
 void CS4344_XferM1CpltCallback(DMA_HandleTypeDef* hdma)
 {
+    cs4344_callback_args.signal_id = OS_SIG_AUDIO_TX_COMPLETE;
     CS4344_ISR_DrvAudioDeviceCallback(&cs4344_callback_args);
 }
+
+#endif //(OS_AUDIO_ENABLED)

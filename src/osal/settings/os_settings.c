@@ -94,10 +94,10 @@ Status s;
     return s;
 }
 
-#if (1 == OS_SETTINGS_BROWSE_ENABLED)
+#if (OS_SETTINGS_BROWSE_ENABLED)
 /******************************************************************************/
 //int SettingsCallback(const char* section, const char* key, const char* value, const void* userdata)
 //{
 //    return ()
 //}
-#endif // OS_SETTINGS_BROWSE_ENABLED
+#endif // (OS_SETTINGS_BROWSE_ENABLED)

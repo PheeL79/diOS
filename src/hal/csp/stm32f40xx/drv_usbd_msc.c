@@ -118,10 +118,10 @@ int8_t STORAGE_Init (uint8_t lun)
 *******************************************************************************/
 int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
-    IF_STATUS(OS_DriverIoCtl(fs_media_dhd_v[lun], DRV_REQ_MEDIA_SECTOR_COUNT_GET, block_num)) {
+    IF_STATUS(OS_ISR_DriverIoCtl(fs_media_dhd_v[lun], DRV_REQ_MEDIA_SECTOR_COUNT_GET, block_num)) {
         return (USBD_FAIL);
     }
-    IF_STATUS(OS_DriverIoCtl(fs_media_dhd_v[lun], DRV_REQ_MEDIA_BLOCK_SIZE_GET, block_size)) {
+    IF_STATUS(OS_ISR_DriverIoCtl(fs_media_dhd_v[lun], DRV_REQ_MEDIA_BLOCK_SIZE_GET, block_size)) {
         return (USBD_FAIL);
     }
     return (USBD_OK);
@@ -163,7 +163,7 @@ int8_t STORAGE_Read (uint8_t lun,
                         uint32_t blk_addr,
                         uint16_t blk_len)
 {
-    IF_STATUS(OS_DriverRead(fs_media_dhd_v[lun], buf, blk_len, &blk_addr)) {
+    IF_STATUS(OS_ISR_DriverRead(fs_media_dhd_v[lun], buf, blk_len, &blk_addr)) {
         return (USBD_FAIL);
     }
     return (USBD_OK);
@@ -181,7 +181,7 @@ int8_t STORAGE_Write (uint8_t lun,
                          uint32_t blk_addr,
                          uint16_t blk_len)
 {
-    IF_STATUS(OS_DriverWrite(fs_media_dhd_v[lun], (void*)buf, blk_len, &blk_addr)) {
+    IF_STATUS(OS_ISR_DriverWrite(fs_media_dhd_v[lun], (void*)buf, blk_len, &blk_addr)) {
         return (USBD_FAIL);
     }
     return (USBD_OK);

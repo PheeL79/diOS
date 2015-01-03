@@ -19,7 +19,7 @@
 #include "os_startup.h"
 
 //------------------------------------------------------------------------------
-#define MDL_NAME            "task_sv"
+#define MDL_NAME            "sv"
 
 //------------------------------------------------------------------------------
 //Task arguments
@@ -48,9 +48,10 @@ const OS_TaskConfig task_sv_cfg = {
     .name           = "Sv",
     .func_main      = OS_TaskMain,
     .func_power     = OS_TaskPower,
+    .args_p         = OS_NULL,
     .prio_init      = OS_TASK_PRIO_MAX,
     .prio_power     = OS_PWR_PRIO_MAX,
-    .storage_size   = 0,//sizeof(TaskStorage),
+    .storage_size   = 0,
     .stack_size     = OS_STACK_SIZE_MIN * 2,
     .stdin_len      = OS_STDIN_LEN,
 };
@@ -58,7 +59,6 @@ const OS_TaskConfig task_sv_cfg = {
 /******************************************************************************/
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
-TaskStorage* tstor_p = (TaskStorage*)&tstor;
 Status s;
     HAL_LOG(D_INFO, "Init");
 //    {
@@ -79,9 +79,9 @@ Status s;
             .itf_p      = drv_led_v[DRV_ID_LED_PULSE],
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor_p->drv_led_pulse)) { return s; }
-        IF_STATUS(s = OS_DriverInit(tstor_p->drv_led_pulse, OS_NULL)) { return s; }
-        IF_STATUS(s = OS_DriverOpen(tstor_p->drv_led_pulse, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor.drv_led_pulse)) { return s; }
+        IF_STATUS(s = OS_DriverInit(tstor.drv_led_pulse, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(tstor.drv_led_pulse, OS_NULL)) { return s; }
     }
     OS_ASSERT(S_OK == (s = OS_TaskCreate(OS_NULL, &task_sv_cfg, OS_NULL)));
     return s;
@@ -90,13 +90,12 @@ Status s;
 /******************************************************************************/
 void OS_TaskMain(OS_TaskArgs* args_p)
 {
-TaskStorage* tstor_p = (TaskStorage*)&tstor;
     sv_stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
     OS_ASSERT(S_OK == OS_StartupApplication());
     OS_ASSERT(S_OK == OS_StartupDeInit());
-#if (1 == TIMER_IWDG_ENABLED)
+#if (TIMER_IWDG_ENABLED)
     OS_ASSERT(S_OK == TIMER_IWDG_Start());
-#endif // TIMER_IWDG_ENABLED
+#endif // (TIMER_IWDG_ENABLED)
 	for(;;) {
         MessagesHandler(args_p);
     }
@@ -105,7 +104,6 @@ TaskStorage* tstor_p = (TaskStorage*)&tstor;
 /******************************************************************************/
 Status OS_TaskPower(OS_TaskArgs* args_p, const OS_PowerState state)
 {
-TaskStorage* tstor_p = (TaskStorage*)&tstor;
 const OS_PowerState state_prev = OS_PowerStateGet();
 Status s = S_OK;
     if (PWR_STARTUP == state) {
@@ -113,9 +111,9 @@ Status s = S_OK;
             return s;
         }
     } else {
-        IF_STATUS(s = SystemPowerStateSet(tstor_p, state)) {
+        IF_STATUS(s = SystemPowerStateSet(&tstor, state)) {
             OS_LOG(D_INFO, "Attempt to rollback power state: %s", OS_PowerStateNameGet(state_prev));
-            IF_STATUS(s = SystemPowerStateSet(tstor_p, state_prev)) {
+            IF_STATUS(s = SystemPowerStateSet(&tstor, state_prev)) {
             }
             return s;
         }
@@ -275,13 +273,13 @@ OS_Message* msg_p;
             OS_MessageDelete(msg_p); // free message allocated memory
         }
     }
-#if (1 == TIMER_IWDG_ENABLED)
+#if (TIMER_IWDG_ENABLED)
     TIMER_IWDG_Reset();
-#endif // TIMER_IWDG_ENABLED
+#endif // (TIMER_IWDG_ENABLED)
     led_state = (ON == led_state) ? OFF : ON;
     OS_DriverWrite(tstor.drv_led_pulse, (void*)&led_state, 1, OS_NULL);
 
-#if (1 == OS_TASK_DEADLOCK_TEST_ENABLED)
+#if (OS_TASK_DEADLOCK_TEST_ENABLED)
     if (OS_TRUE != is_idle) {
         Status s;
         IF_OK(s = TaskDeadLockTest()) {
@@ -296,10 +294,10 @@ OS_Message* msg_p;
             deadlock_thd = OS_NULL;
         }
     }
-#endif // OS_TASK_DEADLOCK_TEST_ENABLED
+#endif // (OS_TASK_DEADLOCK_TEST_ENABLED)
 }
 
-#if (1 == OS_TASK_DEADLOCK_TEST_ENABLED)
+#if (OS_TASK_DEADLOCK_TEST_ENABLED)
 /******************************************************************************/
 Status TaskDeadLockTest(void)
 {
@@ -398,7 +396,7 @@ Status s = S_UNDEF;
     }
     return s;
 }
-#endif // OS_TASK_DEADLOCK_TEST_ENABLED
+#endif // (OS_TASK_DEADLOCK_TEST_ENABLED)
 
 /******************************************************************************/
 void Reboot(OS_TaskArgs* args_p)

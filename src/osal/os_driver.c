@@ -25,9 +25,8 @@ static OS_List os_drivers_list;
 static OS_MutexHd os_driver_mutex;
 
 /******************************************************************************/
-#pragma inline
 static OS_DriverConfigDyn* OS_DriverConfigDynGet(const OS_DriverHd dhd);
-OS_DriverConfigDyn* OS_DriverConfigDynGet(const OS_DriverHd dhd)
+INLINE OS_DriverConfigDyn* OS_DriverConfigDynGet(const OS_DriverHd dhd)
 {
     OS_ASSERT_VALUE(OS_NULL != dhd);
     const OS_ListItem* item_l_p = (OS_ListItem*)dhd;
@@ -266,6 +265,27 @@ Status s;
 }
 
 /******************************************************************************/
+Status OS_ISR_DriverRead(const OS_DriverHd dhd, void* data_in_p, U32 size, void* args_p)
+{
+OS_DriverConfigDyn* cfg_dyn_p = OS_DriverConfigDynGet(dhd);
+const HAL_DriverItf* itf_p = cfg_dyn_p->cfg.itf_p;
+Status s;
+    OS_ASSERT_VALUE(OS_TRUE == BIT_TEST(cfg_dyn_p->stats.state, BIT(OS_DRV_STATE_IS_OPEN)));
+    OS_ASSERT_VALUE(OS_NULL != itf_p->Read);
+    s = OS_ISR_MutexLock(cfg_dyn_p->mutex);
+    if ((S_OK == s) || (1 == s)) {
+        IF_STATUS(s = itf_p->Read(data_in_p, size, args_p)) {
+            cfg_dyn_p->stats.status_last = s;
+            cfg_dyn_p->stats.errors_cnt++;
+        } else {
+            cfg_dyn_p->stats.received += size;
+        }
+        OS_ISR_MutexUnlock(cfg_dyn_p->mutex);
+    }
+    return s;
+}
+
+/******************************************************************************/
 Status OS_DriverWrite(const OS_DriverHd dhd, void* data_out_p, U32 size, void* args_p)
 {
 OS_DriverConfigDyn* cfg_dyn_p = OS_DriverConfigDynGet(dhd);
@@ -281,6 +301,27 @@ Status s;
             cfg_dyn_p->stats.sended += size;
         }
         OS_MutexUnlock(cfg_dyn_p->mutex);
+    }
+    return s;
+}
+
+/******************************************************************************/
+Status OS_ISR_DriverWrite(const OS_DriverHd dhd, void* data_out_p, U32 size, void* args_p)
+{
+OS_DriverConfigDyn* cfg_dyn_p = OS_DriverConfigDynGet(dhd);
+const HAL_DriverItf* itf_p = cfg_dyn_p->cfg.itf_p;
+Status s;
+    OS_ASSERT_VALUE(OS_TRUE == BIT_TEST(cfg_dyn_p->stats.state, BIT(OS_DRV_STATE_IS_OPEN)));
+    OS_ASSERT_VALUE(OS_NULL != itf_p->Write);
+    s = OS_ISR_MutexLock(cfg_dyn_p->mutex);
+    if ((S_OK == s) || (1 == s)) {
+        IF_STATUS(s = itf_p->Write(data_out_p, size, args_p)) {
+            cfg_dyn_p->stats.status_last = s;
+            cfg_dyn_p->stats.errors_cnt++;
+        } else {
+            cfg_dyn_p->stats.sended += size;
+        }
+        OS_ISR_MutexUnlock(cfg_dyn_p->mutex);
     }
     return s;
 }
@@ -328,7 +369,8 @@ const HAL_DriverItf* itf_p = cfg_dyn_p->cfg.itf_p;
 Status s;
     OS_ASSERT_VALUE(OS_TRUE == BIT_TEST(cfg_dyn_p->stats.state, BIT(OS_DRV_STATE_IS_OPEN)));
     OS_ASSERT_VALUE(OS_NULL != itf_p->IoCtl);
-    IF_OK(s = OS_ISR_MutexLock(cfg_dyn_p->mutex)) {
+    s = OS_ISR_MutexLock(cfg_dyn_p->mutex);
+    if ((S_OK == s) || (1 == s)) {
         if (DRV_REQ_STD_POWER_SET == request_id) {
             const OS_PowerState state = *(OS_PowerState*)args_p;
             if (state != cfg_dyn_p->stats.power) {

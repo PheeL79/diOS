@@ -42,7 +42,7 @@
 #define HAL_TIMEOUT_TIMER_TIMESTAMP     20
 
 //SDIO SD
-#define SDIO_SD_ENABLED                 1
+#define SDIO_SD_ENABLED                 0
 #define SDIO_SDIO_DMA_STREAM3           3
 //#define SDIO_SD_DMA_STREAM6             6
 #define SDIO_SD_IRQ_PRIO                1
@@ -51,7 +51,7 @@
 #define SD_CARD_SECTOR_SIZE             SD_CARD_BLOCK_SIZE
 
 //USB Host
-#define USBH_ENABLED                    1
+#define USBH_ENABLED                    0
 #define USBH_FS_ENABLED                 1
 #define USBH_HS_ENABLED                 0
 
@@ -67,8 +67,9 @@
 #define USBD_HS_ENABLED                 1
 
 //USB Device Classes
+#define USBD_AUDIO_ENABLED              0
 #define USBD_HID_ENABLED                0
-#define USBD_MSC_ENABLED                1
+#define USBD_MSC_ENABLED                0
 
 // Memory
 #define MEM_BLOCK_SIZE_MIN              8

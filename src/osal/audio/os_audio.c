@@ -12,7 +12,7 @@
 #include "os_audio.h"
 #include "os_task_audio.h"
 
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "audio"
 
@@ -35,9 +35,8 @@ static volatile OS_AudioDeviceHd def_in_dev_hd;
 static volatile OS_AudioDeviceHd def_out_dev_hd;
 
 /******************************************************************************/
-#pragma inline
 static OS_AudioDeviceConfigDyn* OS_AudioDeviceConfigDynGet(const OS_AudioDeviceHd dev_hd);
-OS_AudioDeviceConfigDyn* OS_AudioDeviceConfigDynGet(const OS_AudioDeviceHd dev_hd)
+INLINE OS_AudioDeviceConfigDyn* OS_AudioDeviceConfigDynGet(const OS_AudioDeviceHd dev_hd)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
     const OS_ListItem* item_l_p = (OS_ListItem*)dev_hd;
@@ -467,4 +466,4 @@ OS_ListItem* iter_li_p = (OS_ListItem*)dev_hd;
     return (OS_AudioDeviceHd)iter_li_p;
 }
 
-#endif // (1 == OS_AUDIO_ENABLED)
+#endif // (OS_AUDIO_ENABLED)

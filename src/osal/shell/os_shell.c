@@ -16,9 +16,9 @@
 #include "os_signal.h"
 #include "os_message.h"
 #include "os_shell_commands_std.h"
-#if (1 == OS_FILE_SYSTEM_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
 #include "os_shell_commands_fs.h"
-#endif // OS_FILE_SYSTEM_ENABLED
+#endif // (OS_FILE_SYSTEM_ENABLED)
 #include "os_shell.h"
 
 /// @details Use macro D_TRACE\D_LOG there instead of OS_ equals.
@@ -38,16 +38,15 @@ static S32 shell_cr_pos = 0;
 static ConstStrP argv[OS_SHELL_CL_ARGS_MAX];
 
 //------------------------------------------------------------------------------
-#if (1 == OS_SHELL_EDIT_ENABLED)
+#if (OS_SHELL_EDIT_ENABLED)
 static void OS_ShellClControlHandler(const U8 c);
 static void OS_ShellCaretPositionSet(const S32 pos);
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)
 static void OS_ShellClClear(void);
 static void OS_ShellControlEcho(const U8 c);
 
 /******************************************************************************/
-#pragma inline
-void OS_ShellClClear(void)
+INLINE void OS_ShellClClear(void)
 {
     shell_cr_pos = 0;
     //TODO(A. Filyanov) Remember cl cursor last max position and simply put EOL char at it.
@@ -55,8 +54,7 @@ void OS_ShellClClear(void)
 }
 
 /******************************************************************************/
-#pragma inline
-void OS_ShellControlEcho(const U8 c)
+INLINE void OS_ShellControlEcho(const U8 c)
 {
     putchar(OS_ASCII_ESC_NOT_ECHO_NEXT);
     putchar(OS_ASCII_ESC_OP_SQUARE_BRAC);
@@ -64,9 +62,8 @@ void OS_ShellControlEcho(const U8 c)
 }
 
 /******************************************************************************/
-#if (1 == OS_SHELL_EDIT_ENABLED)
-#pragma inline
-void OS_ShellCaretPositionSet(const S32 pos)
+#if (OS_SHELL_EDIT_ENABLED)
+INLINE void OS_ShellCaretPositionSet(const S32 pos)
 {
 S32 caret_pos = pos - shell_cr_pos;
 U8 caret_dir;
@@ -81,7 +78,7 @@ U8 caret_dir;
         OS_ShellControlEcho(caret_dir);
     }
 }
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)
 
 /******************************************************************************/
 Status OS_ShellInit(void)
@@ -93,9 +90,9 @@ Status s = S_OK;
     if (OS_TRUE != OS_ListIsInitialised(&os_commands_list)) { return S_INVALID_VALUE; }
     OS_ShellClClear();
     IF_STATUS(s = OS_ShellCommandsStdInit()) { return s; }
-#if (1 == OS_FILE_SYSTEM_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_ShellCommandsFsInit()) { return s; }
-#endif // OS_FILE_SYSTEM_ENABLED
+#endif // (OS_FILE_SYSTEM_ENABLED)
     return s;
 }
 
@@ -255,23 +252,23 @@ Status OS_ShellCls(void)
 /******************************************************************************/
 void OS_ShellClHandler(const U8 c)
 {
-#if (1 == OS_SHELL_EDIT_ENABLED)
+#if (OS_SHELL_EDIT_ENABLED)
 static BL is_echo = OS_OS_TRUE;
 static BL is_ctrl = OS_FALSE;
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)
     switch (c) {
         case OS_ASCII_ESC_CR:
         case OS_ASCII_ESC_LF: {
 #if (0 == OS_SHELL_EDIT_ENABLED)
             OS_ShellControlEcho(OS_SHELL_BUTTON_UP); //Cursor up to cancel remote terminal LF.
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)
             const Status s = OS_ShellCommandExecute();
             const OS_LogLevel level = (S_OK != s) ? D_WARNING : D_INFO;
             OS_ShellClClear();
             OS_LOG_S(level, s);
             }
             break;
-#if (1 == OS_SHELL_EDIT_ENABLED)
+#if (OS_SHELL_EDIT_ENABLED)
         case OS_ASCII_SPACE: {
             const U32 str_len = OS_StrLen((char const*)&shell_cl[shell_cr_pos]) + 1;
             const StrP cl_str_p = &shell_cl[shell_cr_pos];
@@ -342,9 +339,9 @@ static BL is_ctrl = OS_FALSE;
 //        case OS_ASCII_ESC_PAGE_DOWN:
 //        case OS_ASCII_ESC_INSERT:
 //            break;
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)
         default: //not an escape symbol
-#if (1 == OS_SHELL_EDIT_ENABLED)
+#if (OS_SHELL_EDIT_ENABLED)
 echo:
             {
             const U32 str_len = OS_StrLen((char const*)&shell_cl[shell_cr_pos]) + 1;
@@ -364,13 +361,13 @@ echo:
             if (shell_cr_pos < sizeof(shell_cl)) { //protect cl buffer
                 shell_cl[shell_cr_pos++] = c;
             }
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)
             break;
     }
 }
 
 /******************************************************************************/
-#if (1 == OS_SHELL_EDIT_ENABLED)
+#if (OS_SHELL_EDIT_ENABLED)
 void OS_ShellClControlHandler(const U8 c)
 {
     switch (c) {
@@ -420,4 +417,4 @@ void OS_ShellClControlHandler(const U8 c)
             break;
     }
 }
-#endif // OS_SHELL_EDIT_ENABLED
+#endif // (OS_SHELL_EDIT_ENABLED)

@@ -36,9 +36,9 @@ Status HAL_BSP_Init(void)
 {
 Status s = S_UNDEF;
     // Low-level drivers init.
-#if (1 == TIMER_IWDG_ENABLED)
+#if (TIMER_IWDG_ENABLED)
     IF_STATUS(s = TIMER_IWDG_Init()){ return s; }
-#endif // TIMER_IWDG_ENABLED
+#endif // (TIMER_IWDG_ENABLED)
     IF_STATUS(s = RTC_Init_())      { return s; }
     IF_STATUS(s = GPIO_Init_())     { return s; }
     IF_STATUS(s = NVIC_Init_())     { return s; }
@@ -51,16 +51,20 @@ Status s = S_UNDEF;
     IF_STATUS(s = TIMER_Init_())    { return s; }
     IF_STATUS(s = SPI_Init_())      { return s; }
     IF_STATUS(s = I2S_Init_())      { return s; }
-#if (1 == USBH_ENABLED)
+#if (USBH_ENABLED)
     IF_STATUS(s = USBH__Init())     { return s; }
-#endif // USBH_ENABLED
-#if (1 == USBD_ENABLED)
+#endif // (USBH_ENABLED)
+#if (USBD_ENABLED)
     IF_STATUS(s = USBD__Init())     { return s; }
-#endif // USBD_ENABLED
+#endif // (USBD_ENABLED)
     // High-level drivers init.
     IF_STATUS(s = LED_Init_())      { return s; }
     IF_STATUS(s = BUTTON_Init_())   { return s; }
+#if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = MEDIA_Init_())    { return s; }
+#endif //(OS_FILE_SYSTEM_ENABLED)
+#if (OS_AUDIO_ENABLED)
     IF_STATUS(s = AUDIO_Init_())    { return s; }
+#endif //(OS_AUDIO_ENABLED)
     return s;
 }

@@ -13,6 +13,7 @@
 #include "os_shell_commands_fs.h"
 #include "os_shell.h"
 
+#if (OS_FILE_SYSTEM_ENABLED)
 //------------------------------------------------------------------------------
 #undef  MDL_STATUS_ITEMS
 #define MDL_STATUS_ITEMS        &status_fs_v[0]
@@ -31,7 +32,7 @@ static ConstStr cmd_help_brief_mi[] = "Disk media init.";
 static Status OS_ShellCmdMiHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdMiHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
@@ -53,7 +54,7 @@ static ConstStr cmd_help_brief_md[] = "Disk media deinit.";
 static Status OS_ShellCmdMdHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdMdHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
@@ -75,7 +76,7 @@ static ConstStr cmd_help_brief_fi[] = "File system init.";
 static Status OS_ShellCmdFiHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFiHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
@@ -97,7 +98,7 @@ static ConstStr cmd_help_brief_fd[] = "File system deinit.";
 static Status OS_ShellCmdFdHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFdHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
@@ -123,7 +124,7 @@ StrP path_p = OS_NULL;
 OS_FileSystemVolumeStats stats_vol;
 OS_FileSystemStats stats_fs;
 S8 volume;
-Status s;
+Status s = S_UNDEF;
     if (1 == argc) {
         //Parse volume string.
         char const delim_str[] = ":";
@@ -196,7 +197,7 @@ OS_DirHd dhd = OS_Malloc(sizeof(DIR));
 OS_FileStats stats;
 StrP path_p = "";
 U32 dirs_count, files_count, total_size;
-Status s;
+Status s = S_UNDEF;
     if (OS_NULL == dhd) { return S_NO_MEMORY; }
     if (1 == argc) {
         //Parse volume string.
@@ -274,7 +275,7 @@ static ConstStr cmd_help_brief_fk[] = "Directory create.";
 static Status OS_ShellCmdFkHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFkHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     IF_STATUS(s = OS_DirectoryCreate(argv[0])) {
         OS_LOG_S(D_WARNING, s);
     }
@@ -288,7 +289,7 @@ static ConstStr cmd_help_brief_fu[] = "Directory/file delete.";
 static Status OS_ShellCmdFuHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFuHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     IF_STATUS(s = OS_DirectoryDelete(argv[0])) {
         OS_LOG_S(D_WARNING, s);
     }
@@ -305,7 +306,7 @@ static ConstStr cmd_help_brief_fn[] = "Directory/file rename.";
 static Status OS_ShellCmdFnHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFnHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     IF_STATUS(s = OS_DirectoryRename(argv[0], argv[1])) {
         OS_LOG_S(D_WARNING, s);
     }
@@ -319,7 +320,7 @@ static ConstStr cmd_help_brief_fa[] = "Directory/file attributes set.";
 static Status OS_ShellCmdFaHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFaHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
 OS_FileAttrs attrs = OS_FS_FILE_ATTR_UNDEF;
     { // Parse attributes
         StrP attrs_p = (StrP)argv[0];
@@ -356,7 +357,7 @@ static ConstStr cmd_help_brief_ft[] = "Directory/file time stamp set.";
 static Status OS_ShellCmdFtHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFtHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
     OS_DateTime date = OS_DateStringParse(argv[0]);
     if (OS_TRUE != OS_DateIsValid(date.year, date.month, date.day)) { return S_INVALID_VALUE; }
     OS_DateTime time = OS_TimeStringParse(argv[1]);
@@ -378,7 +379,7 @@ static ConstStr cmd_help_brief_fo[] = "File open.";
 static Status OS_ShellCmdFoHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdFoHandler(const U32 argc, ConstStrP argv[])
 {
-Status s;
+Status s = S_UNDEF;
 OS_FileOpenMode op_mode = OS_FS_FILE_OP_MODE_UNDEF;
 U8 op = '\0';
 Bool is_exists = OS_FALSE;
@@ -436,7 +437,7 @@ Status s = OS_FileClose(&fhd);
     return s;
 }
 
-#if (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
+#if (OS_FILE_SYSTEM_MAKE_ENABLED)
 //------------------------------------------------------------------------------
 static ConstStr cmd_fm[]            = "fm";
 static ConstStr cmd_help_brief_fm[] = "File system make.";
@@ -519,7 +520,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     }
     return s;
 }
-#endif // (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
+#endif // (OS_FILE_SYSTEM_MAKE_ENABLED)
 
 //------------------------------------------------------------------------------
 static ConstStr empty_str[] = "";
@@ -528,9 +529,9 @@ static const OS_ShellCommandConfig cmd_cfg_fs[] = {
     { cmd_md,       cmd_help_brief_md,      empty_str,              OS_ShellCmdMdHandler,       1,    1,      OS_SHELL_OPT_UNDEF  },
     { cmd_fi,       cmd_help_brief_fi,      empty_str,              OS_ShellCmdFiHandler,       1,    1,      OS_SHELL_OPT_UNDEF  },
     { cmd_fd,       cmd_help_brief_fd,      empty_str,              OS_ShellCmdFdHandler,       1,    1,      OS_SHELL_OPT_UNDEF  },
-#if (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
+#if (OS_FILE_SYSTEM_MAKE_ENABLED)
     { cmd_fm,       cmd_help_brief_fm,      empty_str,              OS_ShellCmdFmHandler,       2,    3,      OS_SHELL_OPT_UNDEF  },
-#endif // (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
+#endif // (OS_FILE_SYSTEM_MAKE_ENABLED)
     { cmd_fs,       cmd_help_brief_fs,      empty_str,              OS_ShellCmdFsHandler,       0,    1,      OS_SHELL_OPT_UNDEF  },
     { cmd_fo,       cmd_help_brief_fo,      empty_str,              OS_ShellCmdFoHandler,       2,    2,      OS_SHELL_OPT_UNDEF  },
     { cmd_fc,       cmd_help_brief_fc,      empty_str,              OS_ShellCmdFcHandler,       0,    1,      OS_SHELL_OPT_UNDEF  },
@@ -554,3 +555,5 @@ Status OS_ShellCommandsFsInit(void)
     }
     return S_OK;
 }
+
+#endif //(OS_FILE_SYSTEM_ENABLED)

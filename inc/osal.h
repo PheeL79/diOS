@@ -30,10 +30,15 @@ typedef struct {
     OS_DriverHd         drv_stdin;
     OS_DriverHd         drv_stdout;
     OS_DriverHd         drv_rtc;
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
     OS_AudioVolume      volume;
-#endif // (1 == OS_AUDIO_ENABLED)
+#endif // (OS_AUDIO_ENABLED)
 } OS_Env;
+
+typedef struct {
+    void*       data_p;
+    U16         size;
+} OS_StorageItemLight;
 
 typedef struct {
     OS_MutexHd  mutex;
@@ -67,7 +72,7 @@ Status          OS_StorageItemOwnerAdd(OS_StorageItem* item_p);
 /// @brief      Lock storage item.
 /// @param[in]  item_p          Item.
 /// @return     #Status.
-Status          OS_StorageItemLock(OS_StorageItem* item_p, const TimeMs timeout);
+Status          OS_StorageItemLock(OS_StorageItem* item_p, const OS_TimeMs timeout);
 
 /// @brief      Unlock storage item.
 /// @param[in]  item_p          Item.

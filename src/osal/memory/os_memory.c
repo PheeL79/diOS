@@ -66,9 +66,8 @@ Status OS_MemoryInit(void)
 }
 
 /******************************************************************************/
-#pragma inline
 static OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type);
-OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type)
+INLINE OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type)
 {
 register OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];
 
@@ -81,7 +80,7 @@ register OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];
 }
 
 /******************************************************************************/
-void* OS_Malloc(const U32 size)
+void* OS_Malloc(const Size size)
 {
 static const OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS];
 void* p = OS_NULL;
@@ -103,7 +102,7 @@ void* p = OS_NULL;
 }
 
 /******************************************************************************/
-void* OS_MallocEx(const U32 size, const OS_MemoryType mem_type)
+void* OS_MallocEx(const Size size, const OS_MemoryType mem_type)
 {
 const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
 void* p = OS_NULL;
@@ -216,4 +215,21 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
     mem_stats_p->used = get_used_size((void*)mem_stats_p->desc.addr);
     mem_stats_p->free = mem_stats_p->desc.size - mem_stats_p->used;
     return S_OK;
+}
+
+//------------------------------------------------------------------------------
+/// @brief ISR specific functions.
+
+/******************************************************************************/
+void* OS_ISR_Malloc(const Size size)
+{
+static const OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS];
+void* p = OS_NULL;
+Status s = OS_ISR_MutexLock(os_mem_mutex);
+
+    if ((S_OK == s) || (1 == s)) {
+        p = malloc_ex(size, (void*)mem_desc_p->addr);
+        OS_ISR_MutexUnlock(os_mem_mutex);
+    }
+    return p;
 }

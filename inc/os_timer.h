@@ -39,7 +39,7 @@ typedef enum {
 typedef struct {
     ConstStrP       name_p;
     OS_QueueHd      slot;
-    TimeMs          period;
+    OS_TimeMs       period;
     OS_TimerId      id;
     OS_TimerOptions options;
 } OS_TimerConfig, OS_TimerStats;
@@ -55,38 +55,38 @@ Status          OS_TimerCreate(const OS_TimerConfig* cfg_p, OS_TimerHd* timer_hd
 /// @param[in]  timer_hd        Timer handle.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-Status          OS_TimerDelete(const OS_TimerHd timer_hd, const TimeMs timeout);
+Status          OS_TimerDelete(const OS_TimerHd timer_hd, const OS_TimeMs timeout);
 
 /// @brief      Reset the timer.
 /// @param[in]  timer_hd        Timer handle.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-Status          OS_TimerReset(const OS_TimerHd timer_hd, const TimeMs timeout);
+Status          OS_TimerReset(const OS_TimerHd timer_hd, const OS_TimeMs timeout);
 
 /// @brief      Start the timer.
 /// @param[in]  timer_hd        Timer handle.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-Status          OS_TimerStart(const OS_TimerHd timer_hd, const TimeMs timeout);
+Status          OS_TimerStart(const OS_TimerHd timer_hd, const OS_TimeMs timeout);
 
 /// @brief      Stop the timer.
 /// @param[in]  timer_hd        Timer handle.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-Status          OS_TimerStop(const OS_TimerHd timer_hd, const TimeMs timeout);
+Status          OS_TimerStop(const OS_TimerHd timer_hd, const OS_TimeMs timeout);
 
 /// @brief      Get the timer period.
 /// @param[in]  timer_hd        Timer handle.
 /// @param[out] period_p        Timer period.
 /// @return     #Status.
-Status          OS_TimerPeriodGet(const OS_TimerHd timer_hd, TimeMs* period_p);
+Status          OS_TimerPeriodGet(const OS_TimerHd timer_hd, OS_TimeMs* period_p);
 
 /// @brief      Set the timer period.
 /// @param[in]  timer_hd        Timer handle.
 /// @param[in]  new_period      Timer new period.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-Status          OS_TimerPeriodSet(const OS_TimerHd timer_hd, const TimeMs new_period, const TimeMs timeout);
+Status          OS_TimerPeriodSet(const OS_TimerHd timer_hd, const OS_TimeMs new_period, const OS_TimeMs timeout);
 
 /// @brief      Get the timer slot.
 /// @param[in]  timer_hd        Timer handle.
@@ -99,7 +99,7 @@ Status          OS_TimerPeriodSet(const OS_TimerHd timer_hd, const TimeMs new_pe
 /// @param[in]  new_slot        Timer new slot.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-//Status          OS_TimerSlotSet(const OS_TimerHd timer_hd, const OS_QueueHd new_slot, const TimeMs timeout);
+//Status          OS_TimerSlotSet(const OS_TimerHd timer_hd, const OS_QueueHd new_slot, const OS_TimeMs timeout);
 
 /// @brief      Check the timer is active.
 /// @param[in]  timer_hd        Timer handle.
@@ -161,7 +161,7 @@ Status          OS_ISR_TimerStop(const OS_TimerHd timer_hd);
 /// @param[in]  timer_hd        Timer handle.
 /// @param[in]  new_period      Timer new period.
 /// @return     #Status.
-Status          OS_ISR_TimerPeriodChange(const OS_TimerHd timer_hd, const TimeMs new_period);
+Status          OS_ISR_TimerPeriodChange(const OS_TimerHd timer_hd, const OS_TimeMs new_period);
 
 /**@}*/ //OS_ISR_Timer
 

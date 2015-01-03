@@ -43,7 +43,7 @@ void            OS_SemaphoreDelete(const OS_SemaphoreHd shd);
 /// @param[in]  shd             Semaphore handle.
 /// @param[in]  timeout         Semaphore locking timeout.
 /// @return     #Status.
-Status          OS_SemaphoreLock(const OS_SemaphoreHd shd, const TimeMs timeout);
+Status          OS_SemaphoreLock(const OS_SemaphoreHd shd, const OS_TimeMs timeout);
 
 /// @brief      Unlock the semaphore.
 /// @param[in]  shd             Semaphore handle.
@@ -54,7 +54,7 @@ Status          OS_SemaphoreUnlock(const OS_SemaphoreHd shd);
 /// @param[in]  shd             Semaphore handle.
 /// @param[in]  timeout         Semaphore locking timeout.
 /// @return     #Status.
-Status          OS_SemaphoreRecursiveLock(const OS_SemaphoreHd shd, const TimeMs timeout);
+Status          OS_SemaphoreRecursiveLock(const OS_SemaphoreHd shd, const OS_TimeMs timeout);
 
 /// @brief      Unlock the recursive semaphore.
 /// @param[in]  shd             Semaphore handle.

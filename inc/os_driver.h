@@ -84,7 +84,7 @@ Status          OS_DriverClose(const OS_DriverHd dhd, void* args_p);
 /// @param[in]  dhd            Driver's handle.
 /// @param[out] data_in_p      Data input buffer.
 /// @param[in]  size           Data input buffer size.
-/// @param[in]  args_p         Driver's specific input arguments (if presents).
+/// @param[in]  args_p         Driver's specific input arguments (if present).
 /// @return     #Status.
 Status          OS_DriverRead(const OS_DriverHd dhd, void* data_in_p, U32 size, void* args_p);
 
@@ -92,14 +92,14 @@ Status          OS_DriverRead(const OS_DriverHd dhd, void* data_in_p, U32 size, 
 /// @param[in]  dhd            Driver's handle.
 /// @param[in]  data_out_p     Data output buffer.
 /// @param[in]  size           Data output buffer size.
-/// @param[in]  args_p         Driver's specific input arguments (if presents).
+/// @param[in]  args_p         Driver's specific input arguments (if present).
 /// @return     #Status.
 Status          OS_DriverWrite(const OS_DriverHd dhd, void* data_out_p, U32 size, void* args_p);
 
 /// @brief      Input/Output control.
 /// @param[in]  dhd            Driver's handle.
 /// @param[in]  request_id     Driver's request code indentifier.
-/// @param[in]  args_p         Driver's specific input arguments (if presents).
+/// @param[in]  args_p         Driver's specific input arguments (if present).
 /// @return     #Status.
 Status          OS_DriverIoCtl(const OS_DriverHd dhd, const U32 request_id, void* args_p);
 
@@ -167,10 +167,26 @@ U16             OS_DriverOwnersCountGet(const OS_DriverHd dhd);
 * @{
 */
 //------------------------------------------------------------------------------
+/// @brief      Read data.
+/// @param[in]  dhd            Driver's handle.
+/// @param[out] data_in_p      Data input buffer.
+/// @param[in]  size           Data input buffer size.
+/// @param[in]  args_p         Driver's specific input arguments (if present).
+/// @return     #Status.
+Status          OS_ISR_DriverRead(const OS_DriverHd dhd, void* data_in_p, U32 size, void* args_p);
+
+/// @brief      Write data.
+/// @param[in]  dhd            Driver's handle.
+/// @param[in]  data_out_p     Data output buffer.
+/// @param[in]  size           Data output buffer size.
+/// @param[in]  args_p         Driver's specific input arguments (if present).
+/// @return     #Status.
+Status          OS_ISR_DriverWrite(const OS_DriverHd dhd, void* data_out_p, U32 size, void* args_p);
+
 /// @brief      Input/Output control.
 /// @param[in]  dhd            Driver's handle.
 /// @param[in]  request_id     Driver's request code indentifier.
-/// @param[in]  args_p         Driver's specific input arguments (if presents).
+/// @param[in]  args_p         Driver's specific input arguments (if present).
 /// @return     #Status.
 Status          OS_ISR_DriverIoCtl(const OS_DriverHd dhd, const U32 request_id, void* args_p);
 

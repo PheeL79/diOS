@@ -15,7 +15,7 @@
 static void SignalSend(const OS_TaskId src_tid, const Status status, const OS_SignalId signal_id);
 
 /******************************************************************************/
-OS_Message* OS_MessageCreate(const OS_MessageId id, const U16 size, const TimeMs timeout, const void* data_p)
+OS_Message* OS_MessageCreate(const OS_MessageId id, const U16 size, const OS_TimeMs timeout, const void* data_p)
 {
 OS_Message* msg_p = OS_Malloc(size + sizeof(OS_Message));
 
@@ -35,14 +35,15 @@ void OS_MessageDelete(OS_Message* msg_p)
 }
 
 /******************************************************************************/
-Status OS_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority)
+Status OS_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p,
+                      const OS_TimeMs timeout, const OS_MessagePrio priority)
 {
     return OS_QueueSend(qhd, &msg_p, timeout, priority);
 }
 
 /******************************************************************************/
-#pragma inline
-Status OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority)
+INLINE Status OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message* msg_p,
+                                      const OS_TimeMs timeout, const OS_MessagePrio priority)
 {
 OS_Message* msg_inst_p = OS_NULL;
 Status s = S_OK;
@@ -75,7 +76,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_MessageEmit(OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority)
+Status OS_MessageEmit(OS_Message* msg_p, const OS_TimeMs timeout, const OS_MessagePrio priority)
 {
 extern const OS_List* OS_TaskSlotsGet(const OS_TaskHd thd);
 const OS_List* slots_qhd_l_p = OS_TaskSlotsGet(OS_THIS_TASK);
@@ -83,7 +84,7 @@ const OS_List* slots_qhd_l_p = OS_TaskSlotsGet(OS_THIS_TASK);
 }
 
 /******************************************************************************/
-Status OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const TimeMs timeout)
+Status OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout)
 {
 extern Status OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state);
 Status s;
@@ -133,6 +134,20 @@ void SignalSend(const OS_TaskId src_tid, const Status status, const OS_SignalId 
 
 //------------------------------------------------------------------------------
 /// @brief ISR specific functions.
+
+/******************************************************************************/
+OS_Message* OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id, const U16 size, const void* data_p)
+{
+OS_Message* msg_p = OS_ISR_Malloc(size + sizeof(OS_Message));
+
+    if (msg_p) {
+        OS_MemCpy(msg_p->data, data_p, size);
+        msg_p->id   = id;
+        msg_p->size = size;
+        msg_p->src  = src;
+    }
+    return msg_p;
+}
 
 /******************************************************************************/
 Status OS_ISR_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p, const OS_MessagePrio priority)

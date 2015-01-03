@@ -7,15 +7,14 @@
 #include "os_common.h"
 #include "os_debug.h"
 
-#if (1 == USBH_ENABLED)
-#if (1 == USBH_HID_ENABLED)
+#if (USBH_ENABLED)
+#if (USBH_HID_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usb_hid"
 
 /******************************************************************************/
-#pragma inline
 static void MouseDataTranslate(const HID_MOUSE_Info_TypeDef* mouse_info_p, OS_UsbHidMouseData* mouse_data_p);
-void MouseDataTranslate(const HID_MOUSE_Info_TypeDef* mouse_info_p, OS_UsbHidMouseData* mouse_data_p)
+INLINE void MouseDataTranslate(const HID_MOUSE_Info_TypeDef* mouse_info_p, OS_UsbHidMouseData* mouse_data_p)
 {
     mouse_data_p->x = mouse_info_p->x;
     mouse_data_p->y = mouse_info_p->y;
@@ -25,9 +24,8 @@ void MouseDataTranslate(const HID_MOUSE_Info_TypeDef* mouse_info_p, OS_UsbHidMou
 }
 
 /******************************************************************************/
-#pragma inline
 static void KeyboardDataTranslate(HID_KEYBD_Info_TypeDef* keyboard_info_p, OS_UsbHidKeyboardData* keyboard_data_p);
-void KeyboardDataTranslate(HID_KEYBD_Info_TypeDef* keyboard_info_p, OS_UsbHidKeyboardData* keyboard_data_p)
+INLINE void KeyboardDataTranslate(HID_KEYBD_Info_TypeDef* keyboard_info_p, OS_UsbHidKeyboardData* keyboard_data_p)
 {
     keyboard_data_p->keys_func_bm  = BIT_SHIFT(BIT_TEST(keyboard_info_p->lctrl, 1), OS_USB_HID_KEY_LEFT_CTRL);
     keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lshift, 1),OS_USB_HID_KEY_LEFT_SHIFT);
@@ -72,5 +70,5 @@ OS_Message* msg_p;
     OS_ASSERT(S_OK == OS_MessageEmit(msg_p, OS_TIMEOUT_DRIVER, OS_MSG_PRIO_NORMAL));
 }
 
-#endif //(1 == USBH_HID_ENABLED)
-#endif //(1 == USBH_ENABLED)
+#endif // (USBH_HID_ENABLED)
+#endif // (USBH_ENABLED)

@@ -39,13 +39,13 @@ void            OS_MutexDelete(const OS_MutexHd mhd);
 /// @param[in]  mhd             Mutex handle.
 /// @param[in]  timeout         Mutex locking timeout.
 /// @return     #Status.
-Status          OS_MutexLock(const OS_MutexHd mhd, const TimeMs timeout);
+Status          OS_MutexLock(const OS_MutexHd mhd, const OS_TimeMs timeout);
 
 /// @brief      Recursive lock the mutex.
 /// @param[in]  mhd             Mutex handle.
 /// @param[in]  timeout         Mutex locking timeout.
 /// @return     #Status.
-Status          OS_MutexRecursiveLock(const OS_MutexHd mhd, const TimeMs timeout);
+Status          OS_MutexRecursiveLock(const OS_MutexHd mhd, const OS_TimeMs timeout);
 
 /// @brief      Unlock the mutex.
 /// @param[in]  mhd             Mutex handle.

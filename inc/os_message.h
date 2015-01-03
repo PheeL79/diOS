@@ -18,6 +18,8 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
+typedef OS_TaskHd OS_MessageSrc;
+
 enum {
     OS_MSG_UNDEF,
     OS_MSG_BROADCAST,
@@ -27,7 +29,7 @@ enum {
 typedef U16 OS_MessageId;
 
 typedef struct {
-    OS_TaskHd       src;
+    OS_MessageSrc   src;
     OS_MessageId    id;
     U16             size;
     U8              data[0];
@@ -40,7 +42,7 @@ typedef struct {
 /// @param[in]  timeout         Message creation timeout.
 /// @param[in]  data_p          Message data.
 /// @return     Message.
-OS_Message*     OS_MessageCreate(const OS_MessageId id, const U16 size, const TimeMs timeout, const void* data_p);
+OS_Message*     OS_MessageCreate(const OS_MessageId id, const U16 size, const OS_TimeMs timeout, const void* data_p);
 
 /// @brief      Delete the message.
 /// @param[in]  msg_p           Message.
@@ -52,7 +54,7 @@ void            OS_MessageDelete(OS_Message* msg_p);
 /// @param[in]  timeout         Message sending timeout.
 /// @param[in]  priority        Message sending priority.
 /// @return     #Status.
-Status          OS_MessageEmit(OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
+Status          OS_MessageEmit(OS_Message* msg_p, const OS_TimeMs timeout, const OS_MessagePrio priority);
 
 /// @brief      Send the message.
 /// @param[in]  qhd             Receiver (task) queue handle.
@@ -60,7 +62,7 @@ Status          OS_MessageEmit(OS_Message* msg_p, const TimeMs timeout, const OS
 /// @param[in]  timeout         Message sending timeout.
 /// @param[in]  priority        Message sending priority.
 /// @return     #Status.
-Status          OS_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
+Status          OS_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p, const OS_TimeMs timeout, const OS_MessagePrio priority);
 
 /// @brief      Send the multicast message.
 /// @param[in]  qhd_v           Vector of receiver (tasks) queue handles with trailling OS_NULL;
@@ -68,22 +70,29 @@ Status          OS_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p, co
 /// @param[in]  timeout         Message sending timeout.
 /// @param[in]  priority        Message sending priority.
 /// @return     #Status.
-Status          OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
+Status          OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message* msg_p, const OS_TimeMs timeout, const OS_MessagePrio priority);
 
-//Status          OS_MessageBroadcastSend(const OS_Message* msg_p, const TimeMs timeout, const OS_MessagePrio priority);
+//Status          OS_MessageBroadcastSend(const OS_Message* msg_p, const OS_TimeMs timeout, const OS_MessagePrio priority);
 
 /// @brief      Receive the message.
 /// @param[in]  qhd             Receiver (task) queue handle.
 /// @param[out] msg_pp          Message.
 /// @param[in]  timeout         Message receiving timeout.
 /// @return     #Status.
-Status          OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const TimeMs timeout);
+Status          OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout);
 
 /**
 * \addtogroup OS_ISR_Message ISR specific functions.
 * @{
 */
 //------------------------------------------------------------------------------
+/// @brief      Create a message.
+/// @param[in]  id              Message id.
+/// @param[in]  size            Message size.
+/// @param[in]  data_p          Message data.
+/// @return     Message.
+OS_Message*     OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id, const U16 size, const void* data_p);
+
 /// @brief      Send the message.
 /// @param[in]  qhd             Receiver (task) queue handle.
 /// @param[in]  msg_p           Message.

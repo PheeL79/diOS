@@ -52,13 +52,13 @@ typedef struct {
 /// @param[in]  size            Allocation size (in bytes).
 /// @return     Memory pointer.
 /// @details    Tries to allocate memory in first memory pool of config.
-void*           OS_Malloc(const U32 size);
+void*           OS_Malloc(const Size size);
 
 /// @brief      Allocate memory by type.
 /// @param[in]  size            Allocation size (in bytes).
 /// @param[in]  mem_type        Memory type.
 /// @return     Memory pointer.
-void*           OS_MallocEx(const U32 size, const OS_MemoryType mem_type);
+void*           OS_MallocEx(const Size size, const OS_MemoryType mem_type);
 
 /// @brief      Free allocated memory.
 /// @param[in]  addr_p          Memory address.
@@ -148,6 +148,19 @@ Status          OS_MemoryStatsGet(const OS_MemoryType mem_type, OS_MemoryStats* 
 /**@}*/ //OS_MPU_Memory
 
 #endif // USE_MPU
+
+/**
+* \addtogroup OS_ISR_Memory ISR specific functions.
+* @{
+*/
+//------------------------------------------------------------------------------
+/// @brief      Allocate memory.
+/// @param[in]  size            Allocation size (in bytes).
+/// @return     Memory pointer.
+/// @details    Tries to allocate memory in first memory pool of config.
+void*           OS_ISR_Malloc(const Size size);
+
+/**@}*/ //OS_ISR_Memory
 
 /**@}*/ //OS_Memory
 

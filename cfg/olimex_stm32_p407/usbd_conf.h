@@ -52,25 +52,25 @@
   * @{
   */
 
-#define USBD_MAX_NUM_INTERFACES               1
-#define USBD_MAX_NUM_CONFIGURATION            1
-#define USBD_MAX_STR_DESC_SIZ                 0x100
-#define USBD_SUPPORT_USER_STRING              0
-#define USBD_SELF_POWERED                     1
-#define USBD_DEBUG_LEVEL                      0
+#define USBD_MAX_NUM_INTERFACES             1
+#define USBD_MAX_NUM_CONFIGURATION          1
+#define USBD_MAX_STR_DESC_SIZ               0x100
+#define USBD_SUPPORT_USER_STRING            0
+#define USBD_SELF_POWERED                   1
+#define USBD_DEBUG_LEVEL                    0
 
 /* MSC Class Config */
-#define MSC_MEDIA_PACKET                       8192
+#define MSC_MEDIA_PACKET                    8192
 
 /* CDC Class Config */
-#define USBD_CDC_INTERVAL                      2000
+#define USBD_CDC_INTERVAL                   2000
 
  /* DFU Class Config */
-#define USBD_DFU_MAX_ITF_NUM                   1
-#define USBD_DFU_XFERS_IZE                     1024
+#define USBD_DFU_MAX_ITF_NUM                1
+#define USBD_DFU_XFERS_IZE                  1024
 
  /* AUDIO Class Config */
-#define USBD_AUDIO_FREQ                       22100
+#define USBD_AUDIO_FREQ                     OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT
 
 /** @defgroup USBD_Exported_Macros
   * @{

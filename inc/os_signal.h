@@ -10,10 +10,10 @@ extern "C" {
 #endif
 
 //------------------------------------------------------------------------------
-typedef OS_Message* OS_Signal;
-typedef U8          OS_SignalId;
-typedef OS_TaskId   OS_SignalSrc;
-typedef U16         OS_SignalData;
+typedef OS_Message*     OS_Signal;
+typedef U8              OS_SignalId;
+typedef OS_TaskId       OS_SignalSrc;
+typedef U16             OS_SignalData;
 
 #define OS_SIGNAL_TOKEN_BM      BIT(BIT_SIZE(OS_Signal) - 1)
 #define OS_SIGNAL_ID_BM         BIT_MASK(BIT_SIZE(OS_SignalId) - 1)

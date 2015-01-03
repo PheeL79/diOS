@@ -28,6 +28,32 @@
 #   define OS_TRUE                  true
 #endif
 
+// inline
+#if defined(_MSC_VER)
+#   define INLINE
+#elif defined(__GNUC__)
+#   define INLINE                   __inline
+#elif defined(__ICCARM__)
+#   define INLINE                   inline
+#   define __inline                 INLINE
+#   define INLINE_PRAGMA            #pragma inline
+#   define INLINE_PRAGMA_FORCED     #pragma inline=forced
+#endif
+
+#if defined   (__GNUC__)            /* GNU Compiler */
+#   define ALIGN_END                __attribute__ ((aligned (4)))
+#   define ALIGN_BEGIN
+#else
+#   define ALIGN_END
+#   if defined   (__CC_ARM)         /* ARM Compiler */
+#        define ALIGN_BEGIN         __align(4)
+#    elif defined (__ICCARM__)      /* IAR Compiler */
+#        define ALIGN_BEGIN
+#    elif defined  (__TASKING__)    /* TASKING Compiler */
+#        define ALIGN_BEGIN         __align(4)
+#    endif /* __CC_ARM */
+#endif /* __GNUC__ */
+
 #define CONCAT(a, b)                a ## b
 #define IS_OVERFLOW(x, y, t)        ((t)CONCAT(t, _MIN) < 0 ? IS_OVERFLOW_S(x, y, t) : IS_OVERFLOW_U(x, y, t))
 #define IS_OVERFLOW_S(x, y, t)      (((t)(y) > 0 && (t)(x) > CONCAT(t, _MAX) - (t)(y)) || ((t)(y) < 0 && (t)(x) < CONCAT(t, _MIN) - (t)(y)))

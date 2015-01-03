@@ -66,6 +66,7 @@ OS_LogLevel     OS_LogLevelGet(void);
 /// @return     #Status.
 Status          OS_LogLevelSet(ConstStrP log_level_p);
 
+#if (OS_AUDIO_ENABLED)
 /// @brief      Get current audio device volume.
 /// @return     Volume.
 OS_AudioVolume  OS_VolumeGet(void);
@@ -74,6 +75,7 @@ OS_AudioVolume  OS_VolumeGet(void);
 /// @param[in]  volume_p        Volume.
 /// @return     #Status.
 Status          OS_VolumeSet(ConstStrP volume_p);
+#endif //(OS_AUDIO_ENABLED)
 
 /**
 * \addtogroup OS_EnvironmentUser Environment variables user access functions.

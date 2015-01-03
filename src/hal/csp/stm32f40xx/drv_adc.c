@@ -57,6 +57,7 @@ U16 buf_sum = 0;
     return (buf_sum >> 4);
 }
 
+#if (OS_AUDIO_ENABLED)
 /*****************************************************************************/
 /**
   * @brief  Conversion complete callback in non blocking mode
@@ -83,3 +84,4 @@ extern OS_QueueHd trimmer_stdin_qhd;
         }
     }
 }
+#endif //(OS_AUDIO_ENABLED)

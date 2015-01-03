@@ -13,7 +13,7 @@
 #include "os_time.h"
 #include "os_file_system.h"
 
-#if (1 == OS_FILE_SYSTEM_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "file_system"
 #undef  MDL_STATUS_ITEMS
@@ -71,9 +71,8 @@ const StatusItem status_fs_v[] = {
 };
 
 /******************************************************************************/
-#pragma inline
 static OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd);
-OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd)
+INLINE OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_FileSystemMediaHd fs_media_hd)
 {
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     const OS_ListItem* item_l_p = (OS_ListItem*)fs_media_hd;
@@ -268,7 +267,7 @@ OS_DriverHd OS_FileSystemMediaDriverGet(const OS_FileSystemMediaHd fs_media_hd)
     return cfg_dyn_p->dhd;
 }
 
-#if (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
+#if (OS_FILE_SYSTEM_MAKE_ENABLED)
 /******************************************************************************/
 Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSystemPartitionRule part_rule, const Size size)
 {
@@ -280,7 +279,7 @@ const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return FResultTranslate(f_mkfs((const char*)cfg_dyn_p->volume, fpart_rule, size));
 }
-#endif // (1 == OS_FILE_SYSTEM_MAKE_ENABLED)
+#endif // (OS_FILE_SYSTEM_MAKE_ENABLED)
 
 /******************************************************************************/
 Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
@@ -836,4 +835,4 @@ Status VolumeCheck(const S8 volume)
     return S_OK;
 }
 
-#endif // (1 == OS_FILE_SYSTEM_ENABLED)
+#endif // (OS_FILE_SYSTEM_ENABLED)

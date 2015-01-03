@@ -11,7 +11,7 @@
 #include "os_mutex.h"
 #include "os_driver.h"
 
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
 /**
 * \defgroup OS_Audio OS_Audio
 * @{
@@ -38,6 +38,16 @@ enum {
     OS_SIG_AUDIO_TX_COMPLETE_HALF,
     OS_SIG_AUDIO_ERROR,
     OS_SIG_AUDIO_LAST
+};
+
+enum {
+    OS_MSG_AUDIO_PLAY = OS_MSG_APP,
+    OS_MSG_AUDIO_STOP,
+    OS_MSG_AUDIO_PAUSE,
+    OS_MSG_AUDIO_RESUME,
+    OS_MSG_AUDIO_MUTE_SET,
+    OS_MSG_AUDIO_VOLUME_SET,
+    OS_MSG_AUDIO_LAST
 };
 
 enum {
@@ -96,7 +106,7 @@ typedef struct {
 typedef struct {
     const OS_AudioDeviceCapsInput*  input_p;
     const OS_AudioDeviceCapsOutput* output_p;
-//    Bool                            is_single;
+//    Bool                            is_shared;
 } OS_AudioDeviceCaps;
 
 typedef struct {
@@ -116,13 +126,15 @@ typedef struct {
 } OS_AudioDeviceIoSetupArgs;
 
 typedef struct {
-    OS_QueueHd  slot_qhd;
-    OS_SignalId signal_id;
+    OS_TaskStorage* tstor_p;
+    OS_QueueHd      slot_qhd;
+    OS_SignalId     signal_id;
 } OS_AudioDeviceCallbackArgs;
 
 typedef void (*OS_ISR_AudioDeviceCallback)(OS_AudioDeviceCallbackArgs* args_p);
 
 typedef struct {
+    OS_TaskStorage*             tstor_p;
     OS_QueueHd                  slot_qhd;
     OS_ISR_AudioDeviceCallback  isr_callback_func;
 } OS_AudioDeviceArgsOpen;
@@ -265,6 +277,6 @@ Status          OS_AudioSeek(const OS_AudioDeviceHd dev_hd, const Size offset);
 
 /**@}*/ //OS_Audio
 
-#endif // (1 == OS_AUDIO_ENABLED)
+#endif // (OS_AUDIO_ENABLED)
 
 #endif // _OS_AUDIO_H_

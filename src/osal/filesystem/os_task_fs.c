@@ -1,5 +1,5 @@
 /***************************************************************************//**
-* @file    task_fs.c
+* @file    os_task_fs.c
 * @brief   File system daemon task.
 * @author  A. Filyanov
 *******************************************************************************/
@@ -13,9 +13,9 @@
 #include "os_task_fs.h"
 #include "os_task_usb.h"
 
-#if (1 == OS_FILE_SYSTEM_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "task_fs_d"
+#define MDL_NAME            "filesystem_d"
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -40,6 +40,7 @@ const OS_TaskConfig task_fs_cfg = {
     .name           = OS_DAEMON_NAME_FS,
     .func_main      = OS_TaskMain,
     .func_power     = OS_TaskPower,
+    .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 3,
     .prio_init      = OS_TASK_PRIO_FS,
@@ -126,13 +127,13 @@ Status s = S_OK;
     }
 #endif //defined(OS_MEDIA_VOL_USBH_HS)
 
-#if (1 == USBH_ENABLED) || (1 == USBD_ENABLED)
+#if (USBH_ENABLED) || (USBD_ENABLED)
     const OS_TaskHd usb_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USB);
     const OS_SignalSrc usb_tid = OS_TaskIdGet(usb_thd);
 
     OS_ASSERT(S_OK == OS_TasksConnect(OS_THIS_TASK, usb_thd));
     OS_SignalEmit(OS_SignalCreate(OS_SIG_FSD_READY, 0), OS_MSG_PRIO_NORMAL);
-#endif //(1 == USBH_ENABLED) || (1 == USBD_ENABLED)
+#endif //(USBH_ENABLED) || (USBD_ENABLED)
     return s;
 }
 
@@ -284,4 +285,4 @@ error:
     return s;
 }
 
-#endif //(1 == OS_FILE_SYSTEM_ENABLED)
+#endif //(OS_FILE_SYSTEM_ENABLED)

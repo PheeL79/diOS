@@ -77,6 +77,7 @@ typedef struct {
     ConstStr            name[OS_TASK_NAME_LEN];
     void                (*func_main)(OS_TaskArgs*);
     Status              (*func_power)(OS_TaskArgs*, const OS_PowerState);
+    void*               args_p;
     OS_TaskAttrs        attrs;
     OS_TaskPrio         prio_init;
     OS_PowerPrio        prio_power;
@@ -120,13 +121,13 @@ Status          OS_TaskDelete(const OS_TaskHd thd);
 /// @brief      Delay the task.
 /// @param[in]  timeout         Delay timeout.
 /// @return     None.
-void            OS_TaskDelay(const TimeMs timeout);
+void            OS_TaskDelay(const OS_TimeMs timeout);
 
 /// @brief      Delay the task until.
 /// @param[in]  tick_last_p     Last time task unblocked system ticks.
 /// @param[in]  timeout         Delay timeout.
 /// @return     None.
-void            OS_TaskDelayUntil(OS_Tick* tick_last_p, const TimeMs timeout);
+void            OS_TaskDelayUntil(OS_Tick* tick_last_p, const OS_TimeMs timeout);
 
 /// @brief      Suspend the task.
 /// @param[in]  thd             Task handle.

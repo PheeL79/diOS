@@ -10,7 +10,7 @@
 #include "os_list.h"
 #include "os_event.h"
 
-#if (1 == OS_EVENTS_ENABLED)
+#if (OS_EVENTS_ENABLED)
 //------------------------------------------------------------------------------
 typedef struct {
     OS_TimerHd      timer_hd;
@@ -25,9 +25,8 @@ static OS_MutexHd os_event_mutex;
 static U32 events_count = 0;
 
 /******************************************************************************/
-#pragma inline
 static OS_EventConfigDyn* OS_EventConfigDynGet(const OS_EventHd ehd);
-OS_EventConfigDyn* OS_EventConfigDynGet(const OS_EventHd ehd)
+INLINE OS_EventConfigDyn* OS_EventConfigDynGet(const OS_EventHd ehd)
 {
 const OS_ListItem* item_l_p = (OS_ListItem*)ehd;
 OS_EventConfigDyn* cfg_dyn_p = (OS_EventConfigDyn*)OS_ListItemValueGet(item_l_p);
@@ -286,4 +285,4 @@ OS_ListItem* iter_li_p = (OS_ListItem*)ehd;
     return (OS_EventHd)iter_li_p;
 }
 
-#endif //(1 == OS_EVENTS_ENABLED)
+#endif // (OS_EVENTS_ENABLED)

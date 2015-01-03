@@ -6,6 +6,7 @@
 #include "hal.h"
 #include "drv_audio_bsp.h"
 
+#if (OS_AUDIO_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_audio_bsp"
 
@@ -25,3 +26,5 @@ extern HAL_DriverItf drv_audio_cs4344;
     drv_audio_v[DRV_ID_AUDIO_CS4344]    = &drv_audio_cs4344;
     return S_OK;
 }
+
+#endif //(OS_AUDIO_ENABLED)

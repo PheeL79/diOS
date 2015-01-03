@@ -73,7 +73,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_TIMERS_STACK_SIZE        (OS_STACK_SIZE_MIN * 2)
 
 // Events
-#define OS_EVENTS_ENABLED           OS_TIMERS_ENABLED
+#define OS_EVENTS_ENABLED           0
 
 // Names length
 #define OS_DRIVER_NAME_LEN          9
@@ -88,7 +88,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 
 //File system
 //Look in ffconf.h for details
-#define OS_FILE_SYSTEM_ENABLED              1
+#define OS_FILE_SYSTEM_ENABLED              0
 #define OS_FILE_SYSTEM_MAKE_ENABLED         1
 #define OS_FILE_SYSTEM_TINY                 0
 #define OS_FILE_SYSTEM_READONLY             0
@@ -128,11 +128,11 @@ enum {
 //#define OS_MEDIA_VOL_SDRAM_SIZE     0x70000
 //#define OS_MEDIA_VOL_SDRAM_BLOCK_SIZE OS_FILE_SYSTEM_SECTOR_SIZE_MIN
 
-        OS_MEDIA_VOL_SDCARD,
-#define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
-
-        OS_MEDIA_VOL_USBH_FS,
-#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
+//        OS_MEDIA_VOL_SDCARD,
+//#define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
+//
+//        OS_MEDIA_VOL_USBH_FS,
+//#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
 
 //        OS_MEDIA_VOL_USBH_HS,
 //#define OS_MEDIA_VOL_USBH_HS        OS_MEDIA_VOL_USBH_HS
@@ -141,11 +141,12 @@ enum {
 };
 
 //Audio
-#define OS_AUDIO_ENABLED                    1
+#define OS_AUDIO_ENABLED                    0
 #define OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT    44100
 #define OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT    16
 #define OS_AUDIO_OUT_CHANNELS_DEFAULT       (OS_AUDIO_CHANNELS_STEREO)
 #define OS_AUDIO_OUT_VOLUME_DEFAULT         (OS_AUDIO_VOLUME_MAX / 2)
+#define OS_AUDIO_OUT_DMA_MODE_DEFAULT       OS_AUDIO_DMA_MODE_NORMAL
 
 enum {
         OS_AUDIO_DEV_CS4344,

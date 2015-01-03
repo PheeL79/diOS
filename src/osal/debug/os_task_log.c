@@ -1,9 +1,10 @@
 /***************************************************************************//**
-* @file    task_shell.c
-* @brief   Shell task definitions.
+* @file    task_log.c
+* @brief   Log\trace\dump task definitions.
 * @author  A. Filyanov
 *******************************************************************************/
 #include <stdlib.h>
+#include <string.h>
 #include "os_environment.h"
 #include "os_driver.h"
 #include "os_shell.h"
@@ -11,15 +12,9 @@
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#if (1 == USBH_ENABLED)
-#if (1 == USBH_HID_ENABLED)
-#include "drv_usb.h"
-#include "os_task_usbd.h"
-#endif //(1 == USBH_HID_ENABLED)
-#endif //(1 == USBH_ENABLED)
 
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "task_shell"
+#define MDL_NAME            "task_log"
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -27,17 +22,18 @@
 //} TaskStorage;
 
 //------------------------------------------------------------------------------
-const OS_TaskConfig task_shell_cfg = {
-    .name           = "Shell",
+const OS_TaskConfig task_log_cfg = {
+    .name           = "Log",
     .func_main      = OS_TaskMain,
     .func_power     = OS_TaskPower,
+    .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 10,
-    .prio_init      = OS_TASK_PRIO_SHELL,
-    .prio_power     = OS_TASK_PRIO_PWR_SHELL,
+    .prio_init      = OS_TASK_PRIO_LOG,
+    .prio_power     = OS_TASK_PRIO_PWR_LOG,
     .storage_size   = 0,//sizeof(TaskStorage),
-    .stack_size     = OS_STACK_SIZE_MIN,
-    .stdin_len      = 1,
+    .stack_size     = OS_STACK_SIZE_MIN + OS_SHELL_HEIGHT,
+    .stdin_len      = 16,
 };
 
 /******************************************************************************/
@@ -51,33 +47,25 @@ Status s = S_OK;
 /******************************************************************************/
 void OS_TaskMain(OS_TaskArgs* args_p)
 {
-extern volatile OS_QueueHd stdin_qhd;
-const OS_DriverHd drv_shell = OS_DriverStdInGet();
+extern volatile OS_QueueHd stdout_qhd;
+ConstStrP shell_prompt_p  = OS_ShellPromptGet();
+const U8 shell_prompt_len = OS_StrLen((char const*)shell_prompt_p);
+const OS_DriverHd drv_log = OS_DriverStdOutGet();
 OS_Message* msg_p;
+Bool is_prompted = OS_FALSE;
     OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
-#if (1 == USBH_ENABLED)
-#if (1 == USBH_HID_ENABLED)
-const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
-    OS_ASSERT(S_OK == OS_TasksConnect(usbd_thd, OS_THIS_TASK));
-#endif //(1 == USBH_HID_ENABLED)
-#endif //(1 == USBH_ENABLED)
-    //Init stdin_qhd before all other tasks and return to the base priority.
-    stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
+    //Init stdout_qhd before all other tasks and return to the base priority.
+    stdout_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
-        IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
+        IF_STATUS(OS_MessageReceive(stdout_qhd, &msg_p, OS_BLOCK)) {
             OS_LOG_S(D_WARNING, S_UNDEF_MSG);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
-                    case OS_SIG_STDIN:
-                        // get char from STDIO driver.
-                        OS_ShellClHandler((U8)OS_SignalDataGet(msg_p));
+                    case OS_SIG_STDOUT:
+                        is_prompted = OS_FALSE;
                         break;
                     case OS_SIG_PWR_ACK:
-                        break;
-                    case OS_SIG_DRV:
-                        break;
-                    case OS_SIG_TASK_DISCONNECT:
                         break;
                     default:
                         OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
@@ -85,28 +73,18 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                 }
             } else {
                 switch (msg_p->id) {
-#if (1 == USBH_ENABLED)
-#if (1 == USBH_HID_ENABLED)
-                    case OS_MSG_USB_HID_MOUSE:
-                        OS_LOG(D_DEBUG, "mouse event");
-                        break;
-                    case OS_MSG_USB_HID_KEYBOARD: {
-                        const OS_UsbHidKeyboardData* keyboard_data_p = (OS_UsbHidKeyboardData*)&(msg_p->data);
-                        if ('\0' != keyboard_data_p->key_ascii) {
-                            OS_ShellClHandler(keyboard_data_p->key_ascii);
-                            if (!OS_StrCmp(OS_EnvVariableGet("echo"), "on")) {
-                                OS_TRACE(D_INFO, "%c", keyboard_data_p->key_ascii);
-                            }
-                        }
-                        }
-                        break;
-#endif //(1 == USBH_HID_ENABLED)
-#endif //(1 == USBH_ENABLED)
                     default:
                         OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
+            }
+        }
+        if (OS_TRUE != is_prompted) {
+            //If there are no more messages in the input queue - print a shell prompt.
+            if (0 == OS_QueueItemsCountGet(stdout_qhd) && (OS_TRUE != is_prompted)) {
+                OS_DriverWrite(drv_log, (void*)shell_prompt_p, shell_prompt_len, OS_NULL);
+                is_prompted = OS_TRUE;
             }
         }
     }

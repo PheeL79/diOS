@@ -22,7 +22,9 @@ DSTATUS disk_initialize (
     BYTE pdrv				/* Physical drive nmuber (0..) */
 )
 {
+#if (OS_FILE_SYSTEM_ENABLED)
     IF_OK(OS_FileSystemMediaInit(OS_FileSystemMediaByVolumeGet(pdrv), OS_NULL)) { return 0; }
+#endif //(OS_FILE_SYSTEM_ENABLED)
     return STA_NOINIT;
 }
 

@@ -26,7 +26,7 @@ void OS_SemaphoreDelete(const OS_SemaphoreHd shd)
 }
 
 /******************************************************************************/
-Status OS_SemaphoreLock(const OS_SemaphoreHd shd, const TimeMs timeout)
+Status OS_SemaphoreLock(const OS_SemaphoreHd shd, const OS_TimeMs timeout)
 {
     if (pdTRUE != xSemaphoreTake(shd, OS_MS_TO_TICKS(timeout))) {
         return S_TIMEOUT;
@@ -35,7 +35,7 @@ Status OS_SemaphoreLock(const OS_SemaphoreHd shd, const TimeMs timeout)
 }
 
 /******************************************************************************/
-Status OS_SemaphoreRecursiveLock(const OS_SemaphoreHd shd, const TimeMs timeout)
+Status OS_SemaphoreRecursiveLock(const OS_SemaphoreHd shd, const OS_TimeMs timeout)
 {
     if (pdTRUE != xSemaphoreTakeRecursive(shd, OS_MS_TO_TICKS(timeout))) {
         return S_TIMEOUT;

@@ -315,7 +315,7 @@ OS_DriverHd dhd = OS_NULL;
 }
 
 /******************************************************************************/
-#if (1 == OS_TIMERS_ENABLED)
+#if (OS_TIMERS_ENABLED)
 static void OS_ShellCmdStHandlerTimHelper(void);
 void OS_ShellCmdStHandlerTimHelper(void)
 {
@@ -336,10 +336,10 @@ OS_TimerHd timer_hd = OS_NULL;
                OS_TaskIdGet(tim_stats.slot));
     }
 }
-#endif //(1 == OS_TIMERS_ENABLED)
+#endif //(OS_TIMERS_ENABLED)
 
 /******************************************************************************/
-#if (1 == OS_EVENTS_ENABLED)
+#if (OS_EVENTS_ENABLED)
 static void OS_ShellCmdStHandlerEvHelper(void);
 void OS_ShellCmdStHandlerEvHelper(void)
 {
@@ -365,7 +365,7 @@ OS_EventHd ehd = OS_NULL;
                event_stats.item_p);
     }
 }
-#endif //(1 == OS_EVENTS_ENABLED)
+#endif //(OS_EVENTS_ENABLED)
 
 /******************************************************************************/
 static Status OS_ShellCmdStHandler(const U32 argc, ConstStrP argv[]);
@@ -380,12 +380,12 @@ CommandHandler cmd_handlers_v[] = {
     { "tsk", OS_ShellCmdStHandlerTskHelper }, //tasks
     { "que", OS_ShellCmdStHandlerQueHelper }, //queues
     { "drv", OS_ShellCmdStHandlerDrvHelper }, //drivers
-#if (1 == OS_TIMERS_ENABLED)
+#if (OS_TIMERS_ENABLED)
     { "tim", OS_ShellCmdStHandlerTimHelper }, //timers
-#endif //(1 == OS_TIMERS_ENABLED)
-#if (1 == OS_EVENTS_ENABLED)
+#endif //(OS_TIMERS_ENABLED)
+#if (OS_EVENTS_ENABLED)
     { "ev",  OS_ShellCmdStHandlerEvHelper  }, //events
-#endif //(1 == OS_EVENTS_ENABLED)
+#endif //(OS_EVENTS_ENABLED)
 //    { "fs",  OS_ShellCmdStHandlerFsHelper  }, //file system
 //    { "net", OS_ShellCmdStHandlerNetHelper }, //network itf
     { OS_NULL }

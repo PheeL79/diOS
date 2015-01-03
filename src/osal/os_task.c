@@ -54,9 +54,8 @@ static volatile OS_TaskId id_curr;
 //static volatile OS_TaskId tasks_count;
 
 /******************************************************************************/
-#pragma inline
 static TaskHandle_t OS_TaskHandleGet(const OS_TaskHd thd);
-TaskHandle_t OS_TaskHandleGet(const OS_TaskHd thd)
+INLINE TaskHandle_t OS_TaskHandleGet(const OS_TaskHd thd)
 {
     if ((OS_TaskHd)(~0UL) == thd) { return OS_NULL; }
     const OS_ListItem* item_l_p = (OS_ListItem*)((OS_THIS_TASK == thd) ? OS_TaskGet() : thd);
@@ -77,9 +76,8 @@ OS_ListItem* iter_li_p;
 }
 
 /******************************************************************************/
-#pragma inline
 static OS_TaskConfigDyn* OS_TaskConfigDynGet(const OS_TaskHd thd);
-OS_TaskConfigDyn* OS_TaskConfigDynGet(const OS_TaskHd thd)
+INLINE OS_TaskConfigDyn* OS_TaskConfigDynGet(const OS_TaskHd thd)
 {
     if ((OS_TaskHd)(~0UL) == thd) { return OS_NULL; }
     const OS_ListItem* item_l_p = (OS_ListItem*)((OS_THIS_TASK == thd) ? OS_TaskGet() : thd);
@@ -88,7 +86,7 @@ OS_TaskConfigDyn* OS_TaskConfigDynGet(const OS_TaskHd thd)
 }
 
 /******************************************************************************/
-//#pragma inline
+//INLINE
 const OS_TaskConfig* OS_TaskConfigGet(const OS_TaskHd thd)
 {
 OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
@@ -173,7 +171,7 @@ Status s = S_UNDEF;
     // Creating StdIo task queues.
     IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdin_qhd))  { goto error; }
     cfg_dyn_p->cfg_p        = cfg_p;
-    cfg_dyn_p->args.args_p  = args_p;
+    cfg_dyn_p->args.args_p  = (OS_NULL != args_p) ? args_p : cfg_p->args_p;
     cfg_dyn_p->id           = id_curr;
     cfg_dyn_p->parent       = OS_TaskGet();
     cfg_dyn_p->slots_l_p    = OS_NULL;
@@ -288,13 +286,13 @@ error:
 }
 
 /******************************************************************************/
-void OS_TaskDelay(const TimeMs timeout)
+void OS_TaskDelay(const OS_TimeMs timeout)
 {
     vTaskDelay(OS_MS_TO_TICKS(timeout));
 }
 
 /******************************************************************************/
-void OS_TaskDelayUntil(OS_Tick* tick_last_p, const TimeMs timeout)
+void OS_TaskDelayUntil(OS_Tick* tick_last_p, const OS_TimeMs timeout)
 {
     vTaskDelayUntil(tick_last_p, OS_MS_TO_TICKS(timeout));
 }
@@ -314,9 +312,8 @@ const TaskHandle_t task_hd = OS_TaskHandleGet(thd);
 }
 
 /******************************************************************************/
-#pragma inline
 OS_TaskHd OS_TaskByHandleGet(const TaskHandle_t task_hd);
-OS_TaskHd OS_TaskByHandleGet(const TaskHandle_t task_hd)
+INLINE OS_TaskHd OS_TaskByHandleGet(const TaskHandle_t task_hd)
 {
     return ((OS_TaskHd)xTaskGetApplicationTaskTag(task_hd));
 }
@@ -360,7 +357,7 @@ exit:
 ConstStrP OS_TaskNameGet(const OS_TaskHd thd)
 {
 const TaskHandle_t task_hd = OS_TaskHandleGet(thd);
-    if (OS_NULL == task_hd) { return OS_NULL; }
+    if (OS_NULL == task_hd) { return ""; }
     return pcTaskGetTaskName(task_hd);
 }
 
@@ -373,11 +370,11 @@ U32 OS_TasksCountGet(void)
 /******************************************************************************/
 U32 OS_TasksStatsGet(OS_TaskStats* stats_p, const U32 stats_count, U32* uptime_p)
 {
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
     return (U32)uxTaskGetSystemState(stats_p, stats_count, uptime_p);
 #else
     return 0;
-#endif // OS_STATS_ENABLED
+#endif // (OS_STATS_ENABLED)
 }
 
 /******************************************************************************/
@@ -410,12 +407,12 @@ OS_TaskState state = OS_TASK_STATE_UNDEF;
 /******************************************************************************/
 OS_TaskState OS_TaskStateGet(const OS_TaskHd thd)
 {
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
 const TaskHandle_t task_hd = OS_TaskHandleGet(thd);
 const eTaskState e_state = eTaskGetState(task_hd);
 #else
 const eTaskState e_state = eDeleted + 1;
-#endif // OS_STATS_ENABLED
+#endif // (OS_STATS_ENABLED)
     return OS_TaskStateTranslate(e_state);
 }
 

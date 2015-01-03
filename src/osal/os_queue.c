@@ -16,9 +16,9 @@
 typedef struct {
     OS_TaskHd       parent_thd;
     OS_QueueConfig  cfg;
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
     OS_QueueStats   stats;
-#endif // OS_STATS_ENABLED
+#endif // (OS_STATS_ENABLED)
 } OS_QueueConfigDyn;
 
 //------------------------------------------------------------------------------
@@ -55,10 +55,10 @@ Status s = S_OK;
     cfg_dyn_p->parent_thd           = parent_thd;
     cfg_dyn_p->cfg.len              = cfg_p->len;
     cfg_dyn_p->cfg.item_size        = cfg_p->item_size;
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
     cfg_dyn_p->stats.received       = 0;
     cfg_dyn_p->stats.sended         = 0;
-#endif // OS_STATS_ENABLED
+#endif // (OS_STATS_ENABLED)
     OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
     OS_ListItemOwnerSet(item_l_p, (OS_Owner)queue_hd);
     IF_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
@@ -93,7 +93,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const TimeMs timeout)
+Status OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const OS_TimeMs timeout)
 {
 const OS_Tick ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
 
@@ -103,14 +103,14 @@ const OS_Tick ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? time
     if (pdTRUE != xQueueReceive(queue_hd, item_p, ticks)) {
         return S_MODULE;
     }
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
     cfg_dyn_p->stats.received++;
-#endif //(1 == OS_STATS_ENABLED)
+#endif // (OS_STATS_ENABLED)
     return S_OK;
 }
 
 /******************************************************************************/
-Status OS_QueueSend(const OS_QueueHd qhd, const void* item_p, const TimeMs timeout, const OS_MessagePrio priority)
+Status OS_QueueSend(const OS_QueueHd qhd, const void* item_p, const OS_TimeMs timeout, const OS_MessagePrio priority)
 {
 const OS_Tick ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
 OS_Status os_s;
@@ -136,9 +136,9 @@ Status s = S_OK;
             }
 //            OS_LOG_S(D_WARNING, s);
         }
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
         cfg_dyn_p->stats.sended++;
-#endif //(1 == OS_STATS_ENABLED)
+#endif //(OS_STATS_ENABLED)
     } else {
         s = S_UNDEF_QUEUE;
 //        OS_LOG_S(D_WARNING, s);
@@ -184,11 +184,11 @@ Status OS_QueueStatsGet(const OS_QueueHd qhd, OS_QueueStats* stats_p)
 {
 Status s = S_UNDEF;
     if ((OS_NULL == qhd) || (OS_NULL == stats_p)) { return S_INVALID_REF; }
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
     OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_ListItemValueGet((OS_ListItem*)qhd);
     OS_MemCpy(stats_p, &cfg_dyn_p->stats, sizeof(cfg_dyn_p->stats));
     s = S_OK;
-#endif //(1 == OS_STATS_ENABLED)
+#endif //(OS_STATS_ENABLED)
     return s;
 }
 
@@ -241,9 +241,9 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     if (pdTRUE != xQueueReceiveFromISR(queue_hd, item_p, &xHigherPriorityTaskWoken)) {
         return S_MODULE;
     }
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
     cfg_dyn_p->stats.received++;
-#endif //(1 == OS_STATS_ENABLED)
+#endif //(OS_STATS_ENABLED)
     if (xHigherPriorityTaskWoken) {
         return 1;
     }
@@ -276,9 +276,9 @@ Status s = S_OK;
                 s = S_MODULE;
             }
         } else {
-#if (1 == OS_STATS_ENABLED)
+#if (OS_STATS_ENABLED)
             cfg_dyn_p->stats.sended++;
-#endif //(1 == OS_STATS_ENABLED)
+#endif //(OS_STATS_ENABLED)
             if (xHigherPriorityTaskWoken) {
                 s = 1;
             }

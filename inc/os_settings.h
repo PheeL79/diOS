@@ -17,9 +17,9 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
-#if (1 == OS_SETTINGS_BROWSE_ENABLED)
+#if (OS_SETTINGS_BROWSE_ENABLED)
 typedef Status (*OS_SettingsCallback)(ConstStrP section_p, ConstStrP key_p, ConstStrP value_p, const void* args_p);
-#endif // OS_SETTINGS_BROWSE_ENABLED
+#endif // (OS_SETTINGS_BROWSE_ENABLED)
 
 typedef enum {
     S_SETT_UNDEF = S_MODULE,
@@ -76,9 +76,9 @@ Status          OS_SettingsItemsRead(ConstStrP file_path_p, OS_SettingsItem item
 /// @return     #Status.
 Status          OS_SettingsItemsWrite(ConstStrP file_path_p, OS_SettingsItem items[]);
 
-#if (1 == OS_SETTINGS_BROWSE_ENABLED)
+#if (OS_SETTINGS_BROWSE_ENABLED)
 //Status OS_SettingsBrowse(OS_SettingsCallback callback_func_p, );
-#endif // OS_SETTINGS_BROWSE_ENABLED
+#endif // (OS_SETTINGS_BROWSE_ENABLED)
 
 /**@}*/ //OS_Settings
 

@@ -4,16 +4,6 @@
 #include <limits.h>
 
 //------------------------------------------------------------------------------
-// inline
-#if defined(_MSC_VER)
-#   define INLINE
-#elif defined(__GNUC__)
-#   define INLINE                       __inline
-#elif defined(__ICCARM__)
-#   define INLINE                       inline
-#   define __inline                     INLINE
-#endif
-
 #define QUOTED(a)                       #a
 
 // packed structs

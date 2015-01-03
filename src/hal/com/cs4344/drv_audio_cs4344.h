@@ -9,6 +9,7 @@
 #include "drv_audio.h"
 #include "os_audio.h"
 
+#if (OS_AUDIO_ENABLED)
 //-----------------------------------------------------------------------------
 #define CS4344_I2Sx                         SPI3
 
@@ -21,5 +22,6 @@ typedef OS_AudioDeviceIoSetupArgs CS4344_DrvAudioArgsInit;
 typedef OS_AudioDeviceArgsOpen CS4344_DrvAudioArgsOpen;
 
 extern const OS_AudioDeviceCaps cs4344_caps;
+#endif //(OS_AUDIO_ENABLED)
 
-#endif // _DRV_AUDIO_CS4344_H_
+#endif //_DRV_AUDIO_CS4344_H_

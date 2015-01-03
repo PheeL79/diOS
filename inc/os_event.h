@@ -51,7 +51,7 @@ Status          OS_EventCreate(const OS_EventConfig* cfg_p, OS_EventHd* ehd_p);
 /// @param[in]  ehd             Event handle.
 /// @param[in]  timeout         Operation timeout (ticks).
 /// @return     #Status.
-Status          OS_EventDelete(const OS_EventHd ehd, const TimeMs timeout);
+Status          OS_EventDelete(const OS_EventHd ehd, const OS_TimeMs timeout);
 
 /// @brief      Get the event timer.
 /// @param[in]  ehd             Event handle.
@@ -69,7 +69,7 @@ Status          OS_EventStateGet(const OS_EventHd ehd, OS_EventState* state_p);
 /// @param[in]  ehd             Event handle.
 /// @param[out] period_p        Period.
 /// @return     #Status.
-Status          OS_EventPeriodGet(const OS_EventHd ehd, TimeMs* period_p);
+Status          OS_EventPeriodGet(const OS_EventHd ehd, OS_TimeMs* period_p);
 
 /// @brief      Set the event state.
 /// @param[in]  ehd             Event handle.
@@ -77,8 +77,8 @@ Status          OS_EventPeriodGet(const OS_EventHd ehd, TimeMs* period_p);
 /// @param[in]  new_state       Event new state.
 /// @param[in]  timeout         Operation timeout.
 /// @return     #Status.
-Status          OS_EventStatePeriodSet(const OS_EventHd ehd, const TimeMs new_period, const OS_EventState new_state,
-                                       const TimeMs timeout);
+Status          OS_EventStatePeriodSet(const OS_EventHd ehd, const OS_TimeMs new_period, const OS_EventState new_state,
+                                       const OS_TimeMs timeout);
 
 /// @brief      Create an event item.
 /// @param[in]  data_p          Item's data.
@@ -100,7 +100,7 @@ Status          OS_EventItemOwnerAdd(OS_EventItem* item_p);
 /// @brief      Lock event item.
 /// @param[in]  item_p          Item.
 /// @return     #Status.
-Status          OS_EventItemLock(OS_EventItem* item_p, const TimeMs timeout);
+Status          OS_EventItemLock(OS_EventItem* item_p, const OS_TimeMs timeout);
 
 /// @brief      Unlock event item.
 /// @param[in]  item_p          Item.

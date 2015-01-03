@@ -29,9 +29,9 @@ volatile OS_Env os_env = {
     .drv_stdin      = OS_NULL,
     .drv_stdout     = OS_NULL,
     .drv_rtc        = OS_NULL,
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
     .volume         = OS_AUDIO_VOLUME_MIN
-#endif // (1 == OS_AUDIO_ENABLED)
+#endif // (OS_AUDIO_ENABLED)
 };
 volatile Bool is_idle;
 
@@ -46,9 +46,9 @@ extern Status OS_SettingsInit(void);
 extern Status OS_EnvInit(void);
 extern Status OS_EventInit(void);
 extern Status OS_TimeInit(void);
-#if (1 == OS_TIMERS_ENABLED)
+#if (OS_TIMERS_ENABLED)
 extern Status OS_TimerInit(void);
-#endif //(1 == OS_TIMERS_ENABLED)
+#endif //(OS_TIMERS_ENABLED)
 extern Status OS_DriverInit_(void);
 extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
@@ -59,9 +59,9 @@ Status s;
     is_idle = OS_FALSE;
     // uxCriticalNesting = 0; !!! Variables are created before OS Engine scheduler is started! Affects on divers interrupts!
     IF_STATUS(s = OS_MemoryInit())      { return s; }
-#if (1 == OS_TIMERS_ENABLED)
+#if (OS_TIMERS_ENABLED)
     IF_STATUS(s = OS_TimerInit())       { return s; }
-#endif //(1 == OS_TIMERS_ENABLED)
+#endif //(OS_TIMERS_ENABLED)
     IF_STATUS(s = OS_TimeInit())        { return s; }
     IF_STATUS(s = OS_DriverInit_())     { return s; }
     IF_STATUS(s = OS_DebugInit())       { return s; }
@@ -69,31 +69,31 @@ Status s;
     IF_STATUS(s = OS_TaskInit_())       { return s; }
     IF_STATUS(s = OS_ShellInit())       { return s; }
     IF_STATUS(s = OS_EnvInit())         { return s; }
-#if (1 == OS_EVENTS_ENABLED)
+#if (OS_EVENTS_ENABLED)
     IF_STATUS(s = OS_EventInit())       { return s; }
-#endif //(1 == OS_EVENTS_ENABLED)
+#endif //(OS_EVENTS_ENABLED)
     IF_STATUS(s = OS_SettingsInit())    { return s; }
     IF_STATUS(s = OS_PowerInit())       { return s; }
     IF_STATUS(s = OSAL_DriversCreate()) { return s; }
     HAL_CRITICAL_SECTION_EXIT();
     HAL_LOG(D_INFO, "OSAL init...");
     HAL_LOG(D_INFO, "-------------------------------");
-#if (1 == OS_FILE_SYSTEM_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_FileSystemInit())  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
     IF_STATUS(s = OS_AudioInit())       { return s; }
-#endif //(1 == OS_AUDIO_ENABLED)
+#endif //(OS_AUDIO_ENABLED)
     //Create environment variables.
     IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
 //    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT, OS_LogLevelSet)) { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH, OS_NULL))             { return s; }
     IF_STATUS(s = OS_EnvVariableSet("config_file", OS_SETTINGS_FILE_PATH, OS_NULL))     { return s; }
-#if (1 == OS_FILE_SYSTEM_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_EnvVariableSet("media_automount", "on", OS_NULL))                  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
     Str volume_str[4];
     if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%u", OS_AUDIO_OUT_VOLUME_DEFAULT)) {
         return S_INVALID_VALUE;
@@ -101,7 +101,7 @@ Status s;
     IF_STATUS(s = OS_EnvVariableSet("volume", volume_str, OS_VolumeSet)) {
         if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio device are created so far.
     }
-#endif //(1 == OS_AUDIO_ENABLED)
+#endif //(OS_AUDIO_ENABLED)
     //Init environment variables.
     const OS_PowerState power = PWR_STARTUP;
     os_env.hal_env_p->power = power;
@@ -182,6 +182,7 @@ OS_DriverHd OS_DriverRtcGet(void)
     return os_env.drv_rtc;
 }
 
+#if (OS_AUDIO_ENABLED)
 /******************************************************************************/
 OS_AudioVolume OS_VolumeGet(void)
 {
@@ -198,6 +199,7 @@ Status OS_VolumeSet(ConstStrP volume_p)
     }
     return OS_AudioVolumeSet(dev_hd, os_env.volume);
 }
+#endif //(OS_AUDIO_ENABLED)
 
 /******************************************************************************/
 Locale OS_LocaleGet(void)
@@ -323,7 +325,7 @@ Status OS_StorageItemOwnerAdd(OS_StorageItem* item_p)
 }
 
 /******************************************************************************/
-Status OS_StorageItemLock(OS_StorageItem* item_p, const TimeMs timeout)
+Status OS_StorageItemLock(OS_StorageItem* item_p, const OS_TimeMs timeout)
 {
     if (OS_NULL == item_p) { return S_INVALID_REF; }
     return OS_MutexLock(item_p->mutex, timeout);

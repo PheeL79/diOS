@@ -89,7 +89,8 @@ U32 sector = *(U32*)args_p;
 State led_fs_state = ON;
 Status s = S_OK;
 //    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
-    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//TODO(A.Filyanov) Test context(ISR) before call.
+//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
 //    if (HAL_OK != HAL_SRAM_Read_8b(&sram1_hd,
 //                                   (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_Size * sector)),
 //                                   data_in_p,
@@ -98,7 +99,7 @@ Status s = S_OK;
 //    }
     OS_MemCpy(data_in_p, (const void*)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)), (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size));
     led_fs_state = OFF;
-    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
     return s;
 }
 
@@ -109,7 +110,8 @@ U32 sector = *(U32*)args_p;
 State led_fs_state = ON;
 Status s = S_OK;
 //    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
-    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//TODO(A.Filyanov) Test context(ISR) before call.
+//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
 //    if (HAL_OK != HAL_SRAM_Write_8b(&sram1_hd,
 //                                    (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_Size * sector)),
 //                                    data_out_p,
@@ -129,6 +131,7 @@ Status s = S_OK;
 //State led_fs_state = ON;
 //Status s = S_OK;
 ////    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
+//TODO(A.Filyanov) Test context(ISR) before call.
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
 //    if (HAL_OK != HAL_SRAM_Read_DMA(&sram1_hd,
 //                                    (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)),
@@ -148,6 +151,7 @@ Status s = S_OK;
 //State led_fs_state = ON;
 //Status s = S_OK;
 ////    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
+//TODO(A.Filyanov) Test context(ISR) before call.
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
 //    if (HAL_OK != HAL_SRAM_Write_DMA(&sram1_hd,
 //                                     (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)),
@@ -164,6 +168,7 @@ Status s = S_OK;
 Status SDRAM_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_UNDEF;
+//TODO(A.Filyanov) Test context(ISR) before call.
 //    OS_LOG(D_DEBUG, "ioctl req_id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {

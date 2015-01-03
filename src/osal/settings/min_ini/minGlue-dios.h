@@ -13,14 +13,15 @@
 #include "os_settings.h"
 
 //#define INI_READONLY
-#if (1 != OS_SETTINGS_BROWSE_ENABLED)
+#if (!OS_SETTINGS_BROWSE_ENABLED)
 #define INI_NOBROWSE
-#endif // OS_SETTINGS_BROWSE_ENABLED
+#endif //(OS_SETTINGS_BROWSE_ENABLED)
 #define INI_ANSIONLY                                                /* ignore UNICODE or _UNICODE macros, compile as ASCII/ANSI */
 #define PORTABLE_STRNICMP
 #define INI_BUFFERSIZE                  OS_SETTINGS_BUFFER_LEN      /* maximum line length, maximum path length */
 //#define INI_LINETERM                  "\r\n"
 
+#if (OS_FILE_SYSTEM_ENABLED)
 #if defined(CM4F)
 #define INI_REAL Float
 #define ini_ftoa(string,value) sprintf((string),"%f",(value))
@@ -46,6 +47,30 @@ static int ini_rename(TCHAR *source, const TCHAR *dest)
 {
   /* Function f_rename() does not allow drive letters in the destination file */
   char *drive = strchr(dest, ':');
-  drive = (drive == NULL) ? (char *)dest : drive + 1;
+  drive = (NULL == drive) ? (char *)dest : drive + 1;
   return (OS_FileRename((ConstStrP)source, (ConstStrP)drive) == S_OK);
 }
+
+#else
+
+/* map required file I/O types and functions to the standard C library */
+#include <stdio.h>
+
+#define INI_FILETYPE                  int
+#define ini_openread(filename,file)   ((*(file) = fopen((filename),"rb")) != NULL)
+#define ini_openwrite(filename,file)  ((*(file) = fopen((filename),"wb")) != NULL)
+#define ini_close(file)               (fclose(*(file)) == 0)
+#define ini_read(buffer,size,file)    (fgets((buffer),(size),*(file)) != NULL)
+#define ini_write(buffer,file)        (fputs((buffer),*(file)) >= 0)
+#define ini_rename(source,dest)       (rename((source), (dest)) == 0)
+#define ini_remove(filename)          (remove(filename) == 0)
+
+#define INI_FILEPOS                   fpos_t
+#define ini_tell(file,pos)            (fgetpos(*(file), (pos)) == 0)
+#define ini_seek(file,pos)            (fsetpos(*(file), (pos)) == 0)
+
+/* for floating-point support, define additional types and functions */
+#define INI_REAL                      float
+#define ini_ftoa(string,value)        sprintf((string),"%f",(value))
+#define ini_atof(string)              (INI_REAL)strtod((string),NULL)
+#endif //(OS_FILE_SYSTEM_ENABLED)

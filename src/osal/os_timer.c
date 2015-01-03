@@ -13,7 +13,7 @@
 #include "os_message.h"
 #include "os_timer.h"
 
-#if (1 == OS_TIMERS_ENABLED)
+#if (OS_TIMERS_ENABLED)
 //------------------------------------------------------------------------------
 typedef TimerCallbackFunction_t OS_TimerCallbackFunc;
 typedef struct {
@@ -32,9 +32,8 @@ static OS_MutexHd os_timer_mutex;
 static void OS_TimerCallback(const TimerHandle_t timer_handle);
 
 /******************************************************************************/
-#pragma inline
 static OS_TimerConfigDyn* OS_TimerConfigDynGet(const OS_TimerHd timer_hd);
-OS_TimerConfigDyn* OS_TimerConfigDynGet(const OS_TimerHd timer_hd)
+INLINE OS_TimerConfigDyn* OS_TimerConfigDynGet(const OS_TimerHd timer_hd)
 {
 const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
 OS_TimerConfigDyn* cfg_dyn_p = (OS_TimerConfigDyn*)OS_ListItemValueGet(item_l_p);
@@ -374,4 +373,4 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     return S_OK;
 }
 
-#endif //(1 == OS_TIMERS_ENABLED)
+#endif //(OS_TIMERS_ENABLED)

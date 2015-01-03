@@ -25,13 +25,13 @@ void OS_MutexDelete(const OS_MutexHd mhd)
 }
 
 /******************************************************************************/
-Status OS_MutexLock(const OS_MutexHd mhd, const TimeMs timeout)
+Status OS_MutexLock(const OS_MutexHd mhd, const OS_TimeMs timeout)
 {
     return OS_SemaphoreLock(mhd, timeout);
 }
 
 /******************************************************************************/
-Status OS_MutexRecursiveLock(const OS_MutexHd mhd, const TimeMs timeout)
+Status OS_MutexRecursiveLock(const OS_MutexHd mhd, const OS_TimeMs timeout)
 {
     return OS_SemaphoreRecursiveLock(mhd, timeout);
 }

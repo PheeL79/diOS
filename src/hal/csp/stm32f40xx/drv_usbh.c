@@ -10,14 +10,14 @@
 #include "os_message.h"
 #include "os_signal.h"
 #include "os_debug.h"
-#if (1 == USBH_ENABLED)
+#if (USBH_ENABLED)
 #include "usbh_core.h"
-#if (1 == USBH_HID_ENABLED)
+#if (USBH_HID_ENABLED)
     #include "usbh_hid.h"
-#endif // USBH_HID_ENABLED
-#if (1 == USBH_MSC_ENABLED)
+#endif // (USBH_HID_ENABLED)
+#if (USBH_MSC_ENABLED)
     #include "usbh_msc.h"
-#endif // USBH_MSC_ENABLED
+#endif // (USBH_MSC_ENABLED)
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usbh"
@@ -36,14 +36,14 @@ static Status   USBH_IoCtl(const U32 request_id, void* args_p);
 static void     USBH_UserProcess(USBH_HandleTypeDef* usbh_itf_hd, uint8_t id);
 
 //------------------------------------------------------------------------------
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
 HCD_HandleTypeDef           hcd_fs_hd;
 static USBH_HandleTypeDef*  usbh_fs_hd_p;
-#endif //(1 == USBH_FS_ENABLED)
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
 HCD_HandleTypeDef           hcd_hs_hd;
 static USBH_HandleTypeDef*  usbh_hs_hd_p;
-#endif //(1 == USBH_HS_ENABLED)
+#endif // (USBH_HS_ENABLED)
 OS_QueueHd                  usbhd_stdin_qhd;
 HAL_DriverItf*              drv_usbh_v[DRV_ID_USBX_LAST];
 
@@ -70,33 +70,33 @@ Status USBH_Init_(void* args_p)
 const OS_UsbHItfHd* usbh_itf_hd = (OS_UsbHItfHd*)args_p;
 Status s = S_OK;
 // Interface
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
     usbh_fs_hd_p = (USBH_HandleTypeDef*)usbh_itf_hd->itf_fs_hd;
     if (USBH_OK != USBH_Init(usbh_fs_hd_p, USBH_UserProcess, OS_USB_ID_FS))   { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
     usbh_hs_hd_p = (USBH_HandleTypeDef*)usbh_itf_hd->itf_hs_hd;
     if (USBH_OK != USBH_Init(usbh_hs_hd_p, USBH_UserProcess, OS_USB_ID_HS))   { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+#endif // (USBH_HS_ENABLED)
 
 // Class
-#if (1 == USBH_HID_ENABLED)
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_HID_ENABLED)
+#if (USBH_FS_ENABLED)
     if (USBH_OK != USBH_RegisterClass(usbh_fs_hd_p, USBH_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
     if (USBH_OK != USBH_RegisterClass(usbh_hs_hd_p, USBH_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
-#endif // USBH_HID_ENABLED
+#endif // (USBH_HS_ENABLED)
+#endif // (USBH_HID_ENABLED)
 
-#if (1 == USBH_MSC_ENABLED)
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_MSC_ENABLED)
+#if (USBH_FS_ENABLED)
     if (USBH_OK != USBH_RegisterClass(usbh_fs_hd_p, USBH_MSC_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
     if (USBH_OK != USBH_RegisterClass(usbh_hs_hd_p, USBH_MSC_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
-#endif // USBH_MSC_ENABLED
+#endif // (USBH_HS_ENABLED)
+#endif // (USBH_MSC_ENABLED)
     return s;
 }
 
@@ -104,14 +104,14 @@ Status s = S_OK;
 Status USBH_DeInit_(void* args_p)
 {
 Status s = S_OK;
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
     HAL_HCD_MspDeInit(usbh_fs_hd_p->pData);
     if (USBH_OK != USBH_DeInit(usbh_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
     HAL_HCD_MspDeInit(usbh_hs_hd_p->pData);
     if (USBH_OK != USBH_DeInit(usbh_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+#endif // (USBH_HS_ENABLED)
     return s;
 }
 
@@ -120,12 +120,12 @@ Status USBH_Open(void* args_p)
 {
 Status s = S_OK;
     usbhd_stdin_qhd = (OS_QueueHd)args_p;
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
     if (USBH_OK != USBH_Start(usbh_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
     if (USBH_OK != USBH_Start(usbh_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+#endif // (USBH_HS_ENABLED)
     return s;
 }
 
@@ -134,12 +134,12 @@ Status USBH_Close(void* args_p)
 {
 Status s = S_OK;
     usbhd_stdin_qhd = OS_NULL;
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
     if (USBH_OK != USBH_Stop(usbh_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_FS_ENABLED
-#if (1 == USBH_HS_ENABLED)
+#endif // (USBH_FS_ENABLED)
+#if (USBH_HS_ENABLED)
     if (USBH_OK != USBH_Stop(usbh_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // USBH_HS_ENABLED
+#endif // (USBH_HS_ENABLED)
     return s;
 }
 
@@ -219,7 +219,7 @@ Status s = S_UNDEF;
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
   if(hhcd->Instance==USB_OTG_FS)
   {
     __GPIOA_CLK_ENABLE();
@@ -259,9 +259,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     HAL_NVIC_SetPriority(OTG_FS_IRQn, OS_PRIORITY_INT_MIN, 0);
     HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
   }
-#endif //(1 == USBH_FS_ENABLED)
+#endif // (USBH_FS_ENABLED)
 
-#if (1 == USBH_HS_ENABLED)
+#if (USBH_HS_ENABLED)
   if(hhcd->Instance == USB_OTG_HS)
   {
     __GPIOB_CLK_ENABLE();
@@ -303,12 +303,12 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     HAL_NVIC_SetPriority(OTG_HS_IRQn, OS_PRIORITY_INT_MIN, 0);
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
   }
-#endif //(1 == USBH_FS_ENABLED)
+#endif // (USBH_FS_ENABLED)
 }
 
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hhcd)
 {
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
   if(hhcd->Instance == USB_OTG_FS)
   {
     /* Peripheral interrupt Deinit*/
@@ -326,9 +326,9 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hhcd)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_11|GPIO_PIN_12);
   }
-#endif //(1 == USBH_FS_ENABLED)
+#endif // (USBH_FS_ENABLED)
 
-#if (1 == USBH_HS_ENABLED)
+#if (USBH_HS_ENABLED)
   if (hhcd->Instance == USB_OTG_HS)
   {
     /* Peripheral interrupt Deinit*/
@@ -347,7 +347,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hhcd)
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_13);
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
   }
-#endif //(1 == USBH_HS_ENABLED)
+#endif // (USBH_HS_ENABLED)
 }
 
 /**
@@ -388,17 +388,17 @@ void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd)
 void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state)
 {
   /* To be used with OS to sync URB state with the global state machine */
-#if (USBH_USE_OS == 1)
+#if (USBH_USE_OS)
   USBH_LL_NotifyURBChange(hhcd->pData);
 #endif
-#if (1 == USBH_USE_diOS)
+#if (USBH_USE_diOS)
 OS_SignalData signal_data = 0;
     OS_USB_SIG_ITF_SET(signal_data, ((USBH_HandleTypeDef*)(hhcd->pData))->id);
     const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBH, OS_SIG_DRV, signal_data);
     if (1 == OS_ISR_SignalSend(usbhd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
         OS_ContextSwitchForce();
     }
-#endif // USBH_USE_diOS
+#endif // (USBH_USE_diOS)
 }
 /*******************************************************************************
                        LL Driver Interface (USB Host Library --> HCD)
@@ -413,7 +413,7 @@ OS_SignalData signal_data = 0;
 USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
 {
   /* Init USB_IP */
-#if (1 == USBH_FS_ENABLED)
+#if (USBH_FS_ENABLED)
   if (phost->id == OS_USB_ID_FS)
   {
     hcd_fs_hd.Instance = USB_OTG_FS;
@@ -431,9 +431,9 @@ USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
     HAL_HCD_Init(&hcd_fs_hd);
     USBH_LL_SetTimer (phost, HAL_HCD_GetCurrentFrame(&hcd_fs_hd));
   }
-#endif //(1 == USBH_FS_ENABLED)
+#endif // (USBH_FS_ENABLED)
 
-#if (1 == USBH_HS_ENABLED)
+#if (USBH_HS_ENABLED)
   if (phost->id == OS_USB_ID_HS)
   {
     hcd_hs_hd.Instance = USB_OTG_HS;
@@ -451,7 +451,7 @@ USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
     HAL_HCD_Init(&hcd_hs_hd);
     USBH_LL_SetTimer (phost, HAL_HCD_GetCurrentFrame(&hcd_hs_hd));
   }
-#endif //(1 == USBH_HS_ENABLED)
+#endif // (USBH_HS_ENABLED)
 
   return USBH_OK;
 }
@@ -738,7 +738,7 @@ OS_SignalData signal_data = 0;
         OS_ContextSwitchForce();
     }
 }
-#endif //(1 == USBH_ENABLED)
+#endif // (USBH_ENABLED)
 
 // USBH/D IRQ handlers----------------------------------------------------------
 // stm32f4xx_it.c

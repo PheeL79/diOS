@@ -1,5 +1,5 @@
 /***************************************************************************//**
-* @file    task_audio.c
+* @file    os_task_audio.c
 * @brief   Audio daemon task.
 * @author  A. Filyanov
 *******************************************************************************/
@@ -10,10 +10,11 @@
 #include "os_message.h"
 #include "os_audio.h"
 #include "os_task_audio.h"
+#include "osal.h"
 
-#if (1 == OS_AUDIO_ENABLED)
+#if (OS_AUDIO_ENABLED)
 //-----------------------------------------------------------------------------
-#define MDL_NAME            "task_audio_d"
+#define MDL_NAME            "audio_d"
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -23,10 +24,14 @@ typedef struct {
 } TaskStorage;
 
 //-----------------------------------------------------------------------------
+static void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p);
+
+//-----------------------------------------------------------------------------
 const OS_TaskConfig task_audio_cfg = {
     .name           = OS_DAEMON_NAME_AUDIO,
     .func_main      = OS_TaskMain,
     .func_power     = OS_TaskPower,
+    .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 3,
     .prio_init      = OS_TASK_PRIO_AUDIO,
@@ -80,16 +85,17 @@ Status s = S_UNDEF;
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
-                    case OS_SIG_DRV: {
+                    case OS_SIG_DRV:
+                        {
                         ConstStrP env_var_str_p = "volume";
                         const OS_AudioVolume volume = (OS_AudioVolume)OS_SignalDataGet(msg_p);
                         Str volume_str[4];
-                        if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%u", volume)) {
-                            OS_LOG_S(D_WARNING, S_INVALID_VALUE);
-                        }
-                        IF_STATUS(s = OS_EnvVariableSet(env_var_str_p, volume_str, OS_NULL)) {
-                            OS_LOG_S(D_WARNING, s);
-                        }
+                            if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%u", volume)) {
+                                OS_LOG_S(D_WARNING, S_INVALID_VALUE);
+                            }
+                            IF_STATUS(s = OS_EnvVariableSet(env_var_str_p, volume_str, OS_NULL)) {
+                                OS_LOG_S(D_WARNING, s);
+                            }
                         }
                         break;
                     default:
@@ -127,22 +133,29 @@ Status s = S_UNDEF;
             IF_STATUS(s = OS_AudioDeviceDeInit(tstor_p->audio_dev_hd))      { goto error; }
             IF_STATUS(s = OS_DriverDeInit(tstor_p->drv_trimmer_hd, OS_NULL)){ goto error; }
             break;
-        case PWR_ON: {
+        case PWR_ON:
+            {
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
-            IF_OK(s = OS_DriverInit(tstor_p->drv_trimmer_hd, (void*)&stdin_qhd)) {
-                IF_STATUS(s = OS_DriverOpen(tstor_p->drv_trimmer_hd, OS_NULL)) {
+                IF_OK(s = OS_DriverInit(tstor_p->drv_trimmer_hd, (void*)&stdin_qhd)) {
+                    IF_STATUS(s = OS_DriverOpen(tstor_p->drv_trimmer_hd, OS_NULL)) {
+                    }
+                } else {
+                    s = (S_INIT == s) ? S_OK : s;
                 }
-            } else {
-                s = (S_INIT == s) ? S_OK : s;
-            }
-            const CS4344_DrvAudioArgsInit drv_args = {
-                .info.sample_rate   = OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT,
-                .info.sample_bits   = OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT,
-                .info.channels      = OS_AUDIO_OUT_CHANNELS_DEFAULT,
-                .volume             = OS_AUDIO_OUT_VOLUME_DEFAULT,
-            };
-            IF_STATUS(s = OS_AudioDeviceInit(tstor_p->audio_dev_hd, (void*)&drv_args)) { goto error; }
-            IF_STATUS(s = OS_AudioDeviceOpen(tstor_p->audio_dev_hd, OS_NULL)) { goto error; }
+                const CS4344_DrvAudioArgsInit drv_args = {
+                    .info.sample_rate   = OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT,
+                    .info.sample_bits   = OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT,
+                    .info.channels      = OS_AUDIO_OUT_CHANNELS_DEFAULT,
+                    .volume             = OS_AUDIO_OUT_VOLUME_DEFAULT,
+                    .dma_mode           = OS_AUDIO_OUT_DMA_MODE_DEFAULT
+                };
+                IF_STATUS(s = OS_AudioDeviceInit(tstor_p->audio_dev_hd, (void*)&drv_args)) { goto error; }
+                const OS_AudioDeviceArgsOpen audio_dev_open_args = {
+                    .tstor_p            = tstor_p,
+                    .slot_qhd           = OS_TaskStdInGet(OS_THIS_TASK),
+                    .isr_callback_func  = ISR_DrvAudioDeviceCallback
+                };
+                IF_STATUS(s = OS_AudioDeviceOpen(tstor_p->audio_dev_hd, (void*)&audio_dev_open_args)) { goto error; }
             }
             break;
         default:
@@ -154,4 +167,13 @@ error:
     return s;
 }
 
-#endif //(1 == OS_FILE_SYSTEM_ENABLED)
+/******************************************************************************/
+void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p)
+{
+//const OS_Signal signal = OS_ISR_SignalCreate(OS_SIG_DRV, args_p->signal_id, 0);
+//    if (OS_ISR_SignalSend(args_p->slot_qhd, signal, OS_MSG_PRIO_NORMAL)) {
+//        OS_ContextSwitchForce();
+//    }
+}
+
+#endif //(OS_AUDIO_ENABLED)

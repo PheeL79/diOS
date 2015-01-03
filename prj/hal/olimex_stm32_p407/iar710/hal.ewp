@@ -315,6 +315,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Core\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\HID\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\MSC\Inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\AUDIO\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
@@ -3903,6 +3904,12 @@
       <group>
         <name>class</name>
         <group>
+          <name>audio</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\220\Class\AUDIO\Src\usbd_audio.c</name>
+          </file>
+        </group>
+        <group>
           <name>hid</name>
           <excluded>
             <configuration>Debug FLASH</configuration>
@@ -4194,6 +4201,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd_audio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd_audio_desc.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_usbd_msc.c</name>

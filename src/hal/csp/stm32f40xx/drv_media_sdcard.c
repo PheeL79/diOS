@@ -12,7 +12,7 @@
 #include "os_memory.h"
 #include "os_file_system.h"
 
-#if defined(OS_MEDIA_VOL_SDCARD) && (1 == SDIO_SD_ENABLED)
+#if defined(OS_MEDIA_VOL_SDCARD) && (SDIO_SD_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_m_sdcard"
 
@@ -159,21 +159,21 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_rx_handle.Init.Direction           = DMA_PERIPH_TO_MEMORY;
     sd_dma_rx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
     sd_dma_rx_handle.Init.MemInc              = DMA_MINC_ENABLE;
-#if (1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#if (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
 #else
     sd_dma_rx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-#endif //(1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     sd_dma_rx_handle.Init.Mode                = DMA_PFCTRL;
     sd_dma_rx_handle.Init.Priority            = DMA_PRIORITY_HIGH;
     sd_dma_rx_handle.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
     sd_dma_rx_handle.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-#if (1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#if (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.MemBurst            = DMA_MBURST_INC4;
 #else
     sd_dma_rx_handle.Init.MemBurst            = DMA_MBURST_SINGLE;
-#endif //(1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
     sd_dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
@@ -192,21 +192,21 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_tx_handle.Init.Direction           = DMA_MEMORY_TO_PERIPH;
     sd_dma_tx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
     sd_dma_tx_handle.Init.MemInc              = DMA_MINC_ENABLE;
-#if (1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#if (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
 #else
     sd_dma_tx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-#endif //(1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     sd_dma_tx_handle.Init.Mode                = DMA_PFCTRL;
     sd_dma_tx_handle.Init.Priority            = DMA_PRIORITY_HIGH;
     sd_dma_tx_handle.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
     sd_dma_tx_handle.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-#if (1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#if (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.MemBurst            = DMA_MBURST_INC4;
 #else
     sd_dma_tx_handle.Init.MemBurst            = DMA_MBURST_SINGLE;
-#endif //(1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
     sd_dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
@@ -314,9 +314,10 @@ HAL_SD_ErrorTypedef sd_status;
 State state = ON;
 Status s = S_OK;
 //    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
-    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+//TODO(A.Filyanov) Test context(ISR) before call.
+//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
 
-#if (1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#if (OS_FILE_SYSTEM_WORD_ACCESS)
     if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
@@ -330,7 +331,7 @@ Status s = S_OK;
         OS_Free(scratch_p);
         return s;
     }
-#endif //(1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
 
     sd_status = HAL_SD_ReadBlocks_DMA(&sd_hd, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
     if (SD_OK == sd_status) {
@@ -342,7 +343,7 @@ Status s = S_OK;
         s = S_FS_TRANSFER_FAIL;
     }
     state = OFF;
-    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
     return s;
 }
 
@@ -354,9 +355,10 @@ HAL_SD_ErrorTypedef sd_status;
 State state = ON;
 Status s = S_OK;
 //    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
-    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+//TODO(A.Filyanov) Test context(ISR) before call.
+//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
 
-#if (1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#if (OS_FILE_SYSTEM_WORD_ACCESS)
     if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
         if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
@@ -370,7 +372,7 @@ Status s = S_OK;
         OS_Free(scratch_p);
         return s;
     }
-#endif //(1 == OS_FILE_SYSTEM_WORD_ACCESS)
+#endif //(OS_FILE_SYSTEM_WORD_ACCESS)
 
     sd_status = HAL_SD_WriteBlocks_DMA(&sd_hd, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
     if (SD_OK == sd_status) {
@@ -382,7 +384,7 @@ Status s = S_OK;
         s = S_FS_TRANSFER_FAIL;
     }
     state = OFF;
-    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
     return s;
 }
 
@@ -390,6 +392,7 @@ Status s = S_OK;
 Status SDIO_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_UNDEF;
+//TODO(A.Filyanov) Test context(ISR) before call.
 //    OS_LOG(D_DEBUG, "ioctl req_id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
@@ -528,4 +531,4 @@ void SD_DMAx_Tx_IRQHandler(void)
     HAL_DMA_IRQHandler(sd_hd.hdmatx);
 }
 
-#endif //defined(OS_MEDIA_VOL_SDCARD) && (1 == SDIO_SD_ENABLED)
+#endif //defined(OS_MEDIA_VOL_SDCARD) && (SDIO_SD_ENABLED)

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "hal.h"
 
+#if (OS_FILE_SYSTEM_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_media_bsp"
 
@@ -39,3 +40,5 @@ extern HAL_DriverItf drv_media_usbh_hs;
 #endif
     return S_OK;
 }
+
+#endif //(OS_FILE_SYSTEM_ENABLED)

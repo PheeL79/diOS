@@ -20,7 +20,7 @@ extern void TraceVaListPrint(ConstStrP format_str_p, va_list args);
 extern void LogVaListPrint(const LogLevel level, OS_TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, va_list args);
 
 //------------------------------------------------------------------------------
-const TimeMs timeout_def = 100;
+const OS_TimeMs timeout_def = 100;
 volatile static OS_MutexHd print_mut;
 volatile OS_QueueHd stdin_qhd;
 volatile OS_QueueHd stdout_qhd;
