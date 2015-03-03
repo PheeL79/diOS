@@ -19,8 +19,6 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
-#define SHELL_COMMAND_UNDEF     OS_NULL
-
 enum {
     OS_SHELL_BUTTON_UP              = 'A',
     OS_SHELL_BUTTON_DOWN            = 'B',

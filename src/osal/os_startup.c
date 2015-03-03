@@ -63,6 +63,10 @@ Status s;
     extern const OS_TaskConfig task_fs_cfg;
     IF_STATUS(s = OS_StartupTaskAdd(&task_fs_cfg)) { return s; }
 #endif //(OS_FILE_SYSTEM_ENABLED)
+#if (OS_NETWORK_ENABLED)
+    extern const OS_TaskConfig task_net_cfg;
+    IF_STATUS(s = OS_StartupTaskAdd(&task_net_cfg)) { return s; }
+#endif //(OS_NETWORK_ENABLED)
 #if (OS_AUDIO_ENABLED)
     extern const OS_TaskConfig task_audio_cfg;
     IF_STATUS(s = OS_StartupTaskAdd(&task_audio_cfg)) { return s; }

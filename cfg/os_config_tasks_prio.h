@@ -8,16 +8,18 @@
 
 //------------------------------------------------------------------------------
 // runtime (initial) priority
-#define OS_TASK_PRIO_LOG                    (OS_TASK_PRIO_HIGH)
-#define OS_TASK_PRIO_FS                     (OS_TASK_PRIO_LOW)
-#define OS_TASK_PRIO_USB                    (OS_TASK_PRIO_BELOW_NORMAL)
-#define OS_TASK_PRIO_AUDIO                  (OS_TASK_PRIO_LOW)
-#define OS_TASK_PRIO_SHELL                  (OS_TASK_PRIO_HIGH)
+#define OS_TASK_PRIO_LOG                    (20)
+#define OS_TASK_PRIO_FS                     (90)
+#define OS_TASK_PRIO_USB                    (100)
+#define OS_TASK_PRIO_NET                    (120)
+#define OS_TASK_PRIO_AUDIO                  (150)
+#define OS_TASK_PRIO_SHELL                  (10)
 
 // power priority
 #define OS_TASK_PRIO_PWR_LOG                (OS_PWR_PRIO_MAX - 20)
 #define OS_TASK_PRIO_PWR_FS                 (OS_PWR_PRIO_MAX - 10)
 #define OS_TASK_PRIO_PWR_USB                (OS_PWR_PRIO_MAX - 5)
+#define OS_TASK_PRIO_PWR_NET                (OS_PWR_PRIO_MAX - 5)
 #define OS_TASK_PRIO_PWR_AUDIO              (OS_PWR_PRIO_MAX - 10)
 #define OS_TASK_PRIO_PWR_SHELL              (OS_PWR_PRIO_MAX - 30)
 

@@ -77,9 +77,7 @@ extern OS_QueueHd trimmer_stdin_qhd;
             if (volume_curr != volume_last) {
                 volume_last = volume_curr;
                 const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ADC3, OS_SIG_DRV, (OS_SignalData)volume_last);
-                if (1 == OS_ISR_SignalSend(trimmer_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-                    OS_ContextSwitchForce();
-                }
+                OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(trimmer_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
             }
         }
     }

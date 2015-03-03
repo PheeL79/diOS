@@ -17,9 +17,9 @@
 //------------------------------------------------------------------------------
 typedef TimerCallbackFunction_t OS_TimerCallbackFunc;
 typedef struct {
-    ConstStrPtr     name_p;
+    ConstStrP       name_p;
     OS_QueueHd      slot;
-    TimeMs          period;
+    OS_TimeMs       period;
     OS_TimerId      id;
     OS_TimerOptions options;
 } OS_TimerConfigDyn;
@@ -48,7 +48,7 @@ void OS_TimerCallback(const TimerHandle_t timer_handle)
         OS_LOG_S(D_WARNING, S_UNDEF_TIMER);
         return;
     }
-    const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, OS_TIM_OPT_EVENT) ? OS_SIG_EVENT : OS_SIG_TIMER;
+    const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, BIT(OS_TIM_OPT_EVENT)) ? OS_SIG_EVENT : OS_SIG_TIMER;
     const OS_Signal signal = OS_SignalCreate(sig_id, cfg_dyn_p->id);
     OS_SignalSend(cfg_dyn_p->slot, signal, OS_MSG_PRIO_HIGH);
 }
@@ -79,7 +79,7 @@ Status s = S_OK;
         OS_ListItemDelete(item_l_p);
         return S_NO_MEMORY;
     }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         if (OS_NULL == OS_TimerByIdGet(cfg_p->id)) {
             const OS_Tick period_ticks = OS_MS_TO_TICKS(cfg_p->period);
             const TimerHandle_t timer_handle = xTimerCreate(cfg_p->name_p, period_ticks,
@@ -109,7 +109,7 @@ error:
 }
 
 /******************************************************************************/
-Status OS_TimerDelete(const OS_TimerHd timer_hd, const TimeMs timeout)
+Status OS_TimerDelete(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
 OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
 const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
@@ -118,7 +118,7 @@ Status s = S_OK;
 
     if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
     if (pdTRUE != xTimerDelete(timer_handle, timeout_ticks)) { return S_TIMEOUT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_timer_mutex, timeout)) {    // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_timer_mutex, timeout)) {    // os_list protection;
         OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
         OS_ListItemDelete(item_l_p);
         OS_Free(cfg_dyn_p);
@@ -128,7 +128,7 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_TimerReset(const OS_TimerHd timer_hd, const TimeMs timeout)
+Status OS_TimerReset(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
     if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
@@ -141,7 +141,7 @@ Status OS_TimerReset(const OS_TimerHd timer_hd, const TimeMs timeout)
 }
 
 /******************************************************************************/
-Status OS_TimerStart(const OS_TimerHd timer_hd, const TimeMs timeout)
+Status OS_TimerStart(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
     if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
@@ -154,7 +154,7 @@ Status OS_TimerStart(const OS_TimerHd timer_hd, const TimeMs timeout)
 }
 
 /******************************************************************************/
-Status OS_TimerStop(const OS_TimerHd timer_hd, const TimeMs timeout)
+Status OS_TimerStop(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
     if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
@@ -167,7 +167,7 @@ Status OS_TimerStop(const OS_TimerHd timer_hd, const TimeMs timeout)
 }
 
 /******************************************************************************/
-Status OS_TimerPeriodGet(const OS_TimerHd timer_hd, TimeMs* period_p)
+Status OS_TimerPeriodGet(const OS_TimerHd timer_hd, OS_TimeMs* period_p)
 {
     if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
     OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
@@ -177,7 +177,7 @@ Status OS_TimerPeriodGet(const OS_TimerHd timer_hd, TimeMs* period_p)
 }
 
 /******************************************************************************/
-Status OS_TimerPeriodSet(const OS_TimerHd timer_hd, const TimeMs new_period, const TimeMs timeout)
+Status OS_TimerPeriodSet(const OS_TimerHd timer_hd, const OS_TimeMs new_period, const OS_TimeMs timeout)
 {
     if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
@@ -223,7 +223,7 @@ OS_TimerHd timer_hd = OS_NULL;
 }
 
 /******************************************************************************/
-ConstStrPtr OS_TimerNameGet(const OS_TimerHd timer_hd)
+ConstStrP OS_TimerNameGet(const OS_TimerHd timer_hd)
 {
     if (OS_NULL != timer_hd) {
         const OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
@@ -235,11 +235,11 @@ ConstStrPtr OS_TimerNameGet(const OS_TimerHd timer_hd)
 }
 
 /******************************************************************************/
-OS_TimerHd OS_TimerByNameGet(ConstStrPtr name_p)
+OS_TimerHd OS_TimerByNameGet(ConstStrP name_p)
 {
 OS_TimerHd timer_hd = OS_NULL;
 
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_timers_list));
 
         while (OS_DELAY_MAX != OS_ListItemValueGet(OS_ListItemNextGet(iter_li_p))) {
@@ -259,7 +259,7 @@ Status OS_TimerStatsGet(const OS_TimerHd timer_hd, OS_TimerStats* stats_p)
 {
 Status s = S_OK;
     if (OS_NULL != timer_hd) {
-        IF_STATUS_OK(s = OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        IF_OK(s = OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
             const OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
             if (OS_NULL != cfg_dyn_p) {
                 stats_p->name_p     = cfg_dyn_p->name_p;
@@ -278,7 +278,7 @@ Status s = S_OK;
 OS_TimerHd OS_TimerNextGet(const OS_TimerHd timer_hd)
 {
 OS_ListItem* iter_li_p = (OS_ListItem*)timer_hd;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         if (OS_NULL == iter_li_p) {
             iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_timers_list));
             if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {
@@ -356,7 +356,7 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 }
 
 /******************************************************************************/
-Status OS_ISR_TimerPeriodChange(const OS_TimerHd timer_hd, const TimeMs new_period)
+Status OS_ISR_TimerPeriodChange(const OS_TimerHd timer_hd, const OS_TimeMs new_period)
 {
 const OS_Tick new_period_ticks = ((OS_BLOCK == new_period) || (OS_NO_BLOCK == new_period)) ? new_period : OS_MS_TO_TICKS(new_period);
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;

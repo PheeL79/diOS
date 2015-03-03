@@ -6,13 +6,16 @@
 #ifndef _OS_FILE_SYSTEM_H_
 #define _OS_FILE_SYSTEM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ff.h"
 #include "os_common.h"
 #include "os_driver.h"
 #include "os_time.h"
 
 #if (OS_FILE_SYSTEM_ENABLED)
-
 /**
 * \defgroup OS_FileSystem OS_FileSystem
 * @{
@@ -385,5 +388,9 @@ Status OS_DirectoryDateTimeSet(ConstStrP dir_path_p, const OS_DateTime date_time
 /**@}*/ //OS_FileSystem
 
 #endif // (OS_FILE_SYSTEM_ENABLED)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _OS_FILE_SYSTEM_H_

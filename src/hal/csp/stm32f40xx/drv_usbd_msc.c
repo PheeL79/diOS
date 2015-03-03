@@ -33,6 +33,9 @@
   ******************************************************************************
 */
 
+#include "hal_config.h"
+#if (USBD_ENABLED) && (USBD_MSC_ENABLED)
+
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc.h"
 #include "os_file_system.h"
@@ -199,3 +202,5 @@ int8_t STORAGE_GetMaxLun (void)
     return 0;//(OS_MEDIA_VOL_LAST - 1);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+#endif //(USBD_ENABLED) && (USBD_MSC_ENABLED)

@@ -18,10 +18,10 @@
 #include "os_signal.h"
 #include "os_task_usb.h"
 #include "os_task_fs.h"
-#if (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 #   include "usbd_audio.h"
 #   include "os_audio.h"
-#endif // (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 
 #if (USBH_ENABLED) || (USBD_ENABLED)
 //-----------------------------------------------------------------------------
@@ -36,17 +36,17 @@ typedef struct {
     USBH_HandleTypeDef  usbh_hs_hd;
     USBD_HandleTypeDef  usbd_fs_hd;
     USBD_HandleTypeDef  usbd_hs_hd;
-#if (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
     OS_AudioDeviceHd    audio_dev_hd;
     OS_AudioDmaMode     audio_dma_mode;
     Bool                audio_buf_idx;
-#endif // (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 } TaskStorage;
 
 //-----------------------------------------------------------------------------
-#if (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 static void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p);
-#endif // (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 
 //-----------------------------------------------------------------------------
 const OS_TaskConfig task_usb_cfg = {
@@ -67,7 +67,7 @@ const OS_TaskConfig task_usb_cfg = {
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 TaskStorage* tstor_p = (TaskStorage*)args_p->stor_p;
-Status s = S_OK;
+Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
 #if (USBH_ENABLED)
     {
@@ -303,7 +303,8 @@ Status s = S_OK;
             IF_STATUS(s = OS_TaskInit(args_p)) {
             }
             break;
-        case PWR_ON: {
+        case PWR_ON:
+            {
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(OS_DAEMON_NAME_USB));
 #if (USBH_ENABLED)
             IF_OK(s = OS_DriverOpen(tstor_p->drv_usbh, stdin_qhd)) {
@@ -332,7 +333,7 @@ Status s = S_OK;
     return s;
 }
 
-#if (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 /******************************************************************************/
 void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p)
 {
@@ -355,6 +356,6 @@ USBD_HandleTypeDef* usb_itf_hd_p = &(tstor_p->usbd_hs_hd); //TODO(A.Filyanov) Se
 //    } else if (OS_SIG_AUDIO_ERROR == args_p->signal_id) {
 //    } else { OS_ASSERT(OS_FALSE); }
 }
-#endif // (USBD_ENABLED) || (USBD_AUDIO_ENABLED)
+#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
 
 #endif // (USBH_ENABLED) || (USBD_ENABLED)

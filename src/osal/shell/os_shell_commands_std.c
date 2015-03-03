@@ -31,10 +31,10 @@ static ConstStr cmd_help[] = "help";
 static Status OS_ShellCmdHelpHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdHelpHandler(const U32 argc, ConstStrP argv[])
 {
-OS_ShellCommandHd cmd_hd = OS_ShellCommandNextGet(SHELL_COMMAND_UNDEF);
+OS_ShellCommandHd cmd_hd = OS_ShellCommandNextGet(OS_NULL);
     //Ignore 'help' command(first one).
     cmd_hd = OS_ShellCommandNextGet(cmd_hd);
-    while (SHELL_COMMAND_UNDEF != cmd_hd) {
+    while (cmd_hd) {
         printf("\n%-21s :%s", cmd_hd->command, cmd_hd->help_brief);
         cmd_hd = OS_ShellCommandNextGet(cmd_hd);
     }

@@ -3,7 +3,6 @@
 * @brief   PPP driver.
 * @author  
 ******************************************************************************/
-#include <string.h>
 #include "hal.h"
 
 //-----------------------------------------------------------------------------
@@ -22,7 +21,8 @@ HAL_DriverItf* drv_ppp_v[DRV_ID_PPP_LAST];
 /*****************************************************************************/
 Status PPP_Init_(void)
 {
-    memset(drv_ppp_v, 0x0, sizeof(drv_ppp_v));
+Status s = S_UNDEF;    
+    OS_MemSet(drv_ppp_v, 0x0, sizeof(drv_ppp_v));
     drv_ppp_v[DRV_ID_PPPX] = &drv_pppx;
-    return S_OK;
+    return s;
 }

@@ -7,7 +7,7 @@
 #define _DRV_AUDIO_BSP_H_
 
 #include "os_config.h"
-#include "com/cs4344/drv_audio_cs4344.h"
+#include "com/cs4344/drv_cs4344.h"
 
 //-----------------------------------------------------------------------------
 enum {

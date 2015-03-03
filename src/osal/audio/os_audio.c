@@ -48,10 +48,10 @@ INLINE OS_AudioDeviceConfigDyn* OS_AudioDeviceConfigDynGet(const OS_AudioDeviceH
 /******************************************************************************/
 Status OS_AudioInit(void)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
-    OS_AudioDeviceDefaultSet(OS_NULL, DIR_IN);
-    OS_AudioDeviceDefaultSet(OS_NULL, DIR_OUT);
+    IF_STATUS(s = OS_AudioDeviceDefaultSet(OS_NULL, DIR_IN))    { return s; }
+    IF_STATUS(s = OS_AudioDeviceDefaultSet(OS_NULL, DIR_OUT))   { return s; }
     os_audio_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_audio_mutex) { return S_INVALID_REF; }
     OS_ListInit(&os_audio_list);
@@ -236,14 +236,18 @@ OS_AudioDeviceHd OS_AudioDeviceDefaultGet(const Direction dir)
 /*****************************************************************************/
 Status OS_AudioDeviceDefaultSet(const OS_AudioDeviceHd dev_hd, const Direction dir)
 {
-    if (DIR_IN == dir) {
-        def_in_dev_hd   = dev_hd;
-    } else if (DIR_OUT == dir) {
-        def_out_dev_hd  = dev_hd;
-    } else {
-        return S_INVALID_VALUE;
+Status s = S_UNDEF;
+    IF_OK(s = OS_MutexRecursiveLock(os_audio_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+        if (DIR_IN == dir) {
+            def_in_dev_hd   = dev_hd;
+        } else if (DIR_OUT == dir) {
+            def_out_dev_hd  = dev_hd;
+        } else {
+            s = S_INVALID_VALUE;
+        }
+        OS_MutexRecursiveUnlock(os_audio_mutex);
     }
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/

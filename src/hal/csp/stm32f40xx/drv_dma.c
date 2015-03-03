@@ -67,6 +67,8 @@ Status DMA2_LL_Init(void* args_p)
 //NVIC_InitTypeDef NVIC_InitStructure;
 //
 //    HAL_LOG(D_INFO, "NVIC Init: ");
+    __DMA1_CLK_ENABLE();
+    __DMA2_CLK_ENABLE();
 //    NVIC_StructInit(&NVIC_InitStructure);
 //    // MEM_2_MEM_32_DMA2_Stream1 enable the interrupt in the NVIC
 //    NVIC_InitStructure.NVIC_IRQChannel                  = DMA2_Stream1_IRQn;

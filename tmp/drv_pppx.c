@@ -9,12 +9,12 @@
 #define MDL_NAME            "drv_pppx"
 
 //------------------------------------------------------------------------------
-static Status   PPPX_Init(void);
-static Status   PPPX_DeInit(void);
-static Status   PPPX_LL_Init(void);
-static Status   PPPX_LL_DeInit(void);
+static Status   PPPX_Init(void* args_p);
+static Status   PPPX_DeInit(void* args_p);
+static Status   PPPX_LL_Init(void* args_p);
+static Status   PPPX_LL_DeInit(void* args_p);
 static Status   PPPX_Open(void* args_p);
-static Status   PPPX_Close(void);
+static Status   PPPX_Close(void* args_p);
 static Status   PPPX_Read(U8* data_in_p, U32 size, void* args_p);
 static Status   PPPX_Write(U8* data_out_p, U32 size, void* args_p);
 static Status   PPPX_IT_Read(U8* data_in_p, U32 size, void* args_p);
@@ -35,93 +35,93 @@ static HAL_DriverItf drv_pppx = {
 };
 
 /******************************************************************************/
-Status PPPX_Init(void)
+Status PPPX_Init(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
-Status PPPX_DeInit(void)
+Status PPPX_DeInit(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
-Status PPPX_LL_Init(void)
+Status PPPX_LL_Init(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;    
 }
 
 /******************************************************************************/
-Status PPPX_LL_DeInit(void)
+Status PPPX_LL_DeInit(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;    
 }
 
 /******************************************************************************/
 Status PPPX_Open(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
-Status PPPX_Close(void)
+Status PPPX_Close(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_Read(U8* data_in_p, U32 size, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_Write(U8* data_out_p, U32 size, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_IT_Read(U8* data_in_p, U32 size, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_IT_Write(U8* data_out_p, U32 size, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_DMA_Read(U8* data_in_p, U32 size, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_DMA_Write(U8* data_out_p, U32 size, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     return s;
 }
 
 /******************************************************************************/
 Status PPPX_IoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         default:
             HAL_LOG_S(D_WARNING, S_UNDEF_REQ_ID);

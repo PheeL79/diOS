@@ -8,9 +8,9 @@
 #include "os_semaphore.h"
 
 /******************************************************************************/
-void OS_SemaphoreBinaryCreate(OS_SemaphoreHd shd)
+OS_SemaphoreHd OS_SemaphoreBinaryCreate(void)
 {
-    vSemaphoreCreateBinary(shd);
+    return xSemaphoreCreateBinary();
 }
 
 /******************************************************************************/

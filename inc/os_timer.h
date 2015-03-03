@@ -30,10 +30,10 @@ enum {
 };
 
 typedef enum {
-    OS_TIM_OPT_UNDEF,
     OS_TIM_OPT_PERIODIC,
     OS_TIM_OPT_EVENT,
     //OS_TIM_OPT_PRIO_HIGH
+    OS_TIM_OPT_UNDEF
 } OS_TimerOptions;
 
 typedef struct {

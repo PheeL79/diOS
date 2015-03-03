@@ -9,9 +9,10 @@
 #include "os_shell_commands_net.h"
 #include "os_shell.h"
 
+#if (OS_NETWORK_ENABLED)
 //------------------------------------------------------------------------------
-static ConstStr cmd_net[]      = "net";
-static ConstStr cmd_help_net[] = "Display the message.";
+static ConstStr cmd_net[]            = "net";
+static ConstStr cmd_help_brief_net[] = "Display the message.";
 /******************************************************************************/
 static Status OS_ShellCmdNetHandler(const U32 argc, ConstStrP argv[]);
 Status OS_ShellCmdNetHandler(const U32 argc, ConstStrP argv[])
@@ -24,22 +25,23 @@ register U32 argc_count = 0;
     return S_OK;
 }
 
+//------------------------------------------------------------------------------
+static ConstStr empty_str[] = "";
+static const OS_ShellCommandConfig cmd_cfg_net[] = {
+    { cmd_net,      cmd_help_brief_net,     empty_str,              OS_ShellCmdNetHandler,      1,    1,      OS_SHELL_OPT_UNDEF  },
+};
+
 /******************************************************************************/
 Status OS_ShellCommandsNetInit(void)
 {
-ConstStr empty_str[] = "";
-OS_ShellCommandConfig cmd_cfg;
-    //Create and register network shell commands
-    cmd_cfg.command     = cmd_net;
-#ifdef OS_SHELL_HELP_ENABLED
-    cmd_cfg.help_brief  = cmd_help_net;
-    cmd_cfg.help_detail = empty_str;
-#endif // OS_SHELL_HELP_ENABLED
-    cmd_cfg.handler     = OS_ShellCmdNetHandler;
-    cmd_cfg.options     = OS_SHELL_OPT_UNDEF;
-    IF_STATUS(OS_ShellCommandCreate(&cmd_cfg)) {
-        OS_ASSERT(OS_FALSE);
+    //Create and register file system shell commands
+    for (Size i = 0; i < ITEMS_COUNT_GET(cmd_cfg_net, OS_ShellCommandConfig); ++i) {
+        const OS_ShellCommandConfig* cmd_cfg_p = &cmd_cfg_net[i];
+        IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
+            OS_ASSERT(OS_FALSE);
+        }
     }
-
     return S_OK;
 }
+
+#endif //(OS_NETWORK_ENABLED)

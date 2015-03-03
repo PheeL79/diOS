@@ -34,10 +34,13 @@
 #define OS_IDLE_TICKS_TO_SLEEP      1000U
 #endif // __ICCARM__
 
-#define OS_PRIORITY_MIN             0x1
-#define OS_PRIORITY_MAX             0x8
-#define OS_PRIORITY_INT_MIN         0xF
-#define OS_PRIORITY_INT_MAX         (OS_PRIORITY_MAX + 1)
+#define OS_PRIORITY_MIN             0x00
+#define OS_PRIORITY_MAX             U8_MAX
+
+#define OS_PRIORITY_INT_MAX         0x01
+#define OS_PRIORITY_INT_MIN         0x0E
+
+#define OS_KERNEL_PRIORITY          (OS_PRIORITY_INT_MIN + 1)
 
 #ifdef __ICCARM__
 //Memory
@@ -52,7 +55,7 @@ enum {
 #define OS_MEM_HEAP_SYS             OS_MEM_RAM_INT_SRAM
 #define OS_MEM_HEAP_APP             OS_MEM_RAM_INT_SRAM
 #define OS_STACK_SIZE_MIN           0x200
-#define OS_HEAP_SIZE                0x19FFF //0x1BFFF
+#define OS_HEAP_SIZE                0x10FFF //0x1BFFF
 
 /*__no_init*/ static U8 heap_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
 /*__no_init*/ static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
@@ -67,7 +70,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 };
 
 // Timers
-#define OS_TIMERS_ENABLED           0
+#define OS_TIMERS_ENABLED           1
 #define OS_TIMERS_TASK_PRIO         2
 #define OS_TIMERS_QUEUE_LEN         10
 #define OS_TIMERS_STACK_SIZE        (OS_STACK_SIZE_MIN * 2)
@@ -78,6 +81,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 // Names length
 #define OS_DRIVER_NAME_LEN          9
 #define OS_AUDIO_DEVICE_NAME_LEN    9
+#define OS_NETWORK_ITF_NAME_LEN     9
 #define OS_TASK_NAME_LEN            12
 #define OS_TIMER_NAME_LEN           12
 
@@ -88,7 +92,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 
 //File system
 //Look in ffconf.h for details
-#define OS_FILE_SYSTEM_ENABLED              0
+#define OS_FILE_SYSTEM_ENABLED              1
 #define OS_FILE_SYSTEM_MAKE_ENABLED         1
 #define OS_FILE_SYSTEM_TINY                 0
 #define OS_FILE_SYSTEM_READONLY             0
@@ -121,19 +125,19 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_FILE_SYSTEM_YEAR_BASE            1980U
 
 //Media
-enum {
+enum OS_MEDIA_VOL {
 //        OS_MEDIA_VOL_SDRAM,
 //#define OS_MEDIA_VOL_SDRAM          OS_MEDIA_VOL_SDRAM
 //#define OS_MEDIA_VOL_SDRAM_MEM      OS_MEM_RAM_EXT_SRAM
 //#define OS_MEDIA_VOL_SDRAM_SIZE     0x70000
 //#define OS_MEDIA_VOL_SDRAM_BLOCK_SIZE OS_FILE_SYSTEM_SECTOR_SIZE_MIN
 
-//        OS_MEDIA_VOL_SDCARD,
-//#define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
-//
+        OS_MEDIA_VOL_SDCARD,
+#define OS_MEDIA_VOL_SDCARD         OS_MEDIA_VOL_SDCARD
+
 //        OS_MEDIA_VOL_USBH_FS,
 //#define OS_MEDIA_VOL_USBH_FS        OS_MEDIA_VOL_USBH_FS
-
+//
 //        OS_MEDIA_VOL_USBH_HS,
 //#define OS_MEDIA_VOL_USBH_HS        OS_MEDIA_VOL_USBH_HS
 
@@ -148,17 +152,35 @@ enum {
 #define OS_AUDIO_OUT_VOLUME_DEFAULT         (OS_AUDIO_VOLUME_MAX / 2)
 #define OS_AUDIO_OUT_DMA_MODE_DEFAULT       OS_AUDIO_DMA_MODE_NORMAL
 
-enum {
+enum OS_AUDIO_DEV {
         OS_AUDIO_DEV_CS4344,
 #define OS_AUDIO_DEV_CS4344         OS_AUDIO_DEV_CS4344
+
+        OS_AUDIO_DEV_LAST
+};
+
+//Network
+#define OS_NETWORK_ENABLED          1
+#define OS_NETWORK_DAEMON_QUEUE_LEN 6
+#define OS_NETWORK_IP4_ADDR_SIZE    4
+#define OS_NETWORK_IP4_ADDR_DEFAULT "10.137.2.32"
+#define OS_NETWORK_NETMASK_DEFAULT  "255.255.255.0"
+#define OS_NETWORK_GATEWAY_DEFAULT  "10.137.2.1"
+
+enum OS_NETWORK_ITF {
+        OS_NETWORK_ITF_ETH0,
+#define OS_NETWORK_ITF_ETH0         OS_NETWORK_ITF_ETH0
+
+        OS_NETWORK_ITF_LAST
 };
 
 //Settings
+#define OS_SETTINGS_ENABLED         1
 #define OS_SETTINGS_BROWSE_ENABLED  0
 #define OS_SETTINGS_BUFFER_LEN      256
-#define OS_SETTINGS_VALUE_LEN       16
+#define OS_SETTINGS_VALUE_LEN       256
 #define OS_SETTINGS_VALUE_DEFAULT   ""
-#define OS_SETTINGS_FILE_PATH       "1:/config.ini"
+#define OS_SETTINGS_FILE_PATH       "0:/config.ini"
 
 //Shell
 #define OS_SHELL_HEIGHT             HAL_STDIO_TERM_HEIGHT
@@ -194,6 +216,7 @@ enum {
 #define OS_StrNCpy  HAL_StrNCpy
 #define OS_SPrintF  HAL_SPrintF
 #define OS_SNPrintF HAL_SNPrintF
+#define OS_SScanF   HAL_SScanF
 
 #endif // __ICCARM__
 #endif // _OS_CONFIG_H_

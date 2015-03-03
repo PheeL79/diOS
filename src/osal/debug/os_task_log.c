@@ -53,7 +53,7 @@ const U8 shell_prompt_len = OS_StrLen((char const*)shell_prompt_p);
 const OS_DriverHd drv_log = OS_DriverStdOutGet();
 OS_Message* msg_p;
 Bool is_prompted = OS_FALSE;
-    OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
+//    OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
     //Init stdout_qhd before all other tasks and return to the base priority.
     stdout_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {

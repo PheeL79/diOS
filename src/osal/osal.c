@@ -52,12 +52,17 @@ extern Status OS_TimerInit(void);
 extern Status OS_DriverInit_(void);
 extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
+#if (OS_AUDIO_ENABLED)
 extern Status OS_AudioInit(void);
+#endif // (OS_AUDIO_ENABLED)
+#if (OS_NETWORK_ENABLED)
+extern Status OS_NetworkInit(void);
+#endif // (OS_NETWORK_ENABLED)
 Status s;
     //Init OSAL.
     HAL_CRITICAL_SECTION_ENTER();
     is_idle = OS_FALSE;
-    // uxCriticalNesting = 0; !!! Variables are created before OS Engine scheduler is started! Affects on divers interrupts!
+    // uxCriticalNesting = 0; !!! Variables are created before OS Engine scheduler is started! Affects on drivers interrupts!
     IF_STATUS(s = OS_MemoryInit())      { return s; }
 #if (OS_TIMERS_ENABLED)
     IF_STATUS(s = OS_TimerInit())       { return s; }
@@ -84,6 +89,9 @@ Status s;
 #if (OS_AUDIO_ENABLED)
     IF_STATUS(s = OS_AudioInit())       { return s; }
 #endif //(OS_AUDIO_ENABLED)
+#if (OS_NETWORK_ENABLED)
+    IF_STATUS(s = OS_NetworkInit())     { return s; }
+#endif //(OS_NETWORK_ENABLED)
     //Create environment variables.
     IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
 //    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
@@ -99,7 +107,7 @@ Status s;
         return S_INVALID_VALUE;
     }
     IF_STATUS(s = OS_EnvVariableSet("volume", volume_str, OS_VolumeSet)) {
-        if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio device are created so far.
+        if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio devices are created so far.
     }
 #endif //(OS_AUDIO_ENABLED)
     //Init environment variables.

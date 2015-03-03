@@ -25,6 +25,10 @@
   ******************************************************************************
   */
 
+#include "os_config.h"
+
+#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_core.h"
 //#include "usbd_desc.h"
@@ -284,3 +288,5 @@ static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len)
   }
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+#endif //(USBD_ENABLED) && (USBD_AUDIO_ENABLED)

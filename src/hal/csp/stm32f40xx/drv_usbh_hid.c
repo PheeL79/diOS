@@ -3,12 +3,14 @@
 * @brief   USB Host HID driver.
 * @author  A. Filyanov
 ******************************************************************************/
+#include "os_config.h"
+
+#if (USBH_ENABLED) && (USBH_HID_ENABLED)
+
 #include "usbh_hid.h"
 #include "os_common.h"
 #include "os_debug.h"
 
-#if (USBH_ENABLED)
-#if (USBH_HID_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usb_hid"
 
@@ -70,5 +72,4 @@ OS_Message* msg_p;
     OS_ASSERT(S_OK == OS_MessageEmit(msg_p, OS_TIMEOUT_DRIVER, OS_MSG_PRIO_NORMAL));
 }
 
-#endif // (USBH_HID_ENABLED)
-#endif // (USBH_ENABLED)
+#endif //(USBH_ENABLED) && (USBH_HID_ENABLED)

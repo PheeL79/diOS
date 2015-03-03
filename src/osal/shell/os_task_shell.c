@@ -11,12 +11,10 @@
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#if (USBH_ENABLED)
-#if (USBH_HID_ENABLED)
+#if (USBH_ENABLED) && (USBH_HID_ENABLED)
 #include "drv_usb.h"
 #include "os_task_usbd.h"
-#endif //(USBH_HID_ENABLED)
-#endif //(USBH_ENABLED)
+#endif //(USBH_HID_ENABLED) && (USBH_ENABLED)
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "task_shell"
@@ -55,13 +53,11 @@ void OS_TaskMain(OS_TaskArgs* args_p)
 extern volatile OS_QueueHd stdin_qhd;
 const OS_DriverHd drv_shell = OS_DriverStdInGet();
 OS_Message* msg_p;
-    OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
-#if (USBH_ENABLED)
-#if (USBH_HID_ENABLED)
+//    OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
+#if (USBH_ENABLED) && (USBH_HID_ENABLED)
 const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
     OS_ASSERT(S_OK == OS_TasksConnect(usbd_thd, OS_THIS_TASK));
-#endif //(USBH_HID_ENABLED)
-#endif //(USBH_ENABLED)
+#endif //(USBH_HID_ENABLED) && (USBH_ENABLED)
     //Init stdin_qhd before all other tasks and return to the base priority.
     stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
@@ -86,8 +82,7 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                 }
             } else {
                 switch (msg_p->id) {
-#if (USBH_ENABLED)
-#if (USBH_HID_ENABLED)
+#if (USBH_ENABLED) && (USBH_HID_ENABLED)
                     case OS_MSG_USB_HID_MOUSE:
                         OS_LOG(D_DEBUG, "mouse event");
                         break;
@@ -101,8 +96,7 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                         }
                         }
                         break;
-#endif //(USBH_HID_ENABLED)
-#endif //(USBH_ENABLED)
+#endif //(USBH_HID_ENABLED) && (USBH_ENABLED)
                     default:
                         OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
                         break;

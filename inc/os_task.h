@@ -43,17 +43,6 @@ enum {
 };
 typedef U8 OS_TaskState;
 
-enum {
-    OS_TASK_PRIO_IDLE,
-    OS_TASK_PRIO_LOW            = OS_PRIORITY_MIN,
-    OS_TASK_PRIO_BELOW_NORMAL,
-    OS_TASK_PRIO_NORMAL,
-    OS_TASK_PRIO_ABOVE_NORMAL,
-    OS_TASK_PRIO_HIGH,
-    OS_TASK_PRIO_REALTIME,
-    OS_TASK_PRIO_MAX            = (OS_PRIORITY_MAX - 1),
-    OS_TASK_PRIO_LAST           = OS_TASK_PRIO_MAX
-};
 typedef U8 OS_TaskPrio;
 
 typedef OS_Owner    OS_TaskHd;      //Task handle

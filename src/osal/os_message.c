@@ -87,7 +87,7 @@ const OS_List* slots_qhd_l_p = OS_TaskSlotsGet(OS_THIS_TASK);
 Status OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout)
 {
 extern Status OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state);
-Status s;
+Status s = S_UNDEF;
 signal_filter: //Prevent recursion calls.
     IF_OK(s = OS_QueueReceive(qhd, msg_pp, timeout)) {
         const OS_Message* msg_p = *msg_pp;

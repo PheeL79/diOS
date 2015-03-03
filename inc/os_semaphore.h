@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+#include "FreeRTOS.h"
 #include "semphr.h"
 #include "status.h"
 #include "os_time.h"
@@ -24,9 +25,8 @@ typedef SemaphoreHandle_t OS_SemaphoreHd;
 
 //------------------------------------------------------------------------------
 /// @brief      Create a binary semaphore.
-/// @param[in]  shd             Semaphore handle.
-/// @return     None.
-void            OS_SemaphoreBinaryCreate(OS_SemaphoreHd shd);
+/// @return     Semaphore handle.
+OS_SemaphoreHd  OS_SemaphoreBinaryCreate(void);
 
 /// @brief      Create a counting semaphore.
 /// @param[in]  count_max       Counter maximum value.

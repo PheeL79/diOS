@@ -3,8 +3,10 @@
 * @brief   GPIO driver.
 * @author  A. Filyanov
 ******************************************************************************/
-#include <string.h>
 #include "hal.h"
+#include "os_debug.h"
+#include "os_supervise.h"
+#include "os_network.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_gpio"
@@ -104,4 +106,36 @@ GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Speed       = GPIO_SPEED_LOW;
 
     HAL_GPIO_Init(HAL_ASSERT_PIN_PORT, &GPIO_InitStruct);
+}
+
+/*****************************************************************************/
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    switch (GPIO_Pin) {
+        case GPIO_PIN_0:
+            {
+            extern HAL_IrqCallbackFunc wakeup_irq_callback_func;
+            if (OS_NULL != wakeup_irq_callback_func) {
+                wakeup_irq_callback_func();
+            }
+            }
+            break;
+        case GPIO_PIN_3:
+            {
+            extern OS_QueueHd netd_stdin_qhd;
+            Status s = S_UNDEF;
+                IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_LINK_INT_CLEAR, OS_NULL)) {
+                    if (OS_NULL != netd_stdin_qhd) {
+                        const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_LINK_STATE_CHANGED, 0);
+                        OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
+                    }
+                } else {
+                    OS_LOG_S(D_WARNING, s);
+                }
+            }
+            break;
+        default:
+            OS_ASSERT(OS_FALSE);
+            break;
+    }
 }

@@ -395,9 +395,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 OS_SignalData signal_data = 0;
     OS_USB_SIG_ITF_SET(signal_data, ((USBH_HandleTypeDef*)(hhcd->pData))->id);
     const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBH, OS_SIG_DRV, signal_data);
-    if (1 == OS_ISR_SignalSend(usbhd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-        OS_ContextSwitchForce();
-    }
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(usbhd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
 #endif // (USBH_USE_diOS)
 }
 /*******************************************************************************
@@ -734,9 +732,7 @@ OS_SignalData signal_data = 0;
     OS_USB_SIG_ITF_SET(signal_data, phost->id);
     OS_USB_SIG_MSG_SET(signal_data, id);
     const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBH, OS_SIG_DRV, signal_data);
-    if (1 == OS_ISR_SignalSend(usbhd_stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
-        OS_ContextSwitchForce();
-    }
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(usbhd_stdin_qhd, signal, OS_MSG_PRIO_HIGH));
 }
 #endif // (USBH_ENABLED)
 

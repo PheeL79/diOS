@@ -10,6 +10,7 @@
 #include "common.h"
 
 //CSP
+#include "drv_crc.h"
 #include "drv_adc.h"
 #include "drv_spi.h"
 #include "drv_i2s.h"
@@ -22,6 +23,7 @@
 #include "drv_power.h"
 #include "drv_usbh.h"
 #include "drv_usbd.h"
+#include "drv_eth.h"
 //BSP
 #include "drv_mem_ext.h"
 #include "drv_trimmer.h"
@@ -80,7 +82,7 @@ extern U32 SystemCoreClockKHz;
 ///         D_LOG(D_DEBUG, "%d(ms)", CYCLES_TO_MS(cycles_diff));
 #define CYCLES_TO_MS(cycles)            ((U32)((cycles) / SystemCoreClockKHz))
 
-typedef volatile U32 HAL_IO_Reg;
+#define HAL_IO                          volatile
 
 //-----------------------------------------------------------------------------
 /// @brief      Init HAL.

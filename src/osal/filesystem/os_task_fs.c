@@ -3,6 +3,9 @@
 * @brief   File system daemon task.
 * @author  A. Filyanov
 *******************************************************************************/
+#include "os_config.h"
+#if (OS_FILE_SYSTEM_ENABLED)
+
 #include <string.h>
 #include "drv_media_usbh.h"
 #include "os_debug.h"
@@ -13,7 +16,6 @@
 #include "os_task_fs.h"
 #include "os_task_usb.h"
 
-#if (OS_FILE_SYSTEM_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "filesystem_d"
 

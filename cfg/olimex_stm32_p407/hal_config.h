@@ -10,7 +10,6 @@
 
 // HAL ------------------------------------------------------------------------
 #define OLIMEX_STM32_P407
-#define USE_HAL_DRIVER
 
 // PWR
 #define PWR_LEVEL                       PWR_PVDLevel_6
@@ -42,7 +41,7 @@
 #define HAL_TIMEOUT_TIMER_TIMESTAMP     20
 
 //SDIO SD
-#define SDIO_SD_ENABLED                 0
+#define SDIO_SD_ENABLED                 1
 #define SDIO_SDIO_DMA_STREAM3           3
 //#define SDIO_SD_DMA_STREAM6             6
 #define SDIO_SD_IRQ_PRIO                1
@@ -69,7 +68,18 @@
 //USB Device Classes
 #define USBD_AUDIO_ENABLED              0
 #define USBD_HID_ENABLED                0
-#define USBD_MSC_ENABLED                0
+#define USBD_MSC_ENABLED                1
+
+//Ethernet
+#define ETH_ENABLED                     1
+#define ETH_MAC_ADDR_SIZE               6
+#define ETH_MAC_ADDR0                   0x00
+#define ETH_MAC_ADDR1                   0x80
+#define ETH_MAC_ADDR2                   0xE1
+#define ETH_MAC_ADDR3                   0x00
+#define ETH_MAC_ADDR4                   0x00
+#define ETH_MAC_ADDR5                   0x00
+#define ETH_MTU_SIZE                    1500
 
 // Memory
 #define MEM_BLOCK_SIZE_MIN              8
@@ -101,6 +111,7 @@
 #define HAL_StrNCpy     strncpy
 #define HAL_SPrintF     sprintf
 #define HAL_SNPrintF    snprintf
+#define HAL_SScanF      sscanf
 
 // Locale
 #define LOCALE_STRING_EN                "en"

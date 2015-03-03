@@ -35,7 +35,7 @@ extern RTC_HandleTypeDef rtc_handle;
 
 HAL_DriverItf* drv_button_v[DRV_ID_BUTTON_LAST];
 
-static HAL_IrqCallbackFunc wakeup_irq_callback_func = OS_NULL;
+HAL_IrqCallbackFunc wakeup_irq_callback_func = OS_NULL;
 static HAL_IrqCallbackFunc tamper_irq_callback_func = OS_NULL;
 
 //-----------------------------------------------------------------------------
@@ -246,16 +246,6 @@ Status s = S_UNDEF;
 }
 
 /******************************************************************************/
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if (BUTTON_WAKEUP_PIN == GPIO_Pin) {
-        if (OS_NULL != wakeup_irq_callback_func) {
-            wakeup_irq_callback_func();
-        }
-    }
-}
-
-/******************************************************************************/
 void HAL_RTCEx_Tamper1EventCallback(RTC_HandleTypeDef *hrtc)
 {
     if (OS_NULL != tamper_irq_callback_func) {
@@ -264,12 +254,6 @@ void HAL_RTCEx_Tamper1EventCallback(RTC_HandleTypeDef *hrtc)
 }
 
 // Buttons IRQ handlers --------------------------------------------------------
-/******************************************************************************/
-void EXTI0_IRQHandler(void);
-void EXTI0_IRQHandler(void)
-{
-    HAL_GPIO_EXTI_IRQHandler(BUTTON_WAKEUP_PIN);
-}
 
 /******************************************************************************/
 void TAMP_STAMP_IRQHandler(void);

@@ -17,23 +17,15 @@
 
 //------------------------------------------------------------------------------
 // limits
-    #define U8_MIN              0x0
     #define U8_MAX              0xFFU
-    #define U16_MIN             0x0
     #define U16_MAX             0xFFFFU
-    #define U32_MIN             0x0
     #define U32_MAX             0xFFFFFFFFUL
-    #define U64_MIN             0x0
     #define U64_MAX             0xFFFFFFFFFFFFFFFFUL
 
-    #define S8_MIN              0x80
     #define S8_MAX              0x7F
-    #define S16_MIN             0x8000
     #define S16_MAX             0x7FFF
-    #define S32_MIN             0x80000000
     #define S32_MAX             0x7FFFFFFF
-    #define S64_MIN             0x8000000000000000
-    #define S64_MAX             0x7FFFFFFFFFFFFFFF
+    #define S64_MAX             0x7FFFFFFFFFFFFFFFL
 
 // common types
 #if defined(CM4F) || defined(STM32F40XX)

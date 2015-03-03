@@ -19,6 +19,9 @@
 #if (OS_FILE_SYSTEM_ENABLED)
 #include "os_shell_commands_fs.h"
 #endif // (OS_FILE_SYSTEM_ENABLED)
+#if (OS_NETWORK_ENABLED)
+#include "os_shell_commands_net.h"
+#endif // (OS_NETWORK_ENABLED)
 #include "os_shell.h"
 
 /// @details Use macro D_TRACE\D_LOG there instead of OS_ equals.
@@ -93,6 +96,9 @@ Status s = S_OK;
 #if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_ShellCommandsFsInit()) { return s; }
 #endif // (OS_FILE_SYSTEM_ENABLED)
+#if (OS_NETWORK_ENABLED)
+    IF_STATUS(s = OS_ShellCommandsNetInit()) { return s; }
+#endif // (OS_NETWORK_ENABLED)
     return s;
 }
 
@@ -174,19 +180,20 @@ Bool is_quoted = OS_FALSE;
     }
     //Execute the command handler.
     const OS_ShellCommandHd cmd_hd = OS_ShellCommandByNameGet(shell_cl);
-    if (SHELL_COMMAND_UNDEF == cmd_hd) {
+    if (!cmd_hd || !cmd_hd->command) {
         return S_UNDEF_CMD;
     }
     IF_STATUS(OS_ShellArgumentsNumberCheck(cmd_hd, argc)) {
         return S_INVALID_ARGS_NUMBER;
     }
+    OS_ASSERT(cmd_hd->handler);
     return cmd_hd->handler(argc, argv);
 }
 
 /******************************************************************************/
 OS_ShellCommandHd OS_ShellCommandByNameGet(ConstStrP name_p)
 {
-OS_ShellCommandHd cmd_hd = SHELL_COMMAND_UNDEF;
+OS_ShellCommandHd cmd_hd = OS_NULL;
 
     IF_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_commands_list));
@@ -209,15 +216,15 @@ OS_ShellCommandHd cmd_hd = SHELL_COMMAND_UNDEF;
 OS_ShellCommandHd OS_ShellCommandNextGet(const OS_ShellCommandHd cmd_hd)
 {
 OS_ListItem* iter_li_p;
-OS_ShellCommandHd chd = SHELL_COMMAND_UNDEF;
+OS_ShellCommandHd chd = OS_NULL;
     IF_OK(OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
-        if (SHELL_COMMAND_UNDEF == cmd_hd) {
+        if (!cmd_hd) {
             iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_commands_list));
             if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { goto error; }
             chd = (OS_ShellCommandHd)OS_ListItemValueGet(iter_li_p);
         } else {
             iter_li_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_hd);
-            if (OS_NULL != iter_li_p) {
+            if (iter_li_p) {
                 iter_li_p = OS_ListItemNextGet(iter_li_p);
                 if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) { goto error; }
                 chd = (OS_ShellCommandHd)OS_ListItemValueGet(iter_li_p);
@@ -259,7 +266,7 @@ static BL is_ctrl = OS_FALSE;
     switch (c) {
         case OS_ASCII_ESC_CR:
         case OS_ASCII_ESC_LF: {
-#if (0 == OS_SHELL_EDIT_ENABLED)
+#if (!OS_SHELL_EDIT_ENABLED)
             OS_ShellControlEcho(OS_SHELL_BUTTON_UP); //Cursor up to cancel remote terminal LF.
 #endif // (OS_SHELL_EDIT_ENABLED)
             const Status s = OS_ShellCommandExecute();

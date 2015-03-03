@@ -3,6 +3,9 @@
 * @brief   OS File system.
 * @author  A. Filyanov
 *******************************************************************************/
+#include "os_config.h"
+#if (OS_FILE_SYSTEM_ENABLED)
+
 #include <string.h>
 #include "ff.h"
 #include "diskio.h"
@@ -13,7 +16,6 @@
 #include "os_time.h"
 #include "os_file_system.h"
 
-#if (OS_FILE_SYSTEM_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "file_system"
 #undef  MDL_STATUS_ITEMS

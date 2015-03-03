@@ -171,9 +171,7 @@ error:
 void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p)
 {
 //const OS_Signal signal = OS_ISR_SignalCreate(OS_SIG_DRV, args_p->signal_id, 0);
-//    if (OS_ISR_SignalSend(args_p->slot_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-//        OS_ContextSwitchForce();
-//    }
+//    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(args_p->slot_qhd, signal, OS_MSG_PRIO_NORMAL));
 }
 
 #endif //(OS_AUDIO_ENABLED)

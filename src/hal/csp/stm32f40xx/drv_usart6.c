@@ -328,9 +328,7 @@ void USARTx_IRQHandler(void)
     extern OS_QueueHd stdin_qhd;
     const OS_SignalData sig_data = (U16)(USARTx->DR & (U16)0x01FF);
     const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
-    if (1 == OS_ISR_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-        OS_ContextSwitchForce();
-    }
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
 }
 
 /******************************************************************************/

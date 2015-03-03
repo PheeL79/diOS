@@ -25,6 +25,10 @@
   ******************************************************************************
   */
 
+#include "os_config.h"
+
+#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio.h"
 #include "os_common.h"
@@ -35,7 +39,6 @@
 #include "osal.h"
 #include "os_task_usb.h"
 
-#if (OS_AUDIO_ENABLED)
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
   */
@@ -127,8 +130,8 @@ U8 res = USBD_FAIL;
     }
     IF_STATUS(s = OS_ISR_MessageSend(usbd_qhd, msg_p, OS_MSG_PRIO_NORMAL)) {
         if (1 == s) {
+            OS_ISR_ContextSwitchForce(s);
             res = USBD_OK;
-            OS_ContextSwitchForce();
         }
     } else {
         res = USBD_OK;
@@ -152,8 +155,8 @@ Status s = S_UNDEF;
 U8 res = USBD_FAIL;
     IF_STATUS(s = OS_ISR_MessageSend(usbd_qhd, msg_p, OS_MSG_PRIO_NORMAL)) {
         if (1 == s) {
+            OS_ISR_ContextSwitchForce(s);
             res = USBD_OK;
-            OS_ContextSwitchForce();
         }
     } else {
         res = USBD_OK;
@@ -187,8 +190,8 @@ U8 res = USBD_FAIL;
                 if (OS_NULL != msg_p) {
                     IF_STATUS(s = OS_ISR_MessageSend(usbd_qhd, msg_p, OS_MSG_PRIO_NORMAL)) {
                         if (1 == s) {
+                            OS_ISR_ContextSwitchForce(s);
                             res = USBD_OK;
-                            OS_ContextSwitchForce();
                         }
                     } else {
                         res = USBD_OK;
@@ -203,8 +206,8 @@ U8 res = USBD_FAIL;
                 if (OS_NULL != msg_p) {
                     IF_STATUS(s = OS_ISR_MessageSend(usbd_qhd, msg_p, OS_MSG_PRIO_NORMAL)) {
                         if (1 == s) {
+                            OS_ISR_ContextSwitchForce(s);
                             res = USBD_OK;
-                            OS_ContextSwitchForce();
                         }
                     } else {
                         res = USBD_OK;
@@ -227,9 +230,7 @@ U8 res = USBD_FAIL;
 static int8_t VolumeCtl (uint8_t vol)
 {
 const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBD, OS_SIG_USB_AUDIO_VOLUME_SET, vol);
-    if (OS_ISR_SignalSend(usbd_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-        OS_ContextSwitchForce();
-    }
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(usbd_qhd, signal, OS_MSG_PRIO_NORMAL));
     return (USBD_OK);
 }
 
@@ -241,10 +242,8 @@ const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBD, OS_SIG_USB_AUDIO_VOLUM
 static int8_t MuteCtl (uint8_t cmd)
 {
 const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBD, OS_SIG_USB_AUDIO_MUTE_SET, cmd);
-    if (OS_ISR_SignalSend(usbd_qhd, signal, OS_MSG_PRIO_NORMAL)) {
-        OS_ContextSwitchForce();
-    }
-  return (USBD_OK);
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(usbd_qhd, signal, OS_MSG_PRIO_NORMAL));
+    return (USBD_OK);
 }
 
 /**
@@ -254,7 +253,7 @@ const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USBD, OS_SIG_USB_AUDIO_MUTE_
   */
 static int8_t PeriodicTC (uint8_t cmd)
 {
-  return (USBD_OK);
+    return (USBD_OK);
 }
 
 /**
@@ -264,7 +263,7 @@ static int8_t PeriodicTC (uint8_t cmd)
   */
 static int8_t GetState (void)
 {
-  return (USBD_OK);
+    return (USBD_OK);
 }
 /**
   * @}
@@ -280,4 +279,4 @@ static int8_t GetState (void)
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
-#endif //(OS_AUDIO_ENABLED)
+#endif //(USBD_ENABLED) && (USBD_AUDIO_ENABLED)
