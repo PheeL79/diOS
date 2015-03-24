@@ -28,6 +28,8 @@ extern "C" {
 enum {
     OS_TASK_ATTR_SINGLE,
     OS_TASK_ATTR_RECREATE,
+//    OS_TASK_ATTR_MPU,
+//    OS_TASK_ATTR_FPU,
     OS_TASK_ATTR_LAST
 };
 typedef U8 OS_TaskAttrs;
@@ -80,18 +82,18 @@ typedef struct {
 /// @brief      Init task.
 /// @param[in]  args_p          Task arguments.
 /// @return     #Status.
-static Status   OS_TaskInit(OS_TaskArgs* args_p);
+WEAK static Status  OS_TaskInit(OS_TaskArgs* args_p);
 
 /// @brief      Task main function.
 /// @param[in]  args_p          Task arguments.
 /// @return     None.
-static void     OS_TaskMain(OS_TaskArgs* args_p);
+WEAK static void    OS_TaskMain(OS_TaskArgs* args_p);
 
 /// @brief      Task main function.
 /// @param[in]  args_p          Task arguments.
 /// @param[in]  state           Task new power state.
 /// @return     #Status.
-static Status   OS_TaskPower(OS_TaskArgs* args_p, const OS_PowerState state);
+WEAK static Status  OS_TaskPower(OS_TaskArgs* args_p, const OS_PowerState state);
 
 #include "os_queue.h" //deps on above declarations
 //------------------------------------------------------------------------------

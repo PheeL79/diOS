@@ -8,7 +8,7 @@
 #include "os_debug.h"
 #include "os_supervise.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_power"

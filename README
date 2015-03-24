@@ -1,5 +1,5 @@
 /**************************************************************************//**
-    diOS - Copyright (C) 2013 - 2014 Alexander (PheeL) Filyanov. 
+    diOS - Copyright (C) 2013 - 2015 Alexander (PheeL) Filyanov. 
     https://github.com/PheeL79/diOS
 ******************************************************************************/
 
@@ -15,6 +15,7 @@ when you need to port the solution to the various hardware platforms.
 Project is based on the following software:
 - FreeRTOS by Richard Barry (Real Time Engineers Ltd.) (http://www.freertos.org/);
 - FatFs by ChaN (http://elm-chan.org/fsw/ff/00index_e.html);
+- lwIP TCP/IP stack by Adam Dunkels (https://savannah.nongnu.org/projects/lwip/);
 - minIni by CompuPhase (http://www.compuphase.com);
 - Unity Project by Mike Karlesky, Mark VanderVoord, and Greg Williams (https://github.com/ThrowTheSwitch/Unity);
 - CMSIS Library by ARM Ltd. (http://www.arm.com);

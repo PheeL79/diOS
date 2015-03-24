@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "lwip/opt.h"
+#include "lwipopts.h"
 #include "lwip/pbuf.h"
 #include "lwip/netif.h"
 #include "os_signal.h"
@@ -23,9 +23,12 @@ typedef struct netif        OS_NetworkItf;
 typedef void*               OS_NetworkItfHd;
 typedef U8                  OS_NetworkItfId;
 typedef U8*                 OS_NetworkMacAddr;
-typedef struct ip_addr      OS_NetworkIp4Addr;
-typedef OS_NetworkIp4Addr   OS_NetworkNetMask;
-typedef OS_NetworkIp4Addr   OS_NetworkGateWay;
+typedef struct ip_addr      OS_NetworkIpAddr4;
+typedef OS_NetworkIpAddr4   OS_NetworkNetMask4;
+typedef OS_NetworkIpAddr4   OS_NetworkGateWay4;
+//typedef struct ip_addr6     OS_NetworkIpAddr6;
+//typedef OS_NetworkIpAddr6   OS_NetworkNetMask6;
+//typedef OS_NetworkIpAddr6   OS_NetworkGateWay6;
 
 enum {
 //ETH Common
@@ -47,9 +50,9 @@ typedef struct {
 
 typedef struct {
     OS_NetworkMacAddr*      mac_addr_p;
-    OS_NetworkIp4Addr*      ip4_addr_p;
-    OS_NetworkNetMask*      netmask_p;
-    OS_NetworkGateWay*      gateway_p;
+    OS_NetworkIpAddr4*      ip_addr4_p;
+    OS_NetworkNetMask4*     netmask4_p;
+    OS_NetworkGateWay4*     gateway4_p;
 } OS_NetworkItfInitArgs;
 
 typedef struct {
@@ -112,30 +115,34 @@ Status          OS_NetworkItfLinkDownSet(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfUpSet(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfDownSet(const OS_NetworkItfHd net_itf_hd);
 
-Status          OS_NetworkItfDhcpStart(const OS_NetworkItfHd net_itf_hd);
-Status          OS_NetworkItfDhcpStop(const OS_NetworkItfHd net_itf_hd);
+#if (LWIP_DHCP)
+Status          OS_NetworkItfDhcpClientStart(const OS_NetworkItfHd net_itf_hd);
+Status          OS_NetworkItfDhcpClientStop(const OS_NetworkItfHd net_itf_hd);
+#endif //(LWIP_DHCP)
 
-/// @brief      Get the network interface address.
-/// @param[in]  net_itf_hd      Network interface.
-/// @param[out] ip_addr_p       IP address.
-/// @param[out] netmask_p       Address mask.
-/// @param[out] gateway_p       Gateway.
-/// @return     #Status.
-Status          OS_NetworkItfAddressGet(const OS_NetworkItfHd net_itf_hd,
-                                        OS_NetworkIp4Addr* ip4_addr_p,
-                                        OS_NetworkNetMask* netmask_p,
-                                        OS_NetworkGateWay* gateway_p);
+ConstStrP       OS_NetworkItfNameGet(const OS_NetworkItfHd net_itf_hd);
 
-/// @brief      Set the network interface address.
+/// @brief      Get the network interface v4 address.
 /// @param[in]  net_itf_hd      Network interface.
-/// @param[in]  ip_addr_p       IP address.
-/// @param[in]  netmask_p       Address mask.
-/// @param[in]  gateway_p       Gateway.
+/// @param[out] ip_addr4_p      IP address v4.
+/// @param[out] netmask4_p      Address mask.
+/// @param[out] gateway4_p      Gateway.
 /// @return     #Status.
-Status          OS_NetworkItfAddressSet(const OS_NetworkItfHd net_itf_hd,
-                                        const OS_NetworkIp4Addr* ip4_addr_p,
-                                        const OS_NetworkNetMask* netmask_p,
-                                        const OS_NetworkGateWay* gateway_p);
+Status          OS_NetworkItfAddress4Get(const OS_NetworkItfHd net_itf_hd,
+                                         OS_NetworkIpAddr4*  ip_addr4_p,
+                                         OS_NetworkNetMask4* netmask4_p,
+                                         OS_NetworkGateWay4* gateway4_p);
+
+/// @brief      Set the network interface v4 address.
+/// @param[in]  net_itf_hd      Network interface.
+/// @param[in]  ip_addr4_p      IP address v4.
+/// @param[in]  netmask4_p      Address mask.
+/// @param[in]  gateway4_p      Gateway.
+/// @return     #Status.
+Status          OS_NetworkItfAddress4Set(const OS_NetworkItfHd net_itf_hd,
+                                         const OS_NetworkIpAddr4*  ip_addr4_p,
+                                         const OS_NetworkNetMask4* netmask4_p,
+                                         const OS_NetworkGateWay4* gateway4_p);
 
 OS_NetworkItfHd OS_NetworkItfDefaultGet(void);
 
@@ -204,9 +211,9 @@ Status          OS_NetworkListen(void);
 Status          OS_NetworkAccept(void);
 
 Status          OS_NetworkMacAddressStrToBin(ConstStrP mac_addr_str_p, OS_NetworkMacAddr mac_addr);
-Status          OS_NetworkIp4AddressStrToBin(ConstStrP ip4_addr_str_p, OS_NetworkIp4Addr* ip4_addr_p);
-Status          OS_NetworkNetMaskStrToBin(ConstStrP netmask_str_p, OS_NetworkNetMask* netmask_p);
-Status          OS_NetworkGateWayStrToBin(ConstStrP gateway_str_p, OS_NetworkNetMask* gateway_p);
+Status          OS_NetworkIpAddress4StrToBin(ConstStrP ip_addr4_str_p, OS_NetworkIpAddr4* ip_addr4_p);
+Status          OS_NetworkNetMask4StrToBin(ConstStrP netmask4_str_p, OS_NetworkNetMask4* netmask4_p);
+Status          OS_NetworkGateWay4StrToBin(ConstStrP gateway4_str_p, OS_NetworkGateWay4* gateway4_p);
 
 #endif //(OS_NETWORK_ENABLED)
 

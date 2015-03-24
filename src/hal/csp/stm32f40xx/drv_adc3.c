@@ -109,7 +109,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     HAL_GPIO_Init(ADCx_CHANNEL_GPIO_PORT, &GPIO_InitStruct);
     /*##-3- Configure the NVIC #################################################*/
     /* NVIC configuration */
-    HAL_NVIC_SetPriority(ADCx_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_SetPriority(ADCx_IRQn, IRQ_PRIO_ADC3, 0);
     HAL_NVIC_EnableIRQ(ADCx_IRQn);
     return S_OK;
 }

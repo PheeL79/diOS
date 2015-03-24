@@ -6,11 +6,6 @@
 //------------------------------------------------------------------------------
 // Common definitions.
 //------------------------------------------------------------------------------
-#define OS_NULL                     ((void*)0)
-#ifndef NULL
-#   define NULL                     OS_NULL
-#endif
-
 #define KHZ                         1000UL
 #define MHZ                         1000000UL
 
@@ -18,41 +13,37 @@
 #define US                          1000000UL
 
 // Common macros.
-#ifndef false
-#   define false                    (0 == 1)
-#   define OS_FALSE                 false
-#endif
-
-#ifndef true
-#   define true                     (1 == 1)
-#   define OS_TRUE                  true
-#endif
-
 // inline
-#if defined(_MSC_VER)
+#if defined(_MSC_VER)               /* Microsoft Compiler */
 #   define INLINE
-#elif defined(__GNUC__)
+#   define WEAK
+#elif defined(__GNUC__)             /* GNU Compiler */
+#   define ALIGN_END                __attribute__ ((aligned (4)))
+#   define ALIGN_BEGIN
 #   define INLINE                   __inline
-#elif defined(__ICCARM__)
+#   define WEAK                     __weak
+#   ifndef MAX
+#       define MAX(x, y)            ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#   endif
+#   ifndef MIN
+#       define MIN(x, y)            ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#   endif
+#elif defined(__ICCARM__)           /* IAR Compiler */
+#   define ALIGN_END
+#   define ALIGN_BEGIN
 #   define INLINE                   inline
 #   define __inline                 INLINE
 #   define INLINE_PRAGMA            #pragma inline
 #   define INLINE_PRAGMA_FORCED     #pragma inline=forced
+#   define WEAK                     __weak
+#   ifndef MAX
+#       define MAX(x, y)            (((x) > (y)) ? (x) : (y))
+#   endif
+#   ifndef MIN
+#       define MIN(x, y)            (((x) < (y)) ? (x) : (y))
+#   endif
+#   define MEM_ALIGN_SIZE(size, align) (((size) + align - 1) & ~(align - 1))
 #endif
-
-#if defined   (__GNUC__)            /* GNU Compiler */
-#   define ALIGN_END                __attribute__ ((aligned (4)))
-#   define ALIGN_BEGIN
-#else
-#   define ALIGN_END
-#   if defined   (__CC_ARM)         /* ARM Compiler */
-#        define ALIGN_BEGIN         __align(4)
-#    elif defined (__ICCARM__)      /* IAR Compiler */
-#        define ALIGN_BEGIN
-#    elif defined  (__TASKING__)    /* TASKING Compiler */
-#        define ALIGN_BEGIN         __align(4)
-#    endif /* __CC_ARM */
-#endif /* __GNUC__ */
 
 #define CONCAT(a, b)                a ## b
 #define IS_OVERFLOW(x, y, t)        ((t)CONCAT(t, _MIN) < 0 ? IS_OVERFLOW_S(x, y, t) : IS_OVERFLOW_U(x, y, t))

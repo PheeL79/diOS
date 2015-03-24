@@ -1,6 +1,6 @@
 /***************************************************************************//**
-* @file    os_message.c
-* @brief   OS Message.
+* @file    os_mailbox.c
+* @brief   OS Mailbox.
 * @author  A. Filyanov
 *******************************************************************************/
 #include <string.h>
@@ -9,13 +9,13 @@
 #include "os_task.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 
 //------------------------------------------------------------------------------
 static void SignalSend(const OS_TaskId src_tid, const Status status, const OS_SignalId signal_id);
 
 /******************************************************************************/
-OS_Message* OS_MessageCreate(const OS_MessageId id, const U16 size, const OS_TimeMs timeout, const void* data_p)
+OS_Message* OS_MessageCreate(const OS_MessageId id, const OS_MessageData data_p, const OS_MessageSize size, const OS_TimeMs timeout)
 {
 OS_Message* msg_p = OS_Malloc(size + sizeof(OS_Message));
 
@@ -136,7 +136,7 @@ void SignalSend(const OS_TaskId src_tid, const Status status, const OS_SignalId 
 /// @brief ISR specific functions.
 
 /******************************************************************************/
-OS_Message* OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id, const U16 size, const void* data_p)
+OS_Message* OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id, const OS_MessageData data_p, const OS_MessageSize size)
 {
 OS_Message* msg_p = OS_ISR_Malloc(size + sizeof(OS_Message));
 

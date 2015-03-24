@@ -8,7 +8,7 @@
 
 #include "os_common.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_audio.h"
 
 /**

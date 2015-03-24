@@ -31,8 +31,8 @@
 #define SD_POWER_STATE_ON               0x03
 
 /* DMA definitions for SD DMA transfer */
-#define SD_NVIC_IRQ_PRIORITY            (OS_PRIORITY_INT_MIN - 1)
-#define SD_NVIC_DMA_IRQ_PRIORITY        (OS_PRIORITY_INT_MIN)
+#define SD_NVIC_IRQ_PRIORITY            IRQ_PRIO_SDIO
+#define SD_NVIC_DMA_IRQ_PRIORITY        IRQ_PRIO_SDIO_DMA
 #define __DMAx_TxRx_CLK_ENABLE          __DMA2_CLK_ENABLE
 #define SD_DMAx_Tx_CHANNEL              DMA_CHANNEL_4
 #define SD_DMAx_Rx_CHANNEL              DMA_CHANNEL_4

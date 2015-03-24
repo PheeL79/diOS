@@ -9,7 +9,7 @@
 #include "os_supervise.h"
 #include "os_time.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usart6"
@@ -176,16 +176,16 @@ GPIO_InitTypeDef GPIO_InitStruct;
 
     /*##-3- Configure the NVIC for IRQ #########################################*/
     /* NVIC configuration for interrupt (USARTx) */
-    HAL_NVIC_SetPriority(USARTx_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_SetPriority(USARTx_IRQn, IRQ_PRIO_USART6, 0);
     HAL_NVIC_EnableIRQ(USARTx_IRQn);
 
     /*##-4- Configure the NVIC for DMA #########################################*/
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_TX) */
-    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, IRQ_PRIO_USART6_DMA_TX, 0);
     HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
 
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_RX) */
-    HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, IRQ_PRIO_USART6_DMA_RX, 0);
     HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
     return S_OK;
 }

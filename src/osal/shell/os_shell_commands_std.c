@@ -13,9 +13,9 @@
 #include "os_debug.h"
 #include "os_signal.h"
 #include "os_timer.h"
-#include "os_event.h"
+#include "os_trigger.h"
 #include "os_driver.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_environment.h"
 #include "os_shell_commands_std.h"
 #include "os_shell.h"
@@ -339,18 +339,18 @@ OS_TimerHd timer_hd = OS_NULL;
 #endif //(OS_TIMERS_ENABLED)
 
 /******************************************************************************/
-#if (OS_EVENTS_ENABLED)
-static void OS_ShellCmdStHandlerEvHelper(void);
-void OS_ShellCmdStHandlerEvHelper(void)
+#if (OS_TRIGGERS_ENABLED)
+static void OS_ShellCmdStHandlerTriHelper(void);
+void OS_ShellCmdStHandlerTriHelper(void)
 {
-OS_EventHd ehd = OS_NULL;
+OS_TriggerHd tigger_hd = OS_NULL;
 
     printf("\n%-8s %-5s %-3s %-8s %-10s %-12s %-4s %-5s %-4s",
            "Name", "TimId", "Act", "Options", "Period", "Slot", "STId", "State", "Item");
-    while (OS_NULL != (ehd = OS_EventNextGet(ehd))) {
-        OS_EventStats event_stats;
-        IF_STATUS(OS_EventStatsGet(ehd, &event_stats)) { return; }
-        const OS_TimerStats* timer_stats_p = &event_stats.timer_stats;
+    while (OS_NULL != (tigger_hd = OS_TriggerNextGet(tigger_hd))) {
+        OS_TriggerStats trigger_stats;
+        IF_STATUS(OS_TriggerStatsGet(tigger_hd, &trigger_stats)) { return; }
+        const OS_TimerStats* timer_stats_p = &trigger_stats.timer_stats;
         const OS_TimerHd timer_hd = OS_TimerByIdGet(timer_stats_p->id);
         if (OS_NULL == timer_hd) { return; }
         printf("\n%-8s %-5d %-3s %-8d %-10d %-12s %-4d %-5d 0x%-8x",
@@ -361,11 +361,19 @@ OS_EventHd ehd = OS_NULL;
                timer_stats_p->period,
                OS_TaskNameGet(timer_stats_p->slot),
                OS_TaskIdGet(timer_stats_p->slot),
-               event_stats.state,
-               event_stats.item_p);
+               trigger_stats.state,
+               trigger_stats.item_p);
     }
 }
-#endif //(OS_EVENTS_ENABLED)
+#endif //(OS_TRIGGERS_ENABLED)
+
+/******************************************************************************/
+#if (OS_NETWORK_ENABLED)
+static void OS_ShellCmdStHandlerNetHelper(void);
+void OS_ShellCmdStHandlerNetHelper(void)
+{
+}
+#endif //(OS_NETWORK_ENABLED)
 
 /******************************************************************************/
 static Status OS_ShellCmdStHandler(const U32 argc, ConstStrP argv[]);
@@ -383,11 +391,13 @@ CommandHandler cmd_handlers_v[] = {
 #if (OS_TIMERS_ENABLED)
     { "tim", OS_ShellCmdStHandlerTimHelper }, //timers
 #endif //(OS_TIMERS_ENABLED)
-#if (OS_EVENTS_ENABLED)
-    { "ev",  OS_ShellCmdStHandlerEvHelper  }, //events
-#endif //(OS_EVENTS_ENABLED)
+#if (OS_TRIGGERS_ENABLED)
+    { "tri", OS_ShellCmdStHandlerTriHelper }, //triggers
+#endif //(OS_TRIGGERS_ENABLED)
 //    { "fs",  OS_ShellCmdStHandlerFsHelper  }, //file system
-//    { "net", OS_ShellCmdStHandlerNetHelper }, //network itf
+#if (OS_NETWORK_ENABLED)
+    { "net", OS_ShellCmdStHandlerNetHelper }, //network itf
+#endif //(OS_NETWORK_ENABLED)
     { OS_NULL }
 };
     for (Size i = 0; OS_NULL != cmd_handlers_v[i].cmd; ++i) {
@@ -564,8 +574,10 @@ Status OS_ShellCommandsStdInit(void)
     //Create and register standart shell commands.
     for (Size i = 0; i < ITEMS_COUNT_GET(cmd_cfg_std, OS_ShellCommandConfig); ++i) {
         const OS_ShellCommandConfig* cmd_cfg_p = &cmd_cfg_std[i];
-        IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
-            OS_ASSERT(OS_FALSE);
+        if (OS_NULL != cmd_cfg_p->command) {
+            IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
+                OS_ASSERT(OS_FALSE);
+            }
         }
     }
     return S_OK;

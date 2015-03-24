@@ -12,7 +12,7 @@
 #include "os_file_system.h"
 #include "os_environment.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_debug.h"
 #include "os_driver.h"
 #include "os_shell.h"
@@ -49,7 +49,7 @@ const OS_TaskConfig task_sv_cfg = {
     .func_main      = OS_TaskMain,
     .func_power     = OS_TaskPower,
     .args_p         = OS_NULL,
-    .prio_init      = OS_PRIORITY_MAX - 1,
+    .prio_init      = OS_PRIORITY_MAX - 55,
     .prio_power     = OS_PWR_PRIO_MAX,
     .storage_size   = 0,
     .stack_size     = OS_STACK_SIZE_MIN * 2,

@@ -10,7 +10,7 @@
 #include "os_supervise.h"
 #include "os_driver.h"
 #include "os_memory.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_shell.h"
 #include "os_power.h"
 #include "os_list.h"

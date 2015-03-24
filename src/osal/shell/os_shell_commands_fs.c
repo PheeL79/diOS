@@ -8,7 +8,7 @@
 #include "osal.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_file_system.h"
 #include "os_shell_commands_fs.h"
 #include "os_shell.h"
@@ -549,8 +549,10 @@ Status OS_ShellCommandsFsInit(void)
     //Create and register file system shell commands
     for (Size i = 0; i < ITEMS_COUNT_GET(cmd_cfg_fs, OS_ShellCommandConfig); ++i) {
         const OS_ShellCommandConfig* cmd_cfg_p = &cmd_cfg_fs[i];
-        IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
-            OS_ASSERT(OS_FALSE);
+        if (OS_NULL != cmd_cfg_p->command) {
+            IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
+                OS_ASSERT(OS_FALSE);
+            }
         }
     }
     return S_OK;

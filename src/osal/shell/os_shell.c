@@ -14,7 +14,7 @@
 #include "os_debug.h"
 #include "os_mutex.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_shell_commands_std.h"
 #if (OS_FILE_SYSTEM_ENABLED)
 #include "os_shell_commands_fs.h"

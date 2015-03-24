@@ -6,6 +6,8 @@
 #ifndef _HAL_OLIMEX_STM32_P407_H_
 #define _HAL_OLIMEX_STM32_P407_H_
 
+#define OLIMEX_STM32_P407
+
 #include "stm32f4xx_hal.h"
 #include "common.h"
 

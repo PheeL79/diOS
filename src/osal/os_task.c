@@ -11,7 +11,7 @@
 #include "os_mutex.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_task.h"
 
 //------------------------------------------------------------------------------
@@ -152,8 +152,10 @@ Status s = S_UNDEF;
             OS_Free(cfg_dyn_p);
             return S_NO_MEMORY;
         }
+        OS_MemSet(cfg_dyn_p->args.stor_p, 0, cfg_p->storage_size);
+    } else {
+        cfg_dyn_p->args.stor_p = OS_NULL;
     }
-    OS_MemSet(cfg_dyn_p->args.stor_p, 0, cfg_p->storage_size);
     const OS_QueueConfig que_cfg = {
         .len        = (0 == cfg_p->stdin_len) ? 1 : cfg_p->stdin_len, //At least one item queue to create!
         .item_size  = sizeof(OS_Message*)
@@ -196,38 +198,42 @@ Status s = S_UNDEF;
     }
     //++tasks_count;
     IF_OK(s) {
-        if (OS_NULL != task_hd_curr) {
-            const OS_QueueHd this_task_qhd = OS_TaskStdInGet(OS_THIS_TASK);
-            OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, PWR_STARTUP); //Task power "startup" state set.
-            IF_OK(s = OS_SignalSend(cfg_dyn_p->stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
-                OS_Message* msg_p;
-                IF_OK(s = OS_MessageReceive(this_task_qhd, &msg_p, OS_TIMEOUT_POWER)) {
-                    if (OS_SignalIs(msg_p)) {
-                        if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
-                            IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
-                                signal = OS_SignalCreate(OS_SIG_PWR, PWR_ON); //Task power "on" state set.
-                                IF_OK(s = OS_SignalSend(cfg_dyn_p->stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
-                                    IF_OK(s = OS_MessageReceive(this_task_qhd, &msg_p, OS_TIMEOUT_POWER)) {
-                                        if (OS_SignalIs(msg_p)) {
-                                            if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
-                                                IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
-                                                    OS_LOG(D_DEBUG, "[TID:%03u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
+        if (OS_NULL != cfg_dyn_p->cfg_p->func_power) {
+            if (OS_NULL != task_hd_curr) {
+                const OS_QueueHd this_task_qhd = OS_TaskStdInGet(OS_THIS_TASK);
+                OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, PWR_STARTUP); //Task power "startup" state set.
+                IF_OK(s = OS_SignalSend(cfg_dyn_p->stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+                    OS_Message* msg_p;
+                    IF_OK(s = OS_MessageReceive(this_task_qhd, &msg_p, OS_TIMEOUT_POWER)) {
+                        if (OS_SignalIs(msg_p)) {
+                            if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
+                                IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
+                                    signal = OS_SignalCreate(OS_SIG_PWR, PWR_ON); //Task power "on" state set.
+                                    IF_OK(s = OS_SignalSend(cfg_dyn_p->stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {
+                                        IF_OK(s = OS_MessageReceive(this_task_qhd, &msg_p, OS_TIMEOUT_POWER)) {
+                                            if (OS_SignalIs(msg_p)) {
+                                                if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
+                                                    IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
+                                                        OS_LOG(D_DEBUG, "[TID:%03u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
+                                                    }
+                                                } else {
+                                                    s = S_UNDEF_SIG;
+                                                    OS_LOG_S(D_WARNING, s);
                                                 }
-                                            } else {
-                                                s = S_UNDEF_SIG;
-                                                OS_LOG_S(D_WARNING, s);
                                             }
                                         }
                                     }
                                 }
+                            } else {
+                                s = S_UNDEF_SIG;
+                                OS_LOG_S(D_WARNING, s);
                             }
-                        } else {
-                            s = S_UNDEF_SIG;
-                            OS_LOG_S(D_WARNING, s);
                         }
                     }
                 }
             }
+        } else {
+            s = OS_TaskPowerStateSet(thd, PWR_UNDEF);
         }
     }
 error:

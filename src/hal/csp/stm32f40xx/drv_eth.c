@@ -16,6 +16,7 @@
 #define MDL_NAME    "drv_eth"
 
 #define ETH0_MDINT_IRQn                 EXTI3_IRQn
+#define ETH0_OS_MEM_TYPE                OS_MEM_RAM_INT_SRAM
 
 //-----------------------------------------------------------------------------
 /// @brief   Init ETH.
@@ -33,29 +34,13 @@ static Status   ETH_DMA_Write(void* data_out_p, Size size, void* args_p);
 static Status   ETH_IoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
-ETH_HandleTypeDef       eth0_hd;
-OS_QueueHd              netd_stdin_qhd;
-HAL_DriverItf*          drv_eth_v[DRV_ID_ETH_LAST];
-
-#if defined(__ICCARM__) /*!< IAR Compiler */
-#   pragma data_alignment=4
-#endif
-ALIGN_BEGIN ETH_DMADescTypeDef dma_rx_desc_tab[ETH_RXBUFNB] ALIGN_END; /* Ethernet Rx MA Descriptor */
-
-#if defined(__ICCARM__) /*!< IAR Compiler */
-#   pragma data_alignment=4
-#endif
-ALIGN_BEGIN ETH_DMADescTypeDef dma_tx_desc_tab[ETH_TXBUFNB] ALIGN_END; /* Ethernet Tx DMA Descriptor */
-
-#if defined(__ICCARM__) /*!< IAR Compiler */
-#   pragma data_alignment=4
-#endif
-ALIGN_BEGIN U8 rx_buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] ALIGN_END; /* Ethernet Receive Buffer */
-
-#if defined(__ICCARM__) /*!< IAR Compiler */
-#   pragma data_alignment=4
-#endif
-ALIGN_BEGIN U8 tx_buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] ALIGN_END; /* Ethernet Transmit Buffer */
+static ETH_DMADescTypeDef*  dma_rx_desc_tab_p;          /* Ethernet Rx MA Descriptor */
+static ETH_DMADescTypeDef*  dma_tx_desc_tab_p;          /* Ethernet Tx DMA Descriptor */
+static U8*                  rx_buff_p;                  /* Ethernet Receive Buffer */
+static U8*                  tx_buff_p;                  /* Ethernet Transmit Buffer */
+ETH_HandleTypeDef           eth0_hd;
+OS_QueueHd                  netd_stdin_qhd;
+HAL_DriverItf*              drv_eth_v[DRV_ID_ETH_LAST];
 
 //-----------------------------------------------------------------------------
 static HAL_DriverItf drv_eth0 = {
@@ -84,6 +69,14 @@ Status ETH__Init(void* args_p)
 const OS_NetworkItfInitArgs* init_args_p = (OS_NetworkItfInitArgs*)args_p;
 Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init: ");
+    dma_rx_desc_tab_p   = OS_MallocEx(sizeof(ETH_DMADescTypeDef) * ETH_RXBUFNB, ETH0_OS_MEM_TYPE);
+    dma_tx_desc_tab_p   = OS_MallocEx(sizeof(ETH_DMADescTypeDef) * ETH_TXBUFNB, ETH0_OS_MEM_TYPE);
+    rx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_RXBUFNB * ETH_RX_BUF_SIZE, ETH0_OS_MEM_TYPE);
+    tx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_TXBUFNB * ETH_TX_BUF_SIZE, ETH0_OS_MEM_TYPE);
+    if ((OS_NULL == dma_rx_desc_tab_p) || (OS_NULL == dma_tx_desc_tab_p) ||
+        (OS_NULL == rx_buff_p) || (OS_NULL == tx_buff_p)) {
+        return s = S_NO_MEMORY;
+    }
     IF_OK(s = ETH_LL_Init(OS_NULL)) {
         /* Init ETH */
         eth0_hd.Instance             = ETH;
@@ -98,10 +91,13 @@ Status s = S_UNDEF;
         if (HAL_OK == HAL_ETH_Init(&eth0_hd)) {
             IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_PHY_ID_TEST, OS_NULL)) {
                 IF_OK(s = DRV_ETH0_PHY.Init(OS_NULL)) {
+                    extern void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err);
+                    /* Config MAC and DMA */
+                    ETH_MACDMAConfig(&eth0_hd, ETH_SUCCESS);
                     /* Initialize Tx Descriptors list: Chain Mode */
-                    OS_ASSERT(HAL_OK == HAL_ETH_DMATxDescListInit(&eth0_hd, dma_tx_desc_tab, &tx_buff[0][0], ETH_TXBUFNB));
+                    OS_ASSERT(HAL_OK == HAL_ETH_DMATxDescListInit(&eth0_hd, dma_tx_desc_tab_p, tx_buff_p, ETH_TXBUFNB));
                     /* Initialize Rx Descriptors list: Chain Mode  */
-                    OS_ASSERT(HAL_OK == HAL_ETH_DMARxDescListInit(&eth0_hd, dma_rx_desc_tab, &rx_buff[0][0], ETH_RXBUFNB));
+                    OS_ASSERT(HAL_OK == HAL_ETH_DMARxDescListInit(&eth0_hd, dma_rx_desc_tab_p, rx_buff_p, ETH_RXBUFNB));
                 }
             }
         } else { s = S_HARDWARE_FAULT; }
@@ -115,7 +111,12 @@ Status ETH__DeInit(void* args_p)
 {
 Status s = S_UNDEF;
     HAL_LOG(D_INFO, "DeInit: ");
-    IF_OK(s = ETH_LL_DeInit(OS_NULL)) {}
+    IF_OK(s = ETH_LL_DeInit(OS_NULL)) {
+        OS_FreeEx(tx_buff_p, ETH0_OS_MEM_TYPE);
+        OS_FreeEx(rx_buff_p, ETH0_OS_MEM_TYPE);
+        OS_FreeEx(dma_tx_desc_tab_p, ETH0_OS_MEM_TYPE);
+        OS_FreeEx(dma_rx_desc_tab_p, ETH0_OS_MEM_TYPE);
+    }
     HAL_TRACE_S(D_INFO, s);
     return s;
 }
@@ -150,14 +151,14 @@ Status s = S_UNDEF;
     GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -169,19 +170,19 @@ Status s = S_UNDEF;
     GPIO_InitStruct.Pin = GPIO_PIN_11;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-    HAL_NVIC_SetPriority(ETH_IRQn, OS_PRIORITY_INT_MIN, 0);
-    HAL_NVIC_SetPriority(ETH0_MDINT_IRQn, OS_PRIORITY_INT_MIN, 0);
+    HAL_NVIC_SetPriority(ETH_IRQn, IRQ_PRIO_ETH, 0);
+    HAL_NVIC_SetPriority(ETH0_MDINT_IRQn, IRQ_PRIO_ETH0_MDINT, 0);
     HAL_NVIC_EnableIRQ(ETH_IRQn);
     HAL_NVIC_EnableIRQ(ETH0_MDINT_IRQn);
     return s;
@@ -192,6 +193,11 @@ Status ETH_LL_DeInit(void* args_p)
 {
 Status s = S_UNDEF;
     IF_OK(s = DRV_ETH0_PHY.DeInit(OS_NULL)) {
+        if (HAL_OK == HAL_ETH_Stop(&eth0_hd)) {
+            s = S_OK;
+        } else {
+            s = S_HARDWARE_FAULT;
+        }
         /* Peripheral clock disable */
         __ETHMACRX_CLK_DISABLE();
         __ETHMACTX_CLK_DISABLE();
@@ -227,9 +233,9 @@ Status s = S_UNDEF;
     netd_stdin_qhd = open_args_p->netd_stdin_qhd;
     IF_OK(s = DRV_ETH0_PHY.Open(OS_NULL)) {
         /* Enable MAC and DMA transmission and reception */
-        if (HAL_OK == HAL_ETH_Start(&eth0_hd)) {
-            IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_LINK_INT_SETUP, OS_NULL)) {}
-        } else { s = S_HARDWARE_FAULT; }
+        if (HAL_OK != HAL_ETH_Start(&eth0_hd)) {
+            s = S_HARDWARE_FAULT;
+        }
     }
     return s;
 }
@@ -239,11 +245,6 @@ Status ETH_Close(void* args_p)
 {
 Status s = S_UNDEF;
     IF_OK(s = DRV_ETH0_PHY.Close(OS_NULL)) {
-        if (HAL_OK == HAL_ETH_Stop(&eth0_hd)) {
-            s = S_OK;
-        } else {
-            s = S_HARDWARE_FAULT;
-        }
         netd_stdin_qhd = OS_NULL;
     }
     return s;
@@ -255,7 +256,7 @@ Status ETH_DMA_Read(void* data_in_p, Size size, void* args_p)
 OS_NetworkBuf* p = OS_NULL;
 OS_NetworkBuf* q = OS_NULL;
 U8* buffer_p;
-__IO ETH_DMADescTypeDef *rx_dma_desc;
+HAL_IO ETH_DMADescTypeDef *rx_dma_desc;
 U32 buffer_offset = 0;
 U32 payload_offset = 0;
 U32 bytes_left_to_copy = 0;
@@ -324,12 +325,11 @@ Status ETH_DMA_Write(void* data_out_p, Size size, void* args_p)
 {
 OS_NetworkBuf* q;
 U8* buffer_p = (U8*)(eth0_hd.TxDesc->Buffer1Addr);
-__IO ETH_DMADescTypeDef *tx_dma_desc;
+HAL_IO ETH_DMADescTypeDef *tx_dma_desc;
 U32 frame_length = 0;
 U32 buffer_offset = 0;
 U32 bytes_left_to_copy = 0;
 U32 payload_offset = 0;
-err_t err_val;
 Status s = S_UNDEF;
 
     tx_dma_desc = eth0_hd.TxDesc;
@@ -338,7 +338,7 @@ Status s = S_UNDEF;
     for (q = data_out_p; q != NULL; q = q->next) {
         /* Is this buffer available? If not, goto error */
         if ((U32)RESET != (tx_dma_desc->Status & ETH_DMATXDESC_OWN)) {
-            err_val = ERR_USE;
+            s = S_BUSY;
             goto error;
         }
         /* Get bytes in current lwIP buffer */
@@ -352,7 +352,7 @@ Status s = S_UNDEF;
             tx_dma_desc = (ETH_DMADescTypeDef*)(tx_dma_desc->Buffer2NextDescAddr);
             /* Check if the buffer is available */
             if ((U32)RESET != (tx_dma_desc->Status & ETH_DMATXDESC_OWN)) {
-                err_val = ERR_USE;
+                s = S_BUSY;
                 goto error;
             }
 
@@ -369,8 +369,11 @@ Status s = S_UNDEF;
         frame_length = frame_length + bytes_left_to_copy;
     }
     /* Prepare transmit descriptors to give to DMA */
-    HAL_ETH_TransmitFrame(&eth0_hd, frame_length);
-    err_val = ERR_OK;
+    if (HAL_OK == HAL_ETH_TransmitFrame(&eth0_hd, frame_length)) {
+        s = S_OK;
+    } else {
+        s = S_HARDWARE_FAULT;
+    }
 error:
     /* When Transmit Underflow flag is set, clear it and issue a Transmit Poll Demand to resume transmission */
     if ((U32)RESET != (eth0_hd.Instance->DMASR & ETH_DMASR_TUS)) {
@@ -379,7 +382,6 @@ error:
         /* Resume DMA transmission*/
         eth0_hd.Instance->DMATPDR = 0;
     }
-    s = (ERR_OK == err_val) ? S_OK : S_HARDWARE_FAULT;
     return s;
 }
 
@@ -403,31 +405,57 @@ Status s = S_UNDEF;
             if (HAL_OK != hal_status) { s = S_HARDWARE_FAULT; }
             }
             break;
-        case DRV_REQ_ETH_LINK_STATUS_GET:
+        case DRV_REQ_ETH_LINK_INT_CLEAR:
+            s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_LINK_INT_CLEAR, OS_NULL);
+            break;
+        case DRV_REQ_ETH_LINK_STATE_GET:
             {
-            Bool* link_status_p = (Bool*)args_p;
+            Bool* link_state_p = (Bool*)args_p;
                 //TODO(A. Filyanov) Interface driver ID from the input args.
-                IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_LINK_STATUS_GET, link_status_p)) {
+                IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_LINK_STATUS_GET, link_state_p)) {
                 }
             }
             break;
         case DRV_REQ_ETH_SETUP:
             {
-            OS_NetworkItf* net_itf_p = (OS_NetworkItf*)args_p;
-            if (netif_is_link_up(net_itf_p)) {
-                /* Restart the auto-negotiation */
-                IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_AUTO_NEG_RESTART, OS_NULL)) {
-                    /* ETHERNET MAC Re-Configuration */
-                    HAL_ETH_ConfigMAC(&eth0_hd, (ETH_MACInitTypeDef*)NULL);
-                    /* Restart MAC interface */
-                    if (HAL_OK == HAL_ETH_Start(&eth0_hd)) {
-                        const OS_Signal signal = OS_SignalCreateEx(DRV_ID_ETH0, OS_SIG_ETH_CONN_STATE_CHANGED, 0);
-                        s = OS_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL);
+            const Bool link_state = *(Bool*)args_p;
+                if (link_state) {
+                    /* Restart the auto-negotiation */
+                    IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_AUTO_NEG_RESTART, OS_NULL)) {
+                        /* ETHERNET MAC Re-Configuration */
+                        HAL_ETH_ConfigMAC(&eth0_hd, (ETH_MACInitTypeDef*)NULL);
+                        /* Restart MAC interface */
+                        if (HAL_OK == HAL_ETH_Start(&eth0_hd)) {
+                        } else {
+                            s = S_HARDWARE_FAULT;
+                        }
+                    } else {
+                        /* Stop MAC interface */
+                        if (HAL_OK == HAL_ETH_Stop(&eth0_hd)) {
+                        } else {
+                            s = S_HARDWARE_FAULT;
+                        }
                     }
                 }
+            }
+            break;
+        case DRV_REQ_ETH_PHY_REG_GET:
+            {
+            ETH_DrvArgsPhyRegGetSet* reg_val_p = (ETH_DrvArgsPhyRegGetSet*)args_p;
+            if (HAL_OK == HAL_ETH_ReadPHYRegister(&eth0_hd, reg_val_p->reg, &(reg_val_p->val))) {
+                s = S_OK;
             } else {
-                /* Stop MAC interface */
-                HAL_ETH_Stop(&eth0_hd);
+                s = S_TIMEOUT;
+            }
+            }
+            break;
+        case DRV_REQ_ETH_PHY_REG_SET:
+            {
+            ETH_DrvArgsPhyRegGetSet* reg_val_p = (ETH_DrvArgsPhyRegGetSet*)args_p;
+            if (HAL_OK == HAL_ETH_WritePHYRegister(&eth0_hd, reg_val_p->reg, reg_val_p->val)) {
+                s = S_OK;
+            } else {
+                s = S_TIMEOUT;
             }
             }
             break;
@@ -436,20 +464,6 @@ Status s = S_UNDEF;
             break;
     }
     return s;
-}
-
-/******************************************************************************/
-U32 sys_jiffies(void);
-U32 sys_jiffies(void)
-{
-    return HAL_GetTick();
-}
-
-/******************************************************************************/
-U32 sys_now(void);
-U32 sys_now(void)
-{
-    return OS_TICKS_TO_MS(sys_jiffies());
 }
 
 /******************************************************************************/

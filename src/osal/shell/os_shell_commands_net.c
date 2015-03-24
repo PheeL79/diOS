@@ -11,11 +11,11 @@
 
 #if (OS_NETWORK_ENABLED)
 //------------------------------------------------------------------------------
-static ConstStr cmd_net[]            = "net";
-static ConstStr cmd_help_brief_net[] = "Display the message.";
+static ConstStr cmd_netitf[]            = "netitf";
+static ConstStr cmd_help_brief_netitf[] = "Setup network interface.";
 /******************************************************************************/
-static Status OS_ShellCmdNetHandler(const U32 argc, ConstStrP argv[]);
-Status OS_ShellCmdNetHandler(const U32 argc, ConstStrP argv[])
+static Status OS_ShellCmdNetItfHandler(const U32 argc, ConstStrP argv[]);
+Status OS_ShellCmdNetItfHandler(const U32 argc, ConstStrP argv[])
 {
 register U32 argc_count = 0;
     while (argc > argc_count) {
@@ -28,7 +28,7 @@ register U32 argc_count = 0;
 //------------------------------------------------------------------------------
 static ConstStr empty_str[] = "";
 static const OS_ShellCommandConfig cmd_cfg_net[] = {
-    { cmd_net,      cmd_help_brief_net,     empty_str,              OS_ShellCmdNetHandler,      1,    1,      OS_SHELL_OPT_UNDEF  },
+    { cmd_netitf,   cmd_help_brief_netitf,  empty_str,              OS_ShellCmdNetItfHandler,   1,    3,      OS_SHELL_OPT_UNDEF  },
 };
 
 /******************************************************************************/
@@ -37,8 +37,10 @@ Status OS_ShellCommandsNetInit(void)
     //Create and register file system shell commands
     for (Size i = 0; i < ITEMS_COUNT_GET(cmd_cfg_net, OS_ShellCommandConfig); ++i) {
         const OS_ShellCommandConfig* cmd_cfg_p = &cmd_cfg_net[i];
-        IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
-            OS_ASSERT(OS_FALSE);
+        if (OS_NULL != cmd_cfg_p->command) {
+            IF_STATUS(OS_ShellCommandCreate(cmd_cfg_p)) {
+                OS_ASSERT(OS_FALSE);
+            }
         }
     }
     return S_OK;

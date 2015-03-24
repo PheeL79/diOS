@@ -18,13 +18,20 @@ enum {
 
 enum {
     DRV_REQ_ETH_UNDEF = DRV_REQ_STD_LAST,
-    DRV_REQ_ETH_LINK_STATUS_GET,
+    DRV_REQ_ETH_LINK_INT_CLEAR,
+    DRV_REQ_ETH_LINK_STATE_GET,
     DRV_REQ_ETH_SETUP,
+    DRV_REQ_ETH_PHY_REG_GET,
+    DRV_REQ_ETH_PHY_REG_SET,
     DRV_REQ_ETH_LAST
 };
 
 //typedef OS_NetworkItfInitArgs ETH_DrvArgsInit;
 //typedef OS_NetworkItfOpenArgs ETH_DrvArgsOpen;
+typedef struct {
+    U8  reg;
+    U32 val;
+} ETH_DrvArgsPhyRegGetSet;
 
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_eth_v[];

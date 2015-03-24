@@ -8,12 +8,18 @@
 
 //------------------------------------------------------------------------------
 // runtime (initial) priority
+#define OS_TASK_PRIO_TIMERS                 (2)
 #define OS_TASK_PRIO_LOG                    (20)
 #define OS_TASK_PRIO_FS                     (90)
 #define OS_TASK_PRIO_USB                    (100)
 #define OS_TASK_PRIO_NET                    (120)
 #define OS_TASK_PRIO_AUDIO                  (150)
 #define OS_TASK_PRIO_SHELL                  (10)
+//OS Network daemons
+#define OS_TASK_PRIO_TCPIP                  (190)
+#define OS_TASK_PRIO_SLIP                   (190)
+#define OS_TASK_PRIO_PPP_INPUT              (190)
+#define OS_TASK_PRIO_LWIP                   (190)
 
 // power priority
 #define OS_TASK_PRIO_PWR_LOG                (OS_PWR_PRIO_MAX - 20)

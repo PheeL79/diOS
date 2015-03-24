@@ -18,13 +18,14 @@
     #include <assert.h>
 
     /// @brief Log levels.
-    typedef enum {
+    enum {
         D_NONE,         ///< verbose off
         D_CRITICAL,     ///< critical errors
         D_WARNING,      ///< warnings
         D_INFO,         ///< information
         D_DEBUG         ///< debug
-    } LogLevel;
+    };
+    typedef U8 LogLevel;
 
 //------------------------------------------------------------------------------
 //    typedef struct {
@@ -33,7 +34,7 @@
 //    } StatusItem;
 
     typedef ConstStrP   StatusItem;
-    typedef U8          TaskId;
+    typedef U8          TaskId;                 /// @warning Be sure this type is comform to OS_TaskId!
 
 //------------------------------------------------------------------------------
     ConstStrP StatusStringGet(const Status status, const StatusItem* status_items_p);

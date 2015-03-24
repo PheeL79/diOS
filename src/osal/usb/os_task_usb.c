@@ -12,7 +12,7 @@
 #include "osal.h"
 #include "os_supervise.h"
 #include "os_driver.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"
@@ -162,7 +162,7 @@ Status s = S_UNDEF;
                                         .class  = (OS_UsbClass)USBH_GetActiveClass(usbh_itf_hd_p)
                                     };
                                     Status s;
-                                    OS_Message* msg_p = OS_MessageCreate(msg_id, sizeof(usb_ev), OS_BLOCK, &usb_ev);
+                                    OS_Message* msg_p = OS_MessageCreate(msg_id, usb_ev, sizeof(usb_ev), OS_BLOCK);
                                     if (OS_NULL != msg_p) {
                                         IF_STATUS(s = OS_MessageEmit(msg_p, OS_BLOCK, OS_MSG_PRIO_NORMAL)) {
                                             OS_LOG_S(D_WARNING, s);

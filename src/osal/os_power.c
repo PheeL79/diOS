@@ -6,7 +6,7 @@
 #include "os_supervise.h"
 #include "os_debug.h"
 #include "os_signal.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_power.h"
 
 //------------------------------------------------------------------------------

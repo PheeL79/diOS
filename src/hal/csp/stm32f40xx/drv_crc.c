@@ -5,6 +5,8 @@
 ******************************************************************************/
 #include "hal.h"
 
+#if (HAL_CRC_ENABLED)
+
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_crc"
 
@@ -70,3 +72,5 @@ Status s = S_UNDEF;
     HAL_TRACE_S(D_INFO, s);
     return s;
 }
+
+#endif //(HAL_CRC_ENABLED)

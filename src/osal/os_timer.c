@@ -10,7 +10,7 @@
 #include "os_mutex.h"
 #include "os_debug.h"
 #include "os_list.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_timer.h"
 
 #if (OS_TIMERS_ENABLED)

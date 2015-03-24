@@ -7,7 +7,7 @@
 #include "os_common.h"
 #include "os_task.h"
 #include "os_supervise.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_signal.h"
 #include "os_debug.h"
 #if (USBD_ENABLED)
@@ -285,7 +285,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
         __USB_OTG_FS_CLK_ENABLE();
 
         /* Peripheral interrupt init*/
-        HAL_NVIC_SetPriority(OTG_FS_IRQn, OS_PRIORITY_INT_MIN, 0);
+        HAL_NVIC_SetPriority(OTG_FS_IRQn, IRQ_PRIO_OTG_FS, 0);
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
     }
 #endif // (USBD_FS_ENABLED)
@@ -328,7 +328,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
         __USB_OTG_HS_CLK_ENABLE();
 
         /* Peripheral interrupt init*/
-        HAL_NVIC_SetPriority(OTG_HS_IRQn, OS_PRIORITY_INT_MIN, 0);
+        HAL_NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRIO_OTG_HS, 0);
         HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
     }
 #endif // (USBD_HS_ENABLED)

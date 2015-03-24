@@ -1,10 +1,10 @@
 /***************************************************************************//**
-* @file    os_message.h
-* @brief   OS Message.
+* @file    os_mailbox.h
+* @brief   OS Mailbox.
 * @author  A. Filyanov
 *******************************************************************************/
-#ifndef _OS_MESSAGE_H_
-#define _OS_MESSAGE_H_
+#ifndef _OS_MAILBOX_H_
+#define _OS_MAILBOX_H_
 
 #include "os_list.h"
 #include "os_task.h"
@@ -14,11 +14,13 @@ extern "C" {
 #endif
 
 /**
-* \defgroup OS_Message OS_Message
+* \defgroup OS_Mailbox OS_Mailbox
 * @{
 */
 //------------------------------------------------------------------------------
-typedef OS_TaskHd OS_MessageSrc;
+typedef OS_TaskHd   OS_MessageSrc;
+typedef void*       OS_MessageData;
+typedef U16         OS_MessageSize;
 
 enum {
     OS_MSG_UNDEF,
@@ -38,11 +40,11 @@ typedef struct {
 //------------------------------------------------------------------------------
 /// @brief      Create a message.
 /// @param[in]  id              Message id.
-/// @param[in]  size            Message size.
-/// @param[in]  timeout         Message creation timeout.
 /// @param[in]  data_p          Message data.
+/// @param[in]  size            Message data size.
+/// @param[in]  timeout         Message creation timeout.
 /// @return     Message.
-OS_Message*     OS_MessageCreate(const OS_MessageId id, const U16 size, const OS_TimeMs timeout, const void* data_p);
+OS_Message*     OS_MessageCreate(const OS_MessageId id, const OS_MessageData data_p, const OS_MessageSize size, const OS_TimeMs timeout);
 
 /// @brief      Delete the message.
 /// @param[in]  msg_p           Message.
@@ -82,16 +84,16 @@ Status          OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message
 Status          OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout);
 
 /**
-* \addtogroup OS_ISR_Message ISR specific functions.
+* \addtogroup OS_ISR_Mailbox ISR specific functions.
 * @{
 */
 //------------------------------------------------------------------------------
 /// @brief      Create a message.
 /// @param[in]  id              Message id.
-/// @param[in]  size            Message size.
 /// @param[in]  data_p          Message data.
+/// @param[in]  size            Message data size.
 /// @return     Message.
-OS_Message*     OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id, const U16 size, const void* data_p);
+OS_Message*     OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id, const OS_MessageData data_p, const OS_MessageSize size);
 
 /// @brief      Send the message.
 /// @param[in]  qhd             Receiver (task) queue handle.
@@ -108,12 +110,12 @@ Status          OS_ISR_MessageSend(const OS_QueueHd qhd, const OS_Message* msg_p
 /// @return     #Status.
 Status          OS_ISR_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp);
 
-/**@}*/ //OS_ISR_Message
+/**@}*/ //OS_ISR_Mailbox
 
-/**@}*/ //OS_Message
+/**@}*/ //OS_Mailbox
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _OS_MESSAGE_H_
+#endif // _OS_MAILBOX_H_

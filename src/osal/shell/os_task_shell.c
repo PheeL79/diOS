@@ -7,7 +7,7 @@
 #include "os_environment.h"
 #include "os_driver.h"
 #include "os_shell.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"

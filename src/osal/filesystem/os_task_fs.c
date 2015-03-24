@@ -11,7 +11,7 @@
 #include "os_debug.h"
 #include "os_environment.h"
 #include "os_driver.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_file_system.h"
 #include "os_task_fs.h"
 #include "os_task_usb.h"

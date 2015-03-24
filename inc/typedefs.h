@@ -32,8 +32,11 @@
     #include <stdlib.h>
     #include <stdint.h>
 
-    #define DEV_ID_SIZE         6
-
+#ifndef ptrdiff_t
+    typedef void*               Ptr;
+#else
+    typedef ptrdiff_t           Ptr;
+#endif //ptrdiff_t
     typedef size_t              Size;
 
     typedef float               Float;
@@ -70,6 +73,26 @@
     typedef int_fast64_t        SF64;
 #else
 #   error "typedefs.h: Undefined platform!"
+#endif
+
+#define HAL_NULL                    ((void*)0)
+#define OS_NULL                     HAL_NULL
+#ifndef NULL
+#   define NULL                     HAL_NULL
+#endif
+
+#ifndef false
+#   define false                    (0 == 1)
+#   define HAL_FALSE                false
+#   define OS_FALSE                 HAL_FALSE
+#   define OS_FALSE_STR             "false"
+#endif
+
+#ifndef true
+#   define true                     (1 == 1)
+#   define HAL_TRUE                 true
+#   define OS_TRUE                  HAL_TRUE
+#   define OS_TRUE_STR              "true"
 #endif
 
 typedef enum {
@@ -132,7 +155,7 @@ typedef struct {
 } Time);
 
 typedef struct {
-    U8  data[DEV_ID_SIZE];
+    U8  data[6];
 } DeviceId;
 
 typedef struct {

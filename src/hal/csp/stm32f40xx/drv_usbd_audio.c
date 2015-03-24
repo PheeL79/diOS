@@ -35,7 +35,7 @@
 #include "os_supervise.h"
 #include "os_debug.h"
 #include "os_audio.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "osal.h"
 #include "os_task_usb.h"
 

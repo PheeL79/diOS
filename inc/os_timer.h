@@ -23,6 +23,8 @@ extern "C" {
 typedef TimerHandle_t   OS_TimerHd;
 typedef OS_SignalData   OS_TimerId;
 
+#define OS_SIGNAL_TIMER_ID_GET(signal)      ((OS_TimerId)OS_SignalDataGet(signal))
+
 enum {
     OS_TIM_ID_UNDEF,
     OS_TIM_ID_APP           = 0x01,
@@ -30,10 +32,10 @@ enum {
 };
 
 typedef enum {
-    OS_TIM_OPT_PERIODIC,
+    OS_TIM_OPT_UNDEF,
+    OS_TIM_OPT_PERIODIC = 0,
     OS_TIM_OPT_EVENT,
     //OS_TIM_OPT_PRIO_HIGH
-    OS_TIM_OPT_UNDEF
 } OS_TimerOptions;
 
 typedef struct {

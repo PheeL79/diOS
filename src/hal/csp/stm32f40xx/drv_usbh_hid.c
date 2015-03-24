@@ -57,13 +57,13 @@ OS_Message* msg_p;
         OS_UsbHidMouseData mouse_data;
         OS_ASSERT_VALUE(NULL != mouse_info_p);
         MouseDataTranslate(mouse_info_p, &mouse_data);
-        msg_p = OS_MessageCreate(OS_MSG_USB_HID_MOUSE, sizeof(mouse_data), OS_TIMEOUT_DRIVER, &mouse_data);
+        msg_p = OS_MessageCreate(OS_MSG_USB_HID_MOUSE, &mouse_data, sizeof(mouse_data), OS_TIMEOUT_DRIVER);
     } else if (HID_KEYBOARD == hid_type) {
         HID_KEYBD_Info_TypeDef* keyboard_info_p = USBH_HID_GetKeybdInfo(phost);
         OS_UsbHidKeyboardData keyboard_data;
         OS_ASSERT_VALUE(NULL != keyboard_info_p);
         KeyboardDataTranslate(keyboard_info_p, &keyboard_data);
-        msg_p = OS_MessageCreate(OS_MSG_USB_HID_KEYBOARD, sizeof(keyboard_data), OS_TIMEOUT_DRIVER, &keyboard_data);
+        msg_p = OS_MessageCreate(OS_MSG_USB_HID_KEYBOARD, &keyboard_data, sizeof(keyboard_data), OS_TIMEOUT_DRIVER);
     } else {
         OS_LOG(D_WARNING, "Unknown HID type!");
         OS_ASSERT(OS_FALSE);

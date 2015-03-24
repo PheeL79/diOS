@@ -71,10 +71,10 @@ typedef U32             OS_TimeMs;
 typedef U32             OS_TimeS;
 
 /// Converts from RTOS ticks to milliseconds.
-#define OS_TICKS_TO_MS(ticks)       ((OS_TimeMs)(((ticks) * KHZ) / configTICK_RATE_HZ))
+#define OS_TICKS_TO_MS(ticks)       ((OS_TimeMs)(((ticks) * KHZ) / OS_TICK_RATE))
 
 /// Converts from milliseconds to RTOS ticks, value is always > 0.
-#define OS_MS_TO_TICKS(ms)          ((OS_Tick)(ms * configTICK_RATE_HZ) / KHZ)
+#define OS_MS_TO_TICKS(ms)          ((OS_Tick)(ms * OS_TICK_RATE) / KHZ)
 
 //------------------------------------------------------------------------------
 /// @brief      Get the current time.

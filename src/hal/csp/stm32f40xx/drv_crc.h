@@ -6,6 +6,8 @@
 #ifndef _DRV_CRC_H_
 #define _DRV_CRC_H_
 
+#if (HAL_CRC_ENABLED)
+
 //-----------------------------------------------------------------------------
 enum {
     DRV_ID_CRC,
@@ -19,5 +21,7 @@ enum {
 
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_crc_v[];
+
+#endif //(HAL_CRC_ENABLED)
 
 #endif // _DRV_CRC_H_

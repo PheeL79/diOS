@@ -10,7 +10,7 @@
 #include "os_mutex.h"
 #include "os_list.h"
 #include "os_memory.h"
-#include "os_message.h"
+#include "os_mailbox.h"
 #include "os_driver.h"
 
 //------------------------------------------------------------------------------
