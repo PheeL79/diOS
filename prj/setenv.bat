@@ -7,7 +7,7 @@ SET GNUWIN_PATH="%DEVELOP_PATH%\gnuwin32\bin"
 SET MIKTEX_PATH="%DEVELOP_PATH%\MiKTeX 2.9\miktex\bin"
 SET GRAPHWIZ_PATH="%DEVELOP_PATH%\Graphviz2.26.3\bin"
 REM Project build.
-SET IAR_BUILD_PATH="%DEVELOP_PATH%\IAR Systems\Embedded Workbench 7.0\common\bin\IarBuild.exe"
+SET IAR_BUILD_PATH="%DEVELOP_PATH%\IAR Systems\Embedded Workbench 7.2\common\bin\IarBuild.exe"
 REM
 SETX PATH %DOXYGEN_PATH%;%GNUWIN_PATH%;%MIKTEX_PATH%;%GRAPHWIZ_PATH%;%IAR_BUILD_PATH%
 ENDLOCAL

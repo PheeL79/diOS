@@ -21,9 +21,9 @@ HAL_DriverItf* drv_audio_v[DRV_ID_AUDIO_LAST];
 /*****************************************************************************/
 Status AUDIO_Init_(void)
 {
-extern HAL_DriverItf drv_audio_cs4344;
+extern HAL_DriverItf drv_cs4344;
     HAL_MemSet(drv_audio_v, 0x0, sizeof(drv_audio_v));
-    drv_audio_v[DRV_ID_AUDIO_CS4344]    = &drv_audio_cs4344;
+    drv_audio_v[DRV_ID_CS4344]  = &drv_cs4344;
     return S_OK;
 }
 

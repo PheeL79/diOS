@@ -29,14 +29,14 @@ volatile OS_QueueHd stdout_qhd;
 Status OS_DebugInit(void)
 {
     print_mut = OS_MutexCreate();
-    if (OS_NULL == print_mut) { return S_INVALID_REF; };
+    if (OS_NULL == print_mut) { return S_INVALID_PTR; };
     return S_OK;
 }
 
 /******************************************************************************/
 Status OS_DebugDeInit(void)
 {
-    if (OS_NULL == print_mut) { return S_INVALID_REF; };
+    if (OS_NULL == print_mut) { return S_INVALID_PTR; };
     OS_MutexDelete(print_mut);
     return S_OK;
 }

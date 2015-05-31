@@ -18,14 +18,14 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
-typedef U32 OS_MemoryType;
+typedef U32 OS_MemoryPool;
 
 /// @brief   Memory description.
 typedef struct {
-    UInt            addr;
+    void*           addr;
     Size            size;
     Size            block_size;
-    OS_MemoryType   type;
+    OS_MemoryPool   pool;
     ConstStrP       name_p;
 } OS_MemoryDesc;
 
@@ -54,22 +54,22 @@ typedef struct {
 /// @details    Tries to allocate memory in first memory pool of config.
 void*           OS_Malloc(const Size size);
 
-/// @brief      Allocate memory by type.
+/// @brief      Allocate memory by pool.
 /// @param[in]  size            Allocation size (in bytes).
-/// @param[in]  mem_type        Memory type.
-/// @return     Memory pointer.
-void*           OS_MallocEx(const Size size, const OS_MemoryType mem_type);
+/// @param[in]  pool            Memory pool.
+/// @return     Pointer.
+void*           OS_MallocEx(const Size size, const OS_MemoryPool pool);
 
 /// @brief      Free allocated memory.
 /// @param[in]  addr_p          Memory address.
 /// @return     None.
 void            OS_Free(void* addr_p);
 
-/// @brief      Free allocated memory by type.
+/// @brief      Free allocated memory by pool.
 /// @param[in]  addr_p          Memory address.
-/// @param[in]  mem_type        Memory type.
+/// @param[in]  pool            Memory pool.
 /// @return     None.
-void            OS_FreeEx(void* addr_p, const OS_MemoryType mem_type);
+void            OS_FreeEx(void* addr_p, const OS_MemoryPool pool);
 
 /// @brief      Flush memory caches.
 /// @return     None.
@@ -118,16 +118,21 @@ void            OS_FreeEx(void* addr_p, const OS_MemoryType mem_type);
 ///// @return     None.
 //void            OS_MemSet(void* dst_p, const U8 value, Size size);
 
-/// @brief      Get the next memory heap type.
-/// @param[in]  mem_type        Memory type.
-/// @return     Memory type.
-OS_MemoryType   OS_MemoryTypeHeapNextGet(const OS_MemoryType mem_type);
+/// @brief      Get the next memory pool.
+/// @param[in]  pool            Memory pool.
+/// @return     Memory pool.
+OS_MemoryPool   OS_MemoryPoolNextGet(const OS_MemoryPool pool);
 
-/// @brief      Get the memory heap usage statistics.
-/// @param[in]  mem_type        Memory type.
+/// @brief      Get the memory pool free size.
+/// @param[in]  pool            Memory pool.
+/// @return     #Size.
+Size            OS_MemoryFreeGet(const OS_MemoryPool pool);
+
+/// @brief      Get the memory pool usage statistics.
+/// @param[in]  pool            Memory pool.
 /// @param[out] mem_stats_p     Memory statistics.
 /// @return     #Status.
-Status          OS_MemoryStatsGet(const OS_MemoryType mem_type, OS_MemoryStats* mem_stats_p);
+Status          OS_MemoryStatsGet(const OS_MemoryPool pool, OS_MemoryStats* mem_stats_p);
 
 //------------------------------------------------------------------------------
 #ifdef USE_MPU

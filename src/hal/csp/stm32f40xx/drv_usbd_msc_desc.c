@@ -27,7 +27,7 @@
 
 #include "os_config.h"
 
-#if (USBD_ENABLED) && (USBD_MSC_ENABLED)
+#if (HAL_USBD_ENABLED) && (HAL_USBD_MSC_ENABLED)
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_core.h"
@@ -289,4 +289,4 @@ static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len)
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
-#endif //(USBD_ENABLED) && (USBD_MSC_ENABLED)
+#endif //(HAL_USBD_ENABLED) && (HAL_USBD_MSC_ENABLED)

@@ -6,8 +6,6 @@
 #ifndef _HAL_OLIMEX_STM32_P407_H_
 #define _HAL_OLIMEX_STM32_P407_H_
 
-#define OLIMEX_STM32_P407
-
 #include "stm32f4xx_hal.h"
 #include "common.h"
 
@@ -41,27 +39,6 @@
 
 #define HAL_SYSTICK_START()             HAL_ResumeTick()
 #define HAL_SYSTICK_STOP()              HAL_SuspendTick()
-
-#define HAL_DEBUG_PIN1_CLK_ENABLE()     __GPIOA_CLK_ENABLE()
-#define HAL_DEBUG_PIN1                  GPIO_PIN_4
-#define HAL_DEBUG_PIN1_PORT             GPIOA
-#define HAL_DEBUG_PIN1_UP()             HAL_GPIO_WritePin(HAL_DEBUG_PIN1_PORT, HAL_DEBUG_PIN1, GPIO_PIN_SET)
-#define HAL_DEBUG_PIN1_DOWN()           HAL_GPIO_WritePin(HAL_DEBUG_PIN1_PORT, HAL_DEBUG_PIN1, GPIO_PIN_RESET)
-#define HAL_DEBUG_PIN1_TOGGLE()         HAL_GPIO_TogglePin(HAL_DEBUG_PIN1_PORT, HAL_DEBUG_PIN1)
-
-#define HAL_DEBUG_PIN2_CLK_ENABLE()     __GPIOA_CLK_ENABLE()
-#define HAL_DEBUG_PIN2                  GPIO_PIN_6
-#define HAL_DEBUG_PIN2_PORT             GPIOA
-#define HAL_DEBUG_PIN2_UP()             HAL_GPIO_WritePin(HAL_DEBUG_PIN2_PORT, HAL_DEBUG_PIN2, GPIO_PIN_SET)
-#define HAL_DEBUG_PIN2_DOWN()           HAL_GPIO_WritePin(HAL_DEBUG_PIN2_PORT, HAL_DEBUG_PIN2, GPIO_PIN_RESET)
-#define HAL_DEBUG_PIN2_TOGGLE()         HAL_GPIO_TogglePin(HAL_DEBUG_PIN2_PORT, HAL_DEBUG_PIN2)
-
-#define HAL_ASSERT_PIN_CLK_ENABLE()     __GPIOF_CLK_ENABLE()
-#define HAL_ASSERT_PIN                  GPIO_PIN_8
-#define HAL_ASSERT_PIN_PORT             GPIOF
-#define HAL_ASSERT_PIN_UP()             HAL_GPIO_WritePin(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN, GPIO_PIN_SET)
-#define HAL_ASSERT_PIN_DOWN()           HAL_GPIO_WritePin(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN, GPIO_PIN_RESET)
-#define HAL_ASSERT_PIN_TOGGLE()         HAL_GPIO_TogglePin(HAL_ASSERT_PIN_PORT, HAL_ASSERT_PIN)
 
 // Joseph Yiu's method
 // From http://forums.arm.com/index.php?showtopic=13949

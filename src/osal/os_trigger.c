@@ -38,7 +38,7 @@ Status OS_TriggerInit(void);
 Status OS_TriggerInit(void)
 {
     os_trigger_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_trigger_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_trigger_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_triggers_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_triggers_list)) { return S_INVALID_VALUE; }
     return S_OK;
@@ -52,8 +52,8 @@ const OS_TriggerHd trigger_hd = (OS_TriggerHd)item_l_p;
 OS_TriggerConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_TriggerConfigDyn));
 Status s = S_OK;
 
-    if ((OS_NULL == item_l_p) || (OS_NULL == cfg_dyn_p)) { s = S_NO_MEMORY; goto error; }
-    if (OS_NULL == trigger_hd_p) { s = S_INVALID_REF;  goto error; }
+    if ((OS_NULL == item_l_p) || (OS_NULL == cfg_dyn_p)) { s = S_OUT_OF_MEMORY; goto error; }
+    if (OS_NULL == trigger_hd_p) { s = S_INVALID_PTR;  goto error; }
     IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_TimerHd timer_hd;
         IF_STATUS_OK(s = OS_TimerCreate(cfg_p->timer_cfg_p, &timer_hd)) {
@@ -96,7 +96,7 @@ Status s = S_OK;
             goto error;
         }
         s = OS_TriggerItemDelete(cfg_dyn_p->item_p);
-        if (S_INVALID_REF == s) { //ignore NULL storage
+        if (S_INVALID_PTR == s) { //ignore NULL storage
             s = S_OK;
         }
         OS_Free(cfg_dyn_p);

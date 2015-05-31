@@ -30,6 +30,12 @@ typedef OS_NetworkIpAddr4   OS_NetworkGateWay4;
 //typedef OS_NetworkIpAddr6   OS_NetworkNetMask6;
 //typedef OS_NetworkIpAddr6   OS_NetworkGateWay6;
 
+typedef enum {
+    S_NET_UNDEF = S_MODULE,
+    S_NET_ROUTING,
+    S_NET_ITF_LL
+} OS_NetworkStatus;
+
 enum {
 //ETH Common
     OS_SIG_ETH_LINK_UP = OS_SIG_APP,

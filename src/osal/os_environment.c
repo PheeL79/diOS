@@ -33,7 +33,7 @@ static OS_ListItem* OS_EnvVariableListItemByNameGet(ConstStrP name_p);
 Status OS_EnvInit(void)
 {
     os_env_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_env_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_env_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_variables_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_variables_list)) { return S_INVALID_VALUE; }
     return S_OK;
@@ -109,7 +109,7 @@ Status OS_EnvVariableSet(ConstStrP variable_name_p, ConstStrP variable_value_p,
                          const OS_EnvVariableHandler variable_handler_p)
 {
 Status s = S_OK;
-    if ((OS_NULL == variable_name_p) || (OS_NULL == variable_value_p)) { return S_INVALID_REF; }
+    if ((OS_NULL == variable_name_p) || (OS_NULL == variable_value_p)) { return S_INVALID_PTR; }
     HAL_LOG(D_DEBUG, "Env var set: %s, %s", variable_name_p, variable_value_p);
     IF_OK(s = OS_MutexRecursiveLock(os_env_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
@@ -123,8 +123,8 @@ Status s = S_OK;
             env_var_p = (OS_EnvVariable*)OS_Malloc(sizeof(OS_EnvVariable));
             env_var_p->name_p  = (ConstStrP)OS_Malloc(variable_name_len);
             env_var_p->value_p = (ConstStrP)OS_Malloc(variable_value_len);
-            if ((OS_NULL == item_l_p) || (OS_NULL == env_var_p)) { s = S_NO_MEMORY; goto error; }
-            if ((OS_NULL == env_var_p->name_p) || (OS_NULL == env_var_p->value_p)) { s = S_NO_MEMORY; goto error; }
+            if ((OS_NULL == item_l_p) || (OS_NULL == env_var_p)) { s = S_OUT_OF_MEMORY; goto error; }
+            if ((OS_NULL == env_var_p->name_p) || (OS_NULL == env_var_p->value_p)) { s = S_OUT_OF_MEMORY; goto error; }
             OS_StrNCpy((char*)env_var_p->name_p,  (char const*)variable_name_p,  variable_name_len);
             OS_StrNCpy((char*)env_var_p->value_p, (char const*)variable_value_p, variable_value_len);
             OS_ListItemValueSet(item_l_p, (OS_Value)env_var_p);
@@ -136,7 +136,7 @@ Status s = S_OK;
             const Size variable_data_len = OS_StrLen((char const*)variable_value_p) + 1;
             //Create the new one.
             env_var_p->value_p = (ConstStrP)OS_Malloc(variable_data_len);
-            if (OS_NULL == env_var_p->value_p) { s = S_NO_MEMORY; goto error; }
+            if (OS_NULL == env_var_p->value_p) { s = S_OUT_OF_MEMORY; goto error; }
             OS_StrNCpy((char*)env_var_p->value_p, (char const*)variable_value_p, variable_data_len);
         }
 error:
@@ -166,7 +166,7 @@ Status s;
     OS_LOG(D_DEBUG, "Env var del: %s", variable_name_p);
     IF_OK(s = OS_MutexRecursiveLock(os_env_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
-        if (OS_NULL == item_l_p) { return S_INVALID_REF; }
+        if (OS_NULL == item_l_p) { return S_INVALID_PTR; }
         OS_EnvVariable* env_var_p = (OS_EnvVariable*)OS_ListItemValueGet(item_l_p);
         OS_ListItemDelete(item_l_p);
         OS_Free((void*)env_var_p->value_p);

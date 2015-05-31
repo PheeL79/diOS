@@ -8,8 +8,8 @@
 
 #include "os_config.h"
 
-#if (USBH_ENABLED) || (USBD_ENABLED)
+#if (HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
 #define OS_DAEMON_NAME_USB          "UsbD"
-#endif //(USBH_ENABLED) || (USBD_ENABLED)
+#endif //(HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
 
 #endif // _OS_TASK_USB_H_

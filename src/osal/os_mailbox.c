@@ -19,7 +19,7 @@ OS_Message* OS_MessageCreate(const OS_MessageId id, const OS_MessageData data_p,
 {
 OS_Message* msg_p = OS_Malloc(size + sizeof(OS_Message));
 
-    if (msg_p) {
+    if (OS_NULL != msg_p) {
         OS_MemCpy(msg_p->data, data_p, size);
         msg_p->id   = id;
         msg_p->size = size;
@@ -70,8 +70,8 @@ Status s = S_OK;
                     msg_p = msg_inst_p;
                 }
             }
-        } else { s = S_INVALID_REF; }
-    } else { s = S_INVALID_REF; }
+        } else { s = S_INVALID_PTR; }
+    } else { s = S_INVALID_PTR; }
     return s;
 }
 
@@ -109,7 +109,7 @@ signal_filter: //Prevent recursion calls.
                     } else {
                         OS_LOG(D_WARNING, "Power state set failed!");
                     }
-                } else { OS_LOG_S(D_WARNING, S_INVALID_REF); }
+                } else { OS_LOG_S(D_WARNING, S_INVALID_PTR); }
                 //OS_SchedulerResume();
             }
         }
@@ -140,7 +140,7 @@ OS_Message* OS_ISR_MessageCreate(const OS_MessageSrc src, const OS_MessageId id,
 {
 OS_Message* msg_p = OS_ISR_Malloc(size + sizeof(OS_Message));
 
-    if (msg_p) {
+    if (OS_NULL != msg_p) {
         OS_MemCpy(msg_p->data, data_p, size);
         msg_p->id   = id;
         msg_p->size = size;

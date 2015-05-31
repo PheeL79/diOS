@@ -48,12 +48,12 @@ INLINE OS_AudioDeviceConfigDyn* OS_AudioDeviceConfigDynGet(const OS_AudioDeviceH
 /******************************************************************************/
 Status OS_AudioInit(void)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_LOG(D_INFO, "Init");
-    IF_STATUS(s = OS_AudioDeviceDefaultSet(OS_NULL, DIR_IN))    { return s; }
-    IF_STATUS(s = OS_AudioDeviceDefaultSet(OS_NULL, DIR_OUT))   { return s; }
+    def_in_dev_hd   = OS_NULL;
+    def_out_dev_hd  = OS_NULL;
     os_audio_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_audio_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_audio_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_audio_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_audio_list)) { return S_INVALID_VALUE; }
     return s;
@@ -72,13 +72,13 @@ Status OS_AudioDeviceCreate(const OS_AudioDeviceConfig* cfg_p, OS_AudioDeviceHd*
 {
 Status s = S_UNDEF;
     OS_LOG(D_DEBUG, "Audio device %s: create", cfg_p->name);
-    if (OS_NULL == cfg_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
     OS_ListItem* item_l_p = OS_ListItemCreate();
-    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    if (OS_NULL == item_l_p) { return S_OUT_OF_MEMORY; }
     OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_AudioDeviceConfigDyn));
     if (OS_NULL == cfg_dyn_p) {
         OS_ListItemDelete(item_l_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     IF_STATUS(s = OS_DriverCreate(cfg_p->drv_cfg_p, &cfg_dyn_p->dhd)) {
         OS_Free(cfg_dyn_p);
@@ -255,7 +255,7 @@ Status OS_AudioDeviceIoSetup(const OS_AudioDeviceHd dev_hd, const OS_AudioDevice
 {
 Status s = S_UNDEF;
     OS_LOG(D_DEBUG, "Audio device %s: io setup", OS_AudioDeviceNameGet(dev_hd));
-    if ((OS_NULL == dev_hd) || (OS_NULL == args_p)) { return S_INVALID_REF; }
+    if ((OS_NULL == dev_hd) || (OS_NULL == args_p)) { return S_INVALID_PTR; }
     IF_OK(s = AudioDeviceCapsTest(dev_hd, args_p->info, dir)) {
         const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
         U32 drv_request_id;
@@ -291,7 +291,7 @@ const OS_AudioSampleRate status = 0;
 /*****************************************************************************/
 Status OS_AudioDeviceSampleRateSet(const OS_AudioDeviceHd dev_hd, const OS_AudioSampleRate sample_rate, const Direction dir)
 {
-    if (OS_NULL == dev_hd) { return S_INVALID_REF; }
+    if (OS_NULL == dev_hd) { return S_INVALID_PTR; }
     const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
     U32 drv_request_id;
     if (DIR_IN == dir) {
@@ -305,8 +305,8 @@ Status OS_AudioDeviceSampleRateSet(const OS_AudioDeviceHd dev_hd, const OS_Audio
 /*****************************************************************************/
 Status OS_AudioDeviceCapsGet(const OS_AudioDeviceHd dev_hd, OS_AudioDeviceCaps* caps_p)
 {
-    if (OS_NULL == dev_hd) { return S_INVALID_REF; }
-    if (OS_NULL == caps_p) { return S_INVALID_REF; }
+    if (OS_NULL == dev_hd) { return S_INVALID_PTR; }
+    if (OS_NULL == caps_p) { return S_INVALID_PTR; }
     const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
     *caps_p = cfg_dyn_p->caps;
     return S_OK;
@@ -317,19 +317,19 @@ Status AudioDeviceCapsTest(const OS_AudioDeviceHd dev_hd, const OS_AudioInfo inf
 {
 OS_AudioDeviceCaps caps;
 Status s = S_UNDEF;
-    if (OS_NULL == dev_hd) { return s = S_INVALID_REF; }
+    if (OS_NULL == dev_hd) { return s = S_INVALID_PTR; }
     IF_OK(s = OS_AudioDeviceCapsGet(dev_hd, &caps)) {
         const OS_AudioSampleRate* sample_rates_vp;
         const OS_AudioSampleBits* sample_bits_vp;
         OS_AudioChannels channels;
 
         if (DIR_IN == dir) {
-            if (OS_NULL == caps.input_p)  { return s = S_INVALID_REF; }
+            if (OS_NULL == caps.input_p)  { return s = S_INVALID_PTR; }
             sample_rates_vp = caps.input_p->sample_rates_vp;
             sample_bits_vp  = caps.input_p->sample_bits_vp;
             channels        = caps.input_p->channels;
         } else if (DIR_OUT == dir) {
-            if (OS_NULL == caps.output_p)  { return s = S_INVALID_REF; }
+            if (OS_NULL == caps.output_p)  { return s = S_INVALID_PTR; }
             sample_rates_vp = caps.output_p->sample_rates_vp;
             sample_bits_vp  = caps.output_p->sample_bits_vp;
             channels        = caps.output_p->channels;

@@ -75,7 +75,7 @@ extern OS_QueueHd usbhd_stdin_qhd;
 #define USBH_MAX_SIZE_CONFIGURATION      255
 
 /*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER      USBH_MSC_BLOCK_SIZE
+#define USBH_MAX_DATA_BUFFER      HAL_USBH_MSC_BLOCK_SIZE
 
 /*----------   -----------*/
 #define USBH_DEBUG_LEVEL      0

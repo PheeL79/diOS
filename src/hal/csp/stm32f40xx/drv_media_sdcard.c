@@ -12,7 +12,7 @@
 #include "os_memory.h"
 #include "os_file_system.h"
 
-#if defined(OS_MEDIA_VOL_SDCARD) && (SDIO_SD_ENABLED)
+#if defined(OS_MEDIA_VOL_SDCARD) && (HAL_SDIO_SD_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_m_sdcard"
 
@@ -104,7 +104,7 @@ Status s;
         //Do _NOT_ use HardwareFlowControl due 2.9.1 SDIO HW flow control errata.
         sd_hd.Init.HardwareFlowControl= SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
         sd_hd.Init.ClockDiv           = SDIO_TRANSFER_CLK_DIV;
-        if (SD_OK != HAL_SD_Init(&sd_hd, &sd_card_info)) { s = S_HARDWARE_FAULT; }
+        if (SD_OK != HAL_SD_Init(&sd_hd, &sd_card_info)) { s = S_HARDWARE_ERROR; }
 
 //TODO(A. Filyanov) Wrong bus width detection!
 //        HAL_SD_CardStatusTypedef sd_card_status;
@@ -112,10 +112,10 @@ Status s;
 //
 //        if (4 == sd_card_status.DAT_BUS_WIDTH) {
             if (SD_OK != HAL_SD_WideBusOperation_Config(&sd_hd, SDIO_BUS_WIDE_4B)) {
-                s = S_HARDWARE_FAULT;
+                s = S_HARDWARE_ERROR;
             }
 //        }
-    } else { s = S_HARDWARE_FAULT; }
+    } else { s = S_HARDWARE_ERROR; }
     return s;
 }
 
@@ -163,7 +163,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_rx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
 #else
     sd_dma_rx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
+#endif //(OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     sd_dma_rx_handle.Init.Mode                = DMA_PFCTRL;
     sd_dma_rx_handle.Init.Priority            = DMA_PRIORITY_HIGH;
@@ -173,7 +173,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_rx_handle.Init.MemBurst            = DMA_MBURST_INC4;
 #else
     sd_dma_rx_handle.Init.MemBurst            = DMA_MBURST_SINGLE;
-#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
+#endif //(OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
     sd_dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
@@ -196,7 +196,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_tx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
 #else
     sd_dma_tx_handle.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
+#endif //(OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     sd_dma_tx_handle.Init.Mode                = DMA_PFCTRL;
     sd_dma_tx_handle.Init.Priority            = DMA_PRIORITY_HIGH;
@@ -206,7 +206,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     sd_dma_tx_handle.Init.MemBurst            = DMA_MBURST_INC4;
 #else
     sd_dma_tx_handle.Init.MemBurst            = DMA_MBURST_SINGLE;
-#endif // (OS_FILE_SYSTEM_WORD_ACCESS)
+#endif //(OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
     sd_dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
@@ -238,7 +238,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 Status SDIO_DeInit_(void* args_p)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_SD_DeInit(&sd_hd)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_SD_DeInit(&sd_hd)) { s = S_HARDWARE_ERROR; }
     /* Peripheral clock disable */
     __SDIO_CLK_DISABLE();
 
@@ -320,7 +320,7 @@ Status s = S_OK;
 #if (OS_FILE_SYSTEM_WORD_ACCESS)
     if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
-        if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
+        if (OS_NULL == scratch_p) { return S_OUT_OF_MEMORY; }
         while (size--) {
             U8* data_in_8p = (U8*)data_in_p;
             IF_STATUS(s = drv_media_sdcard.Read((U8*)scratch_p, 1, &sector)) { break; }
@@ -333,7 +333,7 @@ Status s = S_OK;
     }
 #endif // (OS_FILE_SYSTEM_WORD_ACCESS)
 
-    sd_status = HAL_SD_ReadBlocks_DMA(&sd_hd, (U32*)data_in_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
+    sd_status = HAL_SD_ReadBlocks_DMA(&sd_hd, (U32*)data_in_p, (sector * HAL_SD_CARD_SECTOR_SIZE), HAL_SD_CARD_BLOCK_SIZE, size);
     if (SD_OK == sd_status) {
         sd_status = HAL_SD_CheckReadOperation(&sd_hd, HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
         if (SD_OK != sd_status) {
@@ -361,7 +361,7 @@ Status s = S_OK;
 #if (OS_FILE_SYSTEM_WORD_ACCESS)
     if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
         U32* scratch_p = (U32*)OS_Malloc(SD_CARD_BLOCK_SIZE); // Alignment assured
-        if (OS_NULL == scratch_p) { return S_NO_MEMORY; }
+        if (OS_NULL == scratch_p) { return S_OUT_OF_MEMORY; }
         while (size--) {
             U8* data_out_8p = (U8*)data_out_p;
             OS_MemCpy(data_out_p, scratch_p, SD_CARD_BLOCK_SIZE);
@@ -374,7 +374,7 @@ Status s = S_OK;
     }
 #endif //(OS_FILE_SYSTEM_WORD_ACCESS)
 
-    sd_status = HAL_SD_WriteBlocks_DMA(&sd_hd, (U32*)data_out_p, (sector * SD_CARD_SECTOR_SIZE), SD_CARD_BLOCK_SIZE, size);
+    sd_status = HAL_SD_WriteBlocks_DMA(&sd_hd, (U32*)data_out_p, (sector * HAL_SD_CARD_SECTOR_SIZE), HAL_SD_CARD_BLOCK_SIZE, size);
     if (SD_OK == sd_status) {
         sd_status = HAL_SD_CheckWriteOperation(&sd_hd, HAL_TIMEOUT_SD_TRANSFER); // Check if the Transfer is finished
         if (SD_OK != sd_status) {
@@ -462,7 +462,7 @@ Status s = S_UNDEF;
             HAL_SD_CardInfoTypedef card_info;
 
             if (SD_OK == HAL_SD_Get_CardInfo(&sd_hd, &card_info)) {
-                *(U32*)args_p = card_info.CardCapacity / SD_CARD_BLOCK_SIZE;
+                *(U32*)args_p = card_info.CardCapacity / HAL_SD_CARD_BLOCK_SIZE;
                 s = S_OK;
             } else {
                 *(U32*)args_p = 0;
@@ -471,18 +471,18 @@ Status s = S_UNDEF;
             break;
         case DRV_REQ_MEDIA_SECTOR_SIZE_GET:
         case GET_SECTOR_SIZE:
-            *(U16*)args_p = SD_CARD_SECTOR_SIZE;
+            *(U16*)args_p = HAL_SD_CARD_SECTOR_SIZE;
             s = S_OK;
             break;
         case DRV_REQ_MEDIA_BLOCK_SIZE_GET:
         case GET_BLOCK_SIZE:
-            *(U16*)args_p = SD_CARD_BLOCK_SIZE;
+            *(U16*)args_p = HAL_SD_CARD_BLOCK_SIZE;
             s = S_OK;
             break;
         case CTRL_ERASE_SECTOR: {
             //TODO(A. Filyanov) Check SDHC capability!
-            U32 start_sector= ((U32*)args_p)[0] * SD_CARD_SECTOR_SIZE;
-            U32 end_sector  = ((U32*)args_p)[1] * SD_CARD_SECTOR_SIZE;
+            U32 start_sector= ((U32*)args_p)[0] * HAL_SD_CARD_SECTOR_SIZE;
+            U32 end_sector  = ((U32*)args_p)[1] * HAL_SD_CARD_SECTOR_SIZE;
             if (SD_OK != HAL_SD_Erase(&sd_hd, start_sector, end_sector)) {
                 s = S_FS_UNDEF;
             } else {
@@ -531,4 +531,4 @@ void SD_DMAx_Tx_IRQHandler(void)
     HAL_DMA_IRQHandler(sd_hd.hdmatx);
 }
 
-#endif //defined(OS_MEDIA_VOL_SDCARD) && (SDIO_SD_ENABLED)
+#endif //defined(OS_MEDIA_VOL_SDCARD) && (HAL_SDIO_SD_ENABLED)

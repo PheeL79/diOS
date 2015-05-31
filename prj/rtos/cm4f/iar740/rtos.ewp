@@ -29,7 +29,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -60,8 +60,8 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>2</version>
-          <state>5</state>
+          <version>5</version>
+          <state>7</state>
         </option>
         <option>
           <name>OGCoreOrChip</name>
@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.10.3.6927</state>
+          <state>7.40.2.8567</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -137,12 +137,12 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -305,6 +305,7 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
         </option>
@@ -590,7 +591,7 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
+          <version>3</version>
           <state>0</state>
         </option>
         <option>
@@ -617,6 +618,7 @@
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
+        <hasPrio>0</hasPrio>
       </data>
     </settings>
     <settings>
@@ -939,7 +941,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\cm4f_rtos_d.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\cm4f_rtos_d.a</state>
         </option>
       </data>
     </settings>
@@ -976,7 +978,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -1007,8 +1009,8 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>2</version>
-          <state>5</state>
+          <version>5</version>
+          <state>7</state>
         </option>
         <option>
           <name>OGCoreOrChip</name>
@@ -1084,12 +1086,12 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -1533,7 +1535,7 @@
         <debug>0</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
+          <version>3</version>
           <state>0</state>
         </option>
         <option>
@@ -1560,6 +1562,7 @@
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
+        <hasPrio>0</hasPrio>
       </data>
     </settings>
     <settings>
@@ -1882,7 +1885,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\cm4f_rtos.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\cm4f_rtos.a</state>
         </option>
       </data>
     </settings>
@@ -1892,9 +1895,6 @@
       <data/>
     </settings>
   </configuration>
-  <mfc>
-    <configuration>Debug</configuration>
-  </mfc>
   <group>
     <name>cm4f</name>
     <file>

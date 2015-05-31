@@ -121,6 +121,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             }
             break;
         case GPIO_PIN_3:
+#if (HAL_ETH_ENABLED)
             {
             extern OS_QueueHd netd_stdin_qhd;
             if (OS_NULL != netd_stdin_qhd) {
@@ -128,6 +129,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
                 OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
             }
             }
+#endif //(ETH_ENABLED)
             break;
         default:
             OS_ASSERT(OS_FALSE);

@@ -48,7 +48,7 @@ Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
     def_net_itf_hd = OS_NULL;
     os_net_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_net_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_net_mutex) { return S_INVALID_PTR; }
     OS_MemSet(net_itf_v, 0, sizeof(net_itf_v));
 s = S_OK;
     return s;
@@ -66,14 +66,14 @@ Status s = S_UNDEF;
 Status OS_NetworkItfCreate(const OS_NetworkItfConfig* cfg_p, OS_NetworkItfHd* net_itf_hd_p)
 {
 Status s = S_UNDEF;
-    if (OS_NULL == cfg_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
     if (OS_NULL != net_itf_v[cfg_p->net_itf_id]) { return S_INVALID_VALUE; }
     OS_NetworkItfConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_NetworkItfConfigDyn));
-    if (OS_NULL == cfg_dyn_p) { return S_NO_MEMORY; }
+    if (OS_NULL == cfg_dyn_p) { return S_OUT_OF_MEMORY; }
     cfg_dyn_p->net_itf_p = OS_Malloc(sizeof(OS_NetworkItf));
     if (OS_NULL == cfg_dyn_p->net_itf_p) {
         OS_Free(cfg_dyn_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     IF_STATUS(s = OS_DriverCreate(cfg_p->drv_cfg_p, &cfg_dyn_p->dhd)) {
         OS_Free(cfg_dyn_p->net_itf_p);
@@ -174,11 +174,11 @@ Status s = S_UNDEF;
                 }
             }
             /* set netif MAC hardware address length */
-            net_itf_p->hwaddr_len = ETH_MAC_ADDR_SIZE;
+            net_itf_p->hwaddr_len = HAL_ETH_MAC_ADDR_SIZE;
             /* set netif MAC hardware address */
             OS_MemCpy(net_itf_p->hwaddr, init_args_p->mac_addr_p, sizeof(net_itf_p->hwaddr));
             /* set netif maximum transfer unit */
-            net_itf_p->mtu = ETH_MTU_SIZE;
+            net_itf_p->mtu = HAL_ETH_MTU_SIZE;
             /* We directly use etharp_output() here to save a function call.
             * You can instead declare your own function an call etharp_output()
             * from it if you have to do some checks before sending (e.g. if link
@@ -530,17 +530,17 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 Status OS_NetworkMacAddressStrToBin(ConstStrP mac_addr_str_p, OS_NetworkMacAddr mac_addr)
 {
-U8 mac_addr_tmp[ETH_MAC_ADDR_SIZE + sizeof(UInt)] = { 0 };
+U8 mac_addr_tmp[HAL_ETH_MAC_ADDR_SIZE + sizeof(UInt)] = { 0 };
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(mac_addr_str_p);
     OS_ASSERT_VALUE(mac_addr);
 //TODO(A. Filyanov) More strict parse.
-    if (ETH_MAC_ADDR_SIZE != OS_SScanF(mac_addr_str_p, "%x:%x:%x:%x:%x:%x",
+    if (HAL_ETH_MAC_ADDR_SIZE != OS_SScanF(mac_addr_str_p, "%x:%x:%x:%x:%x:%x",
                                        (UInt*)&mac_addr_tmp[0], (UInt*)&mac_addr_tmp[1], (UInt*)&mac_addr_tmp[2],
                                        (UInt*)&mac_addr_tmp[3], (UInt*)&mac_addr_tmp[4], (UInt*)&mac_addr_tmp[5])) {
-        s = S_SIZE_MISMATCH;
+        s = S_INVALID_SIZE;
     } else {
-        for (Int i = 0; i < ETH_MAC_ADDR_SIZE; ++i) {
+        for (Int i = 0; i < HAL_ETH_MAC_ADDR_SIZE; ++i) {
             mac_addr[i] = mac_addr_tmp[i];
         }
         s = S_OK;
@@ -559,7 +559,7 @@ Status s = S_UNDEF;
     if (OS_NETWORK_IP_ADDR4_SIZE != OS_SScanF(ip_addr4_str_p, "%d.%d.%d.%d",
                                               (UInt*)&ip_addr4_tmp[0], (UInt*)&ip_addr4_tmp[1],
                                               (UInt*)&ip_addr4_tmp[2], (UInt*)&ip_addr4_tmp[3])) {
-        s = S_SIZE_MISMATCH;
+        s = S_INVALID_SIZE;
     } else {
         *(U32*)ip_addr4_p = *(U32*)&ip_addr4_tmp[0];
         s = S_OK;

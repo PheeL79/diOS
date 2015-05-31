@@ -45,8 +45,8 @@ const OS_TaskConfig task_fs_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 3,
-    .prio_init      = OS_TASK_PRIO_FS,
-    .prio_power     = OS_TASK_PRIO_PWR_FS,
+    .prio_init      = OS_PRIO_TASK_FS,
+    .prio_power     = OS_PRIO_PWR_TASK_FS,
     .storage_size   = sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN,
     .stdin_len      = OS_STDIN_LEN
@@ -129,13 +129,13 @@ Status s = S_OK;
     }
 #endif //defined(OS_MEDIA_VOL_USBH_HS)
 
-#if (USBH_ENABLED) || (USBD_ENABLED)
+#if (HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
     const OS_TaskHd usb_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USB);
     const OS_SignalSrc usb_tid = OS_TaskIdGet(usb_thd);
 
     OS_ASSERT(S_OK == OS_TasksConnect(OS_THIS_TASK, usb_thd));
     OS_SignalEmit(OS_SignalCreate(OS_SIG_FSD_READY, 0), OS_MSG_PRIO_NORMAL);
-#endif //(USBH_ENABLED) || (USBD_ENABLED)
+#endif //(HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
     return s;
 }
 
@@ -148,7 +148,7 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            //OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+            //OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
 //#if defined(OS_MEDIA_VOL_USBH_FS) || defined(OS_MEDIA_VOL_USBH_HS)
@@ -184,7 +184,7 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
                         case OS_SIG_TASK_DISCONNECT:
                             break;
                         default:
-                            OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                            OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                             break;
                     }
 //                    OS_LOG(D_DEBUG, "%s %s%s", itf_str_p, class_str_p, state_str_p);

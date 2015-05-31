@@ -29,7 +29,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -60,8 +60,8 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>2</version>
-          <state>5</state>
+          <version>5</version>
+          <state>7</state>
         </option>
         <option>
           <name>OGCoreOrChip</name>
@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.10.3.6927</state>
+          <state>7.40.2.8567</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -137,12 +137,12 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -303,6 +303,7 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>$PROJ_DIR$\..\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\..\ext</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\include</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\freertos\800\Source\portable\IAR\ARM_CM4F</state>
@@ -324,13 +325,13 @@
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
-          <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.10b</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\141_101</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -613,7 +614,7 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
+          <version>3</version>
           <state>0</state>
         </option>
         <option>
@@ -640,6 +641,7 @@
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
+        <hasPrio>0</hasPrio>
       </data>
     </settings>
     <settings>
@@ -962,7 +964,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\olimex_stm32_p407_flash_hal_d.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\olimex_stm32_p407_flash_hal_d.a</state>
         </option>
       </data>
     </settings>
@@ -999,7 +1001,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -1030,8 +1032,8 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>2</version>
-          <state>5</state>
+          <version>5</version>
+          <state>7</state>
         </option>
         <option>
           <name>OGCoreOrChip</name>
@@ -1107,12 +1109,12 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -1564,7 +1566,7 @@
         <debug>0</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
+          <version>3</version>
           <state>0</state>
         </option>
         <option>
@@ -1591,6 +1593,7 @@
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
+        <hasPrio>0</hasPrio>
       </data>
     </settings>
     <settings>
@@ -1913,7 +1916,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\olimex_stm32_p407_flash_hal.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\olimex_stm32_p407_flash_hal.a</state>
         </option>
       </data>
     </settings>
@@ -1950,7 +1953,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -1981,8 +1984,8 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>2</version>
-          <state>5</state>
+          <version>5</version>
+          <state>7</state>
         </option>
         <option>
           <name>OGCoreOrChip</name>
@@ -2058,12 +2061,12 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -2523,7 +2526,7 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
+          <version>3</version>
           <state>0</state>
         </option>
         <option>
@@ -2550,6 +2553,7 @@
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
+        <hasPrio>0</hasPrio>
       </data>
     </settings>
     <settings>
@@ -2872,7 +2876,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\olimex_stm32_p407_sram_hal_d.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\olimex_stm32_p407_sram_hal_d.a</state>
         </option>
       </data>
     </settings>
@@ -2909,7 +2913,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -2940,8 +2944,8 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>2</version>
-          <state>5</state>
+          <version>5</version>
+          <state>7</state>
         </option>
         <option>
           <name>OGCoreOrChip</name>
@@ -3017,12 +3021,12 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>20</version>
+          <version>21</version>
           <state>40</state>
         </option>
         <option>
@@ -3475,7 +3479,7 @@
         <debug>0</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
+          <version>3</version>
           <state>0</state>
         </option>
         <option>
@@ -3502,6 +3506,7 @@
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
+        <hasPrio>0</hasPrio>
       </data>
     </settings>
     <settings>
@@ -3824,7 +3829,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\olimex_stm32_p407_sram_hal.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\olimex_stm32_p407_sram_hal.a</state>
         </option>
       </data>
     </settings>
@@ -3891,10 +3896,10 @@
   <group>
     <name>com</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\com\cs4344\drv_cs4344.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\com\cs4344\drv_cs4344.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\com\ks8721bl\drv_ks8721bl.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\com\ks8721bl\drv_ks8721bl.c</name>
     </file>
   </group>
   <group>

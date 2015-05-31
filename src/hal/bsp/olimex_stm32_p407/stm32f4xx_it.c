@@ -217,10 +217,10 @@ void ETH_IRQHandler(void);
 void ETH_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(ETH_IRQn);
-#if (ETH_ENABLED)
+#if (HAL_ETH_ENABLED)
     extern ETH_HandleTypeDef eth0_hd;
     HAL_ETH_IRQHandler(&eth0_hd);
-#endif //(ETH_ENABLED)
+#endif //(HAL_ETH_ENABLED)
 }
 
 /******************************************************************************/
@@ -231,19 +231,19 @@ void OTG_FS_IRQHandler(void);
 void OTG_FS_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
-#if (USBD_ENABLED)
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     extern PCD_HandleTypeDef pcd_fs_hd;
     HAL_PCD_IRQHandler(&pcd_fs_hd);
-#endif //(USBD_FS_ENABLED)
-#endif //(USBD_ENABLED)
+#endif //(HAL_USBD_FS_ENABLED)
+#endif //(HAL_USBD_ENABLED)
 
-#if (USBH_ENABLED)
-#if (USBH_FS_ENABLED)
+#if (HAL_USBH_ENABLED)
+#if (HAL_USBH_FS_ENABLED)
     extern HCD_HandleTypeDef hcd_fs_hd;
     HAL_HCD_IRQHandler(&hcd_fs_hd);
-#endif //(USBH_FS_ENABLED)
-#endif //(USBH_ENABLED)
+#endif //(HAL_USBH_FS_ENABLED)
+#endif //(HAL_USBH_ENABLED)
 }
 
 /******************************************************************************/
@@ -254,19 +254,19 @@ void OTG_HS_IRQHandler(void);
 void OTG_HS_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(OTG_HS_IRQn);
-#if (USBD_ENABLED)
-#if (USBD_HS_ENABLED)
+#if (HAL_USBD_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     extern PCD_HandleTypeDef pcd_hs_hd;
     HAL_PCD_IRQHandler(&pcd_hs_hd);
-#endif //(USBD_HS_ENABLED)
-#endif //(USBD_ENABLED)
+#endif //(HAL_USBD_HS_ENABLED)
+#endif //(HAL_USBD_ENABLED)
 
-#if (USBH_ENABLED)
-#if (USBH_HS_ENABLED)
+#if (HAL_USBH_ENABLED)
+#if (HAL_USBH_HS_ENABLED)
     extern HCD_HandleTypeDef hcd_hs_hd;
     HAL_HCD_IRQHandler(&hcd_hs_hd);
-#endif //(USBH_HS_ENABLED)
-#endif //(USBH_ENABLED)
+#endif //(HAL_USBH_HS_ENABLED)
+#endif //(HAL_USBH_ENABLED)
 }
 
 /******************************************************************************/

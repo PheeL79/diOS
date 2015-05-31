@@ -88,13 +88,13 @@ Status TIMER8_DeInit(void* args_p)
 /*****************************************************************************/
 Status TIMER8_Open(void* args_p)
 {
-    if (HAL_OK != HAL_TIM_Base_Start(&timer_hd)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_TIM_Base_Start(&timer_hd)) { return S_HARDWARE_ERROR; }
     return S_OK;
 }
 
 /*****************************************************************************/
 Status TIMER8_Close(void* args_p)
 {
-    if (HAL_OK != HAL_TIM_Base_Stop(&timer_hd)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_TIM_Base_Stop(&timer_hd)) { return S_HARDWARE_ERROR; }
     return S_OK;
 }

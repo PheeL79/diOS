@@ -10,17 +10,17 @@
 #include "os_mailbox.h"
 #include "os_signal.h"
 #include "os_debug.h"
-#if (USBD_ENABLED)
+#if (HAL_USBD_ENABLED)
 #include "usbd_core.h"
-#if (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_AUDIO_ENABLED)
     #include "usbd_audio.h"
-#endif // (USBD_AUDIO_ENABLED)
-#if (USBD_HID_ENABLED)
+#endif //(HAL_USBD_AUDIO_ENABLED)
+#if (HAL_USBD_HID_ENABLED)
     #include "usbd_hid.h"
-#endif // (USBD_HID_ENABLED)
-#if (USBD_MSC_ENABLED)
+#endif //(HAL_USBD_HID_ENABLED)
+#if (HAL_USBD_MSC_ENABLED)
     #include "usbd_msc.h"
-#endif // (USBD_MSC_ENABLED)
+#endif //(HAL_USBD_MSC_ENABLED)
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usbd"
@@ -37,14 +37,14 @@ static Status   USBD_Close(void* args_p);
 static Status   USBD_IoCtl(const U32 request_id, void* args_p);
 
 //------------------------------------------------------------------------------
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
 PCD_HandleTypeDef           pcd_fs_hd;
 static  USBD_HandleTypeDef* usbd_fs_hd_p;
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
 PCD_HandleTypeDef           pcd_hs_hd;
 static  USBD_HandleTypeDef* usbd_hs_hd_p;
-#endif // (USBD_HS_ENABLED)
+#endif //(HAL_USBD_HS_ENABLED)
 OS_QueueHd                  usbdd_stdin_qhd;
 HAL_DriverItf*              drv_usbd_v[DRV_ID_USBX_LAST];
 
@@ -71,60 +71,60 @@ Status USBD_Init_(void* args_p)
 const OS_UsbDItfHd* usbd_hd_p = (OS_UsbDItfHd*)args_p;
 Status s = S_OK;
 // Interface
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     usbd_fs_hd_p = (USBD_HandleTypeDef*)usbd_hd_p->itf_fs_hd;
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     usbd_hs_hd_p = (USBD_HandleTypeDef*)usbd_hd_p->itf_hs_hd;
-#endif // (USBD_HS_ENABLED)
+#endif //(HAL_USBD_HS_ENABLED)
 
 // Class
-#if (USBD_AUDIO_ENABLED)
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_AUDIO_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     extern USBD_AUDIO_ItfTypeDef    usbd_fs_audio_itf;
     extern USBD_DescriptorsTypeDef  usbd_fs_audio_desc;
-    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_audio_desc, OS_USB_ID_FS))      { return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_AUDIO_CLASS))              { return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_AUDIO_RegisterInterface(usbd_fs_hd_p, &usbd_fs_audio_itf))  { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
+    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_audio_desc, OS_USB_ID_FS))      { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_AUDIO_CLASS))              { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_AUDIO_RegisterInterface(usbd_fs_hd_p, &usbd_fs_audio_itf))  { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     extern USBD_AUDIO_ItfTypeDef    usbd_hs_audio_itf;
     extern USBD_DescriptorsTypeDef  usbd_hs_audio_desc;
-    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_audio_desc, OS_USB_ID_HS))      { return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_AUDIO_CLASS))              { return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_AUDIO_RegisterInterface(usbd_hs_hd_p, &usbd_hs_audio_itf))  { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_HS_ENABLED)
-#endif // (USBD_AUDIO_ENABLED)
+    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_audio_desc, OS_USB_ID_HS))      { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_AUDIO_CLASS))              { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_AUDIO_RegisterInterface(usbd_hs_hd_p, &usbd_hs_audio_itf))  { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_HS_ENABLED)
+#endif //(HAL_USBD_AUDIO_ENABLED)
 
-#if (USBD_HID_ENABLED)
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_HID_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     extern USBD_DescriptorsTypeDef usbd_fs_hid_desc;
-    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_hid_desc, OS_USB_ID_FS)){ return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
+    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_hid_desc, OS_USB_ID_FS)){ return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     extern USBD_DescriptorsTypeDef usbd_hs_hid_desc;
-    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_hid_desc, OS_USB_ID_HS)){ return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_HS_ENABLED)
-#endif // (USBD_HID_ENABLED)
+    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_hid_desc, OS_USB_ID_HS)){ return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_HS_ENABLED)
+#endif //(HAL_USBD_HID_ENABLED)
 
-#if (USBD_MSC_ENABLED)
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_MSC_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     extern USBD_StorageTypeDef      usbd_fs_msc_itf;
     extern USBD_DescriptorsTypeDef  usbd_fs_msc_desc;
-    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_msc_desc, OS_USB_ID_FS)){ return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_MSC_CLASS))        { return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_fs_hd_p, &usbd_fs_msc_itf)){ return s = S_HARDWARE_FAULT; }
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
+    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_msc_desc, OS_USB_ID_FS)){ return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_MSC_CLASS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_fs_hd_p, &usbd_fs_msc_itf)){ return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     extern USBD_StorageTypeDef      usbd_hs_msc_itf;
     extern USBD_DescriptorsTypeDef  usbd_hs_msc_desc;
-    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_msc_desc, OS_USB_ID_HS)){ return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_MSC_CLASS))        { return s = S_HARDWARE_FAULT; }
-    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_hs_hd_p, &usbd_hs_msc_itf)){ return s = S_HARDWARE_FAULT; }
-#endif // (USBD_HS_ENABLED)
-#endif // (USBD_MSC_ENABLED)
+    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_msc_desc, OS_USB_ID_HS)){ return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_MSC_CLASS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_hs_hd_p, &usbd_hs_msc_itf)){ return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_HS_ENABLED)
+#endif //(HAL_USBD_MSC_ENABLED)
     return s;
 }
 
@@ -132,14 +132,14 @@ Status s = S_OK;
 Status USBD_DeInit_(void* args_p)
 {
 Status s = S_OK;
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     HAL_PCD_MspDeInit(usbd_fs_hd_p->pData);
-    if (USBD_OK != USBD_DeInit(usbd_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
+    if (USBD_OK != USBD_DeInit(usbd_fs_hd_p)) { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     HAL_PCD_MspDeInit(usbd_hs_hd_p->pData);
-    if (USBD_OK != USBD_DeInit(usbd_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_HS_ENABLED)
+    if (USBD_OK != USBD_DeInit(usbd_hs_hd_p)) { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_HS_ENABLED)
     return s;
 }
 
@@ -148,12 +148,12 @@ Status USBD_Open(void* args_p)
 {
 Status s = S_OK;
     usbdd_stdin_qhd = (OS_QueueHd)args_p;
-#if (USBD_FS_ENABLED)
-    if (USBD_OK != USBD_Start(usbd_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
-    if (USBD_OK != USBD_Start(usbd_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_HS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
+    if (USBD_OK != USBD_Start(usbd_fs_hd_p)) { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
+    if (USBD_OK != USBD_Start(usbd_hs_hd_p)) { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_HS_ENABLED)
     return s;
 }
 
@@ -162,12 +162,12 @@ Status USBD_Close(void* args_p)
 {
 Status s = S_OK;
     usbdd_stdin_qhd = OS_NULL;
-#if (USBD_FS_ENABLED)
-    if (USBD_OK != USBD_Stop(usbd_fs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_FS_ENABLED)
-#if (USBD_HS_ENABLED)
-    if (USBD_OK != USBD_Stop(usbd_hs_hd_p)) { return s = S_HARDWARE_FAULT; }
-#endif // (USBD_HS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
+    if (USBD_OK != USBD_Stop(usbd_fs_hd_p)) { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_FS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
+    if (USBD_OK != USBD_Stop(usbd_hs_hd_p)) { return s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBD_HS_ENABLED)
     return s;
 }
 
@@ -230,11 +230,11 @@ Status s = S_UNDEF;
                 default:
                     break;
             }
-            if (HAL_OK != hal_status) { s = S_HARDWARE_FAULT; }
+            if (HAL_OK != hal_status) { s = S_HARDWARE_ERROR; }
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;
@@ -249,7 +249,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
 
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     if (USB_OTG_FS == hpcd->Instance) {
         __GPIOA_CLK_ENABLE();
         __GPIOB_CLK_ENABLE();
@@ -288,9 +288,9 @@ GPIO_InitTypeDef GPIO_InitStruct;
         HAL_NVIC_SetPriority(OTG_FS_IRQn, IRQ_PRIO_OTG_FS, 0);
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
     }
-#endif // (USBD_FS_ENABLED)
+#endif //(HAL_USBD_FS_ENABLED)
 
-#if (USBD_HS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     if (USB_OTG_HS == hpcd->Instance) {
         __GPIOB_CLK_ENABLE();
         __GPIOD_CLK_ENABLE();
@@ -331,7 +331,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
         HAL_NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRIO_OTG_HS, 0);
         HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
     }
-#endif // (USBD_HS_ENABLED)
+#endif //(HAL_USBD_HS_ENABLED)
 }
 
 /**
@@ -341,7 +341,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
   */
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
 {
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     if (USB_OTG_FS == hpcd->Instance) {
         /* Peripheral interrupt Deinit*/
         HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
@@ -358,9 +358,9 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_11|GPIO_PIN_12);
     }
-#endif // (USBD_FS_ENABLED)
+#endif //(HAL_USBD_FS_ENABLED)
 
-#if (USBD_HS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     if (USB_OTG_HS == hpcd->Instance) {
         /* Peripheral interrupt Deinit*/
         HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
@@ -378,7 +378,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
         HAL_GPIO_DeInit(GPIOD, GPIO_PIN_13);
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
     }
-#endif // (USBD_HS_ENABLED)
+#endif //(HAL_USBD_HS_ENABLED)
 }
 
 /*******************************************************************************
@@ -542,7 +542,7 @@ USBD_HandleTypeDef* pdev = hpcd->pData;
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 {
-#if (USBD_FS_ENABLED)
+#if (HAL_USBD_FS_ENABLED)
     if (OS_USB_ID_FS == pdev->id) {
         /* Set LL Driver parameters */
         pcd_fs_hd.Instance = USB_OTG_FS;
@@ -565,9 +565,9 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
         HAL_PCD_SetTxFiFo(&pcd_fs_hd, 0, 0x40);
         HAL_PCD_SetTxFiFo(&pcd_fs_hd, 1, 0x80);
     }
-#endif // (USBD_FS_ENABLED)
+#endif //(HAL_USBD_FS_ENABLED)
 
-#if (USBD_HS_ENABLED)
+#if (HAL_USBD_HS_ENABLED)
     if (OS_USB_ID_HS == pdev->id) {
         /* Set LL Driver parameters */
         pcd_hs_hd.Instance = USB_OTG_HS;
@@ -597,7 +597,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
         HAL_PCD_SetTxFiFo(&pcd_hs_hd, 0, 0x80);
         HAL_PCD_SetTxFiFo(&pcd_hs_hd, 1, 0x174);
     }
-#endif // (USBD_HS_ENABLED)
+#endif //(HAL_USBD_HS_ENABLED)
 
   return USBD_OK;
 }
@@ -791,4 +791,4 @@ void USBD_LL_Delay(uint32_t Delay)
   HAL_Delay(Delay);
 }
 
-#endif // (USBD_ENABLED)
+#endif //(HAL_USBD_ENABLED)

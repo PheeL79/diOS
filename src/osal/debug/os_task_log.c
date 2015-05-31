@@ -29,8 +29,8 @@ const OS_TaskConfig task_log_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 10,
-    .prio_init      = OS_TASK_PRIO_LOG,
-    .prio_power     = OS_TASK_PRIO_PWR_LOG,
+    .prio_init      = OS_PRIO_TASK_LOG,
+    .prio_power     = OS_PRIO_PWR_TASK_LOG,
     .storage_size   = 0,//sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN + OS_SHELL_HEIGHT,
     .stdin_len      = 16,
@@ -58,7 +58,7 @@ Bool is_prompted = OS_FALSE;
     stdout_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdout_qhd, &msg_p, OS_BLOCK)) {
-            OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+            OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -68,13 +68,13 @@ Bool is_prompted = OS_FALSE;
                     case OS_SIG_PWR_ACK:
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory

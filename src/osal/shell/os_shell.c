@@ -88,7 +88,7 @@ Status OS_ShellInit(void)
 {
 Status s = S_OK;
     os_shell_mutex = OS_MutexCreate();
-    if (OS_NULL == os_shell_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_shell_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_commands_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_commands_list)) { return S_INVALID_VALUE; }
     OS_ShellClClear();
@@ -108,13 +108,13 @@ Status OS_ShellCommandCreate(const OS_ShellCommandConfig* cmd_cfg_p)
 const U32 cfg_size = sizeof(OS_ShellCommandConfig);
 Status s = S_OK;
 
-    if (OS_NULL == cmd_cfg_p) { return S_INVALID_REF; }
+    if (OS_NULL == cmd_cfg_p) { return S_INVALID_PTR; }
     OS_ListItem* item_l_p = OS_ListItemCreate();
-    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    if (OS_NULL == item_l_p) { return S_OUT_OF_MEMORY; }
     OS_ShellCommandConfig* cmd_cfg_dyn_p = (OS_ShellCommandConfig*)OS_Malloc(cfg_size);
     if (OS_NULL == cmd_cfg_dyn_p) {
         OS_ListItemDelete(item_l_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     IF_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_MemCpy(cmd_cfg_dyn_p, cmd_cfg_p, cfg_size);
@@ -137,7 +137,7 @@ OS_ShellCommandConfig* cmd_cfg_p = OS_ShellCommandByNameGet(name_p);
 OS_ListItem* item_l_p = OS_ListItemByValueGet(&os_commands_list, (OS_Value)cmd_cfg_p);
 Status s = S_OK;
 
-    if ((OS_NULL == cmd_cfg_p) || (OS_DELAY_MAX == (OS_Value)cmd_cfg_p)) { return S_INVALID_REF; }
+    if ((OS_NULL == cmd_cfg_p) || (OS_DELAY_MAX == (OS_Value)cmd_cfg_p)) { return S_INVALID_PTR; }
     IF_OK(s = OS_MutexLock(os_shell_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItemDelete(item_l_p);
         OS_Free(cmd_cfg_p);
@@ -181,10 +181,10 @@ Bool is_quoted = OS_FALSE;
     //Execute the command handler.
     const OS_ShellCommandHd cmd_hd = OS_ShellCommandByNameGet(shell_cl);
     if (!cmd_hd || !cmd_hd->command) {
-        return S_UNDEF_CMD;
+        return S_INVALID_COMMAND;
     }
     IF_STATUS(OS_ShellArgumentsNumberCheck(cmd_hd, argc)) {
-        return S_INVALID_ARGS_NUMBER;
+        return S_INVALID_ARGS_COUNT;
     }
     OS_ASSERT(cmd_hd->handler);
     return cmd_hd->handler(argc, argv);
@@ -240,7 +240,7 @@ error:
 Status OS_ShellArgumentsNumberCheck(const OS_ShellCommandHd cmd_hd, const U8 argc)
 {
     if ((cmd_hd->args_min <= argc) && (cmd_hd->args_max >= argc)) { return S_OK; }
-    return S_INVALID_ARGS_NUMBER;
+    return S_INVALID_ARGS_COUNT;
 }
 
 /******************************************************************************/

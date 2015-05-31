@@ -31,11 +31,9 @@
 #include "printf-stdarg.h"
 #include "hal.h"
 
-__ALIGN_BEGIN
-static char out_buf1[HAL_STDIO_BUFF_LEN];
-static char out_buf2[HAL_STDIO_BUFF_LEN];
-__ALIGN_END
-static char*out_buf_curr_p = out_buf1;
+ALIGN_BEGIN static char out_buf1[HAL_STDIO_BUFF_LEN] ALIGN_END;
+ALIGN_BEGIN static char out_buf2[HAL_STDIO_BUFF_LEN] ALIGN_END;
+static char* out_buf_curr_p = out_buf1;
 
 static void printchar(char **str, int c)
 {
@@ -206,7 +204,13 @@ extern volatile HAL_Env hal_env;
     out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
     char* out_buf_tmp_p = out_buf_curr_p;
     const int r = print(&out_buf_tmp_p, format, args );
+#if defined(USE_SEMIHOSTED)
+    while (r--) {
+        putchar(*out_buf_curr_p++);
+    }
+#else
     hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
+#endif //defined(USE_SEMIHOSTED)
     return r;
 }
 
@@ -222,7 +226,13 @@ extern volatile HAL_Env hal_env;
     out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
     char* out_buf_tmp_p = out_buf_curr_p;
     const int r = print(&out_buf_tmp_p, format, args);
+#if defined(USE_SEMIHOSTED)
+    while (r--) {
+        putchar(*out_buf_curr_p++);
+    }
+#else
     hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
+#endif //!defined(USE_SEMIHOSTED)
     return r;
 }
 

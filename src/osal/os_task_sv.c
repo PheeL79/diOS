@@ -93,9 +93,9 @@ void OS_TaskMain(OS_TaskArgs* args_p)
     sv_stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
     OS_ASSERT(S_OK == OS_StartupApplication());
     OS_ASSERT(S_OK == OS_StartupDeInit());
-#if (TIMER_IWDG_ENABLED)
+#if (HAL_TIMER_IWDG_ENABLED)
     OS_ASSERT(S_OK == TIMER_IWDG_Start());
-#endif // (TIMER_IWDG_ENABLED)
+#endif //(HAL_TIMER_IWDG_ENABLED)
 	for(;;) {
         MessagesHandler(args_p);
     }
@@ -199,7 +199,7 @@ Status s = S_OK; //!
                                     }
                                     break;
                                 default:
-                                    OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                                    OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                                     break;
                             }
                         } else {
@@ -227,8 +227,8 @@ Status s;
     while (OS_NULL != dhd) {
         s = OS_DriverIoCtl(dhd, DRV_REQ_STD_POWER_SET, (void*)&state);
         if (S_OK == s) {
-        } else if (S_ISNT_OPENED == s) { //ignore
-        } else if (S_UNDEF_FUNCTION == s) { //ignore absent IoCtl()
+        } else if (S_OPENED == s) { //ignore
+        } else if (S_NOT_EXISTS == s) { //ignore absent IoCtl()
             OS_LOG_S(D_DEBUG, s);
         } else {
             OS_LOG(D_WARNING, "%s: power state set failed!", OS_DriverNameGet(dhd));
@@ -261,21 +261,21 @@ OS_Message* msg_p;
                     Shutdown(args_p);
                     break;
                 default:
-                    OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                    OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                     break;
             }
         } else {
             switch (msg_p->id) {
                 default:
-                    OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                    OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                     break;
             }
             OS_MessageDelete(msg_p); // free message allocated memory
         }
     }
-#if (TIMER_IWDG_ENABLED)
+#if (HAL_TIMER_IWDG_ENABLED)
     TIMER_IWDG_Reset();
-#endif // (TIMER_IWDG_ENABLED)
+#endif //(HAL_TIMER_IWDG_ENABLED)
     led_state = (ON == led_state) ? OFF : ON;
     OS_DriverWrite(tstor.drv_led_pulse, (void*)&led_state, 1, OS_NULL);
 
@@ -294,7 +294,7 @@ OS_Message* msg_p;
             deadlock_thd = OS_NULL;
         }
     }
-#endif // (OS_TASK_DEADLOCK_TEST_ENABLED)
+#endif //(OS_TASK_DEADLOCK_TEST_ENABLED)
 }
 
 #if (OS_TASK_DEADLOCK_TEST_ENABLED)
@@ -309,7 +309,7 @@ OS_TaskStats* task_stats_old_p;
 OS_TaskStats* task_stats_new_p;
 Status s = S_OK;
     if (OS_NULL == run_stats_old_buf_p) {
-        s = S_NO_MEMORY;
+        s = S_OUT_OF_MEMORY;
         OS_LOG_S(D_CRITICAL, s);
         goto error;
     }
@@ -327,7 +327,7 @@ Status s = S_OK;
         register U32 tasks_count_new = OS_TasksCountGet();
         run_stats_new_buf_p = (OS_TaskStats*)OS_Malloc(task_inf_approx_mem_size * tasks_count_new);
         if (OS_NULL == run_stats_new_buf_p) {
-            s = S_NO_MEMORY;
+            s = S_OUT_OF_MEMORY;
             OS_LOG_S(D_CRITICAL, s);
             goto error;
         }
@@ -391,7 +391,7 @@ Status s = S_UNDEF;
             }
         }
     } else {
-        s = S_INVALID_REF;
+        s = S_INVALID_PTR;
         OS_LOG_S(D_DEBUG, s);
     }
     return s;

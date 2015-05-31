@@ -1,6 +1,6 @@
 /***************************************************************************//**
 * @file    hal.h
-* @brief   HAL.
+* @brief   Hardware Abstraction Layer definitions.
 * @author  A. Filyanov
 *******************************************************************************/
 #ifndef _HAL_H_
@@ -8,7 +8,7 @@
 
 #include <stdarg.h>
 #include "status.h"
-#include "olimex_stm32_p407/hal_config.h"
+#include "hal_config.h"
 
 //------------------------------------------------------------------------------
 typedef U8 HAL_PowerState;
@@ -40,7 +40,7 @@ typedef struct {
     LogLevel                log_level;
 } HAL_Env;
 
-#include "hal/bsp/olimex_stm32_p407/hal_olimex_stm32_p407.h"
+#include "olimex_stm32_p407/hal_olimex_stm32_p407.h"
 
 //------------------------------------------------------------------------------
 

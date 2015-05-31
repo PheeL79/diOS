@@ -172,7 +172,7 @@ Status s = S_UNDEF;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;
@@ -248,7 +248,7 @@ Status s = S_UNDEF;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;
@@ -341,7 +341,7 @@ Status s = S_UNDEF;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;

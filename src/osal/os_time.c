@@ -25,7 +25,7 @@ Status OS_TimeInit(void)
 {
 Status s = S_OK;
     os_time_mutex = OS_MutexCreate();
-    if (OS_NULL == os_time_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_time_mutex) { return S_INVALID_PTR; }
     return s;
 }
 
@@ -33,7 +33,7 @@ Status s = S_OK;
 Status OS_TimeGet(const OS_TimeFormat format, OS_DateTime* os_time_p)
 {
 Status s;
-    if (OS_NULL == os_time_p) { return S_INVALID_REF; }
+    if (OS_NULL == os_time_p) { return S_INVALID_PTR; }
     IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_TIME_GET, (void*)os_time_p)) { return s; }
     //Convert time to specified format.
     switch (format) {
@@ -54,7 +54,7 @@ Status s;
 Status OS_TimeSet(const OS_TimeFormat format, OS_DateTime* os_time_p)
 {
 Status s;
-    if (OS_NULL == os_time_p) { return S_INVALID_REF; }
+    if (OS_NULL == os_time_p) { return S_INVALID_PTR; }
     if (OS_TRUE != OS_TimeIsValid(os_time_p->hours, os_time_p->minutes, os_time_p->seconds)) {
         return S_INVALID_VALUE;
     }
@@ -76,7 +76,7 @@ Bool OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds)
 Status OS_DateGet(const OS_DateFormat format, OS_DateTime* os_date_p)
 {
 Status s;
-    if (OS_NULL == os_date_p) { return S_INVALID_REF; }
+    if (OS_NULL == os_date_p) { return S_INVALID_PTR; }
     IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_DATE_GET, (void*)os_date_p)) { return s; }
     return s;
 }
@@ -85,7 +85,7 @@ Status s;
 Status OS_DateSet(const OS_DateFormat format, OS_DateTime* os_date_p)
 {
 Status s = S_OK;
-    if (OS_NULL == os_date_p) { return S_INVALID_REF; }
+    if (OS_NULL == os_date_p) { return S_INVALID_PTR; }
     if (OS_TRUE != OS_DateIsValid(os_date_p->year, os_date_p->month, os_date_p->day)) {
         return S_INVALID_VALUE;
     }
@@ -111,7 +111,7 @@ Bool OS_DateIsValid(const U16 year, const U8 month, const U8 day)
 {
 const U8 days_in_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     //STM32 RTC limitation.
-    if ((RTC_YEAR_BASE > year) || (2099 < year)) {
+    if ((HAL_RTC_YEAR_BASE > year) || (2099 < year)) {
         return OS_FALSE;
     }
     if ((1 > month) || (12 < month)) {

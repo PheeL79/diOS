@@ -8,8 +8,8 @@
 
 //Ensure that is only used by the compiler, and not the assembler.
 #ifdef __ICCARM__
-#include "olimex_stm32_p407/hal_config.h"
-#include "os_config_tasks_prio.h"
+#include "hal_config.h"
+#include "os_config_prio.h"
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
@@ -45,7 +45,7 @@
 
 #ifdef __ICCARM__
 //Memory
-/// @brief   Memory type.
+/// @brief   Memory pool type.
 enum {
     OS_MEM_RAM_INT_SRAM,
     OS_MEM_RAM_INT_CCM,
@@ -54,20 +54,20 @@ enum {
     OS_MEM_UNDEF
 };
 #define OS_MEM_HEAP_SYS                             OS_MEM_RAM_INT_SRAM
-#define OS_MEM_HEAP_APP                             OS_MEM_RAM_INT_SRAM
+#define OS_MEM_HEAP_APP                             OS_MEM_RAM_EXT_SRAM
 #define OS_STACK_SIZE_MIN                           0x200
 #define OS_HEAP_SIZE                                0x15000 //0x1C000
 
-/*__no_init*/ static U8 heap_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
-/*__no_init*/ static U8 heap_int_ccm[MEM_INT_CCM_SIZE]          @ MEM_INT_CCM_BASE_ADDRESS;
-__no_init static U8 heap_ext_sram[MEM_EXT_SRAM_SIZE]        @ MEM_EXT_SRAM_BASE_ADDRESS;
+/*__no_init*/ static U8 pool_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
+/*__no_init*/ static U8 pool_int_ccm[HAL_MEM_INT_CCM_SIZE]          @ HAL_MEM_INT_CCM_BASE_ADDRESS;
+__no_init static U8 pool_ext_sram[HAL_MEM_EXT_SRAM_SIZE]        @ HAL_MEM_EXT_SRAM_BASE_ADDRESS;
 
 /// @brief   Memory config vector.
 static const OS_MemoryDesc memory_cfg_v[] = {
-    { (U32)&heap_int_sram,      sizeof(heap_int_sram),      MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_SRAM,    "SRAM Int." },
-    { (U32)&heap_int_ccm,       sizeof(heap_int_ccm),       MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_CCM,     "CCM"       },
-    { (U32)&heap_ext_sram,      sizeof(heap_ext_sram),      MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_EXT_SRAM,    "SRAM Ext." },
-    { 0,                        0,                          0,                      OS_MEM_LAST,            ""          }
+    { (void*)&pool_int_sram,    sizeof(pool_int_sram),      HAL_MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_SRAM,    "SRAM Int." },
+    { (void*)&pool_int_ccm,     sizeof(pool_int_ccm),       HAL_MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_CCM,     "CCM"       },
+    { (void*)&pool_ext_sram,    sizeof(pool_ext_sram),      HAL_MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_EXT_SRAM,    "SRAM Ext." },
+    { 0,                        0,                          0,                          OS_MEM_LAST,            ""          }
 };
 
 // Timers
@@ -145,7 +145,7 @@ enum OS_MEDIA_VOL {
 };
 
 //Audio
-#define OS_AUDIO_ENABLED                            0
+#define OS_AUDIO_ENABLED                            1
 #define OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT            44100
 #define OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT            16
 #define OS_AUDIO_OUT_CHANNELS_DEFAULT               (OS_AUDIO_CHANNELS_STEREO)
@@ -336,20 +336,20 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_SYS_THREAD_MAX                   6
 #define OS_NETWORK_TCPIP_THREAD_NAME                "TcpIpD"
 #define OS_NETWORK_TCPIP_THREAD_STACKSIZE           (OS_STACK_SIZE_MIN * 2)
-#define OS_NETWORK_TCPIP_THREAD_PRIO                (OS_TASK_PRIO_TCPIP)
+#define OS_NETWORK_TCPIP_THREAD_PRIO                (OS_PRIO_TASK_TCPIP)
 #define OS_NETWORK_TCPIP_MBOX_SIZE                  5
 
 #define OS_NETWORK_SLIPIF_THREAD_NAME               "SlipIfD"
 #define OS_NETWORK_SLIPIF_THREAD_STACKSIZE          (OS_STACK_SIZE_MIN * 2)
-#define OS_NETWORK_SLIPIF_THREAD_PRIO               (OS_TASK_PRIO_SLIP)
+#define OS_NETWORK_SLIPIF_THREAD_PRIO               (OS_PRIO_TASK_SLIP)
 
 #define OS_NETWORK_PPP_THREAD_NAME                  "PppInputD"
 #define OS_NETWORK_PPP_THREAD_STACKSIZE             (OS_STACK_SIZE_MIN * 2)
-#define OS_NETWORK_PPP_THREAD_PRIO                  (OS_TASK_PRIO_PPP_INPUT)
+#define OS_NETWORK_PPP_THREAD_PRIO                  (OS_PRIO_TASK_PPP_INPUT)
 
 #define OS_NETWORK_DEFAULT_THREAD_NAME              "LwIpD"
 #define OS_NETWORK_DEFAULT_THREAD_STACKSIZE         (OS_STACK_SIZE_MIN * 2)
-#define OS_NETWORK_DEFAULT_THREAD_PRIO              (OS_TASK_PRIO_LWIP)
+#define OS_NETWORK_DEFAULT_THREAD_PRIO              (OS_PRIO_TASK_LWIP)
 
 #define OS_NETWORK_DEFAULT_RAW_RECVMBOX_SIZE        0
 #define OS_NETWORK_DEFAULT_UDP_RECVMBOX_SIZE        2000
@@ -500,7 +500,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_DEBUG_DNS                        OS_NETWORK_DEBUG_OFF
 
 #define OS_NETWORK_DAEMON_QUEUE_LEN                 6
-#define OS_NETWORK_HOST_NAME                        "lwip"
+#define OS_NETWORK_HOST_NAME                        HAL_MB_NAME
 
 #define OS_NETWORK_IP_V4                            4
 #define OS_NETWORK_IP_V6                            6
@@ -509,7 +509,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_MAC_ADDR_DEFAULT                 "00:80:E1:00:00:00"
 //IPv4
 #define OS_NETWORK_IP_ADDR4_SIZE                    4
-#define OS_NETWORK_IP_ADDR4_DEFAULT                 "10.137.2.32"
+#define OS_NETWORK_IP_ADDR4_DEFAULT                 "10.137.2.64"
 #define OS_NETWORK_NETMASK4_DEFAULT                 "255.255.255.0"
 #define OS_NETWORK_GATEWAY4_DEFAULT                 "10.137.2.1"
 //IPv6

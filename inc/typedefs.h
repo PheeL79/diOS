@@ -1,3 +1,8 @@
+/***************************************************************************//**
+* @file    typedefs.h
+* @brief   Type definitions.
+* @author  A. Filyanov
+*******************************************************************************/
 #ifndef _TYPEDEFS_H_
 #define _TYPEDEFS_H_
 
@@ -16,17 +21,6 @@
 #endif
 
 //------------------------------------------------------------------------------
-// limits
-    #define U8_MAX              0xFFU
-    #define U16_MAX             0xFFFFU
-    #define U32_MAX             0xFFFFFFFFUL
-    #define U64_MAX             0xFFFFFFFFFFFFFFFFUL
-
-    #define S8_MAX              0x7F
-    #define S16_MAX             0x7FFF
-    #define S32_MAX             0x7FFFFFFF
-    #define S64_MAX             0x7FFFFFFFFFFFFFFFL
-
 // common types
 #if defined(CM4F) || defined(STM32F40XX)
     #include <stdlib.h>
@@ -75,6 +69,17 @@
 #   error "typedefs.h: Undefined platform!"
 #endif
 
+// limits
+#define U8_MAX                      ((U8)255)
+#define S8_MAX                      ((S8)127)
+#define S8_MIN                      ((S8)-128)
+#define U16_MAX                     ((U16)65535u)
+#define S16_MAX                     ((S16)32767)
+#define S16_MIN                     ((S16)-32768)
+#define U32_MAX                     ((U32)4294967295uL)
+#define S32_MAX                     ((S32)2147483647)
+#define S32_MIN                     ((S32)-2147483648)
+
 #define HAL_NULL                    ((void*)0)
 #define OS_NULL                     HAL_NULL
 #ifndef NULL
@@ -83,14 +88,16 @@
 
 #ifndef false
 #   define false                    (0 == 1)
-#   define HAL_FALSE                false
+#   define FALSE                    false
+#   define HAL_FALSE                FALSE
 #   define OS_FALSE                 HAL_FALSE
 #   define OS_FALSE_STR             "false"
 #endif
 
 #ifndef true
 #   define true                     (1 == 1)
-#   define HAL_TRUE                 true
+#   define TRUE                     true
+#   define HAL_TRUE                 TRUE
 #   define OS_TRUE                  HAL_TRUE
 #   define OS_TRUE_STR              "true"
 #endif

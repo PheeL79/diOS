@@ -2828,7 +2828,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>$PROJ_DIR$\..\..\..\..\lib\iar710\olimex_stm32_p407_dios_sram_d.a</state>
+          <state>$PROJ_DIR$\..\..\..\..\lib\iar740\olimex_stm32_p407_dios_sram_d.a</state>
         </option>
       </data>
     </settings>
@@ -3788,13 +3788,13 @@
   <group>
     <name>lib_d</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\lib\iar710\cm4f_osal_d.a</name>
+      <name>$PROJ_DIR$\..\..\..\..\lib\iar740\cm4f_osal_d.a</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\lib\iar710\cm4f_rtos_d.a</name>
+      <name>$PROJ_DIR$\..\..\..\..\lib\iar740\cm4f_rtos_d.a</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\lib\iar710\olimex_stm32_p407_hal_d.a</name>
+      <name>$PROJ_DIR$\..\..\..\..\lib\iar740\olimex_stm32_p407_hal_d.a</name>
     </file>
   </group>
   <group>

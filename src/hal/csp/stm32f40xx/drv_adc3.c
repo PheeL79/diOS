@@ -71,7 +71,7 @@ Status s = S_UNDEF;
     adc3_hd.Init.DMAContinuousRequests  = ENABLE;
     adc3_hd.Init.EOCSelection           = ENABLE;
 
-    if (HAL_OK != HAL_ADC_Init(&adc3_hd)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_ADC_Init(&adc3_hd)) { return S_HARDWARE_ERROR; }
 
     /* Configure ADC3 regular channel */
     adc_cfg.Channel     = ADCx_CHANNEL;
@@ -79,7 +79,7 @@ Status s = S_UNDEF;
     adc_cfg.SamplingTime= ADC_SAMPLETIME_15CYCLES;
     adc_cfg.Offset      = 0;
 
-    if (HAL_OK != HAL_ADC_ConfigChannel(&adc3_hd, &adc_cfg)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_ADC_ConfigChannel(&adc3_hd, &adc_cfg)) { return S_HARDWARE_ERROR; }
     return S_OK;
 }
 
@@ -129,13 +129,13 @@ Status ADC3_LL_DeInit(void* args_p)
 /*****************************************************************************/
 Status ADC3_Open(void* args_p)
 {
-    if (HAL_OK != HAL_ADC_Start_IT(&adc3_hd)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_ADC_Start_IT(&adc3_hd)) { return S_HARDWARE_ERROR; }
     return S_OK;
 }
 
 /*****************************************************************************/
 Status ADC3_Close(void* args_p)
 {
-    if (HAL_OK != HAL_ADC_Stop_IT(&adc3_hd)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_ADC_Stop_IT(&adc3_hd)) { return S_HARDWARE_ERROR; }
     return S_OK;
 }

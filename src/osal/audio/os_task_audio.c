@@ -34,8 +34,8 @@ const OS_TaskConfig task_audio_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 3,
-    .prio_init      = OS_TASK_PRIO_AUDIO,
-    .prio_power     = OS_TASK_PRIO_PWR_AUDIO,
+    .prio_init      = OS_PRIO_TASK_AUDIO,
+    .prio_power     = OS_PRIO_PWR_TASK_AUDIO,
     .storage_size   = sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN,
     .stdin_len      = OS_STDIN_LEN
@@ -57,7 +57,7 @@ Status s = S_UNDEF;
     {
         OS_DriverConfig drv_cfg = {
             .name       = "A_CS4344",
-            .itf_p      = drv_audio_v[DRV_ID_AUDIO_CS4344],
+            .itf_p      = drv_audio_v[DRV_ID_CS4344],
             .prio_power = OS_PWR_PRIO_DEFAULT
         };
         const OS_AudioDeviceConfig audio_dev_cfg = {
@@ -81,7 +81,7 @@ Status s = S_UNDEF;
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            //OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+            //OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -99,13 +99,13 @@ Status s = S_UNDEF;
                         }
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
@@ -140,9 +140,9 @@ Status s = S_UNDEF;
                     IF_STATUS(s = OS_DriverOpen(tstor_p->drv_trimmer_hd, OS_NULL)) {
                     }
                 } else {
-                    s = (S_INIT == s) ? S_OK : s;
+                    s = (S_INITED == s) ? S_OK : s;
                 }
-                const CS4344_DrvAudioArgsInit drv_args = {
+                const CS4344_DrvArgsInit drv_args = {
                     .info.sample_rate   = OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT,
                     .info.sample_bits   = OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT,
                     .info.channels      = OS_AUDIO_OUT_CHANNELS_DEFAULT,

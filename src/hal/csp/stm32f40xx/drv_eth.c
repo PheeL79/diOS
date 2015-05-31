@@ -11,7 +11,7 @@
 #include "os_time.h"
 #include "os_network.h"
 
-#if (ETH_ENABLED)
+#if (HAL_ETH_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_eth"
 
@@ -75,7 +75,7 @@ Status s = S_UNDEF;
     tx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_TXBUFNB * ETH_TX_BUF_SIZE, ETH0_OS_MEM_TYPE);
     if ((OS_NULL == dma_rx_desc_tab_p) || (OS_NULL == dma_tx_desc_tab_p) ||
         (OS_NULL == rx_buff_p) || (OS_NULL == tx_buff_p)) {
-        return s = S_NO_MEMORY;
+        return s = S_OUT_OF_MEMORY;
     }
     IF_OK(s = ETH_LL_Init(OS_NULL)) {
         /* Init ETH */
@@ -100,7 +100,7 @@ Status s = S_UNDEF;
                     OS_ASSERT(HAL_OK == HAL_ETH_DMARxDescListInit(&eth0_hd, dma_rx_desc_tab_p, rx_buff_p, ETH_RXBUFNB));
                 }
             }
-        } else { s = S_HARDWARE_FAULT; }
+        } else { s = S_HARDWARE_ERROR; }
     }
     HAL_TRACE_S(D_INFO, s);
     return s;
@@ -196,7 +196,7 @@ Status s = S_UNDEF;
         if (HAL_OK == HAL_ETH_Stop(&eth0_hd)) {
             s = S_OK;
         } else {
-            s = S_HARDWARE_FAULT;
+            s = S_HARDWARE_ERROR;
         }
         /* Peripheral clock disable */
         __ETHMACRX_CLK_DISABLE();
@@ -234,7 +234,7 @@ Status s = S_UNDEF;
     IF_OK(s = DRV_ETH0_PHY.Open(OS_NULL)) {
         /* Enable MAC and DMA transmission and reception */
         if (HAL_OK != HAL_ETH_Start(&eth0_hd)) {
-            s = S_HARDWARE_FAULT;
+            s = S_HARDWARE_ERROR;
         }
     }
     return s;
@@ -266,7 +266,7 @@ Status s = S_UNDEF;
     s = S_OK;
     /* get received frame */
     if (HAL_OK != HAL_ETH_GetReceivedFrame_IT(&eth0_hd)) {
-        return (s = S_HARDWARE_FAULT);
+        return (s = S_HARDWARE_ERROR);
     }
     /* Obtain the size of the packet and put it into the "len" variable. */
     len = eth0_hd.RxFrameInfos.length;
@@ -372,7 +372,7 @@ Status s = S_UNDEF;
     if (HAL_OK == HAL_ETH_TransmitFrame(&eth0_hd, frame_length)) {
         s = S_OK;
     } else {
-        s = S_HARDWARE_FAULT;
+        s = S_HARDWARE_ERROR;
     }
 error:
     /* When Transmit Underflow flag is set, clear it and issue a Transmit Poll Demand to resume transmission */
@@ -402,7 +402,7 @@ Status s = S_UNDEF;
                 default:
                     break;
             }
-            if (HAL_OK != hal_status) { s = S_HARDWARE_FAULT; }
+            if (HAL_OK != hal_status) { s = S_HARDWARE_ERROR; }
             }
             break;
         case DRV_REQ_ETH_LINK_INT_CLEAR:
@@ -427,13 +427,13 @@ Status s = S_UNDEF;
                         /* Restart MAC interface */
                         if (HAL_OK == HAL_ETH_Start(&eth0_hd)) {
                         } else {
-                            s = S_HARDWARE_FAULT;
+                            s = S_HARDWARE_ERROR;
                         }
                     } else {
                         /* Stop MAC interface */
                         if (HAL_OK == HAL_ETH_Stop(&eth0_hd)) {
                         } else {
-                            s = S_HARDWARE_FAULT;
+                            s = S_HARDWARE_ERROR;
                         }
                     }
                 }
@@ -460,7 +460,7 @@ Status s = S_UNDEF;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;
@@ -478,4 +478,4 @@ const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_RX, 0);
     OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_HIGH));
 }
 
-#endif //(ETH_ENABLED)
+#endif //(HAL_ETH_ENABLED)

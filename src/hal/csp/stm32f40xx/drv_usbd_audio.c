@@ -27,7 +27,7 @@
 
 #include "os_config.h"
 
-#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio.h"
@@ -279,4 +279,4 @@ static int8_t GetState (void)
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
-#endif //(USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)

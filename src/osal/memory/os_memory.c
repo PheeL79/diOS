@@ -23,9 +23,8 @@ void vPortMemoryInit(void)
     do {
         if ((OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS] != mem_desc_p) { //init system pool last!
             init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
-            //OS_LOG(D_DEBUG, "heap: %5d; tlsf: %d\r\n", get_used_size((void*)mem_desc_p->addr), get_max_size((void*)mem_desc_p->addr));
         }
-    } while (OS_MEM_LAST != (++mem_desc_p)->type);
+    } while (OS_MEM_LAST != (++mem_desc_p)->pool);
     // Init system mempool
     mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[OS_MEM_HEAP_SYS];
     init_memory_pool(mem_desc_p->size, (void*)mem_desc_p->addr);
@@ -38,7 +37,6 @@ void* pvPortMalloc(size_t xWantedSize)
 void* pvReturn;
     OS_CriticalSectionEnter(); {
 	    pvReturn = tlsf_malloc(xWantedSize);
-        //OS_LOG(D_DEBUG, "heap: %5d; malloc: 0x%X, %d\r\n", get_used_size(&heap), pvReturn, xWantedSize);
     } OS_CriticalSectionExit();
 	return pvReturn;
 }
@@ -50,7 +48,6 @@ void vPortFree(void* pv)
 	if (pv)	{
         OS_CriticalSectionEnter(); {
 		    tlsf_free(pv);
-            //OS_LOG(D_DEBUG, "heap: %5d; free  : 0x%X\r\n", get_used_size(&heap), pv);
         } OS_CriticalSectionExit();
 	}
 }
@@ -61,21 +58,21 @@ Status OS_MemoryInit(void)
 {
     vPortMemoryInit();
     os_mem_mutex = OS_MutexCreate();
-    if (OS_NULL == os_mem_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_mem_mutex) { return S_INVALID_PTR; }
     return S_OK;
 }
 
 /******************************************************************************/
-static OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type);
-INLINE OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryType mem_type)
+static OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryPool pool);
+INLINE OS_MemoryDesc* OS_MemoryDescriptorGet(const OS_MemoryPool pool)
 {
 register OS_MemoryDesc* mem_desc_p = (OS_MemoryDesc*)&memory_cfg_v[0];
 
     do {
-        if (mem_type == mem_desc_p->type) {
+        if (pool == mem_desc_p->pool) {
             return mem_desc_p;
         }
-    } while (OS_MEM_LAST != (++mem_desc_p)->type);
+    } while (OS_MEM_LAST != (++mem_desc_p)->pool);
     return OS_NULL;
 }
 
@@ -93,7 +90,7 @@ void* p = OS_NULL;
 //            break;
 //        }
 //        // ...otherwise - next descriptor.
-//    } while (OS_MEM_LAST != (++mem_desc_p)->type);
+//    } while (OS_MEM_LAST != (++mem_desc_p)->pool);
     IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         p = malloc_ex(size, (void*)mem_desc_p->addr);
         OS_MutexUnlock(os_mem_mutex);
@@ -102,9 +99,9 @@ void* p = OS_NULL;
 }
 
 /******************************************************************************/
-void* OS_MallocEx(const Size size, const OS_MemoryType mem_type)
+void* OS_MallocEx(const Size size, const OS_MemoryPool pool)
 {
-const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
+const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(pool);
 void* p = OS_NULL;
     if (mem_desc_p) {
         IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
@@ -132,9 +129,9 @@ void OS_Free(void* addr_p)
 }
 
 /******************************************************************************/
-void OS_FreeEx(void* addr_p, const OS_MemoryType mem_type)
+void OS_FreeEx(void* addr_p, const OS_MemoryPool pool)
 {
-const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
+const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(pool);
     if (mem_desc_p) {
         if (addr_p) {
             IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
@@ -180,21 +177,21 @@ const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(mem_type);
 //}
 
 /******************************************************************************/
-OS_MemoryType OS_MemoryTypeHeapNextGet(const OS_MemoryType mem_type)
+OS_MemoryPool OS_MemoryPoolNextGet(const OS_MemoryPool pool)
 {
 OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v;
 
-    if (OS_MEM_UNDEF == mem_type) {
+    if (OS_MEM_UNDEF == pool) {
         //Return first item.
-        return memory_cfg_p->type;
+        return memory_cfg_p->pool;
     }
-    while (OS_MEM_LAST != memory_cfg_p->type) {
-        if (mem_type == memory_cfg_p->type) {
+    while (OS_MEM_LAST != memory_cfg_p->pool) {
+        if (pool == memory_cfg_p->pool) {
             ++memory_cfg_p;
-            if (OS_MEM_LAST == memory_cfg_p->type) {
+            if (OS_MEM_LAST == memory_cfg_p->pool) {
                 return OS_MEM_UNDEF;
             }
-            return memory_cfg_p->type;
+            return memory_cfg_p->pool;
         }
         ++memory_cfg_p;
     }
@@ -202,12 +199,25 @@ OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v;
 }
 
 /******************************************************************************/
-Status OS_MemoryStatsGet(const OS_MemoryType mem_type, OS_MemoryStats* mem_stats_p)
+Size OS_MemoryFreeGet(const OS_MemoryPool pool)
 {
 OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
-    while (memory_cfg_p->type != mem_type) {
-        if (OS_MEM_LAST == memory_cfg_p->type) {
-            return S_UNDEF_PARAMETER;
+    while (memory_cfg_p->pool != pool) {
+        if (OS_MEM_LAST == memory_cfg_p->pool) {
+            return U32_MAX;
+        }
+        ++memory_cfg_p;
+    }
+    return (memory_cfg_p->size - get_used_size((void*)memory_cfg_p->addr));
+}
+
+/******************************************************************************/
+Status OS_MemoryStatsGet(const OS_MemoryPool pool, OS_MemoryStats* mem_stats_p)
+{
+OS_MemoryDesc* memory_cfg_p = (OS_MemoryDesc*)&memory_cfg_v[0];
+    while (memory_cfg_p->pool != pool) {
+        if (OS_MEM_LAST == memory_cfg_p->pool) {
+            return S_INVALID_ARG;
         }
         ++memory_cfg_p;
     }

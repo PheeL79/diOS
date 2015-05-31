@@ -52,7 +52,7 @@ static void     RTC_CalendarReset(void);
 RTC_HandleTypeDef rtc_handle;
 __IO FlagStatus TamperStatus = RESET;
 
-const U32 rtc_backup_regs[RTC_BACKUP_REGS_MAX] = {
+const U32 rtc_backup_regs[HAL_RTC_BACKUP_REGS_MAX] = {
     RTC_BKP_DR0,  RTC_BKP_DR1,  RTC_BKP_DR2,
     RTC_BKP_DR3,  RTC_BKP_DR4,  RTC_BKP_DR5,
     RTC_BKP_DR6,  RTC_BKP_DR7,  RTC_BKP_DR8,
@@ -270,7 +270,7 @@ Status RTC__DeInit(void* args_p)
 Status s = S_OK;
     HAL_LOG(D_INFO, "DeInit: ");
     if (HAL_OK != HAL_RTC_DeInit(&rtc_handle)) {
-        s = S_HARDWARE_FAULT;
+        s = S_HARDWARE_ERROR;
     }
     __HAL_RCC_RTC_DISABLE();
     HAL_TRACE_S(D_INFO, s);
@@ -323,7 +323,7 @@ Status s = S_OK;
     /* Check the written Data */
     while (size--) {
         U8* data_out_8p = (U8*)data_out_p;
-        if (*sram_bkup_p++ != *data_out_8p++) { s = S_HARDWARE_FAULT; }
+        if (*sram_bkup_p++ != *data_out_8p++) { s = S_HARDWARE_ERROR; }
     }
     return s;
 }
@@ -349,7 +349,7 @@ Status s = S_UNDEF;
             if (val == HAL_RTCEx_BKUPRead(&rtc_handle, reg)) {
                 s = S_OK;
             } else {
-                s = S_HARDWARE_FAULT;
+                s = S_HARDWARE_ERROR;
             }
             }
             break;
@@ -382,8 +382,8 @@ Status s = S_UNDEF;
                     os_time_p->daylight     = time.DayLightSaving;
                     os_time_p->hourformat   = time.TimeFormat;
                     s = S_OK;
-                } else { s = S_INVALID_REF; }
-            } else { s = S_HARDWARE_FAULT; }
+                } else { s = S_INVALID_PTR; }
+            } else { s = S_HARDWARE_ERROR; }
             }
             break;
         case DRV_REQ_RTC_TIME_SET: {
@@ -399,8 +399,8 @@ Status s = S_UNDEF;
                 time.StoreOperation = RTC_STOREOPERATION_SET;
                 if (HAL_OK == HAL_RTC_SetTime(&rtc_handle, &time, FORMAT_BIN)) {
                     s = S_OK;
-                } else { s = S_HARDWARE_FAULT; }
-            } else { s = S_INVALID_REF; }
+                } else { s = S_HARDWARE_ERROR; }
+            } else { s = S_INVALID_PTR; }
             }
             break;
         case DRV_REQ_RTC_DATE_GET: {
@@ -408,13 +408,13 @@ Status s = S_UNDEF;
             if (HAL_OK == HAL_RTC_GetDate(&rtc_handle, &date, FORMAT_BIN)) {
                 OS_DateTime* os_date_p = (OS_DateTime*)args_p;
                 if (OS_NULL != os_date_p) {
-                    os_date_p->year     = date.Year + RTC_YEAR_BASE;
+                    os_date_p->year     = date.Year + HAL_RTC_YEAR_BASE;
                     os_date_p->month    = date.Month;
                     os_date_p->weekday  = date.WeekDay;
                     os_date_p->day      = date.Date;
                     s = S_OK;
-                } else { s = S_INVALID_REF; }
-            } else { s = S_HARDWARE_FAULT; }
+                } else { s = S_INVALID_PTR; }
+            } else { s = S_HARDWARE_ERROR; }
             }
             break;
         case DRV_REQ_RTC_DATE_SET: {
@@ -422,14 +422,14 @@ Status s = S_UNDEF;
             if (OS_NULL != os_date_p) {
                 RTC_DateTypeDef date;
                 HAL_MemSet((void*)&date, 0, sizeof(date));
-                date.Year           = os_date_p->year - RTC_YEAR_BASE;
+                date.Year           = os_date_p->year - HAL_RTC_YEAR_BASE;
                 date.Month          = os_date_p->month;
                 date.WeekDay        = os_date_p->weekday;
                 date.Date           = os_date_p->day;
                 if (HAL_OK == HAL_RTC_SetDate(&rtc_handle, &date, FORMAT_BIN)) {
                     s = S_OK;
-                } else { s = S_HARDWARE_FAULT; }
-            } else { s = S_INVALID_REF; }
+                } else { s = S_HARDWARE_ERROR; }
+            } else { s = S_INVALID_PTR; }
             }
             break;
         case DRV_REQ_STD_POWER_SET:
@@ -445,7 +445,7 @@ Status s = S_UNDEF;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;

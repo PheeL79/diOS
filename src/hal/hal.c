@@ -33,7 +33,7 @@ Status s = S_OK;
     // Disable interrupts.
     HAL_CRITICAL_SECTION_ENTER(); {
         SystemInit();
-        if (HAL_OK != HAL_Init()) { return S_HARDWARE_FAULT; }
+        if (HAL_OK != HAL_Init()) { return S_HARDWARE_ERROR; }
         SystemClock_Config();
         SystemCoreClockKHz  = SystemCoreClock / KHZ;
         SystemCoreClockMHz  = SystemCoreClockKHz / KHZ;

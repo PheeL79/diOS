@@ -96,11 +96,7 @@ void sys_mbox_free(sys_mbox_t *mbox)
 //   Posts the "msg" to the mailbox.
 void sys_mbox_post(sys_mbox_t *mbox, void *data)
 {
-//	OS_QueueSend(*mbox, &data, OS_BLOCK, OS_MSG_PRIO_NORMAL);
-const OS_Message* msg_p = OS_MessageCreate(OS_MSG_UNDEF, &data, sizeof(void*), OS_BLOCK);
-    if (msg_p) {
-        OS_MessageSend(*mbox, msg_p, OS_BLOCK, OS_MSG_PRIO_NORMAL);
-    }
+    OS_MessageSend(*mbox, (const OS_Message*)data, OS_BLOCK, OS_MSG_PRIO_NORMAL);
 }
 
 
@@ -109,18 +105,15 @@ const OS_Message* msg_p = OS_MessageCreate(OS_MSG_UNDEF, &data, sizeof(void*), O
 err_t sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
 {
 err_t result;
-const OS_Message* msg_p = OS_MessageCreate(OS_MSG_UNDEF, &msg, sizeof(void*), OS_BLOCK);
 
-    if (msg_p) {
-        IF_OK(OS_MessageSend(*mbox, msg_p, OS_NO_BLOCK, OS_MSG_PRIO_NORMAL)) {
-            result = ERR_OK;
-        } else {
-            // could not post, queue must be full
-            result = ERR_MEM;
+    IF_OK(OS_MessageSend(*mbox, (const OS_Message*)msg, OS_NO_BLOCK, OS_MSG_PRIO_NORMAL)) {
+        result = ERR_OK;
+    } else {
+        // could not post, queue must be full
+        result = ERR_MEM;
 #if SYS_STATS
-            lwip_stats.sys.mbox.err++;
+        lwip_stats.sys.mbox.err++;
 #endif /* SYS_STATS */
-        }
     }
     return result;
 }
@@ -144,7 +137,6 @@ const OS_Message* msg_p = OS_MessageCreate(OS_MSG_UNDEF, &msg, sizeof(void*), OS
 u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout)
 {
 void *dummyptr;
-OS_Message* msg_p;
 OS_Tick StartTime, EndTime, Elapsed;
 
 	StartTime = OS_TickCountGet();
@@ -152,23 +144,19 @@ OS_Tick StartTime, EndTime, Elapsed;
 		msg = &dummyptr;
 	}
 
-	if (timeout) {
-        IF_OK(OS_MessageReceive(*mbox, &msg_p, timeout)) {
+	if (0 != timeout) {
+        IF_OK(OS_MessageReceive(*mbox, (OS_Message**)&(*msg), timeout)) {
 			EndTime = OS_TickCountGet();
 			Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
-            *msg = *(void**)&msg_p->data;
-            OS_MessageDelete(msg_p); // free message allocated memory
 			return (Elapsed);
         } else { // timed out blocking for message
 			*msg = NULL;
 			return SYS_ARCH_TIMEOUT;
 		}
 	} else { // block forever for a message.
-        OS_MessageReceive(*mbox, &msg_p, OS_BLOCK); // time is arbitrary
+        OS_MessageReceive(*mbox, (OS_Message**)&(*msg), OS_BLOCK); // time is arbitrary
 		EndTime = OS_TickCountGet();
 		Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
-        *msg = *(void**)&msg_p->data;
-        OS_MessageDelete(msg_p); // free message allocated memory
 		return (Elapsed); // return time blocked TODO test
 	}
 }
@@ -181,14 +169,11 @@ OS_Tick StartTime, EndTime, Elapsed;
 u32_t sys_arch_mbox_tryfetch(sys_mbox_t *mbox, void **msg)
 {
 void *dummyptr;
-OS_Message* msg_p;
 
 	if (NULL == msg) {
 		msg = &dummyptr;
 	}
-    IF_OK(OS_MessageReceive(*mbox, &msg_p, OS_NO_BLOCK)) {
-        *msg = *(void**)&msg_p->data;
-        OS_MessageDelete(msg_p); // free message allocated memory
+    IF_OK(OS_MessageReceive(*mbox, (OS_Message**)&(*msg), OS_NO_BLOCK)) {
         return ERR_OK;
     } else {
         return SYS_MBOX_EMPTY;
@@ -208,99 +193,99 @@ void sys_mbox_set_invalid(sys_mbox_t *mbox)
     *mbox = SYS_MBOX_NULL;
 }
 
-/*-----------------------------------------------------------------------------------*/
-//  Creates a new semaphore. The "count" argument specifies
-//  the initial state of the semaphore.
-err_t sys_sem_new(sys_sem_t *sem, u8_t count)
-{
-	*sem = OS_SemaphoreCountingCreate(count, 0);
-	if(!*sem) {
-#if SYS_STATS
-        ++lwip_stats.sys.sem.err;
-#endif /* SYS_STATS */
-		return ERR_MEM;
-	}
-
-	if (!count) { // Means it can't be taken
-		OS_SemaphoreLock(*sem, OS_NO_BLOCK);
-	}
-#if SYS_STATS
-	++lwip_stats.sys.sem.used;
- 	if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used) {
-		lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
-	}
-#endif /* SYS_STATS */
-	return ERR_OK;
-}
-
-/*-----------------------------------------------------------------------------------*/
-/*
-  Blocks the thread while waiting for the semaphore to be
-  signaled. If the "timeout" argument is non-zero, the thread should
-  only be blocked for the specified time (measured in
-  milliseconds).
-
-  If the timeout argument is non-zero, the return value is the number of
-  milliseconds spent waiting for the semaphore to be signaled. If the
-  semaphore wasn't signaled within the specified time, the return value is
-  SYS_ARCH_TIMEOUT. If the thread didn't have to wait for the semaphore
-  (i.e., it was already signaled), the function may return zero.
-
-  Notice that lwIP implements a function with a similar name,
-  sys_sem_wait(), that uses the sys_arch_sem_wait() function.
-*/
-u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
-{
-OS_Tick StartTime, EndTime, Elapsed;
-
-	StartTime = OS_TickCountGet();
-	if (timeout) {
-        IF_OK(OS_SemaphoreLock(*sem, timeout)) {
-			EndTime = OS_TickCountGet();
-			Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
-			return (Elapsed); // return time blocked TODO test
-		} else {
-			return SYS_ARCH_TIMEOUT;
-		}
-	} else { // must block without a timeout
-		OS_SemaphoreLock(*sem, OS_BLOCK);
-		EndTime = OS_TickCountGet();
-		Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
-		return (Elapsed); // return time blocked
-	}
-}
-
-/*-----------------------------------------------------------------------------------*/
-// Signals a semaphore
-void sys_sem_signal(sys_sem_t *sem)
-{
-	OS_SemaphoreUnlock(*sem);
-}
-
-/*-----------------------------------------------------------------------------------*/
-// Deallocates a semaphore
-void sys_sem_free(sys_sem_t *sem)
-{
-#if SYS_STATS
-    --lwip_stats.sys.sem.used;
-#endif /* SYS_STATS */
-	OS_SemaphoreDelete(*sem);
-}
-
-/*-----------------------------------------------------------------------------------*/
-int sys_sem_valid(sys_sem_t *sem)
-{
-    if (SYS_SEM_NULL == *sem) {
-        return 0;
-    }
-    return 1;
-}
-
-/*-----------------------------------------------------------------------------------*/
-void sys_sem_set_invalid(sys_sem_t *sem)
-{
-    *sem = SYS_SEM_NULL;
-}
+///*-----------------------------------------------------------------------------------*/
+////  Creates a new semaphore. The "count" argument specifies
+////  the initial state of the semaphore.
+//err_t sys_sem_new(sys_sem_t *sem, u8_t count)
+//{
+//	*sem = OS_SemaphoreCountingCreate(count, 0);
+//	if(!*sem) {
+//#if SYS_STATS
+//        ++lwip_stats.sys.sem.err;
+//#endif /* SYS_STATS */
+//		return ERR_MEM;
+//	}
+//
+//	if (!count) { // Means it can't be taken
+//		OS_SemaphoreLock(*sem, OS_NO_BLOCK);
+//	}
+//#if SYS_STATS
+//	++lwip_stats.sys.sem.used;
+// 	if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used) {
+//		lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
+//	}
+//#endif /* SYS_STATS */
+//	return ERR_OK;
+//}
+//
+///*-----------------------------------------------------------------------------------*/
+///*
+//  Blocks the thread while waiting for the semaphore to be
+//  signaled. If the "timeout" argument is non-zero, the thread should
+//  only be blocked for the specified time (measured in
+//  milliseconds).
+//
+//  If the timeout argument is non-zero, the return value is the number of
+//  milliseconds spent waiting for the semaphore to be signaled. If the
+//  semaphore wasn't signaled within the specified time, the return value is
+//  SYS_ARCH_TIMEOUT. If the thread didn't have to wait for the semaphore
+//  (i.e., it was already signaled), the function may return zero.
+//
+//  Notice that lwIP implements a function with a similar name,
+//  sys_sem_wait(), that uses the sys_arch_sem_wait() function.
+//*/
+//u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
+//{
+//OS_Tick StartTime, EndTime, Elapsed;
+//
+//	StartTime = OS_TickCountGet();
+//	if (timeout) {
+//        IF_OK(OS_SemaphoreLock(*sem, timeout)) {
+//			EndTime = OS_TickCountGet();
+//			Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
+//			return (Elapsed); // return time blocked TODO test
+//		} else {
+//			return SYS_ARCH_TIMEOUT;
+//		}
+//	} else { // must block without a timeout
+//		OS_SemaphoreLock(*sem, OS_BLOCK);
+//		EndTime = OS_TickCountGet();
+//		Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
+//		return (Elapsed); // return time blocked
+//	}
+//}
+//
+///*-----------------------------------------------------------------------------------*/
+//// Signals a semaphore
+//void sys_sem_signal(sys_sem_t *sem)
+//{
+//	OS_SemaphoreUnlock(*sem);
+//}
+//
+///*-----------------------------------------------------------------------------------*/
+//// Deallocates a semaphore
+//void sys_sem_free(sys_sem_t *sem)
+//{
+//#if SYS_STATS
+//    --lwip_stats.sys.sem.used;
+//#endif /* SYS_STATS */
+//	OS_SemaphoreDelete(*sem);
+//}
+//
+///*-----------------------------------------------------------------------------------*/
+//int sys_sem_valid(sys_sem_t *sem)
+//{
+//    if (SYS_SEM_NULL == *sem) {
+//        return 0;
+//    }
+//    return 1;
+//}
+//
+///*-----------------------------------------------------------------------------------*/
+//void sys_sem_set_invalid(sys_sem_t *sem)
+//{
+//    *sem = SYS_SEM_NULL;
+//}
 
 /*-----------------------------------------------------------------------------------*/
 // Initialize sys arch
@@ -376,7 +361,7 @@ OS_TaskHd CreatedTask = OS_NULL;
             task_lwip_cfg_p->args_p         = OS_NULL;
             task_lwip_cfg_p->attrs          = 0;
             task_lwip_cfg_p->timeout        = 0;
-            task_lwip_cfg_p->prio_init      = (OS_TASK_PRIO_LWIP + prio);
+            task_lwip_cfg_p->prio_init      = (DEFAULT_THREAD_PRIO + prio);
             task_lwip_cfg_p->prio_power     = OS_PWR_PRIO_MAX;
             task_lwip_cfg_p->storage_size   = 0;
             task_lwip_cfg_p->stack_size     = stacksize;

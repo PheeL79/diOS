@@ -15,6 +15,7 @@
 #include "os_network.h"
 #include "os_task_net.h"
 
+#if (OS_NETWORK_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME                    "network_d"
 
@@ -44,8 +45,8 @@ const OS_TaskConfig task_net_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 10,
-    .prio_init      = OS_TASK_PRIO_NET,
-    .prio_power     = OS_TASK_PRIO_PWR_NET,
+    .prio_init      = OS_PRIO_TASK_NET,
+    .prio_power     = OS_PRIO_PWR_TASK_NET,
     .storage_size   = sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN * 2,
     .stdin_len      = 16,
@@ -89,7 +90,7 @@ Status s = S_UNDEF;
 	for(;;) {
         IF_STATUS(s = OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
             if (S_MODULE != s) {
-                OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+                OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
             }
         } else {
             if (OS_SignalIs(msg_p)) {
@@ -159,13 +160,13 @@ Status s = S_UNDEF;
 #endif //(OS_NETWORK_DHCP)
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
@@ -191,12 +192,12 @@ Status s = S_UNDEF;
             Str value[OS_SETTINGS_VALUE_LEN];
             Str net_itf_sect_str[0x10] = "Network\\";
             if (net_itf_sect_str != OS_StrCat(net_itf_sect_str, OS_NetworkItfNameGet(tstor_p->net_itf_hd))) {
-                s = S_INVALID_REF;
+                s = S_INVALID_PTR;
                 goto error;
             }
 #endif //(OS_SETTINGS_ENABLED)
             {
-                U8 mac_addr[ETH_MAC_ADDR_SIZE] = { 0 };
+                U8 mac_addr[HAL_ETH_MAC_ADDR_SIZE] = { 0 };
 #if (OS_SETTINGS_ENABLED)
                 IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "mac_addr", &value[0])) { goto error; }
                 IF_STATUS(s = OS_NetworkMacAddressStrToBin(value, mac_addr)) { goto error; }
@@ -255,3 +256,5 @@ error:
     IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
     return s;
 }
+
+#endif //(OS_NETWORK_ENABLED)

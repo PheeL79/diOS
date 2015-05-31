@@ -143,7 +143,7 @@ Status s = S_UNDEF;
     }
     IF_STATUS(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &stats_vol)) { OS_LOG_S(D_WARNING, s); goto error; }
     path_p = (StrP)OS_Malloc(OS_FILE_SYSTEM_LONG_NAMES_LEN * 2);
-    if (OS_NULL == path_p) { s = S_NO_MEMORY; goto error; }
+    if (OS_NULL == path_p) { s = S_OUT_OF_MEMORY; goto error; }
     *path_p = OS_ASCII_EOL;
     OS_MemSet(&stats_fs, 0, sizeof(stats_fs));
     IF_STATUS(s = OS_FileSystemVolumeScan(path_p, &stats_fs)) { OS_LOG_S(D_WARNING, s); goto error; }
@@ -198,7 +198,7 @@ OS_FileStats stats;
 StrP path_p = "";
 U32 dirs_count, files_count, total_size;
 Status s = S_UNDEF;
-    if (OS_NULL == dhd) { return S_NO_MEMORY; }
+    if (OS_NULL == dhd) { return S_OUT_OF_MEMORY; }
     if (1 == argc) {
         //Parse volume string.
         char const delim_str[] = ":";
@@ -219,7 +219,7 @@ Status s = S_UNDEF;
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
     stats.long_name_size = OS_FILE_SYSTEM_LONG_NAMES_LEN;
     stats.long_name_p = OS_Malloc(stats.long_name_size);
-    if (OS_NULL == stats.long_name_p) { s = S_NO_MEMORY; goto error; }
+    if (OS_NULL == stats.long_name_p) { s = S_OUT_OF_MEMORY; goto error; }
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     IF_STATUS(s = OS_DirectoryOpen(dhd, path_p)) { goto error; }
     dirs_count = files_count = total_size = 0;
@@ -485,7 +485,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     OS_Message* msg_p;
         do {
             IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-                    OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+                    OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
             } else {
                 if (OS_SignalIs(msg_p)) {
                     switch (OS_SignalIdGet(msg_p)) {
@@ -496,13 +496,13 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
                             i = (++i > ITEMS_COUNT_GET(c_buf, char)) ? --i : i;
                             break;
                         default:
-                            OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                            OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                             break;
                     }
                 } else {
                     switch (msg_p->id) {
                         default:
-                            OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                            OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                             break;
                     }
                     OS_MessageDelete(msg_p); // free message allocated memory

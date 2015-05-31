@@ -28,10 +28,10 @@ Status s = S_OK;
     iwdg_handle.Instance        = IWDG;
 
     iwdg_handle.Init.Prescaler  = IWDG_PRESCALER_32;
-    iwdg_handle.Init.Reload     = TIMER_IWDG_TIMEOUT;
+    iwdg_handle.Init.Reload     = HAL_TIMER_IWDG_TIMEOUT;
 
     if (HAL_OK != HAL_IWDG_Init(&iwdg_handle)) {
-        s = S_HARDWARE_FAULT;
+        s = S_HARDWARE_ERROR;
     }
     return s;
 }
@@ -40,7 +40,7 @@ Status s = S_OK;
 Status TIMER_IWDG_Start(void)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_IWDG_Start(&iwdg_handle)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_IWDG_Start(&iwdg_handle)) { s = S_HARDWARE_ERROR; }
     return s;
 }
 

@@ -93,7 +93,7 @@ Status s;
     IF_STATUS(s = OS_NetworkInit())     { return s; }
 #endif //(OS_NETWORK_ENABLED)
     //Create environment variables.
-    IF_STATUS(s = OS_EnvVariableSet("locale", LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("locale", HAL_LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
 //    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT, OS_LogLevelSet)) { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH, OS_NULL))             { return s; }
@@ -107,7 +107,7 @@ Status s;
         return S_INVALID_VALUE;
     }
     IF_STATUS(s = OS_EnvVariableSet("volume", volume_str, OS_VolumeSet)) {
-        if (S_INVALID_REF != s) { return s; } //Ignore first attempt. No audio devices are created so far.
+        if (S_INVALID_PTR != s) { return s; } //Ignore first attempt. No audio devices are created so far.
     }
 #endif //(OS_AUDIO_ENABLED)
     //Init environment variables.
@@ -203,7 +203,7 @@ Status OS_VolumeSet(ConstStrP volume_p)
     os_env.volume = (OS_AudioVolume)OS_StrToUL((const char*)volume_p, OS_NULL, 10);
     OS_AudioDeviceHd dev_hd = OS_AudioDeviceDefaultGet(DIR_OUT);
     if (OS_NULL == dev_hd) {
-        return S_INVALID_REF;
+        return S_INVALID_PTR;
     }
     return OS_AudioVolumeSet(dev_hd, os_env.volume);
 }
@@ -218,10 +218,10 @@ Locale OS_LocaleGet(void)
 /******************************************************************************/
 Status OS_LocaleSet(ConstStrP locale_p)
 {
-    if (OS_NULL == locale_p) { return S_INVALID_REF; }
-    if (!OS_StrCmp(LOCALE_STRING_EN, (char const*)locale_p)) {
+    if (OS_NULL == locale_p) { return S_INVALID_PTR; }
+    if (!OS_StrCmp(HAL_LOCALE_STRING_EN, (char const*)locale_p)) {
         os_env.hal_env_p->locale = LOC_EN;
-    } else if (!OS_StrCmp(LOCALE_STRING_RU, (char const*)locale_p)) {
+    } else if (!OS_StrCmp(HAL_LOCALE_STRING_RU, (char const*)locale_p)) {
         os_env.hal_env_p->locale = LOC_RU;
     } else { return S_INVALID_VALUE; }
     return S_OK;
@@ -236,9 +236,9 @@ const HAL_DriverItf* OS_StdIoGet(void)
 /******************************************************************************/
 Status OS_StdIoSet(ConstStrP drv_name_p)
 {
-    if (OS_NULL == drv_name_p) { return S_INVALID_REF; }
+    if (OS_NULL == drv_name_p) { return S_INVALID_PTR; }
     OS_DriverHd dhd = OS_DriverByNameGet(drv_name_p);
-    if (OS_NULL == dhd) { return S_UNDEF_DRV; }
+    if (OS_NULL == dhd) { return S_INVALID_DRIVER; }
     os_env.hal_env_p->stdio_p = OS_DriverItfGet(dhd);
     return S_OK;
 }
@@ -259,7 +259,7 @@ ConstStr info_str[]     = "info";
 ConstStr debug_str[]    = "debug";
 OS_LogLevel level       = D_NONE;
 
-    if (OS_NULL == log_level_p) { return S_INVALID_REF; }
+    if (OS_NULL == log_level_p) { return S_INVALID_PTR; }
     if (!OS_StrCmp((const char*)none_str, (const char*)log_level_p)) {
     } else if (!OS_StrCmp((const char*)critical_str, (const char*)log_level_p)) {
         level = D_CRITICAL;
@@ -299,11 +299,11 @@ OS_SchedulerState state = OS_SCHED_STATE_UNDEF;
 /******************************************************************************/
 Status OS_StorageItemCreate(const void* data_p, const U16 size, OS_StorageItem** item_pp)
 {
-    if (OS_NULL == item_pp) { return S_INVALID_REF; }
+    if (OS_NULL == item_pp) { return S_INVALID_PTR; }
     OS_StorageItem* item_p = OS_Malloc(sizeof(OS_StorageItem));
-    if (OS_NULL == item_p) { return S_NO_MEMORY; }
+    if (OS_NULL == item_p) { return S_OUT_OF_MEMORY; }
     item_p->mutex = OS_MutexCreate();
-    if (OS_NULL == item_p->mutex) { return S_INVALID_REF; }
+    if (OS_NULL == item_p->mutex) { return S_INVALID_PTR; }
     *item_pp = item_p;
     item_p->data_p  = (void*)data_p;
     item_p->size    = size;
@@ -314,7 +314,7 @@ Status OS_StorageItemCreate(const void* data_p, const U16 size, OS_StorageItem**
 /******************************************************************************/
 Status OS_StorageItemDelete(OS_StorageItem* item_p)
 {
-    if (OS_NULL == item_p) { return S_INVALID_REF; }
+    if (OS_NULL == item_p) { return S_INVALID_PTR; }
     if (0 == --(item_p->owners)) {
         OS_MutexDelete(item_p->mutex);
         OS_Free(item_p->data_p);
@@ -326,7 +326,7 @@ Status OS_StorageItemDelete(OS_StorageItem* item_p)
 /******************************************************************************/
 Status OS_StorageItemOwnerAdd(OS_StorageItem* item_p)
 {
-    if (OS_NULL == item_p) { return S_INVALID_REF; }
+    if (OS_NULL == item_p) { return S_INVALID_PTR; }
     if (item_p->owners >= OS_STORAGE_ITEM_OWNERS_MAX) { return S_OVERFLOW; }
     item_p->owners++;
     return S_OK;
@@ -335,14 +335,14 @@ Status OS_StorageItemOwnerAdd(OS_StorageItem* item_p)
 /******************************************************************************/
 Status OS_StorageItemLock(OS_StorageItem* item_p, const OS_TimeMs timeout)
 {
-    if (OS_NULL == item_p) { return S_INVALID_REF; }
+    if (OS_NULL == item_p) { return S_INVALID_PTR; }
     return OS_MutexLock(item_p->mutex, timeout);
 }
 
 /******************************************************************************/
 Status OS_StorageItemUnlock(OS_StorageItem* item_p)
 {
-    if (OS_NULL == item_p) { return S_INVALID_REF; }
+    if (OS_NULL == item_p) { return S_INVALID_PTR; }
     return OS_MutexUnlock(item_p->mutex);
 }
 

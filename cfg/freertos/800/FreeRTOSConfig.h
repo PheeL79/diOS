@@ -117,7 +117,7 @@
 
 /* Software timer definitions. */
 #define configUSE_TIMERS				OS_TIMERS_ENABLED
-#define configTIMER_TASK_PRIORITY		( OS_TASK_PRIO_TIMERS )
+#define configTIMER_TASK_PRIORITY		( OS_PRIO_TASK_TIMERS )
 #define configTIMER_QUEUE_LENGTH		OS_TIMERS_QUEUE_LEN
 #define configTIMER_TASK_STACK_DEPTH	( OS_TIMERS_STACK_SIZE )
 

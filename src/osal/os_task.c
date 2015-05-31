@@ -101,7 +101,7 @@ OS_TaskHd thd = OS_TaskNextGet(OS_NULL); //get first task in the list.
     while (OS_NULL != thd) {
         OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
         if (OS_NULL == cfg_dyn_p) {
-            OS_LOG_S(D_DEBUG, S_INVALID_REF);
+            OS_LOG_S(D_DEBUG, S_INVALID_PTR);
             return OS_FALSE;
         }
         if (!OS_MemCmp(cfg_p, cfg_dyn_p->cfg_p, sizeof(OS_TaskConfig))) {
@@ -120,7 +120,7 @@ Status s = S_OK;
     id_curr = 1;
     //tasks_count = 0;
     os_task_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_task_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_task_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_tasks_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_tasks_list)) { return S_INVALID_VALUE; }
     return s;
@@ -130,7 +130,7 @@ Status s = S_OK;
 Status OS_TaskCreate(const void* args_p, const OS_TaskConfig* cfg_p, OS_TaskHd* thd_p)
 {
 Status s = S_UNDEF;
-    if (OS_NULL == cfg_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
     if (BIT_TEST(cfg_p->attrs, BIT(OS_TASK_ATTR_SINGLE))) {
         if (OS_TRUE != OS_TaskIsSingle(cfg_p)) {
             OS_LOG(D_DEBUG, "Task is already created!");
@@ -138,19 +138,19 @@ Status s = S_UNDEF;
         }
     }
     OS_ListItem* item_l_p = OS_ListItemCreate();
-    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    if (OS_NULL == item_l_p) { return S_OUT_OF_MEMORY; }
     const OS_TaskHd thd = (OS_TaskHd)item_l_p;
     OS_TaskConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_TaskConfigDyn));
     if (OS_NULL == cfg_dyn_p) {
         OS_ListItemDelete(item_l_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     if (cfg_p->storage_size) {
         cfg_dyn_p->args.stor_p = OS_Malloc(cfg_p->storage_size);
         if (OS_NULL == cfg_dyn_p->args.stor_p) {
             OS_ListItemDelete(item_l_p);
             OS_Free(cfg_dyn_p);
-            return S_NO_MEMORY;
+            return S_OUT_OF_MEMORY;
         }
         OS_MemSet(cfg_dyn_p->args.stor_p, 0, cfg_p->storage_size);
     } else {
@@ -217,7 +217,7 @@ Status s = S_UNDEF;
                                                         OS_LOG(D_DEBUG, "[TID:%03u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
                                                     }
                                                 } else {
-                                                    s = S_UNDEF_SIG;
+                                                    s = S_INVALID_SIGNAL;
                                                     OS_LOG_S(D_WARNING, s);
                                                 }
                                             }
@@ -225,7 +225,7 @@ Status s = S_UNDEF;
                                     }
                                 }
                             } else {
-                                s = S_UNDEF_SIG;
+                                s = S_INVALID_SIGNAL;
                                 OS_LOG_S(D_WARNING, s);
                             }
                         }
@@ -261,7 +261,7 @@ OS_ListItem* item_l_p = (OS_ListItem*)((OS_THIS_TASK == thd) ? OS_TaskGet() : th
 OS_TaskConfigDyn* cfg_dyn_p = (OS_TaskConfigDyn*)OS_ListItemValueGet(item_l_p);
 Status s = S_OK;
 
-    if (OS_NULL == item_l_p) { return S_INVALID_REF; }
+    if (OS_NULL == item_l_p) { return S_INVALID_PTR; }
     IF_OK(s = OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         const OS_TaskConfig* cfg_p = cfg_dyn_p->cfg_p;
         const TaskHandle_t task_hd = (TaskHandle_t)OS_ListItemOwnerGet(item_l_p);
@@ -579,7 +579,7 @@ Status OS_TaskTimeoutDec(const OS_TaskHd thd)
 {
 OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
 
-    if (OS_NULL == cfg_dyn_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_dyn_p) { return S_INVALID_PTR; }
     (OS_TaskConfigDynGet(thd)->timeout)--;
     return S_OK;
 }
@@ -590,7 +590,7 @@ Status OS_TaskTimeoutReset(const OS_TaskHd thd)
 {
 OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
 
-    if (OS_NULL == cfg_dyn_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_dyn_p) { return S_INVALID_PTR; }
     cfg_dyn_p->timeout = cfg_dyn_p->cfg_p->timeout;
     return S_OK;
 }
@@ -601,7 +601,7 @@ Status OS_TaskPowerStateSet(const OS_TaskHd thd, const OS_PowerState state)
 OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
 Status s = S_OK;
     // Do not call func_power() if the state was already being set.
-    if (OS_NULL == cfg_dyn_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_dyn_p) { return S_INVALID_PTR; }
     if (state != cfg_dyn_p->power) {
         OS_LOG(D_DEBUG, "Power state: %s", OS_PowerStateNameGet(state));
         if (OS_NULL != cfg_dyn_p->cfg_p->func_power) {
@@ -678,12 +678,12 @@ Status s = S_OK;
         OS_TaskConfigDyn* cfg_dyn_p;
         OS_ListItem* item_l_p;
         const OS_QueueHd slot_qhd = OS_TaskStdInGet(slot_thd);
-        if (OS_NULL == slot_qhd) { s = S_INVALID_REF; goto error; }
+        if (OS_NULL == slot_qhd) { s = S_INVALID_PTR; goto error; }
         cfg_dyn_p = OS_TaskConfigDynGet(signal_thd);
-        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_REF; goto error; }
+        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_PTR; goto error; }
         if (OS_NULL == cfg_dyn_p->slots_l_p) {
             cfg_dyn_p->slots_l_p = OS_Malloc(sizeof(OS_List));
-            if (OS_NULL == cfg_dyn_p->slots_l_p) { s = S_NO_MEMORY; goto error; }
+            if (OS_NULL == cfg_dyn_p->slots_l_p) { s = S_OUT_OF_MEMORY; goto error; }
             OS_ListInit(cfg_dyn_p->slots_l_p);
             if (OS_TRUE != OS_ListIsInitialised(cfg_dyn_p->slots_l_p)) {
                 OS_Free(cfg_dyn_p->slots_l_p);
@@ -696,7 +696,7 @@ Status s = S_OK;
         if (OS_NULL == item_l_p) {
             OS_Free(cfg_dyn_p->slots_l_p);
             cfg_dyn_p->slots_l_p = OS_NULL;
-            s = S_NO_MEMORY;
+            s = S_OUT_OF_MEMORY;
             goto error;
         }
         OS_ListItemValueSet(item_l_p, (OS_Value)slot_qhd);
@@ -722,7 +722,7 @@ Status s = S_OK;
     IF_OK(OS_MutexRecursiveLock(os_task_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         OS_ListItem* item_l_p;
         OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(signal_thd);
-        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_REF; goto error; }
+        if (OS_NULL == cfg_dyn_p) { s = S_INVALID_PTR; goto error; }
         item_l_p = OS_ListItemByOwnerGet(cfg_dyn_p->slots_l_p, slot_thd);
         if (OS_NULL == item_l_p) { s = S_INVALID_VALUE; goto error; }
         OS_ListItemDelete(item_l_p);

@@ -225,7 +225,7 @@ Status s = S_OK;
         return s;
     }
     HAL_TRACE(D_INFO, "Passed");
-	HAL_MemSet((void*)MEM_EXT_SRAM_BASE_ADDRESS, 0x00, MEM_EXT_SRAM_SIZE);
+	HAL_MemSet((void*)HAL_MEM_EXT_SRAM_BASE_ADDRESS, 0x00, HAL_MEM_EXT_SRAM_SIZE);
     return S_OK;
 }
 
@@ -347,24 +347,24 @@ U32 i;
 U32*pData;
 
 	// Address bus test
-	pData = (U32*)MEM_EXT_SRAM_BASE_ADDRESS;
-	for (i = 0; i < (MEM_EXT_SRAM_SIZE / sizeof(U32)); i++) {
+	pData = (U32*)HAL_MEM_EXT_SRAM_BASE_ADDRESS;
+	for (i = 0; i < (HAL_MEM_EXT_SRAM_SIZE / sizeof(U32)); i++) {
         *pData++ = i;
 	}
 
-	pData = (U32*)MEM_EXT_SRAM_BASE_ADDRESS;
-	for (i = 0; i < (MEM_EXT_SRAM_SIZE / sizeof(U32)); i++) {
+	pData = (U32*)HAL_MEM_EXT_SRAM_BASE_ADDRESS;
+	for (i = 0; i < (HAL_MEM_EXT_SRAM_SIZE / sizeof(U32)); i++) {
 		if( *pData++ != i) {
-			return S_HARDWARE_FAULT;
+			return S_HARDWARE_ERROR;
 		}
 	}
 
 	// Data bus test
-	pData = (U32*)MEM_EXT_SRAM_BASE_ADDRESS;
+	pData = (U32*)HAL_MEM_EXT_SRAM_BASE_ADDRESS;
 	for (i = 0; i < TEST_NUMB; ++i) {
 		*pData = RamTest[i];
 		if (*pData != RamTest[i]) {
-			return S_HARDWARE_FAULT;
+			return S_HARDWARE_ERROR;
 		}
 	}
 

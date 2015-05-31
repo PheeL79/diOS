@@ -11,10 +11,10 @@
 #include "os_debug.h"
 #include "os_memory.h"
 #include "os_signal.h"
-#if (USBH_ENABLED) && (USBH_HID_ENABLED)
+#if (HAL_USBH_ENABLED) && (HAL_USBH_HID_ENABLED)
 #include "drv_usb.h"
 #include "os_task_usbd.h"
-#endif //(USBH_HID_ENABLED) && (USBH_ENABLED)
+#endif //(HAL_USBH_HID_ENABLED) && (HAL_USBH_ENABLED)
 
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "task_shell"
@@ -32,8 +32,8 @@ const OS_TaskConfig task_shell_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 10,
-    .prio_init      = OS_TASK_PRIO_SHELL,
-    .prio_power     = OS_TASK_PRIO_PWR_SHELL,
+    .prio_init      = OS_PRIO_TASK_SHELL,
+    .prio_power     = OS_PRIO_PWR_TASK_SHELL,
     .storage_size   = 0,//sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN,
     .stdin_len      = 1,
@@ -54,15 +54,15 @@ extern volatile OS_QueueHd stdin_qhd;
 const OS_DriverHd drv_shell = OS_DriverStdInGet();
 OS_Message* msg_p;
 //    OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
-#if (USBH_ENABLED) && (USBH_HID_ENABLED)
+#if (HAL_USBH_ENABLED) && (HAL_USBH_HID_ENABLED)
 const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
     OS_ASSERT(S_OK == OS_TasksConnect(usbd_thd, OS_THIS_TASK));
-#endif //(USBH_HID_ENABLED) && (USBH_ENABLED)
+#endif //(HAL_USBH_HID_ENABLED) && (HAL_USBH_ENABLED)
     //Init stdin_qhd before all other tasks and return to the base priority.
     stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+            OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -77,12 +77,12 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                     case OS_SIG_TASK_DISCONNECT:
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
-#if (USBH_ENABLED) && (USBH_HID_ENABLED)
+#if (HAL_USBH_ENABLED) && (HAL_USBH_HID_ENABLED)
                     case OS_MSG_USB_HID_MOUSE:
                         OS_LOG(D_DEBUG, "mouse event");
                         break;
@@ -96,9 +96,9 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                         }
                         }
                         break;
-#endif //(USBH_HID_ENABLED) && (USBH_ENABLED)
+#endif //(HAL_USBH_HID_ENABLED) && (HAL_USBH_ENABLED)
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory

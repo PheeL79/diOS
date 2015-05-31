@@ -84,14 +84,14 @@ const U8 step = 16;
     const U8* addr_str = (const U8*)argv[0];
     U8 base = ('x' == *(U8*)(addr_str + 1)) ? 16 : 10;
     Long addr = OS_StrToL((const char*)addr_str, OS_NULL, base);
-    if (0 > addr) { return S_INVALID_REF; }
-//    OS_MemoryType mem_type = OS_MEM_UNDEF;
+    if (0 > addr) { return S_INVALID_PTR; }
+//    OS_MemoryPool mem_pool = OS_MEM_UNDEF;
 //    OS_MemoryStat mem_stat;
     //WARNING!!! Allow all of memory regions! Please be careful with the address value!
     Bool is_valid = OS_TRUE;//OS_FALSE;
     //Check address.
-//    while (OS_MEM_UNDEF != (mem_type = OS_MemoryTypeHeapNextGet(mem_type))) {
-//        IF_STATUS(OS_MemoryStatGet(mem_type, &mem_stat)) { return S_INVALID_VALUE; }
+//    while (OS_MEM_UNDEF != (mem_pool = OS_MemoryPoolNextGet(mem_pool))) {
+//        IF_STATUS(OS_MemoryStatGet(mem_pool, &mem_stat)) { return S_INVALID_VALUE; }
 //        if ((addr >= mem_stat.desc.addr) && (addr <= (mem_stat.desc.addr + mem_stat.desc.size))) {
 //            is_valid = OS_TRUE;
 //            break;
@@ -178,13 +178,13 @@ static ConstStr cmd_help_brief_st[] = "System statistics.";
 static void OS_ShellCmdStHandlerMemHelper(void);
 void OS_ShellCmdStHandlerMemHelper(void)
 {
-OS_MemoryType  mem_type = OS_MEM_UNDEF;
+OS_MemoryPool  mem_pool = OS_MEM_UNDEF;
 OS_MemoryStats mem_stats;
 
     printf("\n%-16s %-12s %-12s %-6s %-12s %-12s",
            "Name", "Address", "Size", "Block", "Used", "Free");
-    while (OS_MEM_UNDEF != (mem_type = OS_MemoryTypeHeapNextGet(mem_type))) {
-        IF_STATUS(OS_MemoryStatsGet(mem_type, &mem_stats)) { return; }
+    while (OS_MEM_UNDEF != (mem_pool = OS_MemoryPoolNextGet(mem_pool))) {
+        IF_STATUS(OS_MemoryStatsGet(mem_pool, &mem_stats)) { return; }
         printf("\n%-16s 0x%-10X %-12d %-6d %-12d %-12d",
                mem_stats.desc.name_p,
                mem_stats.desc.addr,
@@ -421,7 +421,7 @@ Status s = S_OK;
     const U8* tid_str = (const U8*)argv[0];
     U8 base = ('x' == *(U8*)(tid_str + 1)) ? 16 : 10;
     Long tid = OS_StrToL((const char*)tid_str, OS_NULL, base);
-    if (0 > tid) { return S_INVALID_REF; }
+    if (0 > tid) { return S_INVALID_PTR; }
 
     const OS_Signal signal = OS_SignalCreate(OS_SIG_PWR, PWR_SHUTDOWN);
     const OS_TaskHd dst_thd = OS_TaskByIdGet(tid);
@@ -433,8 +433,8 @@ Status s = S_OK;
             OS_Message* msg_p;
             do {
                 IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-                    OS_LOG_S(D_WARNING, S_UNDEF_MSG);
-                    return S_UNDEF_MSG;
+                    OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+                    return S_INVALID_MESSAGE;
                 } else {
                     if (OS_SignalIs(msg_p)) {
                         switch (OS_SignalIdGet(msg_p)) {
@@ -447,13 +447,13 @@ Status s = S_OK;
                             case OS_SIG_STDOUT: //emited by OS_Log
                                 break;
                             default:
-                                OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                                OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                                 break;
                         }
                     } else {
                         switch (msg_p->id) {
                             default:
-                                OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                                OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                                 break;
                         }
                         OS_MessageDelete(msg_p); // free message allocated memory
@@ -474,7 +474,7 @@ Status OS_ShellCmdTimeHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_OK;
     if (!OS_StrCmp("set", (char const*)argv[0])) {
-        if ((2 < argc) || (1 > argc)) { return S_INVALID_ARGS_NUMBER; }
+        if ((2 < argc) || (1 > argc)) { return S_INVALID_ARGS_COUNT; }
         OS_DateTime time = OS_TimeStringParse(argv[1]);
         s = OS_TimeSet(OS_TIME_UNDEF, &time);
     } else {
@@ -501,7 +501,7 @@ Status OS_ShellCmdDateHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_OK;
     if (!OS_StrCmp("set", (char const*)argv[0])) {
-        if ((2 < argc) || (1 > argc)) { return S_INVALID_ARGS_NUMBER; }
+        if ((2 < argc) || (1 > argc)) { return S_INVALID_ARGS_COUNT; }
         OS_DateTime date = OS_DateStringParse(argv[1]);
         s = OS_DateSet(OS_DATE_UNDEF, &date);
     } else {

@@ -86,7 +86,7 @@ Status s = S_OK;
     /* Clear all related wakeup flags */
     __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
     __GPIOA_CLK_ENABLE();
-    GPIO_InitStructure.Pin      = BUTTON_WAKEUP_PIN;
+    GPIO_InitStructure.Pin      = HAL_BUTTON_WAKEUP_PIN;
     GPIO_InitStructure.Mode     = GPIO_MODE_IT_RISING_FALLING | GPIO_MODE_EVT_RISING;
     GPIO_InitStructure.Pull     = GPIO_NOPULL;
     GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
@@ -142,7 +142,7 @@ Status s = S_OK;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;
@@ -178,7 +178,7 @@ Status s = S_OK;
     /* Clear the Tamper Flag */
     __HAL_RTC_TAMPER_CLEAR_FLAG(&rtc_handle, RTC_FLAG_TAMP1F);
     IF_STATUS(s = BUTTON_NVIC_TamperInit())     { return s; }
-    if (HAL_OK != HAL_RTCEx_SetTamper_IT(&rtc_handle, &stamperstructure))   { return s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_RTCEx_SetTamper_IT(&rtc_handle, &stamperstructure))   { return s = S_HARDWARE_ERROR; }
     HAL_TRACE_S(D_INFO, s);
     return s;
 }
@@ -235,11 +235,11 @@ Status s = S_UNDEF;
             if (HAL_OK == HAL_RTCEx_DeactivateTamper(&rtc_handle, RTC_TAMPER_1)) {
                 s = S_OK;
             } else {
-                s = S_HARDWARE_FAULT;
+                s = S_HARDWARE_ERROR;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;

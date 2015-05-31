@@ -52,7 +52,7 @@ Status s = S_OK;
     HAL_LOG(D_INFO, "Init: ");
     drv_led_fs = *(OS_DriverHd*)args_p;
     sdram_fs_p = OS_MallocEx(OS_MEDIA_VOL_SDRAM_SIZE, OS_MEDIA_VOL_SDRAM_MEM);
-    if (OS_NULL == sdram_fs_p) { s = S_NO_MEMORY; }
+    if (OS_NULL == sdram_fs_p) { s = S_OUT_OF_MEMORY; }
     return s;
 }
 
@@ -95,7 +95,7 @@ Status s = S_OK;
 //                                   (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_Size * sector)),
 //                                   data_in_p,
 //                                   (OS_MEDIA_VOL_SDRAM_BLOCK_Size * size))) {
-//        s = S_HARDWARE_FAULT;
+//        s = S_HARDWARE_ERROR;
 //    }
     OS_MemCpy(data_in_p, (const void*)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)), (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size));
     led_fs_state = OFF;
@@ -116,7 +116,7 @@ Status s = S_OK;
 //                                    (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_Size * sector)),
 //                                    data_out_p,
 //                                    (OS_MEDIA_VOL_SDRAM_BLOCK_Size * size))) {
-//        s = S_HARDWARE_FAULT;
+//        s = S_HARDWARE_ERROR;
 //    }
     OS_MemCpy((void*)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)), data_out_p, (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size));
     led_fs_state = OFF;
@@ -137,7 +137,7 @@ Status s = S_OK;
 //                                    (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)),
 //                                    (uint32_t *)data_in_p,
 //                                    (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size))) {
-//        s = S_HARDWARE_FAULT;
+//        s = S_HARDWARE_ERROR;
 //    }
 //    led_fs_state = OFF;
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
@@ -157,7 +157,7 @@ Status s = S_OK;
 //                                     (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)),
 //                                     (uint32_t *)data_out_p,
 //                                     (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size))) {
-//        s = S_HARDWARE_FAULT;
+//        s = S_HARDWARE_ERROR;
 //    }
 //    led_fs_state = OFF;
 //    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);

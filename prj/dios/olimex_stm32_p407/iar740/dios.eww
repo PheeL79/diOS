@@ -2,13 +2,13 @@
 
 <workspace>
   <project>
-    <path>$WS_DIR$\..\..\..\hal\olimex_stm32_p407\iar710\hal.ewp</path>
+    <path>$WS_DIR$\..\..\..\hal\olimex_stm32_p407\iar740\hal.ewp</path>
   </project>
   <project>
-    <path>$WS_DIR$\..\..\..\osal\cm4f\iar710\osal.ewp</path>
+    <path>$WS_DIR$\..\..\..\osal\cm4f\iar740\osal.ewp</path>
   </project>
   <project>
-    <path>$WS_DIR$\..\..\..\rtos\cm4f\iar710\rtos.ewp</path>
+    <path>$WS_DIR$\..\..\..\rtos\cm4f\iar740\rtos.ewp</path>
   </project>
   <batchBuild>
     <batchDefinition>

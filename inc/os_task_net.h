@@ -8,11 +8,11 @@
 
 #include "os_config.h"
 
-#if (ETH_ENABLED)
+#if (HAL_ETH_ENABLED)
 #define OS_DAEMON_NAME_NET          "NetD"
 //enum {
 //    OS_TIM_ID_ETH0_LINK_STATUS_REFRESH = OS_TIM_ID_APP
 //};
-#endif //(ETH_ENABLED)
+#endif //(HAL_ETH_ENABLED)
 
 #endif //_OS_TASK_NET_H_

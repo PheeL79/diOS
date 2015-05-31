@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 enum {
 #if defined(OS_AUDIO_DEV_CS4344)
-    DRV_ID_AUDIO_CS4344  = OS_AUDIO_DEV_CS4344,
+    DRV_ID_CS4344   = OS_AUDIO_DEV_CS4344,
 #endif
     DRV_ID_AUDIO_LAST
 };

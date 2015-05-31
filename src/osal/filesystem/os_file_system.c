@@ -89,7 +89,7 @@ Status OS_FileSystemInit(void)
 Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
     os_fs_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_fs_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_fs_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_fs_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_fs_list)) { return S_INVALID_VALUE; }
     OS_MemSet(fs_media_dhd_v, 0, sizeof(fs_media_dhd_v));
@@ -109,21 +109,21 @@ Status s = S_UNDEF;
 Status OS_FileSystemMediaCreate(const OS_FileSystemMediaConfig* cfg_p, OS_FileSystemMediaHd* fs_media_hd_p)
 {
 Status s = S_UNDEF;
-    if (OS_NULL == cfg_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
     IF_STATUS(s = VolumeCheck(cfg_p->volume)) { return s; }
     if (OS_NULL != OS_FileSystemMediaByVolumeGet(cfg_p->volume)) { return S_FS_MEDIA_INVALID; }
     OS_ListItem* item_l_p = OS_ListItemCreate();
-    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    if (OS_NULL == item_l_p) { return S_OUT_OF_MEMORY; }
     OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_FileSystemMediaConfigDyn));
     if (OS_NULL == cfg_dyn_p) {
         OS_ListItemDelete(item_l_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     cfg_dyn_p->fshd = OS_Malloc(sizeof(FATFS));
     if (OS_NULL == cfg_dyn_p->fshd) {
         OS_Free(cfg_dyn_p);
         OS_ListItemDelete(item_l_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     IF_STATUS(s = OS_DriverCreate(cfg_p->drv_cfg_p, &cfg_dyn_p->dhd)) {
         OS_Free(cfg_dyn_p->fshd);
@@ -364,7 +364,7 @@ Status OS_FileSystemVolumeStatsGet(const OS_FileSystemMediaHd fs_media_hd, OS_Fi
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    if (OS_NULL == stats_p) { return S_INVALID_REF; }
+    if (OS_NULL == stats_p) { return S_INVALID_PTR; }
     OS_LOG(D_DEBUG, "FS vol stats get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     FATFS* fs_p = cfg_dyn_p->fshd;
@@ -382,7 +382,7 @@ Status s = S_UNDEF;
     stats_p->type                   = (FS_FAT12 == fs_p->fs_type) ? OS_FS_FAT12 :
                                       (FS_FAT16 == fs_p->fs_type) ? OS_FS_FAT16 :
                                       (FS_FAT32 == fs_p->fs_type) ? OS_FS_FAT32 : OS_FS_UNDEF;
-    stats_p->cluster_size           = fs_p->csize * SD_CARD_SECTOR_SIZE;
+    stats_p->cluster_size           = fs_p->csize * HAL_SD_CARD_SECTOR_SIZE;
     stats_p->clusters_count         = fs_p->n_fatent - 2;
     stats_p->clusters_free          = fs_p->free_clust;
     stats_p->root_dir_items_count   = fs_p->n_rootdir;
@@ -413,13 +413,13 @@ Size path_len;
 StrP file_name_p;
 Status s = S_UNDEF;
     OS_LOG(D_DEBUG, "FS volume scan: %s", path_p);
-    if (OS_NULL == stats_p) { return S_INVALID_REF; }
+    if (OS_NULL == stats_p) { return S_INVALID_PTR; }
     dir_hd = OS_Malloc(sizeof(DIR));
-    if (OS_NULL == dir_hd) { return S_NO_MEMORY; }
+    if (OS_NULL == dir_hd) { return S_OUT_OF_MEMORY; }
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
     stats_file.long_name_size = OS_FILE_SYSTEM_LONG_NAMES_LEN;
     stats_file.long_name_p = OS_Malloc(stats_file.long_name_size);
-    if (OS_NULL == stats_file.long_name_p) { s = S_NO_MEMORY; goto error; }
+    if (OS_NULL == stats_file.long_name_p) { s = S_OUT_OF_MEMORY; goto error; }
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
     IF_STATUS(s = OS_DirectoryOpen(dir_hd, path_p)) { s = S_FS_PATH_NOT_FOUND; goto error; }
     path_len = OS_StrLen((const char*)path_p);
@@ -473,7 +473,7 @@ Status OS_FileOpen(OS_FileHd*fhd_p, ConstStrP file_path_p, const OS_FileOpenMode
 *fhd_p = OS_Malloc(sizeof(FIL));
 const OS_FileHd fhd = *fhd_p;
 Status s;
-    if (OS_NULL == fhd) { return S_NO_MEMORY; }
+    if (OS_NULL == fhd) { return S_OUT_OF_MEMORY; }
     s = FResultTranslate(f_open(fhd, (const char*)file_path_p, FOpenModeConvert(op_mode)));
     OS_LOG(D_DEBUG, "File open : 0x%X %s", fhd, file_path_p);
     IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
@@ -500,7 +500,7 @@ Status s = FResultTranslate(f_read(fhd, data_in_p, size, &bytes_read));
     if (0 == bytes_read) {
         s = S_FS_EOF;
     } else if (size != bytes_read) {
-        s = S_SIZE_MISMATCH;
+        s = S_INVALID_SIZE;
     }
     return s;
 }
@@ -512,7 +512,7 @@ UInt bytes_written;
     OS_LOG(D_DEBUG, "File write: 0x%X", fhd);
 Status s = FResultTranslate(f_write(fhd, data_out_p, size, &bytes_written));
     if (bytes_written != size) {
-        s = S_SIZE_MISMATCH;
+        s = S_INVALID_SIZE;
     }
     return s;
 }
@@ -617,7 +617,7 @@ Status OS_DirectoryRead(OS_DirHd dhd, OS_FileStats* file_stats_p)
 {
 FILINFO file_info;
     OS_LOG(D_DEBUG, "Dir read: 0x%X", dhd);
-    if ((OS_NULL == dhd) || (OS_NULL == file_stats_p)) { return S_INVALID_REF; }
+    if ((OS_NULL == dhd) || (OS_NULL == file_stats_p)) { return S_INVALID_PTR; }
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
     file_info.lfname = (char*)file_stats_p->long_name_p;
     file_info.lfsize = file_stats_p->long_name_size;

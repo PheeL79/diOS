@@ -18,12 +18,12 @@
 #include "os_signal.h"
 #include "os_task_usb.h"
 #include "os_task_fs.h"
-#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 #   include "usbd_audio.h"
 #   include "os_audio.h"
-#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 
-#if (USBH_ENABLED) || (USBD_ENABLED)
+#if (HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "usb_d"
 
@@ -36,17 +36,17 @@ typedef struct {
     USBH_HandleTypeDef  usbh_hs_hd;
     USBD_HandleTypeDef  usbd_fs_hd;
     USBD_HandleTypeDef  usbd_hs_hd;
-#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
     OS_AudioDeviceHd    audio_dev_hd;
     OS_AudioDmaMode     audio_dma_mode;
     Bool                audio_buf_idx;
-#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 } TaskStorage;
 
 //-----------------------------------------------------------------------------
-#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 static void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p);
-#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 
 //-----------------------------------------------------------------------------
 const OS_TaskConfig task_usb_cfg = {
@@ -56,8 +56,8 @@ const OS_TaskConfig task_usb_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 3,
-    .prio_init      = OS_TASK_PRIO_USB,
-    .prio_power     = OS_TASK_PRIO_PWR_USB,
+    .prio_init      = OS_PRIO_TASK_USB,
+    .prio_power     = OS_PRIO_PWR_TASK_USB,
     .storage_size   = sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN * 3,
     .stdin_len      = 64//24
@@ -69,7 +69,7 @@ Status OS_TaskInit(OS_TaskArgs* args_p)
 TaskStorage* tstor_p = (TaskStorage*)args_p->stor_p;
 Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
-#if (USBH_ENABLED)
+#if (HAL_USBH_ENABLED)
     {
         const OS_UsbHItfHd usbh_itf_hd = {
             .itf_fs_hd = &(tstor_p->usbh_fs_hd),
@@ -83,9 +83,9 @@ Status s = S_UNDEF;
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor_p->drv_usbh))  { return s; }
         IF_STATUS(s = OS_DriverInit(tstor_p->drv_usbh, (void*)&usbh_itf_hd))        { return s; }
     }
-#endif // (USBH_ENABLED)
+#endif //(HAL_USBH_ENABLED)
 
-#if (USBD_ENABLED)
+#if (HAL_USBD_ENABLED)
     {
         const OS_UsbDItfHd usbd_itf_hd = {
             .itf_fs_hd = &(tstor_p->usbd_fs_hd),
@@ -99,7 +99,7 @@ Status s = S_UNDEF;
         IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor_p->drv_usbd))  { return s; }
         IF_STATUS(s = OS_DriverInit(tstor_p->drv_usbd, (void*)&usbd_itf_hd))        { return s; }
     }
-#endif // (USBD_ENABLED)
+#endif //(HAL_USBD_ENABLED)
     return s;
 }
 
@@ -113,17 +113,17 @@ Status s = S_UNDEF;
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            //OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+            //OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 const OS_SignalId sig_id = OS_SignalIdGet(msg_p);
                 if ((OS_SIG_DRV == sig_id) || ((OS_SIG_USBH_EVENT_PORT <= sig_id) && (OS_SIG_USBH_EVENT_URB >= sig_id))) {
-#if (USBH_ENABLED) || (USBD_ENABLED)
+#if (HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
                     const OS_SignalData sig_data_in = OS_SignalDataGet(msg_p);
                     const OS_UsbItfId usb_itf_id = (OS_UsbItfId)OS_USB_SIG_ITF_GET(sig_data_in);
                     StrP usb_itf_str_p;
                     switch (OS_SignalSrcGet(msg_p)) {
-#if (USBH_ENABLED)
+#if (HAL_USBH_ENABLED)
                         case DRV_ID_USBH:
                             {
                             USBH_HandleTypeDef* usbh_itf_hd_p;
@@ -152,7 +152,7 @@ Status s = S_UNDEF;
                                         OS_LOG(D_INFO, "%s Connected", usb_itf_str_p);
                                         break;
                                     default:
-//                                        OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+//                                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                                         break;
                                 }
                                 if (OS_MSG_UNDEF != msg_id) {
@@ -168,14 +168,14 @@ Status s = S_UNDEF;
                                             OS_LOG_S(D_WARNING, s);
                                         }
                                     } else {
-                                        s = S_INVALID_REF;
+                                        s = S_INVALID_PTR;
                                         OS_LOG_S(D_WARNING, s);
                                     }
                                 }
                             }
                             break;
-#endif // (USBH_ENABLED)
-#if (USBD_ENABLED)
+#endif //(HAL_USBH_ENABLED)
+#if (HAL_USBD_ENABLED)
                         case DRV_ID_USBD:
                             {
     //                            USBD_HandleTypeDef* usbd_itf_hd_p;
@@ -195,19 +195,19 @@ Status s = S_UNDEF;
                                         OS_LOG(D_INFO, "%s Connected", usb_itf_str_p);
                                         break;
                                     default:
-    //                                    OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+    //                                    OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                                         break;
                                 }
                             }
                             break;
-#endif // (USBD_ENABLED)
+#endif //(HAL_USBD_ENABLED)
                         default:
-//                            OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+//                            OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
                             break;
                     }
-#endif // (USBH_ENABLED) || (USBD_ENABLED)
+#endif //(HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
                 }
-#if (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_AUDIO_ENABLED)
                 else if (OS_SIG_USB_AUDIO_STOP == sig_id) {
                 }
                 else if (OS_SIG_USB_AUDIO_PAUSE == sig_id) {
@@ -218,20 +218,20 @@ Status s = S_UNDEF;
                 }
                 else if (OS_SIG_USB_AUDIO_VOLUME_SET == sig_id) {
                 }
-#endif // (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_AUDIO_ENABLED)
 #if (OS_FILE_SYSTEM_ENABLED)
                 else if (OS_SIG_FSD_READY == sig_id) {
                     const OS_TaskHd fs_thd = OS_TaskByNameGet(OS_DAEMON_NAME_FS);
                     OS_ASSERT(S_OK == OS_TasksConnect(OS_THIS_TASK, fs_thd));
-#if (USBD_ENABLED)
+#if (HAL_USBD_ENABLED)
                     IF_OK(OS_DriverOpen(tstor_p->drv_usbd, stdin_qhd)) {}
-#endif // (USBD_ENABLED)
+#endif //(HAL_USBD_ENABLED)
                 } else if (OS_SIG_TASK_DISCONNECT == sig_id) {
-                } else { OS_LOG_S(D_DEBUG, S_UNDEF_SIG); }
-#endif // (OS_FILE_SYSTEM_ENABLED)
+                } else { OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL); }
+#endif //(OS_FILE_SYSTEM_ENABLED)
             } else {
                 switch (msg_p->id) {
-#if (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_AUDIO_ENABLED)
                     case OS_MSG_USB_AUDIO_PLAY:
                         if (OS_AUDIO_DMA_MODE_CIRCULAR != tstor_p->audio_dma_mode) {
                             IF_STATUS(s = OS_AudioPlay(tstor_p->audio_dev_hd,
@@ -282,9 +282,9 @@ Status s = S_UNDEF;
                         }
                         }
                         break;
-#endif // (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_AUDIO_ENABLED)
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
@@ -306,26 +306,26 @@ Status s = S_OK;
         case PWR_ON:
             {
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(OS_DAEMON_NAME_USB));
-#if (USBH_ENABLED)
+#if (HAL_USBH_ENABLED)
             IF_OK(s = OS_DriverOpen(tstor_p->drv_usbh, stdin_qhd)) {
-#if (USBH_FS_ENABLED)
-//                if (USBH_OK != USBH_ReEnumerate(&(tstor_p->usbh_fs_hd))) { s = S_HARDWARE_FAULT; }
-#endif // (USBH_FS_ENABLED)
-#if (USBH_HS_ENABLED)
-//                if (USBH_OK != USBH_ReEnumerate(&(tstor_p->usbh_hs_hd))) { s = S_HARDWARE_FAULT; }
-#endif // (USBH_HS_ENABLED)
+#if (HAL_USBH_FS_ENABLED)
+//                if (USBH_OK != USBH_ReEnumerate(&(tstor_p->usbh_fs_hd))) { s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBH_FS_ENABLED)
+#if (HAL_USBH_HS_ENABLED)
+//                if (USBH_OK != USBH_ReEnumerate(&(tstor_p->usbh_hs_hd))) { s = S_HARDWARE_ERROR; }
+#endif //(HAL_USBH_HS_ENABLED)
             }
-#endif // (USBH_ENABLED)
+#endif //(HAL_USBH_ENABLED)
             }
             break;
         case PWR_STOP:
         case PWR_SHUTDOWN:
-#if (USBH_ENABLED)
+#if (HAL_USBH_ENABLED)
             IF_STATUS(s = OS_DriverClose(tstor_p->drv_usbh, OS_NULL)) {}
-#endif // (USBH_ENABLED)
-#if (USBD_ENABLED)
+#endif //(HAL_USBH_ENABLED)
+#if (HAL_USBD_ENABLED)
             IF_STATUS(s = OS_DriverClose(tstor_p->drv_usbd, OS_NULL)) {}
-#endif // (USBD_ENABLED)
+#endif //(HAL_USBD_ENABLED)
             break;
         default:
             break;
@@ -333,7 +333,7 @@ Status s = S_OK;
     return s;
 }
 
-#if (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#if (HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 /******************************************************************************/
 void ISR_DrvAudioDeviceCallback(OS_AudioDeviceCallbackArgs* args_p)
 {
@@ -356,6 +356,6 @@ USBD_HandleTypeDef* usb_itf_hd_p = &(tstor_p->usbd_hs_hd); //TODO(A.Filyanov) Se
 //    } else if (OS_SIG_AUDIO_ERROR == args_p->signal_id) {
 //    } else { OS_ASSERT(OS_FALSE); }
 }
-#endif // (USBD_ENABLED) && (USBD_AUDIO_ENABLED)
+#endif //(HAL_USBD_ENABLED) && (HAL_USBD_AUDIO_ENABLED)
 
-#endif // (USBH_ENABLED) || (USBD_ENABLED)
+#endif //(HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)

@@ -102,7 +102,7 @@ Status s = S_OK;
     if (HAL_OK == HAL_UART_Init(&uart_hd)) {
         /* Enable the UART Data Register not empty Interrupt */
         __HAL_UART_ENABLE_IT(&uart_hd, UART_IT_RXNE);
-    } else { s = S_HARDWARE_FAULT; }
+    } else { s = S_HARDWARE_ERROR; }
     return s;
 }
 
@@ -193,7 +193,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 /******************************************************************************/
 Status USART6_DeInit(void* args_p)
 {
-    if (HAL_OK != HAL_UART_DeInit(&uart_hd)) { return S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_UART_DeInit(&uart_hd)) { return S_HARDWARE_ERROR; }
     /*##-1- Reset peripherals ##################################################*/
     USARTx_FORCE_RESET();
     USARTx_RELEASE_RESET();
@@ -236,7 +236,7 @@ Status USART6_Close(void* args_p)
 Status USART6_Read(void* data_in_p, Size size, void* args_p)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_UART_Receive(&uart_hd, data_in_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_UART_Receive(&uart_hd, data_in_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_ERROR; }
     return s;
 }
 
@@ -244,7 +244,7 @@ Status s = S_OK;
 Status USART6_Write(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
-    if (HAL_OK != HAL_UART_Transmit(&uart_hd, data_out_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_FAULT; }
+    if (HAL_OK != HAL_UART_Transmit(&uart_hd, data_out_p, size, HAL_TIMEOUT_DRIVER)) { s = S_HARDWARE_ERROR; }
     return s;
 }
 
@@ -259,7 +259,7 @@ Status s = S_OK;
      data received is 10 */
     if (HAL_OK != HAL_UART_Receive_DMA(&uart_hd, data_in_p, size)) {
         /* Transfer error in reception process */
-        s = S_HARDWARE_FAULT;
+        s = S_HARDWARE_ERROR;
     }
     return s;
 }
@@ -273,7 +273,7 @@ Status s = S_OK;
     /*##-5- Send the received Buffer ###########################################*/
     if (HAL_OK != HAL_UART_Transmit_DMA(&uart_hd, data_out_p, size)) {
         /* Transfer error in transmission process */
-        s = S_HARDWARE_FAULT;
+        s = S_HARDWARE_ERROR;
     }
     return s;
 }
@@ -305,7 +305,7 @@ Status s = S_UNDEF;
             }
             break;
         default:
-            s = S_UNDEF_REQ_ID;
+            s = S_INVALID_REQ_ID;
             break;
     }
     return s;

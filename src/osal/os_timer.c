@@ -45,7 +45,7 @@ void OS_TimerCallback(const TimerHandle_t timer_handle)
 {
     const OS_TimerConfigDyn* cfg_dyn_p = (OS_TimerConfigDyn*)pvTimerGetTimerID(timer_handle);
     if ((OS_NULL == timer_handle) || (OS_NULL == cfg_dyn_p)) {
-        OS_LOG_S(D_WARNING, S_UNDEF_TIMER);
+        OS_LOG_S(D_WARNING, S_INVALID_TIMER);
         return;
     }
     const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, BIT(OS_TIM_OPT_EVENT)) ? OS_SIG_EVENT : OS_SIG_TIMER;
@@ -58,7 +58,7 @@ Status OS_TimerInit(void);
 Status OS_TimerInit(void)
 {
     os_timer_mutex = OS_MutexRecursiveCreate();
-    if (OS_NULL == os_timer_mutex) { return S_INVALID_REF; }
+    if (OS_NULL == os_timer_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_timers_list);
     if (OS_TRUE != OS_ListIsInitialised(&os_timers_list)) { return S_INVALID_VALUE; }
     return S_OK;
@@ -69,15 +69,15 @@ Status OS_TimerCreate(const OS_TimerConfig* cfg_p, OS_TimerHd* timer_hd_p)
 {
 Status s = S_OK;
 
-    if (OS_NULL == cfg_p) { return S_INVALID_REF; }
-    if (OS_NULL == cfg_p->slot) { return S_UNDEF_QUEUE; }
+    if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
+    if (OS_NULL == cfg_p->slot) { return S_INVALID_QUEUE; }
     OS_ListItem* item_l_p = OS_ListItemCreate();
-    if (OS_NULL == item_l_p) { return S_NO_MEMORY; }
+    if (OS_NULL == item_l_p) { return S_OUT_OF_MEMORY; }
     const OS_TimerHd timer_hd = (OS_TimerHd)item_l_p;
     OS_TimerConfigDyn* cfg_dyn_p = OS_Malloc(sizeof(OS_TimerConfigDyn));
     if (OS_NULL == cfg_dyn_p) {
         OS_ListItemDelete(item_l_p);
-        return S_NO_MEMORY;
+        return S_OUT_OF_MEMORY;
     }
     IF_OK(s = OS_MutexRecursiveLock(os_timer_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         if (OS_NULL == OS_TimerByIdGet(cfg_p->id)) {
@@ -85,7 +85,7 @@ Status s = S_OK;
             const TimerHandle_t timer_handle = xTimerCreate(cfg_p->name_p, period_ticks,
                                                             BIT_TEST(cfg_p->options, BIT(OS_TIM_OPT_PERIODIC)),
                                                             (void*)cfg_dyn_p, OS_TimerCallback);
-            if (OS_NULL == timer_handle) { s = S_UNDEF_TIMER; goto error; }
+            if (OS_NULL == timer_handle) { s = S_INVALID_TIMER; goto error; }
             cfg_dyn_p->name_p   = cfg_p->name_p;
             cfg_dyn_p->slot     = cfg_p->slot;
             cfg_dyn_p->period   = cfg_p->period;
@@ -116,7 +116,7 @@ const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
 const OS_Tick timeout_ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
 Status s = S_OK;
 
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     if (pdTRUE != xTimerDelete(timer_handle, timeout_ticks)) { return S_TIMEOUT; }
     IF_OK(s = OS_MutexRecursiveLock(os_timer_mutex, timeout)) {    // os_list protection;
         OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
@@ -130,7 +130,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_TimerReset(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     const OS_Tick timeout_ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
@@ -143,7 +143,7 @@ Status OS_TimerReset(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 /******************************************************************************/
 Status OS_TimerStart(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     const OS_Tick timeout_ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
@@ -156,7 +156,7 @@ Status OS_TimerStart(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 /******************************************************************************/
 Status OS_TimerStop(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 {
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     const OS_Tick timeout_ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
@@ -169,9 +169,9 @@ Status OS_TimerStop(const OS_TimerHd timer_hd, const OS_TimeMs timeout)
 /******************************************************************************/
 Status OS_TimerPeriodGet(const OS_TimerHd timer_hd, OS_TimeMs* period_p)
 {
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     OS_TimerConfigDyn* cfg_dyn_p = OS_TimerConfigDynGet(timer_hd);
-    if (OS_NULL == cfg_dyn_p) { return S_INVALID_REF; }
+    if (OS_NULL == cfg_dyn_p) { return S_INVALID_PTR; }
     *period_p = cfg_dyn_p->period;
     return S_OK;
 }
@@ -179,7 +179,7 @@ Status OS_TimerPeriodGet(const OS_TimerHd timer_hd, OS_TimeMs* period_p)
 /******************************************************************************/
 Status OS_TimerPeriodSet(const OS_TimerHd timer_hd, const OS_TimeMs new_period, const OS_TimeMs timeout)
 {
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     const OS_Tick timeout_ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
@@ -267,10 +267,10 @@ Status s = S_OK;
                 stats_p->id         = OS_TimerIdGet(timer_hd);
                 stats_p->period     = cfg_dyn_p->period;
                 stats_p->options    = cfg_dyn_p->options;
-            } else { s = S_INVALID_REF; }
+            } else { s = S_INVALID_PTR; }
             OS_MutexRecursiveUnlock(os_timer_mutex);
         }
-    } else { s = S_UNDEF_TIMER; }
+    } else { s = S_INVALID_TIMER; }
     return s;
 }
 
@@ -309,7 +309,7 @@ Status OS_ISR_TimerReset(const OS_TimerHd timer_hd)
 {
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     if (pdTRUE != xTimerResetFromISR(timer_handle, &xHigherPriorityTaskWoken)) {
@@ -326,7 +326,7 @@ Status OS_ISR_TimerStart(const OS_TimerHd timer_hd)
 {
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     if (pdTRUE != xTimerStartFromISR(timer_handle, &xHigherPriorityTaskWoken)) {
@@ -343,7 +343,7 @@ Status OS_ISR_TimerStop(const OS_TimerHd timer_hd)
 {
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     if (pdTRUE != xTimerStopFromISR(timer_handle, &xHigherPriorityTaskWoken)) {
@@ -361,7 +361,7 @@ Status OS_ISR_TimerPeriodChange(const OS_TimerHd timer_hd, const OS_TimeMs new_p
 const OS_Tick new_period_ticks = ((OS_BLOCK == new_period) || (OS_NO_BLOCK == new_period)) ? new_period : OS_MS_TO_TICKS(new_period);
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-    if (OS_NULL == timer_hd) { return S_UNDEF_TIMER; }
+    if (OS_NULL == timer_hd) { return S_INVALID_TIMER; }
     const OS_ListItem* item_l_p = (OS_ListItem*)timer_hd;
     const TimerHandle_t timer_handle = (TimerHandle_t)OS_ListItemOwnerGet(item_l_p);
     if (pdTRUE != xTimerChangePeriodFromISR(timer_handle, new_period_ticks, &xHigherPriorityTaskWoken)) {
