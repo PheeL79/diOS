@@ -182,7 +182,7 @@ Status s = S_OK;
     HAL_DMA_Init(&sram1_dma_hd);
 
     /* NVIC configuration for DMA transfer complete interrupt */
-    HAL_NVIC_SetPriority(SRAM_DMAx_IRQn, IRQ_PRIO_SRAM_DMA, 0);
+    HAL_NVIC_SetPriority(SRAM_DMAx_IRQn, HAL_IRQ_PRIO_SRAM_DMA, 0);
     HAL_NVIC_EnableIRQ(SRAM_DMAx_IRQn);
 
     FSMC_NORSRAM_TimingTypeDef Timing;

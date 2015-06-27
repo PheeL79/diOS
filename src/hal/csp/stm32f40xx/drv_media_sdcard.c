@@ -30,26 +30,13 @@
 #define SD_POWER_STATE_UP               0x02
 #define SD_POWER_STATE_ON               0x03
 
-/* DMA definitions for SD DMA transfer */
-#define SD_NVIC_IRQ_PRIORITY            IRQ_PRIO_SDIO
-#define SD_NVIC_DMA_IRQ_PRIORITY        IRQ_PRIO_SDIO_DMA
-#define __DMAx_TxRx_CLK_ENABLE          __DMA2_CLK_ENABLE
-#define SD_DMAx_Tx_CHANNEL              DMA_CHANNEL_4
-#define SD_DMAx_Rx_CHANNEL              DMA_CHANNEL_4
-#define SD_DMAx_Tx_STREAM               DMA2_Stream6
-#define SD_DMAx_Rx_STREAM               DMA2_Stream3
-#define SD_DMAx_Tx_IRQn                 DMA2_Stream6_IRQn
-#define SD_DMAx_Rx_IRQn                 DMA2_Stream3_IRQn
-#define SD_DMAx_Tx_IRQHandler           DMA2_Stream6_IRQHandler
-#define SD_DMAx_Rx_IRQHandler           DMA2_Stream3_IRQHandler
-
-#ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
+#ifndef HAL_MB_OLIMEX_STM32_P407 // HAL_MB_OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
 #define SD_DETECT_PIN                   GPIO_PIN_13
 #define SD_DETECT_GPIO_PORT             GPIOH
 #define __SD_DETECT_GPIO_CLK_ENABLE()   __GPIOH_CLK_ENABLE()
 #define SD_DETECT_IRQn                  EXTI15_10_IRQn
 #define SD_DetectIRQHandler()           HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13)
-#endif // OLIMEX_STM32_P407
+#endif //HAL_MB_OLIMEX_STM32_P407
 
 //-----------------------------------------------------------------------------
 static Status SDIO_Init_(void* args_p);
@@ -86,11 +73,11 @@ HAL_DriverItf drv_media_sdcard = {
 /*****************************************************************************/
 Status SDIO_Init_(void* args_p)
 {
-Status s;
+Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init: ");
     drv_led_fs = *(OS_DriverHd*)args_p;
     /* Enable SDIO clock */
-    __SDIO_CLK_ENABLE();
+    HAL_SD_CLK_ENABLE();
     IF_STATUS(s = SDIO_LL_Init(args_p)) { return s; }
     /* Check if the SD card is plugged in the slot */
     if (OS_TRUE == SD_IsDetected()) {
@@ -123,25 +110,24 @@ Status s;
 Status SDIO_LL_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
+Status s = S_OK;
     /* Enable GPIOs clock */
-    __GPIOC_CLK_ENABLE();
-    __GPIOD_CLK_ENABLE();
+    HAL_SD_GPIO_CLK_ENABLE();
 
     /* Common GPIO configuration */
     GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull      = GPIO_PULLUP;
     GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
+    GPIO_InitStruct.Alternate = HAL_SD_GPIO_AF;
 
     /* GPIOC configuration */
-    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
-
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = HAL_SD_GPIO1_PIN;
+    HAL_GPIO_Init(HAL_SD_GPIO1, &GPIO_InitStruct);
 
     /* GPIOD configuration */
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-#ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
+    GPIO_InitStruct.Pin = HAL_SD_GPIO2_PIN;
+    HAL_GPIO_Init(HAL_SD_GPIO2, &GPIO_InitStruct);
+#ifndef HAL_MB_OLIMEX_STM32_P407 // HAL_MB_OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
     __SD_DETECT_GPIO_CLK_ENABLE();
     /* SD Card detect pin configuration */
     GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
@@ -149,13 +135,13 @@ GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Pin       = SD_DETECT_PIN;
     HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStruct);
-#endif // OLIMEX_STM32_P407
+#endif //HAL_MB_OLIMEX_STM32_P407
 
-    /* Enable DMA2 clocks */
-    __DMAx_TxRx_CLK_ENABLE();
+    /* Enable DMA clocks */
+    HAL_SD_DMA_CLK();
 
     /* Configure DMA Rx parameters */
-    sd_dma_rx_handle.Init.Channel             = SD_DMAx_Rx_CHANNEL;
+    sd_dma_rx_handle.Init.Channel             = HAL_SD_DMA_CHAN_RX;
     sd_dma_rx_handle.Init.Direction           = DMA_PERIPH_TO_MEMORY;
     sd_dma_rx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
     sd_dma_rx_handle.Init.MemInc              = DMA_MINC_ENABLE;
@@ -176,7 +162,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 #endif //(OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_rx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
-    sd_dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
+    sd_dma_rx_handle.Instance = HAL_SD_DMA_STREAM_RX;
 
     /* Associate the DMA handle */
     __HAL_LINKDMA(&sd_hd, hdmarx, sd_dma_rx_handle);
@@ -188,7 +174,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
     HAL_DMA_Init(&sd_dma_rx_handle);
 
     /* Configure DMA Tx parameters */
-    sd_dma_tx_handle.Init.Channel             = SD_DMAx_Tx_CHANNEL;
+    sd_dma_tx_handle.Init.Channel             = HAL_SD_DMA_CHAN_TX;
     sd_dma_tx_handle.Init.Direction           = DMA_MEMORY_TO_PERIPH;
     sd_dma_tx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
     sd_dma_tx_handle.Init.MemInc              = DMA_MINC_ENABLE;
@@ -209,7 +195,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 #endif //(OS_FILE_SYSTEM_WORD_ACCESS)
     sd_dma_tx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
-    sd_dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
+    sd_dma_tx_handle.Instance = HAL_SD_DMA_STREAM_TX;
 
     /* Associate the DMA handle */
     __HAL_LINKDMA(&sd_hd, hdmatx, sd_dma_tx_handle);
@@ -221,17 +207,17 @@ GPIO_InitTypeDef GPIO_InitStruct;
     HAL_DMA_Init(&sd_dma_tx_handle);
 
     /* NVIC configuration for SDIO interrupts */
-    HAL_NVIC_SetPriority(SDIO_IRQn, SD_NVIC_IRQ_PRIORITY, 0);
-    HAL_NVIC_EnableIRQ(SDIO_IRQn);
+    HAL_NVIC_SetPriority(HAL_SD_IRQ, HAL_IRQ_PRIO_SDIO, 0);
+    HAL_NVIC_EnableIRQ(HAL_SD_IRQ);
 
     /* NVIC configuration for DMA transfer complete interrupt */
-    HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, SD_NVIC_DMA_IRQ_PRIORITY, 0);
-    HAL_NVIC_EnableIRQ(SD_DMAx_Rx_IRQn);
+    HAL_NVIC_SetPriority(HAL_SD_DMA_IRQ_RX, IRQ_PRIO_SDIO_DMA, 0);
+    HAL_NVIC_EnableIRQ(HAL_SD_DMA_IRQ_RX);
 
     /* NVIC configuration for DMA transfer complete interrupt */
-    HAL_NVIC_SetPriority(SD_DMAx_Tx_IRQn, SD_NVIC_DMA_IRQ_PRIORITY, 0);
-    HAL_NVIC_EnableIRQ(SD_DMAx_Tx_IRQn);
-    return S_OK;
+    HAL_NVIC_SetPriority(HAL_SD_DMA_IRQ_TX, IRQ_PRIO_SDIO_DMA, 0);
+    HAL_NVIC_EnableIRQ(HAL_SD_DMA_IRQ_TX);
+    return s;
 }
 
 /*****************************************************************************/
@@ -240,7 +226,7 @@ Status SDIO_DeInit_(void* args_p)
 Status s = S_OK;
     if (HAL_OK != HAL_SD_DeInit(&sd_hd)) { s = S_HARDWARE_ERROR; }
     /* Peripheral clock disable */
-    __SDIO_CLK_DISABLE();
+    HAL_SD_CLK_DISABLE();
 
     /**SDIO GPIO Configuration
     PC8     ------> SDIO_D0
@@ -500,12 +486,12 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 Bool SD_IsDetected(void)
 {
-#ifndef OLIMEX_STM32_P407 // OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
+#ifndef HAL_MB_OLIMEX_STM32_P407 // HAL_MB_OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
     /* Check SD card detect pin */
     if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(SD_DETECT_GPIO_PORT, SD_DETECT_PIN)) {
         return OS_FALSE;
     }
-#endif // OLIMEX_STM32_P407
+#endif //HAL_MB_OLIMEX_STM32_P407
     return OS_TRUE;
 }
 

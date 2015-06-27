@@ -52,7 +52,7 @@ void TIMER10_Init_(void)
     HAL_ASSERT(HAL_OK == HAL_TIM_Base_Init(&timer_hd));
     /*##-2- Configure the NVIC for TIMx ########################################*/
     /* Set Interrupt Group Priority */
-    HAL_NVIC_SetPriority(TIMER_TIMESTAMP_IRQ, IRQ_PRIO_TIMER_TIMESTAMP, 0);
+    HAL_NVIC_SetPriority(TIMER_TIMESTAMP_IRQ, HAL_IRQ_PRIO_TIMER_TIMESTAMP, 0);
     /* Enable the TIMx global Interrupt */
     HAL_NVIC_EnableIRQ(TIMER_TIMESTAMP_IRQ);
 }

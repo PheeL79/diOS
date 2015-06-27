@@ -269,17 +269,6 @@ void OTG_HS_IRQHandler(void)
 #endif //(HAL_USBH_ENABLED)
 }
 
-/******************************************************************************/
-/**
-  * @brief  This function handles ADC interrupt request.
-*/
-void ADC_IRQHandler(void);
-void ADC_IRQHandler(void)
-{
-extern ADC_HandleTypeDef adc3_hd;
-    HAL_ADC_IRQHandler(&adc3_hd);
-}
-
 /**
   * @}
   */

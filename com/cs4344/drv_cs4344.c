@@ -183,7 +183,7 @@ const S8 freq_idx = FrequencyIdxGet(drv_args_p->info.sample_rate);
     HAL_DMA_Init(&dma_tx_hd);
 
     /* I2S DMA IRQ Channel configuration */
-    HAL_NVIC_SetPriority(CS4344_I2Sx_DMAx_IRQn, IRQ_PRIO_I2S_DMA_CS4344, 0);
+    HAL_NVIC_SetPriority(CS4344_I2Sx_DMAx_IRQn, HAL_IRQ_PRIO_I2S_DMA_CS4344, 0);
     HAL_NVIC_EnableIRQ(CS4344_I2Sx_DMAx_IRQn);
 
     i2s_hd.Init.Mode            = I2S_MODE_MASTER_TX;

@@ -41,17 +41,19 @@ static HAL_DriverItf drv_power = {
 /*****************************************************************************/
 Status POWER_Init_(void)
 {
+Status s = S_OK;
     HAL_MemSet(drv_power_v, 0x0, sizeof(drv_power_v));
     drv_power_v[DRV_ID_POWER] = &drv_power;
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status POWER_Init(void* args_p)
 {
+Status s = S_OK;
     //D_LOG(D_INFO, "Init: ");
     //D_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
@@ -66,15 +68,17 @@ Status s = S_OK;
 /******************************************************************************/
 Status POWER_Open(void* args_p)
 {
+Status s = S_OK;
     //TODO(A. Filyanov)
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
 Status POWER_Close(void* args_p)
 {
+Status s = S_OK;
     //TODO(A. Filyanov)
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/

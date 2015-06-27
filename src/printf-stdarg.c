@@ -204,13 +204,13 @@ extern volatile HAL_Env hal_env;
     out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
     char* out_buf_tmp_p = out_buf_curr_p;
     const int r = print(&out_buf_tmp_p, format, args );
-#if defined(USE_SEMIHOSTED)
+#if defined(USE_SEMIHOSTING)
     while (r--) {
         putchar(*out_buf_curr_p++);
     }
 #else
     hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
-#endif //defined(USE_SEMIHOSTED)
+#endif //defined(USE_SEMIHOSTING)
     return r;
 }
 
@@ -226,13 +226,13 @@ extern volatile HAL_Env hal_env;
     out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
     char* out_buf_tmp_p = out_buf_curr_p;
     const int r = print(&out_buf_tmp_p, format, args);
-#if defined(USE_SEMIHOSTED)
+#if defined(USE_SEMIHOSTING)
     while (r--) {
         putchar(*out_buf_curr_p++);
     }
 #else
     hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
-#endif //!defined(USE_SEMIHOSTED)
+#endif //!defined(USE_SEMIHOSTING)
     return r;
 }
 

@@ -27,7 +27,7 @@
 #   define ALIGN_BEGIN
 #   define INLINE                   __inline
 #   define RAM_FUNC                 __attribute__((section(".RamFunc")))
-#   define WEAK                     __weak
+#   define WEAK                     __attribute__((weak))
 #   define MEMORY_BARRIER()         asm volatile ("" ::: "memory")
 #   ifndef MAX
 #       define MAX(x, y)            ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })

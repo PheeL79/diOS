@@ -79,16 +79,17 @@ static HAL_DriverItf drv_rtc = {
 /*****************************************************************************/
 Status RTC_Init_(void)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_MemSet(drv_rtc_v, 0x0, sizeof(drv_rtc_v));
     drv_rtc_v[DRV_ID_RTC] = &drv_rtc;
-    s = S_OK; //IF_STATUS(s = drv_rtc[DRV_ID_RTC]->Init()) { return s; }
+    //IF_STATUS(s = drv_rtc[DRV_ID_RTC]->Init()) { return s; }
     return s;
 }
 
 /*****************************************************************************/
 Status RTC__Init(void* args_p)
 {
+Status s = S_OK;
     //HAL_LOG(D_INFO, "Init");
     RTC_LL_Init();
     /*##-2- Check if Data stored in BackUp register0: No Need to reconfigure RTC#*/
@@ -100,7 +101,7 @@ Status RTC__Init(void* args_p)
     RTC_AlarmInit();
     RTC_WakeupInit();
     //HAL_TRACE(D_INFO, S_STRING_GET(S_OK));
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -108,6 +109,7 @@ Status RTC_LL_Init(void)
 {
 RCC_OscInitTypeDef        RCC_OscInitStruct;
 RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
+Status s = S_OK;
     /* To change the source clock of the RTC feature (LSE, LSI), You have to:
      - Enable the power clock using __PWR_CLK_ENABLE()
      - Enable write access using HAL_PWR_EnableBkUpAccess() function before to
@@ -147,7 +149,7 @@ RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
     if (HAL_OK != HAL_RTCEx_EnableBypassShadow(&rtc_handle)) {
         HAL_ASSERT(OS_FALSE);
     }
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -280,15 +282,17 @@ Status s = S_OK;
 /******************************************************************************/
 Status RTC_Open(void* args_p)
 {
+Status s = S_OK;
     //TODO(A. Filyanov)
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
 Status RTC_Close(void* args_p)
 {
+Status s = S_OK;
     //TODO(A. Filyanov)
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/

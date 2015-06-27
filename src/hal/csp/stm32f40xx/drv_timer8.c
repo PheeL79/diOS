@@ -53,6 +53,7 @@ Status s = S_UNDEF;
 Status TIMER8_LL_Init(void* args_p)
 {
 TIM_MasterConfigTypeDef master_cfg;
+Status s = S_OK;
     /* TIMx Periph clock enable */
     TIMx_CLK_ENABLE();
     /* Set TIMx instance */
@@ -67,16 +68,17 @@ TIM_MasterConfigTypeDef master_cfg;
     master_cfg.MasterOutputTrigger  = TIM_TRGO_UPDATE;
     master_cfg.MasterSlaveMode      = TIM_MASTERSLAVEMODE_DISABLE;
     HAL_ASSERT(HAL_OK == HAL_TIMEx_MasterConfigSynchronization(&timer_hd, &master_cfg));
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status TIMER8_LL_DeInit(void* args_p)
 {
+Status s = S_OK;
     /*##-1- Reset peripherals ##################################################*/
     TIMx_FORCE_RESET();
     TIMx_RELEASE_RESET();
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
@@ -88,13 +90,15 @@ Status TIMER8_DeInit(void* args_p)
 /*****************************************************************************/
 Status TIMER8_Open(void* args_p)
 {
-    if (HAL_OK != HAL_TIM_Base_Start(&timer_hd)) { return S_HARDWARE_ERROR; }
-    return S_OK;
+Status s = S_OK;
+    if (HAL_OK != HAL_TIM_Base_Start(&timer_hd)) { return s = S_HARDWARE_ERROR; }
+    return s;
 }
 
 /*****************************************************************************/
 Status TIMER8_Close(void* args_p)
 {
-    if (HAL_OK != HAL_TIM_Base_Stop(&timer_hd)) { return S_HARDWARE_ERROR; }
-    return S_OK;
+Status s = S_OK;
+    if (HAL_OK != HAL_TIM_Base_Stop(&timer_hd)) { return s = S_HARDWARE_ERROR; }
+    return s;
 }

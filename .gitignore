@@ -14,3 +14,5 @@
 *.dbgdt
 *.dni
 *.cspy.bat
+/prj/hal/olimex_stm32_p407/iar740/settings
+/prj/osal/cm4f/iar740/settings

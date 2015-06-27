@@ -9,8 +9,8 @@
 #define MDL_NAME    "drv_trimmer"
 
 //-----------------------------------------------------------------------------
-#define TRIMMER_DRV_ADC         DRV_ID_ADC3
-#define TRIMMER_DRV_TIMER       DRV_ID_TIMER8
+#define TRIMMER_DRV_ADC                 DRV_ID_ADC3
+#define TRIMMER_DRV_TIMER               DRV_ID_TIMER8
 
 //-----------------------------------------------------------------------------
 /// @brief   Init trimmer.
@@ -43,7 +43,7 @@ Status TRIMMER_DeInit(void* args_p)
 Status s = S_UNDEF;
     IF_STATUS(s = drv_timer_v[TRIMMER_DRV_TIMER]->DeInit(OS_NULL)){ return s; }
     IF_STATUS(s = drv_adc_v[TRIMMER_DRV_ADC]->DeInit(OS_NULL))    { return s; }
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
@@ -52,7 +52,7 @@ Status TRIMMER_Open(void* args_p)
 Status s = S_UNDEF;
     IF_STATUS(s = drv_adc_v[TRIMMER_DRV_ADC]->Open(OS_NULL))    { return s; }
     IF_STATUS(s = drv_timer_v[TRIMMER_DRV_TIMER]->Open(OS_NULL)){ return s; }
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
@@ -61,5 +61,5 @@ Status TRIMMER_Close(void* args_p)
 Status s = S_UNDEF;
     IF_STATUS(s = drv_timer_v[TRIMMER_DRV_TIMER]->Close(OS_NULL)){ return s; }
     IF_STATUS(s = drv_adc_v[TRIMMER_DRV_ADC]->Close(OS_NULL))    { return s; }
-    return S_OK;
+    return s;
 }

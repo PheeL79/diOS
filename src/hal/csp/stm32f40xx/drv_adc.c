@@ -25,7 +25,7 @@ HAL_DriverItf* drv_adc_v[DRV_ID_ADC_LAST];
 Status ADC_Init_(void)
 {
 extern HAL_DriverItf drv_adc3;
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_MemSet(drv_adc_v, 0x0, sizeof(drv_adc_v));
     drv_adc_v[DRV_ID_ADC3] = &drv_adc3;
     for (Size i = 0; i < ITEMS_COUNT_GET(drv_adc_v, drv_adc_v[0]); ++i) {
@@ -35,17 +35,14 @@ Status s = S_UNDEF;
             IF_STATUS(s = drv_adc_v[i]->Init(OS_NULL)) { return s; }
         }
     }
-    return s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 static U8 MovingAverage16s8b(const U8 value);
 U8 MovingAverage16s8b(const U8 value)
 {
-static U8 buf[] = {
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-};
+static U8 buf[16] = { 0 };
 static U8 buf_idx = 0;
 U16 buf_sum = 0;
     buf[buf_idx] = value;
@@ -83,3 +80,15 @@ extern OS_QueueHd trimmer_stdin_qhd;
     }
 }
 #endif //(OS_AUDIO_ENABLED)
+
+/******************************************************************************/
+/**
+  * @brief  This function handles ADC interrupt request.
+*/
+void ADC_IRQHandler(void);
+void ADC_IRQHandler(void)
+{
+extern ADC_HandleTypeDef adc3_hd;
+    HAL_ADC_IRQHandler(&adc3_hd);
+}
+

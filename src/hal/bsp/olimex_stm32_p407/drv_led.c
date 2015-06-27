@@ -85,7 +85,7 @@ static HAL_DriverItf drv_led_user = {
 /*****************************************************************************/
 Status LED_Init_(void)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_MemSet(drv_led_v, 0x0, sizeof(drv_led_v));
     drv_led_v[DRV_ID_LED_PULSE] = &drv_led_pulse;
     drv_led_v[DRV_ID_LED_FS]    = &drv_led_fs;
@@ -99,7 +99,7 @@ Status s = S_UNDEF;
             IF_STATUS(s = drv_led_v[i]->Init(OS_NULL)) { return s; }
         }
     }
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
@@ -122,19 +122,22 @@ GPIO_InitTypeDef GPIO_InitStructure;
 /*****************************************************************************/
 Status LED_PulseDeInit(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_PulseOpen(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_PulseClose(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -182,7 +185,7 @@ Status s = S_UNDEF;
 Status LED_FsInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
-
+Status s = S_OK;
     HAL_LOG(D_INFO, "LED FS Init: ");
     __GPIOF_CLK_ENABLE();
     GPIO_InitStructure.Pin      = GPIO_PIN_7;
@@ -191,26 +194,29 @@ GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
     HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
-    HAL_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+    HAL_TRACE_S(D_INFO, s);
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_FsDeInit(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_FsOpen(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_FsClose(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -258,7 +264,7 @@ Status s = S_UNDEF;
 Status LED_AssertInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
-
+Status s = S_OK;
     HAL_LOG(D_INFO, "LED Assert Init: ");
     __GPIOF_CLK_ENABLE();
     GPIO_InitStructure.Pin      = GPIO_PIN_8;
@@ -267,15 +273,15 @@ GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
     HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8, GPIO_PIN_RESET);
-    HAL_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+    HAL_TRACE_S(D_INFO, s);
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_UserInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
-
+Status s = S_OK;
     HAL_LOG(D_INFO, "LED User Init: ");
     __GPIOF_CLK_ENABLE();
     GPIO_InitStructure.Pin      = GPIO_PIN_9;
@@ -284,26 +290,29 @@ GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
     HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
-    HAL_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+    HAL_TRACE_S(D_INFO, s);
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_UserDeInit(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_UserOpen(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status LED_UserClose(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /******************************************************************************/

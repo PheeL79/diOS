@@ -98,7 +98,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBH_FS_MSC_Open(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     IF_STATUS(s = OS_DriverOpen(drv_led_fs, OS_NULL)) {}
     return s;
 }
@@ -106,7 +106,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBH_FS_MSC_Close(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     IF_OK(s = drv_media_usbh_fs.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
         IF_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
     }
@@ -328,7 +328,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBH_HS_MSC_Open(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     IF_STATUS(s = OS_DriverOpen(drv_led_fs, OS_NULL)) {}
     return s;
 }
@@ -336,7 +336,7 @@ Status s = S_OK;
 /******************************************************************************/
 Status USBH_HS_MSC_Close(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     IF_OK(s = drv_media_usbh_hs.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
         IF_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
     }

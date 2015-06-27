@@ -14,37 +14,6 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_usart6"
 
-#define USARTx                          USART6
-#define USARTx_CLK_ENABLE()             __USART6_CLK_ENABLE()
-#define DMAx_CLK_ENABLE()               __DMA2_CLK_ENABLE()
-#define USARTx_RX_GPIO_CLK_ENABLE()     __GPIOG_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()     __GPIOC_CLK_ENABLE()
-
-#define USARTx_FORCE_RESET()            __USART6_FORCE_RESET()
-#define USARTx_RELEASE_RESET()          __USART6_RELEASE_RESET()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                   GPIO_PIN_6
-#define USARTx_TX_GPIO_PORT             GPIOC
-#define USARTx_TX_AF                    GPIO_AF8_USART6
-#define USARTx_RX_PIN                   GPIO_PIN_9
-#define USARTx_RX_GPIO_PORT             GPIOG
-#define USARTx_RX_AF                    GPIO_AF8_USART6
-
-/* Definition for USARTx's DMA */
-#define USARTx_TX_DMA_CHANNEL           DMA_CHANNEL_5
-#define USARTx_TX_DMA_STREAM            DMA2_Stream7
-#define USARTx_RX_DMA_CHANNEL           DMA_CHANNEL_5
-#define USARTx_RX_DMA_STREAM            DMA2_Stream2
-
-/* Definition for USARTx's NVIC */
-#define USARTx_IRQn                     USART6_IRQn
-#define USARTx_IRQHandler               USART6_IRQHandler
-#define USARTx_DMA_TX_IRQn              DMA2_Stream7_IRQn
-#define USARTx_DMA_RX_IRQn              DMA2_Stream2_IRQn
-#define USARTx_DMA_TX_IRQHandler        DMA2_Stream7_IRQHandler
-#define USARTx_DMA_RX_IRQHandler        DMA2_Stream2_IRQHandler
-
 //------------------------------------------------------------------------------
 static Status   USART6_Init(void* args_p);
 static Status   USART6_DeInit(void* args_p);
@@ -78,11 +47,11 @@ static DMA_HandleTypeDef    dma_rx_hd;
 /******************************************************************************/
 Status USART6_Init(void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     //HAL_LOG(D_INFO, "Init: ");
     IF_STATUS(s = USART6_LL_Init(args_p)) { return s; }
     /* Enable USARTx clock */
-    USARTx_CLK_ENABLE();
+    USART_DEBUG_CLK_ENABLE();
     /*##-1- Configure the UART peripheral ######################################*/
     /* Put the USART peripheral in the Asynchronous mode (UART Mode) */
     /* UART6 configured as follow:
@@ -91,7 +60,7 @@ Status s = S_OK;
       - Parity      = NO parity
       - BaudRate    = 115200 baud
       - Hardware flow control disabled (RTS and CTS signals) */
-    uart_hd.Instance        = USARTx;
+    uart_hd.Instance        = USART_DEBUG_ITF;
     uart_hd.Init.BaudRate   = 115200;
     uart_hd.Init.WordLength = UART_WORDLENGTH_8B;
     uart_hd.Init.StopBits   = UART_STOPBITS_1;
@@ -110,32 +79,33 @@ Status s = S_OK;
 Status USART6_LL_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
+Status s = S_OK;
     /* Enable GPIO clock */
-    USARTx_TX_GPIO_CLK_ENABLE();
-    USARTx_RX_GPIO_CLK_ENABLE();
+    USART_DEBUG_GPIO_CLK_TX_ENABLE();
+    USART_DEBUG_GPIO_CLK_RX_ENABLE();
       /*##-2- Configure peripheral GPIO ##########################################*/
     /* UART TX GPIO pin configuration  */
-    GPIO_InitStruct.Pin         = USARTx_TX_PIN;
+    GPIO_InitStruct.Pin         = USART_DEBUG_GPIO_PIN_TX;
     GPIO_InitStruct.Mode        = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull        = GPIO_PULLUP;
     GPIO_InitStruct.Speed       = GPIO_SPEED_FAST;
-    GPIO_InitStruct.Alternate   = USARTx_TX_AF;
+    GPIO_InitStruct.Alternate   = USART_DEBUG_GPIO_AF_TX;
 
-    HAL_GPIO_Init(USARTx_TX_GPIO_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(USART_DEBUG_GPIO_TX, &GPIO_InitStruct);
 
     /* UART RX GPIO pin configuration  */
-    GPIO_InitStruct.Pin         = USARTx_RX_PIN;
-    GPIO_InitStruct.Alternate   = USARTx_RX_AF;
+    GPIO_InitStruct.Pin         = USART_DEBUG_GPIO_PIN_RX;
+    GPIO_InitStruct.Alternate   = USART_DEBUG_GPIO_AF_RX;
 
-    HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(USART_DEBUG_GPIO_RX, &GPIO_InitStruct);
 
     /* Enable DMA2 clock */
-    DMAx_CLK_ENABLE();
+    USART_DEBUG_DMA_CLK_ENABLE();
       /*##-3- Configure the DMA streams ##########################################*/
     /* Configure the DMA handler for Transmission process */
-    dma_tx_hd.Instance                 = USARTx_TX_DMA_STREAM;
+    dma_tx_hd.Instance                 = USART_DEBUG_DMA_STREAM_TX;
 
-    dma_tx_hd.Init.Channel             = USARTx_TX_DMA_CHANNEL;
+    dma_tx_hd.Init.Channel             = USART_DEBUG_DMA_CHAN_TX;
     dma_tx_hd.Init.Direction           = DMA_MEMORY_TO_PERIPH;
     dma_tx_hd.Init.PeriphInc           = DMA_PINC_DISABLE;
     dma_tx_hd.Init.MemInc              = DMA_MINC_ENABLE;
@@ -154,9 +124,9 @@ GPIO_InitTypeDef GPIO_InitStruct;
     __HAL_LINKDMA(&uart_hd, hdmatx, dma_tx_hd);
 
     /* Configure the DMA handler for reception process */
-    dma_rx_hd.Instance                 = USARTx_RX_DMA_STREAM;
+    dma_rx_hd.Instance                 = USART_DEBUG_DMA_STREAM_RX;
 
-    dma_rx_hd.Init.Channel             = USARTx_RX_DMA_CHANNEL;
+    dma_rx_hd.Init.Channel             = USART_DEBUG_DMA_CHAN_RX;
     dma_rx_hd.Init.Direction           = DMA_PERIPH_TO_MEMORY;
     dma_rx_hd.Init.PeriphInc           = DMA_PINC_DISABLE;
     dma_rx_hd.Init.MemInc              = DMA_MINC_ENABLE;
@@ -176,33 +146,34 @@ GPIO_InitTypeDef GPIO_InitStruct;
 
     /*##-3- Configure the NVIC for IRQ #########################################*/
     /* NVIC configuration for interrupt (USARTx) */
-    HAL_NVIC_SetPriority(USARTx_IRQn, IRQ_PRIO_USART6, 0);
-    HAL_NVIC_EnableIRQ(USARTx_IRQn);
+    HAL_NVIC_SetPriority(USART_DEBUG_IRQ, IRQ_PRIO_USART6, 0);
+    HAL_NVIC_EnableIRQ(USART_DEBUG_IRQ);
 
     /*##-4- Configure the NVIC for DMA #########################################*/
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_TX) */
-    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, IRQ_PRIO_USART6_DMA_TX, 0);
-    HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
+    HAL_NVIC_SetPriority(USART_DEBUG_DMA_IRQ_TX, IRQ_PRIO_USART6_DMA_TX, 0);
+    HAL_NVIC_EnableIRQ(USART_DEBUG_DMA_IRQ_TX);
 
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_RX) */
-    HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, IRQ_PRIO_USART6_DMA_RX, 0);
-    HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
-    return S_OK;
+    HAL_NVIC_SetPriority(USART_DEBUG_DMA_IRQ_RX, IRQ_PRIO_USART6_DMA_RX, 0);
+    HAL_NVIC_EnableIRQ(USART_DEBUG_DMA_IRQ_RX);
+    return s;
 }
 
 /******************************************************************************/
 Status USART6_DeInit(void* args_p)
 {
-    if (HAL_OK != HAL_UART_DeInit(&uart_hd)) { return S_HARDWARE_ERROR; }
+Status s = S_UNDEF;
+    if (HAL_OK != HAL_UART_DeInit(&uart_hd)) { return s = S_HARDWARE_ERROR; }
     /*##-1- Reset peripherals ##################################################*/
-    USARTx_FORCE_RESET();
-    USARTx_RELEASE_RESET();
+    USART_DEBUG_FORCE_RESET();
+    USART_DEBUG_RELEASE_RESET();
 
     /*##-2- Disable peripherals and GPIO Clocks #################################*/
     /* Configure UART Tx as alternate function  */
-    HAL_GPIO_DeInit(USARTx_TX_GPIO_PORT, USARTx_TX_PIN);
+    HAL_GPIO_DeInit(USART_DEBUG_GPIO_TX, USART_DEBUG_GPIO_PIN_TX);
     /* Configure UART Rx as alternate function  */
-    HAL_GPIO_DeInit(USARTx_RX_GPIO_PORT, USARTx_RX_PIN);
+    HAL_GPIO_DeInit(USART_DEBUG_GPIO_RX, USART_DEBUG_GPIO_PIN_RX);
 
     /*##-3- Disable the DMA Streams ############################################*/
     /* De-Initialize the DMA Stream associate to transmission process */
@@ -211,25 +182,27 @@ Status USART6_DeInit(void* args_p)
     HAL_DMA_DeInit(&dma_rx_hd);
 
     /*##-4- Disable the NVIC for IRQ ###########################################*/
-    HAL_NVIC_DisableIRQ(USARTx_IRQn);
+    HAL_NVIC_DisableIRQ(USART_DEBUG_IRQ);
     /*##-5- Disable the NVIC for DMA ###########################################*/
-    HAL_NVIC_DisableIRQ(USARTx_DMA_TX_IRQn);
-    HAL_NVIC_DisableIRQ(USARTx_DMA_RX_IRQn);
-    return S_OK;
+    HAL_NVIC_DisableIRQ(USART_DEBUG_DMA_IRQ_TX);
+    HAL_NVIC_DisableIRQ(USART_DEBUG_DMA_IRQ_RX);
+    return s;
 }
 
 /******************************************************************************/
 Status USART6_Open(void* args_p)
 {
+Status s = S_OK;
     //TODO(A. Filyanov)
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
 Status USART6_Close(void* args_p)
 {
+Status s = S_OK;
     //TODO(A. Filyanov)
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
@@ -326,7 +299,7 @@ void USARTx_IRQHandler(void)
     HAL_UART_IRQHandler(&uart_hd);
 
     extern OS_QueueHd stdin_qhd;
-    const OS_SignalData sig_data = (U16)(USARTx->DR & (U16)0x01FF);
+    const OS_SignalData sig_data = (U16)(USART_DEBUG_ITF->DR & (U16)0x01FF);
     const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
     OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
 }
@@ -339,8 +312,8 @@ void USARTx_IRQHandler(void)
   * @Note   This function is redefined in "main.h" and related to DMA stream
   *         used for USART data transmission
   */
-void USARTx_DMA_RX_IRQHandler(void);
-void USARTx_DMA_RX_IRQHandler(void)
+void USART_DEBUG_DMA_IRQ_HANDLER_RX(void);
+void USART_DEBUG_DMA_IRQ_HANDLER_RX(void)
 {
     HAL_DMA_IRQHandler(uart_hd.hdmarx);
 }
@@ -353,9 +326,9 @@ void USARTx_DMA_RX_IRQHandler(void)
   * @Note   This function is redefined in "main.h" and related to DMA stream
   *         used for USART data reception
   */
-void USARTx_DMA_TX_IRQHandler(void);
-void USARTx_DMA_TX_IRQHandler(void)
+void USART_DEBUG_DMA_IRQ_HANDLER_TX(void);
+void USART_DEBUG_DMA_IRQ_HANDLER_TX(void)
 {
-    HAL_NVIC_ClearPendingIRQ(USARTx_DMA_TX_IRQn);
+    HAL_NVIC_ClearPendingIRQ(USART_DEBUG_DMA_IRQ_TX);
     HAL_DMA_IRQHandler(uart_hd.hdmatx);
 }

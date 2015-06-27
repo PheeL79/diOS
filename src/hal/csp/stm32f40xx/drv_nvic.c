@@ -44,13 +44,12 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 Status NVIC__Init(void* args_p)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_LOG(D_INFO, "Init: ");
     HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4); //By FreeRTOS request.
     /* Set Priority for SysTick Interrupts */
     HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0); // highest priority
     //HAL_NVIC_SystemLPConfig(NVIC_LP_SEVONPEND, ENABLE);
-    s = S_OK;
     HAL_TRACE_S(D_INFO, s);
     return s;
 }

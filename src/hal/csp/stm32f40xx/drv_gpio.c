@@ -62,10 +62,11 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 Status GPIOA_Init(void* args_p)
 {
+Status s = S_OK;
     HAL_LOG(D_INFO, "Init: ");
     GPIO_DebugPinInit();
-    HAL_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+    HAL_TRACE_S(D_INFO, s);
+    return s;
 }
 
 /*****************************************************************************/
@@ -76,21 +77,22 @@ GPIO_InitTypeDef GPIO_InitStruct;
     HAL_DEBUG_PIN1_CLK_ENABLE();
     HAL_DEBUG_PIN2_CLK_ENABLE();
 
-    GPIO_InitStruct.Pin         = HAL_DEBUG_PIN1 | HAL_DEBUG_PIN2;
+    GPIO_InitStruct.Pin         = HAL_DEBUG_PIN1_PIN | HAL_DEBUG_PIN2_PIN;
     GPIO_InitStruct.Mode        = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull        = GPIO_NOPULL;
     GPIO_InitStruct.Speed       = GPIO_SPEED_HIGH;
 
-    HAL_GPIO_Init(HAL_DEBUG_PIN1_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(HAL_DEBUG_PIN1_GPIO, &GPIO_InitStruct);
 }
 
 /*****************************************************************************/
 Status GPIOC_Init(void* args_p)
 {
+Status s = S_OK;
     HAL_LOG(D_INFO, "Init: ");
     GPIO_AssertPinInit();
-    HAL_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+    HAL_TRACE_S(D_INFO, s);
+    return s;
 }
 
 /*****************************************************************************/
@@ -100,12 +102,12 @@ GPIO_InitTypeDef GPIO_InitStruct;
 
     HAL_ASSERT_PIN_CLK_ENABLE();
 
-    GPIO_InitStruct.Pin         = HAL_ASSERT_PIN;
+    GPIO_InitStruct.Pin         = HAL_ASSERT_PIN_PIN;
     GPIO_InitStruct.Mode        = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull        = GPIO_NOPULL;
     GPIO_InitStruct.Speed       = GPIO_SPEED_LOW;
 
-    HAL_GPIO_Init(HAL_ASSERT_PIN_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(HAL_ASSERT_PIN_GPIO, &GPIO_InitStruct);
 }
 
 /*****************************************************************************/

@@ -15,7 +15,6 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_eth"
 
-#define ETH0_MDINT_IRQn                 EXTI3_IRQn
 #define ETH0_OS_MEM_TYPE                OS_MEM_RAM_INT_SRAM
 
 //-----------------------------------------------------------------------------
@@ -56,10 +55,9 @@ static HAL_DriverItf drv_eth0 = {
 /*****************************************************************************/
 Status ETH_Init_(void)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     OS_MemSet(drv_eth_v, 0x0, sizeof(drv_eth_v));
     drv_eth_v[DRV_ID_ETH0] = &drv_eth0;
-s = S_OK;
     return s;
 }
 
@@ -125,66 +123,51 @@ Status s = S_UNDEF;
 Status ETH_LL_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
-Status s = S_UNDEF;
-    s = S_OK;
+Status s = S_OK;
     /* Peripheral clock enable */
-    __ETH_CLK_ENABLE();
-    __ETHMACTX_CLK_ENABLE();
-    __ETHMACRX_CLK_ENABLE();
+    HAL_ETH_CLK_ENABLE();
+    HAL_ETH_MAC_TX_CLK_ENABLE();
+    HAL_ETH_MAC_RX_CLK_ENABLE();
     /* Enable GPIOs clocks */
-    __GPIOA_CLK_ENABLE();
-    __GPIOB_CLK_ENABLE();
-    __GPIOC_CLK_ENABLE();
-    __GPIOG_CLK_ENABLE();
-    /**ETH GPIO Configuration
-    PC1     ------> ETH_MDC
-    PA1     ------> ETH_REF_CLK
-    PA2     ------> ETH_MDIO
-    PA3     ------> ETH_MDINT
-    PA7     ------> ETH_CRS_DV
-    PC4     ------> ETH_RXD0
-    PC5     ------> ETH_RXD1
-    PB11    ------> ETH_TX_EN
-    PG13    ------> ETH_TXD0
-    PG14    ------> ETH_TXD1
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5;
+    HAL_ETH_GPIO_CLK_ENABLE();
+    /* ETH GPIO Configuration */
+    GPIO_InitStruct.Pin = HAL_ETH_GPIO1_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
+    HAL_GPIO_Init(HAL_ETH_GPIO1, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_7;
+    GPIO_InitStruct.Pin = HAL_ETH_GPIO2_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
+    HAL_GPIO_Init(HAL_ETH_GPIO2, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Pin = HAL_ETH_GPIO3_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(HAL_ETH_GPIO3, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Pin = HAL_ETH_GPIO4_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = ETH_GPIO_AF;
+    HAL_GPIO_Init(HAL_ETH_GPIO4, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
+    GPIO_InitStruct.Pin = HAL_ETH_GPIO5_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = ETH_GPIO_AF;
+    HAL_GPIO_Init(HAL_ETH_GPIO5, &GPIO_InitStruct);
 
-    HAL_NVIC_SetPriority(ETH_IRQn, IRQ_PRIO_ETH, 0);
-    HAL_NVIC_SetPriority(ETH0_MDINT_IRQn, IRQ_PRIO_ETH0_MDINT, 0);
-    HAL_NVIC_EnableIRQ(ETH_IRQn);
-    HAL_NVIC_EnableIRQ(ETH0_MDINT_IRQn);
+    HAL_NVIC_SetPriority(HAL_ETH_IRQ, HAL_IRQ_PRIO_ETH, 0);
+    HAL_NVIC_SetPriority(HAL_ETH_MDINT_IRQ, HAL_IRQ_PRIO_ETH0_MDINT, 0);
+    HAL_NVIC_EnableIRQ(HAL_ETH_IRQ);
+    HAL_NVIC_EnableIRQ(HAL_ETH_MDINT_IRQ);
     return s;
 }
 
@@ -199,28 +182,17 @@ Status s = S_UNDEF;
             s = S_HARDWARE_ERROR;
         }
         /* Peripheral clock disable */
-        __ETHMACRX_CLK_DISABLE();
-        __ETHMACTX_CLK_DISABLE();
-        __ETH_CLK_DISABLE();
-        /**ETH GPIO Configuration
-        PC1     ------> ETH_MDC
-        PA1     ------> ETH_REF_CLK
-        PA2     ------> ETH_MDIO
-        PA3     ------> ETH_MDINT
-        PA7     ------> ETH_CRS_DV
-        PC4     ------> ETH_RXD0
-        PC5     ------> ETH_RXD1
-        PB11    ------> ETH_TX_EN
-        PG13    ------> ETH_TXD0
-        PG14    ------> ETH_TXD1
-        */
-        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5);
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_7);
-        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_11);
-        HAL_GPIO_DeInit(GPIOG, GPIO_PIN_13|GPIO_PIN_14);
-        /* Peripheral interrupt Deinit*/
-        HAL_NVIC_DisableIRQ(ETH_IRQn);
-        HAL_NVIC_DisableIRQ(ETH0_MDINT_IRQn);
+        HAL_ETH_MAC_RX_CLK_DISABLE();
+        HAL_ETH_MAC_TX_CLK_DISABLE();
+        HAL_ETH_CLK_DISABLE();
+        /* ETH GPIO Configuration */
+        HAL_GPIO_DeInit(HAL_ETH_GPIO1, HAL_ETH_GPIO1_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO2, HAL_ETH_GPIO2_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO3, HAL_ETH_GPIO3_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO4, HAL_ETH_GPIO4_PIN);
+        /* Peripheral interrupt Deinit */
+        HAL_NVIC_DisableIRQ(HAL_ETH_IRQ);
+        HAL_NVIC_DisableIRQ(HAL_ETH_MDINT_IRQ);
     }
     return s;
 }
@@ -262,8 +234,7 @@ U32 payload_offset = 0;
 U32 bytes_left_to_copy = 0;
 U32 i = 0;
 U16 len = 0;
-Status s = S_UNDEF;
-    s = S_OK;
+Status s = S_OK;
     /* get received frame */
     if (HAL_OK != HAL_ETH_GetReceivedFrame_IT(&eth0_hd)) {
         return (s = S_HARDWARE_ERROR);

@@ -62,7 +62,7 @@ static HAL_DriverItf drv_button_tamper = {
 /*****************************************************************************/
 Status BUTTON_Init_(void)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_MemSet(drv_button_v, 0x0, sizeof(drv_button_v));
     drv_button_v[DRV_ID_BUTTON_WAKEUP] = &drv_button_wakeup;
     drv_button_v[DRV_ID_BUTTON_TAMPER] = &drv_button_tamper;
@@ -79,7 +79,6 @@ Status BUTTON_WakeupInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
-
     HAL_LOG(D_INFO, "Wakeup init: ");
     /* Disable all used wakeup sources: Pin1(PA.0) */
     HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
@@ -100,39 +99,43 @@ Status s = S_OK;
 /*****************************************************************************/
 Status BUTTON_NVIC_WakeupInit(void)
 {
+Status s = S_OK;
     HAL_LOG(D_INFO, "NVIC Wakeup Init: ");
 //    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_IMR_MR0);
 //    __HAL_GPIO_EXTI_CLEAR_IT(EXTI_IMR_MR0);
-    HAL_NVIC_SetPriority(EXTI0_IRQn, IRQ_PRIO_EXTI0, 0);
+    HAL_NVIC_SetPriority(EXTI0_IRQn, HAL_IRQ_PRIO_EXTI0, 0);
     HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_WakeupDeInit(void* args_p)
 {
+Status s = S_OK;
     HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_WakeupOpen(void* args_p)
 {
+Status s = S_OK;
     wakeup_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_WakeupClose(void* args_p)
 {
+Status s = S_OK;
     wakeup_irq_callback_func = OS_NULL;
-    return S_OK;
+    return s;
 }
 
 /******************************************************************************/
 Status BUTTON_WakeupIoCtl(const U32 request_id, void* args_p)
 {
-Status s = S_OK;
+Status s = S_UNDEF;
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET:
             switch (*(OS_PowerState*)args_p) {
@@ -153,7 +156,6 @@ Status BUTTON_TamperInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
-
     HAL_LOG(D_INFO, "Tamper init: ");
     RTC_TamperTypeDef stamperstructure;
 
@@ -186,18 +188,20 @@ Status s = S_OK;
 /*****************************************************************************/
 Status BUTTON_NVIC_TamperInit(void)
 {
+Status s = S_OK;
     HAL_LOG(D_INFO, "NVIC Wakeup Init: ");
     __HAL_GPIO_EXTI_CLEAR_FLAG(RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT);
     __HAL_GPIO_EXTI_CLEAR_IT(RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT);
-    HAL_NVIC_SetPriority(TAMP_STAMP_IRQn, IRQ_PRIO_TAMP_STAMP, 0);
+    HAL_NVIC_SetPriority(TAMP_STAMP_IRQn, HAL_IRQ_PRIO_TAMP_STAMP, 0);
     HAL_NVIC_EnableIRQ(TAMP_STAMP_IRQn);
-    return S_OK;
+    return s;
 }
 
 /*****************************************************************************/
 Status BUTTON_TamperDeInit(void* args_p)
 {
-    return S_OK;
+Status s = S_OK;
+    return s;
 }
 
 /*****************************************************************************/

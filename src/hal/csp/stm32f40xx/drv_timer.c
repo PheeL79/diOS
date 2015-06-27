@@ -23,7 +23,7 @@ Status TIMER_Init_(void)
 extern HAL_DriverItf drv_timer5;
 extern HAL_DriverItf drv_timer8;
 extern HAL_DriverItf drv_timer10;
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_MemSet(drv_timer_v, 0x0, sizeof(drv_timer_v));
     drv_timer_v[DRV_ID_TIMER5]  = &drv_timer5;
     drv_timer_v[DRV_ID_TIMER8]  = &drv_timer8;

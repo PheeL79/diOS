@@ -54,7 +54,7 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 Status DMA2_Init(void* args_p)
 {
-Status s;
+Status s = S_UNDEF;
     HAL_LOG(D_INFO, "Init");
     IF_STATUS(s = DMA2_MEM_Init())      { return s; }
     IF_STATUS(s = DMA2_LL_Init(args_p)) { return s; }
@@ -65,6 +65,7 @@ Status s;
 Status DMA2_LL_Init(void* args_p)
 {
 //NVIC_InitTypeDef NVIC_InitStructure;
+Status s = S_OK;
 //
 //    HAL_LOG(D_INFO, "NVIC Init: ");
     __DMA1_CLK_ENABLE();
@@ -85,8 +86,8 @@ Status DMA2_LL_Init(void* args_p)
 //
 //    DMA_ITConfig(DMA2_Stream1, DMA_IT_TE | DMA_IT_TC, ENABLE);
 //    DMA_ITConfig(DMA2_Stream7, DMA_IT_TE | DMA_IT_TC, ENABLE);
-//    D_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+//    D_TRACE_S(D_INFO, s);
+    return s;
 }
 
 
@@ -94,6 +95,7 @@ Status DMA2_LL_Init(void* args_p)
 Status DMA2_MEM_Init(void)
 {
 //DMA_InitTypeDef DMA_InitStructure;
+Status s = S_OK;
 //
 //    HAL_LOG(D_INFO, "MEM Init: ");
 //    DMA_StructInit(&DMA_InitStructure);
@@ -125,8 +127,8 @@ Status DMA2_MEM_Init(void)
 //    DMA_InitStructure.DMA_MemoryDataSize    = DMA_MemoryDataSize_Word;
 //    DMA_InitStructure.DMA_Channel           = DMA_CHANNEL_MEM2MEM32;
 //    DMA_Init(DMA_STREAM_MEM2MEM32, &DMA_InitStructure);
-//    D_TRACE_S(D_INFO, S_OK);
-    return S_OK;
+//    D_TRACE_S(D_INFO, s);
+    return s;
 }
 
 /*****************************************************************************/
