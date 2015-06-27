@@ -211,11 +211,11 @@ Status s = S_OK;
     HAL_NVIC_EnableIRQ(HAL_SD_IRQ);
 
     /* NVIC configuration for DMA transfer complete interrupt */
-    HAL_NVIC_SetPriority(HAL_SD_DMA_IRQ_RX, IRQ_PRIO_SDIO_DMA, 0);
+    HAL_NVIC_SetPriority(HAL_SD_DMA_IRQ_RX, HAL_IRQ_PRIO_SDIO_DMA, 0);
     HAL_NVIC_EnableIRQ(HAL_SD_DMA_IRQ_RX);
 
     /* NVIC configuration for DMA transfer complete interrupt */
-    HAL_NVIC_SetPriority(HAL_SD_DMA_IRQ_TX, IRQ_PRIO_SDIO_DMA, 0);
+    HAL_NVIC_SetPriority(HAL_SD_DMA_IRQ_TX, HAL_IRQ_PRIO_SDIO_DMA, 0);
     HAL_NVIC_EnableIRQ(HAL_SD_DMA_IRQ_TX);
     return s;
 }
@@ -495,24 +495,24 @@ Bool SD_IsDetected(void)
     return OS_TRUE;
 }
 
-// SDIO IRQ handlers -----------------------------------------------------------
+// IRQ handlers ---------------------------------------------------------------
 /*****************************************************************************/
-void SDIO_IRQHandler(void);
-void SDIO_IRQHandler(void)
+void HAL_SD_IRQ_HANDLER(void);
+void HAL_SD_IRQ_HANDLER(void)
 {
     HAL_SD_IRQHandler(&sd_hd);
 }
 
 /*****************************************************************************/
-void SD_DMAx_Rx_IRQHandler(void);
-void SD_DMAx_Rx_IRQHandler(void)
+void HAL_SD_DMA_IRQ_HANDLER_RX(void);
+void HAL_SD_DMA_IRQ_HANDLER_RX(void)
 {
     HAL_DMA_IRQHandler(sd_hd.hdmarx);
 }
 
 /*****************************************************************************/
-void SD_DMAx_Tx_IRQHandler(void);
-void SD_DMAx_Tx_IRQHandler(void)
+void HAL_SD_DMA_IRQ_HANDLER_TX(void);
+void HAL_SD_DMA_IRQ_HANDLER_TX(void)
 {
     HAL_DMA_IRQHandler(sd_hd.hdmatx);
 }

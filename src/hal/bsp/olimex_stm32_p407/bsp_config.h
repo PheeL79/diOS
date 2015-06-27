@@ -56,7 +56,7 @@
 #define HAL_USART_DEBUG_RELEASE_RESET()     __USART6_RELEASE_RESET()
 #define HAL_USART_DEBUG_GPIO_CLK_RX_ENABLE() __GPIOG_CLK_ENABLE()
 #define HAL_USART_DEBUG_GPIO_RX             GPIOG
-#define HAL_USART_DEBUG_GPIO_PIN_RX         GPIO_PIN_10
+#define HAL_USART_DEBUG_GPIO_PIN_RX         GPIO_PIN_9
 #define HAL_USART_DEBUG_GPIO_AF_RX          GPIO_AF8_USART6
 #define HAL_USART_DEBUG_GPIO_CLK_TX_ENABLE() __GPIOC_CLK_ENABLE()
 #define HAL_USART_DEBUG_GPIO_TX             GPIOC
@@ -67,12 +67,10 @@
 #define HAL_USART_DEBUG_IRQ_HANDLER         USART6_IRQHandler
 #define HAL_USART_DEBUG_DMA_CHAN_RX         DMA_CHANNEL_5
 #define HAL_USART_DEBUG_DMA_STREAM_RX       DMA2_Stream2
-#define HAL_USART_DEBUG_DMA_FLAG_RX         DMA1_FLAG_TC5
 #define HAL_USART_DEBUG_DMA_IRQ_RX          DMA2_Stream2_IRQn
 #define HAL_USART_DEBUG_DMA_IRQ_HANDLER_RX  DMA2_Stream2_IRQHandler
 #define HAL_USART_DEBUG_DMA_CHAN_TX         DMA_CHANNEL_5
 #define HAL_USART_DEBUG_DMA_STREAM_TX       DMA2_Stream7
-#define HAL_USART_DEBUG_DMA_FLAG_TX         DMA1_FLAG_TC4
 #define HAL_USART_DEBUG_DMA_IRQ_TX          DMA2_Stream7_IRQn
 #define HAL_USART_DEBUG_DMA_IRQ_HANDLER_TX  DMA2_Stream7_IRQHandler
 
@@ -96,6 +94,7 @@
 #define HAL_SD_GPIO2_PIN                    GPIO_PIN_2
 #define HAL_SD_GPIO_AF                      GPIO_AF12_SDIO
 #define HAL_SD_IRQ                          SDIO_IRQn
+#define HAL_SD_IRQ_HANDLER                  SDIO_IRQHandler
 #define HAL_SD_DMA_CLK()                    __DMA2_CLK_ENABLE()
 #define HAL_SD_DMA_CHAN_RX                  DMA_CHANNEL_4
 #define HAL_SD_DMA_STREAM_RX                DMA2_Stream3
@@ -137,6 +136,10 @@ PG14    ------> ETH_TXD1
 #define HAL_ETH_GPIO5_PIN                   (GPIO_PIN_13 | GPIO_PIN_14)
 #define HAL_ETH_GPIO_AF                     GPIO_AF11_ETH
 #define HAL_ETH_IRQ                         ETH_IRQn
+#define HAL_ETH_IRQ_HANDLER                 ETH_IRQHandler
 #define HAL_ETH_MDINT_IRQ                   EXTI3_IRQn
+
+#define HAL_TIMER_TIMESTAMP_IRQ             TIM1_UP_TIM10_IRQn
+#define HAL_TIMER_TIMESTAMP_IRQ_HANDLER     TIM1_UP_TIM10_IRQHandler
 
 #endif //_BSP_CONFIG_H_

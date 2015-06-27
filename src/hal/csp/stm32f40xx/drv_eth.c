@@ -154,14 +154,14 @@ Status s = S_OK;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = ETH_GPIO_AF;
+    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
     HAL_GPIO_Init(HAL_ETH_GPIO4, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = HAL_ETH_GPIO5_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = ETH_GPIO_AF;
+    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
     HAL_GPIO_Init(HAL_ETH_GPIO5, &GPIO_InitStruct);
 
     HAL_NVIC_SetPriority(HAL_ETH_IRQ, HAL_IRQ_PRIO_ETH, 0);
@@ -447,6 +447,18 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *eth0_hd_p)
 {
 const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_RX, 0);
     OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_HIGH));
+}
+
+// IRQ handlers-----------------------------------------------------------------
+/******************************************************************************/
+/**
+* @brief This function handles Ethernet global interrupt.
+*/
+void HAL_ETH_IRQ_HANDLER(void);
+void HAL_ETH_IRQ_HANDLER(void)
+{
+    HAL_NVIC_ClearPendingIRQ(ETH_IRQn);
+    HAL_ETH_IRQHandler(&eth0_hd);
 }
 
 #endif //(HAL_ETH_ENABLED)

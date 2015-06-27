@@ -211,20 +211,6 @@ void EXTI3_IRQHandler(void)
 
 /******************************************************************************/
 /**
-* @brief This function handles Ethernet global interrupt.
-*/
-void ETH_IRQHandler(void);
-void ETH_IRQHandler(void)
-{
-    HAL_NVIC_ClearPendingIRQ(ETH_IRQn);
-#if (HAL_ETH_ENABLED)
-    extern ETH_HandleTypeDef eth0_hd;
-    HAL_ETH_IRQHandler(&eth0_hd);
-#endif //(HAL_ETH_ENABLED)
-}
-
-/******************************************************************************/
-/**
 * @brief This function handles USB On The Go FS global interrupt.
 */
 void OTG_FS_IRQHandler(void);

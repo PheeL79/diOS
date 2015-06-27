@@ -510,7 +510,7 @@ Status s = S_UNDEF;
     if (ERR_OK != net_itf_p->input(buf_p, net_itf_p)) {
         pbuf_free(buf_p);
     }
-    OS_LOG(D_DEBUG, "Net read: 0x%X, size %u", net_itf_hd, buf_p->tot_len);
+    OS_LOG(D_DEBUG, "read: 0x%X, size %u", net_itf_hd, buf_p->tot_len);
     return s;
 }
 
@@ -523,7 +523,7 @@ Status s = S_UNDEF;
     IF_STATUS(s = OS_DriverWrite(dhd, data_out_p, size, OS_NULL)) {
         OS_LOG_S(D_WARNING, s);
     }
-    OS_LOG(D_DEBUG, "Net write: 0x%X, size %u", net_itf_hd, size);
+    OS_LOG(D_DEBUG, "write: 0x%X, size %u", net_itf_hd, size);
     return s;
 }
 

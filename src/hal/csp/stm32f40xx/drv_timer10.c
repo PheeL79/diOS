@@ -10,8 +10,6 @@
 #define MDL_NAME                    "drv_timer10"
 
 //-----------------------------------------------------------------------------
-#define TIMER_TIMESTAMP_IRQ         TIM1_UP_TIM10_IRQn
-#define TIMER_TIMESTAMP_IRQ_HANDLER TIM1_UP_TIM10_IRQHandler
 #define TIMER_TIMESTAMP_TIMEOUT     (HAL_TIMEOUT_TIMER_TIMESTAMP * KHZ) //ms
 
 //-----------------------------------------------------------------------------
@@ -52,9 +50,9 @@ void TIMER10_Init_(void)
     HAL_ASSERT(HAL_OK == HAL_TIM_Base_Init(&timer_hd));
     /*##-2- Configure the NVIC for TIMx ########################################*/
     /* Set Interrupt Group Priority */
-    HAL_NVIC_SetPriority(TIMER_TIMESTAMP_IRQ, HAL_IRQ_PRIO_TIMER_TIMESTAMP, 0);
+    HAL_NVIC_SetPriority(HAL_TIMER_TIMESTAMP_IRQ, HAL_IRQ_PRIO_TIMER_TIMESTAMP, 0);
     /* Enable the TIMx global Interrupt */
-    HAL_NVIC_EnableIRQ(TIMER_TIMESTAMP_IRQ);
+    HAL_NVIC_EnableIRQ(HAL_TIMER_TIMESTAMP_IRQ);
 }
 
 /*****************************************************************************/
@@ -86,8 +84,8 @@ void TIMER10_MutexSet(const MutexState state)
 
 // TIMERS IRQ handlers---------------------------------------------------------
 /*****************************************************************************/
-void TIMER_TIMESTAMP_IRQ_HANDLER(void);
-void TIMER_TIMESTAMP_IRQ_HANDLER(void)
+void HAL_TIMER_TIMESTAMP_IRQ_HANDLER(void);
+void HAL_TIMER_TIMESTAMP_IRQ_HANDLER(void)
 {
     HAL_TIM_IRQHandler(&timer_hd);
 }

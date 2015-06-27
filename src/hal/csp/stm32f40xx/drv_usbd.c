@@ -328,7 +328,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
         __USB_OTG_HS_CLK_ENABLE();
 
         /* Peripheral interrupt init*/
-        HAL_NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRIO_OTG_HS, 0);
+        HAL_NVIC_SetPriority(OTG_HS_IRQn, HAL_IRQ_PRIO_OTG_HS, 0);
         HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
     }
 #endif //(HAL_USBD_HS_ENABLED)

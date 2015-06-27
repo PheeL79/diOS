@@ -153,6 +153,8 @@ Status s = S_UNDEF;
                                                 }
                                             }
                                         }
+                                    } else {
+                                        OS_LOG(D_DEBUG, "%s: DHCP client timeout!", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
                                     }
                                 }
                             }

@@ -228,7 +228,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_IP_FRAG_USES_STATIC_BUF          0
 
 #if (OS_NETWORK_IP_FRAG_USES_STATIC_BUF)
-#define OS_NETWORK_IP_FRAG_MAX_MTU                  ETH_MTU_SIZE
+#define OS_NETWORK_IP_FRAG_MAX_MTU                  HAL_ETH_MTU_SIZE
 #endif
 
 #define OS_NETWORK_IP_DEFAULT_TTL                   255
@@ -432,11 +432,11 @@ enum OS_AUDIO_DEV {
  * (XXX - these constants should simply be shared by lcp.c instead
  *    of living in lcp.h)
  */
-#define OS_NETWORK_PPP_MTU                          ETH_MTU_SIZE    /* Default MTU (size of Info field) */
-#define OS_NETWORK_PPP_MAXMTU                       ETH_MTU_SIZE    /* Largest MTU we allow */
+#define OS_NETWORK_PPP_MTU                          HAL_ETH_MTU_SIZE    /* Default MTU (size of Info field) */
+#define OS_NETWORK_PPP_MAXMTU                       HAL_ETH_MTU_SIZE    /* Largest MTU we allow */
 #define OS_NETWORK_PPP_MINMTU                       64
-#define OS_NETWORK_PPP_MRU                          ETH_MTU_SIZE    /* default MRU = max length of info field */
-#define OS_NETWORK_PPP_MAXMRU                       ETH_MTU_SIZE    /* Largest MRU we allow */
+#define OS_NETWORK_PPP_MRU                          HAL_ETH_MTU_SIZE    /* default MRU = max length of info field */
+#define OS_NETWORK_PPP_MAXMRU                       HAL_ETH_MTU_SIZE    /* Largest MRU we allow */
 #define OS_NETWORK_PPP_DEFMRU                       296     /* Try for this */
 #define OS_NETWORK_PPP_MINMRU                       128     /* No MRUs below this */
 
