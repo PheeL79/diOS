@@ -17,6 +17,9 @@
 #define MS                          1000UL
 #define US                          1000000UL
 
+//ASCII
+#define ASCII_ESC_LINE_FEED         "\n"
+
 // Common macros.
 // inline
 #if defined(_MSC_VER)               /* Microsoft Compiler */
@@ -30,10 +33,10 @@
 #   define WEAK                     __weak
 #   define MEMORY_BARRIER()         asm volatile ("" ::: "memory")
 #   ifndef MAX
-#       define MAX(x, y)            ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#       define MAX(x, y)            ({ __typeof__ (x) _x = (x); __typeof__ (y) _y = (y); _x > _y ? _x : _y; })
 #   endif
 #   ifndef MIN
-#       define MIN(x, y)            ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#       define MIN(x, y)            ({ __typeof__ (x) _x = (x); __typeof__ (y) _y = (y); _x < _y ? _x : _y; })
 #   endif
 #elif defined(__ICCARM__)           /* IAR Compiler */
 #   define ALIGN_END

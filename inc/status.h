@@ -9,6 +9,12 @@
 #include "typedefs.h"
 
 //------------------------------------------------------------------------------
+#define STATUS_COLOR_DEFAULT                "\033[0m"
+#define STATUS_COLOR_CRITICAL               "\033[31m"
+#define STATUS_COLOR_WARNING                "\033[33m"
+#define STATUS_COLOR_INFO                   "\033[32m"
+#define STATUS_COLOR_DEBUG                  "\033[37m"
+
 // debug macros
 #if defined(CM4F) || defined(STM32F407xx)
     #include <stdio.h>

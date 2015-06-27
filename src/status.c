@@ -136,12 +136,24 @@ void LogPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP 
 void LogVaListPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, va_list args)
 {
 static U32 log_cycles_last;
-UInt elapsed_ms  = CYCLES_TO_MS(HAL_CORE_CYCLES - log_cycles_last);
+UInt elapsed_ms = CYCLES_TO_MS(HAL_CORE_CYCLES - log_cycles_last);
+StrP color_str_p;
     log_cycles_last = HAL_CORE_CYCLES;
     // Reset timer value if exec time was more than OS_LOG_TIME_ELAPSED(ms)!
     if (OS_LOG_TIME_ELAPSED < elapsed_ms) {
         elapsed_ms = 0;
     }
-    printf("\n%04u %s %03u %-12s :", elapsed_ms, log_level_v[level], tid, mdl_name_p);
+    if (D_DEBUG == level) {
+        color_str_p = STATUS_COLOR_DEBUG;
+    } else if (D_INFO == level) {
+        color_str_p = STATUS_COLOR_INFO;
+    } else if (D_WARNING == level) {
+        color_str_p = STATUS_COLOR_WARNING;
+    } else if (D_CRITICAL == level) {
+        color_str_p = STATUS_COLOR_CRITICAL;
+    } else {
+        HAL_ASSERT(HAL_FALSE);
+    }
+    printf("\n%s%04u %s %03u %-12s :", color_str_p, elapsed_ms, log_level_v[level], tid, mdl_name_p);
     vprintf((const char*)format_str_p, args);
 }
