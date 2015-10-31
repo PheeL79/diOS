@@ -49,7 +49,7 @@ INLINE OS_AudioDeviceConfigDyn* OS_AudioDeviceConfigDynGet(const OS_AudioDeviceH
 Status OS_AudioInit(void)
 {
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     def_in_dev_hd   = OS_NULL;
     def_out_dev_hd  = OS_NULL;
     os_audio_mutex = OS_MutexRecursiveCreate();
@@ -71,7 +71,7 @@ Status s = S_OK;
 Status OS_AudioDeviceCreate(const OS_AudioDeviceConfig* cfg_p, OS_AudioDeviceHd* dev_hd_p)
 {
 Status s = S_UNDEF;
-    OS_LOG(D_DEBUG, "Audio device %s: create", cfg_p->name);
+    OS_LOG(L_DEBUG_1, "Audio device %s: create", cfg_p->name);
     if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
     OS_ListItem* item_l_p = OS_ListItemCreate();
     if (OS_NULL == item_l_p) { return S_OUT_OF_MEMORY; }
@@ -111,7 +111,7 @@ Status s = S_UNDEF;
 Status OS_AudioDeviceDelete(const OS_AudioDeviceHd dev_hd)
 {
 Status s = S_UNDEF;
-    OS_LOG(D_DEBUG, "Audio device %s: delete", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: delete", OS_AudioDeviceNameGet(dev_hd));
     IF_OK(s = OS_MutexRecursiveLock(os_audio_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)dev_hd;
         OS_AudioDeviceConfigDyn* cfg_dyn_p = (OS_AudioDeviceConfigDyn*)OS_ListItemValueGet(item_l_p);
@@ -128,10 +128,10 @@ Status OS_AudioDeviceInit(const OS_AudioDeviceHd dev_hd, void* args_p)
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: init", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: init", OS_AudioDeviceNameGet(dev_hd));
     const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
     const OS_DriverHd drv_audio_dev_hd = cfg_dyn_p->dhd;
-    IF_STATUS(s = OS_DriverInit(drv_audio_dev_hd, args_p)) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s = OS_DriverInit(drv_audio_dev_hd, args_p)) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 
@@ -140,11 +140,11 @@ Status OS_AudioDeviceDeInit(const OS_AudioDeviceHd dev_hd)
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: deinit", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: deinit", OS_AudioDeviceNameGet(dev_hd));
     const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
     const OS_DriverHd drv_audio_dev_hd = cfg_dyn_p->dhd;
     IF_STATUS(s = OS_DriverDeInit(drv_audio_dev_hd, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -154,7 +154,7 @@ Status OS_AudioDeviceOpen(const OS_AudioDeviceHd dev_hd, void* args_p)
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: open", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: open", OS_AudioDeviceNameGet(dev_hd));
     const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
     const OS_DriverHd drv_audio_dev_hd = cfg_dyn_p->dhd;
     IF_OK(s = OS_DriverOpen(drv_audio_dev_hd, args_p)) {
@@ -180,7 +180,7 @@ Status s = S_UNDEF;
 //            }
 //        }
     }
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 
@@ -189,7 +189,7 @@ Status OS_AudioDeviceClose(const OS_AudioDeviceHd dev_hd)
 {
 Status s;
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: close", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: close", OS_AudioDeviceNameGet(dev_hd));
     const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
     const OS_DriverHd drv_audio_dev_hd = cfg_dyn_p->dhd;
     IF_OK(s = OS_DriverIoCtl(drv_audio_dev_hd, DRV_REQ_AUDIO_STOP, OS_NULL)) {
@@ -217,7 +217,7 @@ Status s;
 //            }
         }
     }
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 
@@ -254,7 +254,7 @@ Status s = S_UNDEF;
 Status OS_AudioDeviceIoSetup(const OS_AudioDeviceHd dev_hd, const OS_AudioDeviceIoSetupArgs* args_p, const Direction dir)
 {
 Status s = S_UNDEF;
-    OS_LOG(D_DEBUG, "Audio device %s: io setup", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: io setup", OS_AudioDeviceNameGet(dev_hd));
     if ((OS_NULL == dev_hd) || (OS_NULL == args_p)) { return S_INVALID_PTR; }
     IF_OK(s = AudioDeviceCapsTest(dev_hd, args_p->info, dir)) {
         const OS_AudioDeviceConfigDyn* cfg_dyn_p = OS_AudioDeviceConfigDynGet(dev_hd);
@@ -398,9 +398,9 @@ OS_AudioVolume dev_volume = volume;
 Status OS_AudioPlay(const OS_AudioDeviceHd dev_hd, void* data_p, Size size)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: play", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: play", OS_AudioDeviceNameGet(dev_hd));
     const OS_DriverHd dhd = OS_AudioDeviceConfigDynGet(dev_hd)->dhd;
-    const DrvAudioPlayArgs args = {
+    const DrvAudioArgsPlay args = {
         .data_p = data_p,
         .size   = size
     };
@@ -411,7 +411,7 @@ Status OS_AudioPlay(const OS_AudioDeviceHd dev_hd, void* data_p, Size size)
 Status OS_AudioStop(const OS_AudioDeviceHd dev_hd)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: stop", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: stop", OS_AudioDeviceNameGet(dev_hd));
     const OS_DriverHd dhd = OS_AudioDeviceConfigDynGet(dev_hd)->dhd;
     return OS_DriverIoCtl(dhd, DRV_REQ_AUDIO_STOP, OS_NULL);
 }
@@ -420,7 +420,7 @@ Status OS_AudioStop(const OS_AudioDeviceHd dev_hd)
 Status OS_AudioPause(const OS_AudioDeviceHd dev_hd)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: pause", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: pause", OS_AudioDeviceNameGet(dev_hd));
     const OS_DriverHd dhd = OS_AudioDeviceConfigDynGet(dev_hd)->dhd;
     return OS_DriverIoCtl(dhd, DRV_REQ_AUDIO_PAUSE, OS_NULL);
 }
@@ -429,7 +429,7 @@ Status OS_AudioPause(const OS_AudioDeviceHd dev_hd)
 Status OS_AudioResume(const OS_AudioDeviceHd dev_hd)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: resume", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: resume", OS_AudioDeviceNameGet(dev_hd));
     const OS_DriverHd dhd = OS_AudioDeviceConfigDynGet(dev_hd)->dhd;
     return OS_DriverIoCtl(dhd, DRV_REQ_AUDIO_RESUME, OS_NULL);
 }
@@ -438,7 +438,7 @@ Status OS_AudioResume(const OS_AudioDeviceHd dev_hd)
 Status OS_AudioSeek(const OS_AudioDeviceHd dev_hd, const Size offset)
 {
     OS_ASSERT_VALUE(OS_NULL != dev_hd);
-    OS_LOG(D_DEBUG, "Audio device %s: seek", OS_AudioDeviceNameGet(dev_hd));
+    OS_LOG(L_DEBUG_1, "Audio device %s: seek", OS_AudioDeviceNameGet(dev_hd));
     const OS_DriverHd dhd = OS_AudioDeviceConfigDynGet(dev_hd)->dhd;
     return OS_DriverIoCtl(dhd, DRV_REQ_AUDIO_SEEK, (void*)&offset);
 }

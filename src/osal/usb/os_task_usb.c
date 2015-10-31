@@ -68,7 +68,7 @@ Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 TaskStorage* tstor_p = (TaskStorage*)args_p->stor_p;
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
 #if (HAL_USBH_ENABLED)
     {
         const OS_UsbHItfHd usbh_itf_hd = {
@@ -113,7 +113,7 @@ Status s = S_UNDEF;
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            //OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+            //OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 const OS_SignalId sig_id = OS_SignalIdGet(msg_p);
@@ -138,21 +138,21 @@ Status s = S_UNDEF;
                                 OS_MessageId  msg_id = OS_MSG_UNDEF;
                                 switch (OS_USB_SIG_MSG_GET(sig_data_in)) {
                                     case HOST_USER_SELECT_CONFIGURATION:
-                                        OS_LOG(D_INFO, "%s Select config", usb_itf_str_p);
+                                        OS_LOG(L_INFO, "%s Select config", usb_itf_str_p);
                                         break;
                                     case HOST_USER_DISCONNECTION:
-                                        OS_LOG(D_INFO, "%s Disconnected", usb_itf_str_p);
+                                        OS_LOG(L_INFO, "%s Disconnected", usb_itf_str_p);
                                         msg_id = OS_MSG_USB_DISCONNECT;
                                         break;
                                     case HOST_USER_CLASS_ACTIVE:
-                                        OS_LOG(D_INFO, "%s Ready", usb_itf_str_p);
+                                        OS_LOG(L_INFO, "%s Ready", usb_itf_str_p);
                                         msg_id = OS_MSG_USB_CONNECT;
                                         break;
                                     case HOST_USER_CONNECTION:
-                                        OS_LOG(D_INFO, "%s Connected", usb_itf_str_p);
+                                        OS_LOG(L_INFO, "%s Connected", usb_itf_str_p);
                                         break;
                                     default:
-//                                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+//                                        OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                                         break;
                                 }
                                 if (OS_MSG_UNDEF != msg_id) {
@@ -165,11 +165,11 @@ Status s = S_UNDEF;
                                     OS_Message* msg_p = OS_MessageCreate(msg_id, usb_ev, sizeof(usb_ev), OS_BLOCK);
                                     if (OS_NULL != msg_p) {
                                         IF_STATUS(s = OS_MessageEmit(msg_p, OS_BLOCK, OS_MSG_PRIO_NORMAL)) {
-                                            OS_LOG_S(D_WARNING, s);
+                                            OS_LOG_S(L_WARNING, s);
                                         }
                                     } else {
                                         s = S_INVALID_PTR;
-                                        OS_LOG_S(D_WARNING, s);
+                                        OS_LOG_S(L_WARNING, s);
                                     }
                                 }
                             }
@@ -189,20 +189,20 @@ Status s = S_UNDEF;
                                 const U8 usbd_msg_id = OS_USB_SIG_MSG_GET(sig_data_in);
                                 switch (usbd_msg_id) {
                                     case OS_SIG_USB_DISCONNECT:
-                                        OS_LOG(D_INFO, "%s Disconnected", usb_itf_str_p);
+                                        OS_LOG(L_INFO, "%s Disconnected", usb_itf_str_p);
                                         break;
                                     case OS_SIG_USB_CONNECT:
-                                        OS_LOG(D_INFO, "%s Connected", usb_itf_str_p);
+                                        OS_LOG(L_INFO, "%s Connected", usb_itf_str_p);
                                         break;
                                     default:
-    //                                    OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+    //                                    OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                                         break;
                                 }
                             }
                             break;
 #endif //(HAL_USBD_ENABLED)
                         default:
-//                            OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+//                            OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                             break;
                     }
 #endif //(HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
@@ -227,7 +227,7 @@ Status s = S_UNDEF;
                     IF_OK(OS_DriverOpen(tstor_p->drv_usbd, stdin_qhd)) {}
 #endif //(HAL_USBD_ENABLED)
                 } else if (OS_SIG_TASK_DISCONNECT == sig_id) {
-                } else { OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL); }
+                } else { OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL); }
 #endif //(OS_FILE_SYSTEM_ENABLED)
             } else {
                 switch (msg_p->id) {
@@ -237,7 +237,7 @@ Status s = S_UNDEF;
                             IF_STATUS(s = OS_AudioPlay(tstor_p->audio_dev_hd,
                                                        ((OS_StorageItemLight*)msg_p->data)->data_p,
                                                        ((OS_StorageItemLight*)msg_p->data)->size)) {
-                                OS_LOG(D_WARNING, "AudioPlay()");
+                                OS_LOG(L_WARNING, "AudioPlay()");
                             }
                         }
                         break;
@@ -245,7 +245,7 @@ Status s = S_UNDEF;
                         IF_STATUS(s = OS_AudioPlay(tstor_p->audio_dev_hd,
                                                    ((OS_StorageItemLight*)msg_p->data)->data_p,
                                                    ((OS_StorageItemLight*)msg_p->data)->size)) {
-                            OS_LOG(D_WARNING, "AudioPlay()");
+                            OS_LOG(L_WARNING, "AudioPlay()");
                         }
                         break;
                     case OS_MSG_USB_AUDIO_INIT:
@@ -284,7 +284,7 @@ Status s = S_UNDEF;
                         break;
 #endif //(HAL_USBD_AUDIO_ENABLED)
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory

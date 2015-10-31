@@ -85,7 +85,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_TASK_NAME_LEN                            12
 #define OS_TIMER_NAME_LEN                           12
 
-#define OS_LOG_LEVEL_DEFAULT                        "debug"
+#define OS_LOG_LEVEL_DEFAULT                        "debug1"
 #define OS_LOG_STRING_LEN                           128
 #define OS_LOG_TIME_ELAPSED                         9999
 #define OS_LOG_FILE_PATH                            "0:/log.txt"

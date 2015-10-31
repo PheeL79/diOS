@@ -55,7 +55,7 @@ Status s = S_UNDEF;
 Status DMA2_Init(void* args_p)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     IF_STATUS(s = DMA2_MEM_Init())      { return s; }
     IF_STATUS(s = DMA2_LL_Init(args_p)) { return s; }
     return s;
@@ -67,7 +67,7 @@ Status DMA2_LL_Init(void* args_p)
 //NVIC_InitTypeDef NVIC_InitStructure;
 Status s = S_OK;
 //
-//    HAL_LOG(D_INFO, "NVIC Init: ");
+//    HAL_LOG(L_INFO, "NVIC Init: ");
     __DMA1_CLK_ENABLE();
     __DMA2_CLK_ENABLE();
 //    NVIC_StructInit(&NVIC_InitStructure);
@@ -86,7 +86,7 @@ Status s = S_OK;
 //
 //    DMA_ITConfig(DMA2_Stream1, DMA_IT_TE | DMA_IT_TC, ENABLE);
 //    DMA_ITConfig(DMA2_Stream7, DMA_IT_TE | DMA_IT_TC, ENABLE);
-//    D_TRACE_S(D_INFO, s);
+//    D_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -97,7 +97,7 @@ Status DMA2_MEM_Init(void)
 //DMA_InitTypeDef DMA_InitStructure;
 Status s = S_OK;
 //
-//    HAL_LOG(D_INFO, "MEM Init: ");
+//    HAL_LOG(L_INFO, "MEM Init: ");
 //    DMA_StructInit(&DMA_InitStructure);
 //    // Set up the DMA
 //    // first enable the clock
@@ -127,7 +127,7 @@ Status s = S_OK;
 //    DMA_InitStructure.DMA_MemoryDataSize    = DMA_MemoryDataSize_Word;
 //    DMA_InitStructure.DMA_Channel           = DMA_CHANNEL_MEM2MEM32;
 //    DMA_Init(DMA_STREAM_MEM2MEM32, &DMA_InitStructure);
-//    D_TRACE_S(D_INFO, s);
+//    D_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -196,7 +196,7 @@ void DMA_MemCpy32(void* dst_p, const void* src_p, Size size32)
 //        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TCIF_MEM2MEM8);
 //    } else if (DMA_GetITStatus(DMA_STREAM_MEM2MEM8, DMA_IT_TEIF_MEM2MEM8)) {
 //        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM8, DMA_IT_TEIF_MEM2MEM8);
-//        HAL_LOG(D_WARNING, "DMA2 Str7 IRQ err!");
+//        HAL_LOG(L_WARNING, "DMA2 Str7 IRQ err!");
 //    } else {
 //        D_ASSERT(OS_FALSE);
 //    }
@@ -213,7 +213,7 @@ void DMA2_Stream1_IRQHandler(void)
 //        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TCIF_MEM2MEM32);
 //    } else if (DMA_GetITStatus(DMA_STREAM_MEM2MEM32, DMA_IT_TEIF_MEM2MEM32)) {
 //        DMA_ClearITPendingBit(DMA_STREAM_MEM2MEM32, DMA_IT_TEIF_MEM2MEM32);
-//        HAL_LOG(D_WARNING, "DMA2 Str1 IRQ err!");
+//        HAL_LOG(L_WARNING, "DMA2 Str1 IRQ err!");
 //    } else {
 //        D_ASSERT(OS_FALSE);
 //    }

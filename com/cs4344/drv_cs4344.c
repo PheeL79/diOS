@@ -92,7 +92,7 @@ HAL_DriverItf drv_cs4344 = {
 Status CS4344_Init(void* args_p)
 {
 Status s = S_UNDEF;
-    //HAL_LOG(D_INFO, "Init: ");
+    //HAL_LOG(L_INFO, "Init: ");
     if (OS_NULL == args_p) { return s = S_INVALID_PTR; }
     IF_STATUS(s = CS4344_LL_Init(args_p)) {
     }
@@ -183,7 +183,7 @@ const S8 freq_idx = FrequencyIdxGet(drv_args_p->info.sample_rate);
     HAL_DMA_Init(&dma_tx_hd);
 
     /* I2S DMA IRQ Channel configuration */
-    HAL_NVIC_SetPriority(CS4344_I2Sx_DMAx_IRQn, HAL_IRQ_PRIO_I2S_DMA_CS4344, 0);
+    HAL_NVIC_SetPriority(CS4344_I2Sx_DMAx_IRQn, HAL_PRIO_IRQ_DMA_I2S_CS4344, 0);
     HAL_NVIC_EnableIRQ(CS4344_I2Sx_DMAx_IRQn);
 
     i2s_hd.Init.Mode            = I2S_MODE_MASTER_TX;
@@ -281,7 +281,7 @@ Status s = S_UNDEF;
             break;
 // Audio driver's requests.
         case DRV_REQ_AUDIO_PLAY: {
-            const DrvAudioPlayArgs* drv_args_p = (DrvAudioPlayArgs*)args_p;
+            const DrvAudioArgsPlay* drv_args_p = (DrvAudioArgsPlay*)args_p;
             if (OS_AUDIO_DMA_MODE_NORMAL == cs4344_out_setup.dma_mode) {
                 while (HAL_I2S_STATE_READY != HAL_I2S_GetState(&i2s_hd)) {};
                 if (HAL_OK != HAL_I2S_Transmit_DMA(&i2s_hd, (U16*)drv_args_p->data_p, (drv_args_p->size / sizeof(U16)))) {

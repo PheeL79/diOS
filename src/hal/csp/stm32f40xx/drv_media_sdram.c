@@ -16,6 +16,9 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_m_sdram"
 
+#define LED_FS_ON()         OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON)
+#define LED_FS_OFF()        OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF)
+
 //-----------------------------------------------------------------------------
 static Status SDRAM_Init_(void* args_p);
 static Status SDRAM_DeInit_(void* args_p);
@@ -31,7 +34,7 @@ static Status SDRAM_IoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
 extern SRAM_HandleTypeDef sram1_hd;
-static OS_DriverHd drv_led_fs;
+static DrvMediaArgsInit args_init;
 static void* sdram_fs_p;
 
 //-----------------------------------------------------------------------------
@@ -49,8 +52,8 @@ HAL_DriverItf drv_media_sdram = {
 Status SDRAM_Init_(void* args_p)
 {
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init: ");
-    drv_led_fs = *(OS_DriverHd*)args_p;
+    HAL_LOG(L_INFO, "Init: ");
+    args_init = *(DrvMediaArgsInit*)args_p;
     sdram_fs_p = OS_MallocEx(OS_MEDIA_VOL_SDRAM_SIZE, OS_MEDIA_VOL_SDRAM_MEM);
     if (OS_NULL == sdram_fs_p) { s = S_OUT_OF_MEMORY; }
     return s;
@@ -68,7 +71,7 @@ Status s = S_OK;
 Status SDRAM_Open(void* args_p)
 {
 Status s = S_UNDEF;
-    IF_STATUS(s = OS_DriverOpen(drv_led_fs, OS_NULL)) {}
+    IF_STATUS(s = OS_DriverOpen(args_init.drv_gpio, OS_NULL)) {}
     return s;
 }
 
@@ -77,7 +80,7 @@ Status SDRAM_Close(void* args_p)
 {
 Status s = S_UNDEF;
     IF_OK(s = drv_media_sdram.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
-        IF_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
+        IF_OK(s = OS_DriverClose(args_init.drv_gpio, OS_NULL)) {}
     }
     return s;
 }
@@ -86,11 +89,10 @@ Status s = S_UNDEF;
 Status SDRAM_Read(void* data_in_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-State led_fs_state = ON;
 Status s = S_OK;
-//    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
+//    OS_LOG(L_DEBUG_1, "read 0x%X %6d %d", data_in_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+    LED_FS_ON();
 //    if (HAL_OK != HAL_SRAM_Read_8b(&sram1_hd,
 //                                   (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_Size * sector)),
 //                                   data_in_p,
@@ -98,8 +100,7 @@ Status s = S_OK;
 //        s = S_HARDWARE_ERROR;
 //    }
     OS_MemCpy(data_in_p, (const void*)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)), (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size));
-    led_fs_state = OFF;
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+    LED_FS_OFF();
     return s;
 }
 
@@ -107,11 +108,10 @@ Status s = S_OK;
 Status SDRAM_Write(void* data_out_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-State led_fs_state = ON;
 Status s = S_OK;
-//    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
+//    OS_LOG(L_DEBUG_1, "write 0x%X %6d %d", data_out_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+    LED_FS_ON();
 //    if (HAL_OK != HAL_SRAM_Write_8b(&sram1_hd,
 //                                    (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_Size * sector)),
 //                                    data_out_p,
@@ -119,8 +119,7 @@ Status s = S_OK;
 //        s = S_HARDWARE_ERROR;
 //    }
     OS_MemCpy((void*)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)), data_out_p, (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size));
-    led_fs_state = OFF;
-    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+    LED_FS_OFF();
     return s;
 }
 
@@ -128,19 +127,17 @@ Status s = S_OK;
 //Status SDRAM_DMA_Read(void* data_in_p, Size size, void* args_p)
 //{
 //U32 sector = *(U32*)args_p;
-//State led_fs_state = ON;
 //Status s = S_OK;
-////    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
+////    OS_LOG(L_DEBUG_1, "read 0x%X %6d %d", data_in_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//    LED_FS_ON();
 //    if (HAL_OK != HAL_SRAM_Read_DMA(&sram1_hd,
 //                                    (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)),
 //                                    (uint32_t *)data_in_p,
 //                                    (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size))) {
 //        s = S_HARDWARE_ERROR;
 //    }
-//    led_fs_state = OFF;
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//    LED_FS_OFF();
 //    return s;
 //}
 
@@ -148,19 +145,17 @@ Status s = S_OK;
 //Status SDRAM_DMA_Write(void* data_out_p, Size size, void* args_p)
 //{
 //U32 sector = *(U32*)args_p;
-//State led_fs_state = ON;
 //Status s = S_OK;
-////    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
+////    OS_LOG(L_DEBUG_1, "write 0x%X %6d %d", data_out_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//    LED_FS_ON();
 //    if (HAL_OK != HAL_SRAM_Write_DMA(&sram1_hd,
 //                                     (uint32_t *)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * sector)),
 //                                     (uint32_t *)data_out_p,
 //                                     (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * size))) {
 //        s = S_HARDWARE_ERROR;
 //    }
-//    led_fs_state = OFF;
-//    OS_DriverWrite(drv_led_fs, &led_fs_state, 1, OS_NULL);
+//    LED_FS_OFF();
 //    return s;
 //}
 
@@ -169,7 +164,7 @@ Status SDRAM_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_UNDEF;
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_LOG(D_DEBUG, "ioctl req_id=%d", request_id);
+//    OS_LOG(L_DEBUG_1, "ioctl req_id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
             switch (*(OS_PowerState*)args_p) {

@@ -31,10 +31,10 @@ extern "C" {
 ///             extern const StatusItem status_items_app[];
 ///
 ///             Status s = S_CUSTOM;
-///             OS_LOG_S(D_DEBUG, s);
-///             OS_LOG_S(D_DEBUG, S_OK);
+///             OS_LOG_S(L_DEBUG_1, s);
+///             OS_LOG_S(L_DEBUG_1, S_OK);
 ///          Or you can directly point to the status items array:
-///             OS_LOG_S(D_WARNING, S_FS_UNMOUNTED, &status_fs_v[0]);
+///             OS_LOG_S(L_WARNING, S_FS_UNMOUNTED, &status_fs_v[0]);
 #define OS_LOG_S(level, status, ...)    OS_Log(level, StatusStringGet(status, MDL_STATUS_ITEMS))
 #define OS_TRACE(level, fmt_str_p, ...) OS_Trace(level, fmt_str_p, __VA_ARGS__);
 

@@ -32,7 +32,7 @@ Status OS_StartupApplication(void)
 OS_ListItem* iter_li_p;
 Status s = S_OK;
 
-    OS_LOG(D_INFO, "OS startup run...");
+    OS_LOG(L_INFO, "OS startup run...");
     // Create startup tasks.
     for (iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_startup_list));
          OS_DELAY_MAX != (OS_Value)OS_ListItemValueGet(iter_li_p);

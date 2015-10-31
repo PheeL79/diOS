@@ -145,7 +145,7 @@ Status s = S_OK;
         const OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         const OS_TimerHd timer_hd = cfg_dyn_p->timer_hd;
         IF_STATUS(s = OS_TimerPeriodGet(timer_hd, period_p)) {
-            OS_LOG_S(D_WARNING, s);
+            OS_LOG_S(L_WARNING, s);
         }
         OS_MutexRecursiveUnlock(os_trigger_mutex);
     }
@@ -163,7 +163,7 @@ Status s = S_OK;
         const OS_TimerHd timer_hd = cfg_dyn_p->timer_hd;
         cfg_dyn_p->state = new_state;
         IF_STATUS(s = OS_TimerPeriodSet(timer_hd, new_period, timeout)) {
-            OS_LOG_S(D_WARNING, s);
+            OS_LOG_S(L_WARNING, s);
         }
         OS_MutexRecursiveUnlock(os_trigger_mutex);
     }

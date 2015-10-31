@@ -48,25 +48,18 @@ static DMA_HandleTypeDef    dma_rx_hd;
 Status USART6_Init(void* args_p)
 {
 Status s = S_UNDEF;
-    //HAL_LOG(D_INFO, "Init: ");
+    //HAL_LOG(L_INFO, "Init: ");
     IF_STATUS(s = USART6_LL_Init(args_p)) { return s; }
     /* Enable USARTx clock */
     HAL_USART_DEBUG_CLK_ENABLE();
     /*##-1- Configure the UART peripheral ######################################*/
-    /* Put the USART peripheral in the Asynchronous mode (UART Mode) */
-    /* UART6 configured as follow:
-      - Word Length = 8 Bits
-      - Stop Bit    = One Stop bit
-      - Parity      = NO parity
-      - BaudRate    = 115200 baud
-      - Hardware flow control disabled (RTS and CTS signals) */
     uart_hd.Instance        = HAL_USART_DEBUG_ITF;
-    uart_hd.Init.BaudRate   = 115200;
-    uart_hd.Init.WordLength = UART_WORDLENGTH_8B;
-    uart_hd.Init.StopBits   = UART_STOPBITS_1;
-    uart_hd.Init.Parity     = UART_PARITY_NONE;
-    uart_hd.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-    uart_hd.Init.Mode       = UART_MODE_TX_RX;
+    uart_hd.Init.BaudRate   = HAL_USART_DEBUG_BAUD_RATE;
+    uart_hd.Init.WordLength = HAL_USART_DEBUG_WORD_LENGTH;
+    uart_hd.Init.StopBits   = HAL_USART_DEBUG_STOP_BITS;
+    uart_hd.Init.Parity     = HAL_USART_DEBUG_PARITY;
+    uart_hd.Init.HwFlowCtl  = HAL_USART_DEBUG_HW_FLOW_CONTROL;
+    uart_hd.Init.Mode       = HAL_USART_DEBUG_MODE;
 
     if (HAL_OK == HAL_UART_Init(&uart_hd)) {
         /* Enable the UART Data Register not empty Interrupt */
@@ -86,38 +79,37 @@ Status s = S_OK;
       /*##-2- Configure peripheral GPIO ##########################################*/
     /* UART TX GPIO pin configuration  */
     GPIO_InitStruct.Pin         = HAL_USART_DEBUG_GPIO_PIN_TX;
-    GPIO_InitStruct.Mode        = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull        = GPIO_PULLUP;
-    GPIO_InitStruct.Speed       = GPIO_SPEED_FAST;
-    GPIO_InitStruct.Alternate   = HAL_USART_DEBUG_GPIO_AF_TX;
-
-    HAL_GPIO_Init(HAL_USART_DEBUG_GPIO_TX, &GPIO_InitStruct);
+    GPIO_InitStruct.Mode        = HAL_USART_DEBUG_GPIO_MODE_TX;
+    GPIO_InitStruct.Pull        = HAL_USART_DEBUG_GPIO_PULL_TX;
+    GPIO_InitStruct.Speed       = HAL_USART_DEBUG_GPIO_SPEED_TX;
+    GPIO_InitStruct.Alternate   = HAL_USART_DEBUG_GPIO_ALT_TX;
+    HAL_GPIO_Init(HAL_USART_DEBUG_GPIO_PORT_TX, &GPIO_InitStruct);
 
     /* UART RX GPIO pin configuration  */
     GPIO_InitStruct.Pin         = HAL_USART_DEBUG_GPIO_PIN_RX;
-    GPIO_InitStruct.Alternate   = HAL_USART_DEBUG_GPIO_AF_RX;
-
-    HAL_GPIO_Init(HAL_USART_DEBUG_GPIO_RX, &GPIO_InitStruct);
+    GPIO_InitStruct.Mode        = HAL_USART_DEBUG_GPIO_MODE_RX;
+    GPIO_InitStruct.Pull        = HAL_USART_DEBUG_GPIO_PULL_RX;
+    GPIO_InitStruct.Speed       = HAL_USART_DEBUG_GPIO_SPEED_RX;
+    GPIO_InitStruct.Alternate   = HAL_USART_DEBUG_GPIO_ALT_RX;
+    HAL_GPIO_Init(HAL_USART_DEBUG_GPIO_PORT_RX, &GPIO_InitStruct);
 
     /* Enable DMA2 clock */
     HAL_USART_DEBUG_DMA_CLK_ENABLE();
       /*##-3- Configure the DMA streams ##########################################*/
     /* Configure the DMA handler for Transmission process */
     dma_tx_hd.Instance                 = HAL_USART_DEBUG_DMA_STREAM_TX;
-
     dma_tx_hd.Init.Channel             = HAL_USART_DEBUG_DMA_CHAN_TX;
-    dma_tx_hd.Init.Direction           = DMA_MEMORY_TO_PERIPH;
-    dma_tx_hd.Init.PeriphInc           = DMA_PINC_DISABLE;
-    dma_tx_hd.Init.MemInc              = DMA_MINC_ENABLE;
-    dma_tx_hd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    dma_tx_hd.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    dma_tx_hd.Init.Mode                = DMA_NORMAL;
-    dma_tx_hd.Init.Priority            = DMA_PRIORITY_LOW;
-    dma_tx_hd.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
-    dma_tx_hd.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    dma_tx_hd.Init.MemBurst            = DMA_MBURST_INC4;
-    dma_tx_hd.Init.PeriphBurst         = DMA_PBURST_INC4;
-
+    dma_tx_hd.Init.Direction           = HAL_USART_DEBUG_DMA_DIRECTION_TX;
+    dma_tx_hd.Init.PeriphInc           = HAL_USART_DEBUG_DMA_PERIPH_INC_TX;
+    dma_tx_hd.Init.MemInc              = HAL_USART_DEBUG_DMA_MEMORY_INC_TX;
+    dma_tx_hd.Init.PeriphDataAlignment = HAL_USART_DEBUG_DMA_PERIPH_DATA_ALIGN_TX;
+    dma_tx_hd.Init.MemDataAlignment    = HAL_USART_DEBUG_DMA_MEMORY_DATA_ALIGN_TX;
+    dma_tx_hd.Init.Mode                = HAL_USART_DEBUG_DMA_MODE_TX;
+    dma_tx_hd.Init.Priority            = HAL_PRIO_DMA_USART_DEBUG_TX;
+    dma_tx_hd.Init.FIFOMode            = HAL_USART_DEBUG_DMA_FIFO_MODE_TX;
+    dma_tx_hd.Init.FIFOThreshold       = HAL_USART_DEBUG_DMA_FIFO_THRS_TX;
+    dma_tx_hd.Init.MemBurst            = HAL_USART_DEBUG_DMA_MEMORY_BURST_TX;
+    dma_tx_hd.Init.PeriphBurst         = HAL_USART_DEBUG_DMA_PERIPH_BURST_TX;
     HAL_DMA_Init(&dma_tx_hd);
 
     /* Associate the initialized DMA handle to the UART handle */
@@ -125,20 +117,18 @@ Status s = S_OK;
 
     /* Configure the DMA handler for reception process */
     dma_rx_hd.Instance                 = HAL_USART_DEBUG_DMA_STREAM_RX;
-
     dma_rx_hd.Init.Channel             = HAL_USART_DEBUG_DMA_CHAN_RX;
-    dma_rx_hd.Init.Direction           = DMA_PERIPH_TO_MEMORY;
-    dma_rx_hd.Init.PeriphInc           = DMA_PINC_DISABLE;
-    dma_rx_hd.Init.MemInc              = DMA_MINC_ENABLE;
-    dma_rx_hd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    dma_rx_hd.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    dma_rx_hd.Init.Mode                = DMA_NORMAL;
-    dma_rx_hd.Init.Priority            = DMA_PRIORITY_LOW;
-    dma_rx_hd.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
-    dma_rx_hd.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    dma_rx_hd.Init.MemBurst            = DMA_MBURST_INC4;
-    dma_rx_hd.Init.PeriphBurst         = DMA_PBURST_INC4;
-
+    dma_rx_hd.Init.Direction           = HAL_USART_DEBUG_DMA_DIRECTION_RX;
+    dma_rx_hd.Init.PeriphInc           = HAL_USART_DEBUG_DMA_PERIPH_INC_RX;
+    dma_rx_hd.Init.MemInc              = HAL_USART_DEBUG_DMA_MEMORY_INC_RX;
+    dma_rx_hd.Init.PeriphDataAlignment = HAL_USART_DEBUG_DMA_PERIPH_DATA_ALIGN_RX;
+    dma_rx_hd.Init.MemDataAlignment    = HAL_USART_DEBUG_DMA_MEMORY_DATA_ALIGN_RX;
+    dma_rx_hd.Init.Mode                = HAL_USART_DEBUG_DMA_MODE_RX;
+    dma_rx_hd.Init.Priority            = HAL_PRIO_DMA_USART_DEBUG_RX;
+    dma_rx_hd.Init.FIFOMode            = HAL_USART_DEBUG_DMA_FIFO_MODE_RX;
+    dma_rx_hd.Init.FIFOThreshold       = HAL_USART_DEBUG_DMA_FIFO_THRS_RX;
+    dma_rx_hd.Init.MemBurst            = HAL_USART_DEBUG_DMA_MEMORY_BURST_RX;
+    dma_rx_hd.Init.PeriphBurst         = HAL_USART_DEBUG_DMA_PERIPH_BURST_RX;
     HAL_DMA_Init(&dma_rx_hd);
 
     /* Associate the initialized DMA handle to the the UART handle */
@@ -146,16 +136,16 @@ Status s = S_OK;
 
     /*##-3- Configure the NVIC for IRQ #########################################*/
     /* NVIC configuration for interrupt (USARTx) */
-    HAL_NVIC_SetPriority(HAL_USART_DEBUG_IRQ, HAL_IRQ_PRIO_USART6, 0);
+    HAL_NVIC_SetPriority(HAL_USART_DEBUG_IRQ, HAL_PRIO_IRQ_USART_DEBUG, 0);
     HAL_NVIC_EnableIRQ(HAL_USART_DEBUG_IRQ);
 
     /*##-4- Configure the NVIC for DMA #########################################*/
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_TX) */
-    HAL_NVIC_SetPriority(HAL_USART_DEBUG_DMA_IRQ_TX, HAL_IRQ_PRIO_USART6_DMA_TX, 0);
+    HAL_NVIC_SetPriority(HAL_USART_DEBUG_DMA_IRQ_TX, HAL_PRIO_IRQ_DMA_USART_DEBUG_TX, 0);
     HAL_NVIC_EnableIRQ(HAL_USART_DEBUG_DMA_IRQ_TX);
 
     /* NVIC configuration for DMA transfer complete interrupt (USARTx_RX) */
-    HAL_NVIC_SetPriority(HAL_USART_DEBUG_DMA_IRQ_RX, HAL_IRQ_PRIO_USART6_DMA_RX, 0);
+    HAL_NVIC_SetPriority(HAL_USART_DEBUG_DMA_IRQ_RX, HAL_PRIO_IRQ_DMA_USART_DEBUG_RX, 0);
     HAL_NVIC_EnableIRQ(HAL_USART_DEBUG_DMA_IRQ_RX);
     return s;
 }
@@ -171,9 +161,9 @@ Status s = S_OK;
 
     /*##-2- Disable peripherals and GPIO Clocks #################################*/
     /* Configure UART Tx as alternate function  */
-    HAL_GPIO_DeInit(HAL_USART_DEBUG_GPIO_TX, HAL_USART_DEBUG_GPIO_PIN_TX);
+    HAL_GPIO_DeInit(HAL_USART_DEBUG_GPIO_PORT_TX, HAL_USART_DEBUG_GPIO_PIN_TX);
     /* Configure UART Rx as alternate function  */
-    HAL_GPIO_DeInit(HAL_USART_DEBUG_GPIO_RX, HAL_USART_DEBUG_GPIO_PIN_RX);
+    HAL_GPIO_DeInit(HAL_USART_DEBUG_GPIO_PORT_RX, HAL_USART_DEBUG_GPIO_PIN_RX);
 
     /*##-3- Disable the DMA Streams ############################################*/
     /* De-Initialize the DMA Stream associate to transmission process */

@@ -45,7 +45,7 @@ INLINE OS_NetworkItfConfigDyn* OS_NetworkItfConfigDynGet(const OS_NetworkItfHd n
 Status OS_NetworkInit(void)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     def_net_itf_hd = OS_NULL;
     os_net_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_net_mutex) { return S_INVALID_PTR; }
@@ -141,7 +141,7 @@ Status OS_NetworkItfInit(const OS_NetworkItfHd net_itf_hd, const OS_NetworkItfIn
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
     OS_ASSERT_VALUE(OS_NULL != init_args_p);
-    OS_LOG(D_DEBUG, "%s: itf init", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: itf init", OS_NetworkItfNameGet(net_itf_hd));
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
         const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
@@ -222,16 +222,16 @@ Status OS_NetworkItfDeInit(const OS_NetworkItfHd net_itf_hd, void* args_p)
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
-    OS_LOG(D_DEBUG, "%s: itf deinit", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: itf deinit", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         netif_remove(cfg_dyn_p->net_itf_p);
         IF_STATUS(s = OS_DriverIoCtl(drv_net_itf_hd, DRV_REQ_STD_SYNC, args_p)) {
-            OS_LOG_S(D_WARNING, s);
+            OS_LOG_S(L_WARNING, s);
         }
         IF_STATUS(s = OS_DriverDeInit(drv_net_itf_hd, args_p)) {
-            OS_LOG_S(D_WARNING, s);
+            OS_LOG_S(L_WARNING, s);
         }
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
@@ -243,7 +243,7 @@ Status OS_NetworkItfOpen(const OS_NetworkItfHd net_itf_hd, const OS_NetworkItfOp
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
-    OS_LOG(D_DEBUG, "%s: itf open", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: itf open", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
     OS_DriverStats stats;
@@ -262,7 +262,7 @@ Status OS_NetworkItfClose(const OS_NetworkItfHd net_itf_hd, void* args_p)
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
-    OS_LOG(D_DEBUG, "%s: itf close", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: itf close", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
     OS_DriverStats stats;
@@ -325,7 +325,7 @@ Status OS_NetworkItfLinkUpSet(const OS_NetworkItfHd net_itf_hd)
 const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
 OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
     netif_set_link_up(net_itf_p);
-    OS_LOG(D_DEBUG, "%s: link is up", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: link is up", OS_NetworkItfNameGet(net_itf_hd));
     return S_OK;
 }
 
@@ -335,7 +335,7 @@ Status OS_NetworkItfLinkDownSet(const OS_NetworkItfHd net_itf_hd)
 const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
 OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
     netif_set_link_down(net_itf_p);
-    OS_LOG(D_DEBUG, "%s: link is down", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: link is down", OS_NetworkItfNameGet(net_itf_hd));
     return S_OK;
 }
 
@@ -350,7 +350,7 @@ Status s = S_UNDEF;
         netif_set_up(net_itf_p);
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
-    OS_LOG(D_DEBUG, "%s: itf is up", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: itf is up", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
 
@@ -365,7 +365,7 @@ Status s = S_UNDEF;
         netif_set_down(net_itf_p);
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
-    OS_LOG(D_DEBUG, "%s: itf is down", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: itf is down", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
 
@@ -380,7 +380,7 @@ Status s = S_UNDEF;
         dhcp_start(net_itf_p);
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
-    OS_LOG(D_DEBUG, "%s: DHCP client started", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: DHCP client started", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
 
@@ -394,7 +394,7 @@ Status s = S_UNDEF;
         dhcp_stop(net_itf_p);
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
-    OS_LOG(D_DEBUG, "%s: DHCP client stopped", OS_NetworkItfNameGet(net_itf_hd));
+    OS_LOG(L_DEBUG_1, "%s: DHCP client stopped", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
 #endif //(LWIP_DHCP)
@@ -433,7 +433,7 @@ OS_NetworkNetMask4 netmask4 = { 0 };
 OS_NetworkGateWay4 gateway4 = { 0 };
 Status s = S_UNDEF;
     IF_OK(s = OS_NetworkItfAddress4Get(net_itf_hd, &ip_addr4, &netmask4, &gateway4)) {
-        OS_LOG(D_DEBUG, "%s: address set:\r\nip      = %3d.%3d.%3d.%3d\r\nnetmask = %3d.%3d.%3d.%3d\r\ngateway = %3d.%3d.%3d.%3d",
+        OS_LOG(L_DEBUG_1, "%s: address set:\r\nip      = %3d.%3d.%3d.%3d\r\nnetmask = %3d.%3d.%3d.%3d\r\ngateway = %3d.%3d.%3d.%3d",
                OS_NetworkItfNameGet(net_itf_hd),
                ((U8*)&ip_addr4)[0], ((U8*)&ip_addr4)[1], ((U8*)&ip_addr4)[2], ((U8*)&ip_addr4)[3],
                ((U8*)&netmask4)[0], ((U8*)&netmask4)[1], ((U8*)&netmask4)[2], ((U8*)&netmask4)[3],
@@ -504,13 +504,13 @@ Status s = S_UNDEF;
     OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
     OS_NetworkBuf* buf_p;
     IF_STATUS(s = OS_DriverRead(dhd, data_in_p, size, &buf_p)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     if (ERR_OK != net_itf_p->input(buf_p, net_itf_p)) {
         pbuf_free(buf_p);
     }
-    OS_LOG(D_DEBUG, "read: 0x%X, size %u", net_itf_hd, buf_p->tot_len);
+    OS_LOG(L_DEBUG_1, "read: 0x%X, size %u", net_itf_hd, buf_p->tot_len);
     return s;
 }
 
@@ -521,9 +521,9 @@ Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
     const OS_DriverHd dhd = OS_NetworkItfConfigDynGet(net_itf_hd)->dhd;
     IF_STATUS(s = OS_DriverWrite(dhd, data_out_p, size, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
-    OS_LOG(D_DEBUG, "write: 0x%X, size %u", net_itf_hd, size);
+    OS_LOG(L_DEBUG_1, "write: 0x%X, size %u", net_itf_hd, size);
     return s;
 }
 

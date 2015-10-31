@@ -10,16 +10,6 @@
 #define MDL_NAME                    "drv_timer8"
 
 //-----------------------------------------------------------------------------
-/* Definition for TIMx clock resources */
-#define TIMx                            TIM8
-#define TIMx_CLK_ENABLE()               __TIM8_CLK_ENABLE();
-
-#define TIMx_FORCE_RESET()              __TIM8_FORCE_RESET()
-#define TIMx_RELEASE_RESET()            __TIM8_RELEASE_RESET()
-
-#define TIMx_TIMEOUT                    1000
-
-//-----------------------------------------------------------------------------
 static Status TIMER8_Init(void* args_p);
 static Status TIMER8_DeInit(void* args_p);
 static Status TIMER8_LL_Init(void* args_p);
@@ -42,7 +32,7 @@ HAL_DriverItf drv_timer8 = {
 Status TIMER8_Init(void* args_p)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     IF_OK(s = TIMER8_LL_Init(OS_NULL)) {
         s = TIMER8_Close(OS_NULL);
     }
@@ -54,19 +44,19 @@ Status TIMER8_LL_Init(void* args_p)
 {
 TIM_MasterConfigTypeDef master_cfg;
 Status s = S_OK;
-    /* TIMx Periph clock enable */
-    TIMx_CLK_ENABLE();
-    /* Set TIMx instance */
-    timer_hd.Instance = TIMx;
-    /* Initialize TIMx peripheral */
-    timer_hd.Init.Period            = TIMx_TIMEOUT - 1;
-    timer_hd.Init.Prescaler         = ((SystemCoreClock / 2) / TIMx_TIMEOUT) - 1;
-    timer_hd.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
-    timer_hd.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    /* TIM Periph clock enable */
+    HAL_TIMER_TRIMMER_CLK_ENABLE();
+    /* Set TIM instance */
+    timer_hd.Instance               = HAL_TIMER_TRIMMER_ITF;
+    /* Initialize TIM peripheral */
+    timer_hd.Init.Period            = HAL_TIMER_TRIMMER_PERIOD;
+    timer_hd.Init.Prescaler         = HAL_TIMER_TRIMMER_PRESCALER;
+    timer_hd.Init.ClockDivision     = HAL_TIMER_TRIMMER_CLOCK_DIV;
+    timer_hd.Init.CounterMode       = HAL_TIMER_TRIMMER_COUNT_MODE;
     HAL_ASSERT(HAL_OK == HAL_TIM_Base_Init(&timer_hd));
-    /* TIM8 TRGO selection */
-    master_cfg.MasterOutputTrigger  = TIM_TRGO_UPDATE;
-    master_cfg.MasterSlaveMode      = TIM_MASTERSLAVEMODE_DISABLE;
+    /* TIM TRGO selection */
+    master_cfg.MasterOutputTrigger  = HAL_TIMER_TRIMMER_MASTER_OUT_TRIGGER;
+    master_cfg.MasterSlaveMode      = HAL_TIMER_TRIMMER_MASTER_SLAVE_MODE;
     HAL_ASSERT(HAL_OK == HAL_TIMEx_MasterConfigSynchronization(&timer_hd, &master_cfg));
     return s;
 }
@@ -76,8 +66,8 @@ Status TIMER8_LL_DeInit(void* args_p)
 {
 Status s = S_OK;
     /*##-1- Reset peripherals ##################################################*/
-    TIMx_FORCE_RESET();
-    TIMx_RELEASE_RESET();
+    HAL_TIMER_TRIMMER_FORCE_RESET();
+    HAL_TIMER_TRIMMER_RELEASE_RESET();
     return s;
 }
 

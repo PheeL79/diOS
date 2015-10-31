@@ -67,7 +67,7 @@ exit:
 /******************************************************************************/
 OS_TaskHd OS_EnvVariableOwnerGet(ConstStrP variable_name_p)
 {
-    OS_LOG(D_DEBUG, "Env owner get: %s", variable_name_p);
+    OS_LOG(L_DEBUG_1, "Env owner get: %s", variable_name_p);
     const OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
     if (OS_NULL == item_l_p) { return OS_NULL; } //Variable not exists.
     return (OS_TaskHd)OS_ListItemOwnerGet(item_l_p);
@@ -76,7 +76,7 @@ OS_TaskHd OS_EnvVariableOwnerGet(ConstStrP variable_name_p)
 /******************************************************************************/
 OS_EnvVariableHandler OS_EnvVariableHandlerGet(ConstStrP variable_name_p)
 {
-    OS_LOG(D_DEBUG, "Env owner get: %s", variable_name_p);
+    OS_LOG(L_DEBUG_1, "Env owner get: %s", variable_name_p);
     const OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
     if (OS_NULL == item_l_p) { return OS_NULL; } //Variable not exists.
     const OS_EnvVariable* env_var_p = (OS_EnvVariable*)OS_ListItemValueGet(item_l_p);
@@ -86,7 +86,7 @@ OS_EnvVariableHandler OS_EnvVariableHandlerGet(ConstStrP variable_name_p)
 /******************************************************************************/
 ConstStrP OS_EnvVariableGet(ConstStrP variable_name_p)
 {
-    OS_LOG(D_DEBUG, "Env var get: %s", variable_name_p);
+    OS_LOG(L_DEBUG_1, "Env var get: %s", variable_name_p);
     const OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
     if (OS_NULL == item_l_p) { return OS_NULL; } //Variable not exists.
     const OS_EnvVariable* env_var_p = (OS_EnvVariable*)OS_ListItemValueGet(item_l_p);
@@ -110,7 +110,7 @@ Status OS_EnvVariableSet(ConstStrP variable_name_p, ConstStrP variable_value_p,
 {
 Status s = S_OK;
     if ((OS_NULL == variable_name_p) || (OS_NULL == variable_value_p)) { return S_INVALID_PTR; }
-    HAL_LOG(D_DEBUG, "Env var set: %s, %s", variable_name_p, variable_value_p);
+    HAL_LOG(L_DEBUG_1, "Env var set: %s, %s", variable_name_p, variable_value_p);
     IF_OK(s = OS_MutexRecursiveLock(os_env_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
         OS_EnvVariable* env_var_p;
@@ -163,7 +163,7 @@ error:
 Status OS_EnvVariableDelete(ConstStrP variable_name_p)
 {
 Status s;
-    OS_LOG(D_DEBUG, "Env var del: %s", variable_name_p);
+    OS_LOG(L_DEBUG_1, "Env var del: %s", variable_name_p);
     IF_OK(s = OS_MutexRecursiveLock(os_env_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_ListItem* item_l_p = OS_EnvVariableListItemByNameGet(variable_name_p);
         if (OS_NULL == item_l_p) { return S_INVALID_PTR; }

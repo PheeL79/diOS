@@ -24,8 +24,8 @@ const StatusItem status_sett_tab[] = {
 Status OS_SettingsInit(void)
 {
 Status s = S_OK;
-    //D_LOG(D_INFO, "Init: ");
-    //D_TRACE_S(D_INFO, s);
+    //D_LOG(L_INFO, "Init: ");
+    //D_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -33,15 +33,15 @@ Status s = S_OK;
 Status OS_SettingsDeInit(void)
 {
 Status s = S_OK;
-    //D_LOG(D_INFO, "DeInit: ");
-    //D_TRACE_S(D_INFO, s);
+    //D_LOG(L_INFO, "DeInit: ");
+    //D_TRACE_S(L_INFO, s);
     return s;
 }
 
 /******************************************************************************/
 Status OS_SettingsDelete(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p)
 {
-    OS_LOG(D_DEBUG, "Sett del: %s, sect: %s, key: %s", file_path_p, section_p, key_p);
+    OS_LOG(L_DEBUG_1, "Sett del: %s, sect: %s, key: %s", file_path_p, section_p, key_p);
     return OS_SettingsWrite(file_path_p, section_p, key_p, OS_NULL);
 }
 
@@ -52,9 +52,9 @@ Status s = S_OK;
     if (!ini_gets((char const*)section_p, (char const*)key_p,
                   OS_SETTINGS_VALUE_DEFAULT, (char*)value_p, OS_SETTINGS_VALUE_LEN, (const char*)file_path_p)) {
         s = S_SETT_READ;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
-    OS_LOG(D_DEBUG, "Sett read: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
+    OS_LOG(L_DEBUG_1, "Sett read: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
     return s;
 }
 
@@ -62,10 +62,10 @@ Status s = S_OK;
 Status OS_SettingsWrite(ConstStrP file_path_p, ConstStrP section_p, ConstStrP key_p, ConstStrP value_p)
 {
 Status s = S_OK;
-    OS_LOG(D_DEBUG, "Sett write: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
+    OS_LOG(L_DEBUG_1, "Sett write: %s,\nsect: %s, key: %s, val: %s", file_path_p, section_p, key_p, value_p);
     if (!ini_puts((char const*)section_p, (char const*)key_p, (char*)value_p, (const char*)file_path_p)) {
         s = S_SETT_WRITE;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }

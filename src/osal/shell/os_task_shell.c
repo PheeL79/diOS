@@ -43,7 +43,7 @@ const OS_TaskConfig task_shell_cfg = {
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     return s;
 }
 
@@ -62,7 +62,7 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
     stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+            OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -77,28 +77,28 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                     case OS_SIG_TASK_DISCONNECT:
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
 #if (HAL_USBH_ENABLED) && (HAL_USBH_HID_ENABLED)
                     case OS_MSG_USB_HID_MOUSE:
-                        OS_LOG(D_DEBUG, "mouse event");
+                        OS_LOG(L_DEBUG_1, "mouse event");
                         break;
                     case OS_MSG_USB_HID_KEYBOARD: {
                         const OS_UsbHidKeyboardData* keyboard_data_p = (OS_UsbHidKeyboardData*)&(msg_p->data);
                         if ('\0' != keyboard_data_p->key_ascii) {
                             OS_ShellClHandler(keyboard_data_p->key_ascii);
                             if (!OS_StrCmp(OS_EnvVariableGet("echo"), "on")) {
-                                OS_TRACE(D_INFO, "%c", keyboard_data_p->key_ascii);
+                                OS_TRACE(L_INFO, "%c", keyboard_data_p->key_ascii);
                             }
                         }
                         }
                         break;
 #endif //(HAL_USBH_HID_ENABLED) && (HAL_USBH_ENABLED)
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory

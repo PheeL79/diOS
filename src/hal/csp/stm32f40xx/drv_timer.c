@@ -47,15 +47,33 @@ void TIMER_DWT_Init(void)
 }
 
 /*****************************************************************************/
-Long TIMER_DWT_Get(void)
+void TIMER_DWT_Start(void)
 {
-    return (Long)HAL_CORE_CYCLES;
+    DWT_CONTROL |= (U32)1;   // enable the counter
+}
+
+/*****************************************************************************/
+void TIMER_DWT_Stop(void)
+{
+    DWT_CONTROL &= ~((U32)1);// disable the counter
+}
+
+/*****************************************************************************/
+void TIMER_DWT_Reset(void)
+{
+    DWT_CYCCNT = (U32)0;    // reset the counter
+}
+
+/*****************************************************************************/
+U32 TIMER_DWT_Get(void)
+{
+    return DWT_CYCCNT;
 }
 
 /*****************************************************************************/
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if (TIMER_TIMESTAMP == htim->Instance) {
+    if (HAL_TIMER_TIMESTAMP_ITF == htim->Instance) {
         extern void TIMER10_MutexSet(const MutexState state);
         TIMER10_MutexSet(UNLOCKED);
     }

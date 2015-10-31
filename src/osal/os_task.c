@@ -101,7 +101,7 @@ OS_TaskHd thd = OS_TaskNextGet(OS_NULL); //get first task in the list.
     while (OS_NULL != thd) {
         OS_TaskConfigDyn* cfg_dyn_p = OS_TaskConfigDynGet(thd);
         if (OS_NULL == cfg_dyn_p) {
-            OS_LOG_S(D_DEBUG, S_INVALID_PTR);
+            OS_LOG_S(L_DEBUG_1, S_INVALID_PTR);
             return OS_FALSE;
         }
         if (!OS_MemCmp(cfg_p, cfg_dyn_p->cfg_p, sizeof(OS_TaskConfig))) {
@@ -133,7 +133,7 @@ Status s = S_UNDEF;
     if (OS_NULL == cfg_p) { return S_INVALID_PTR; }
     if (BIT_TEST(cfg_p->attrs, BIT(OS_TASK_ATTR_SINGLE))) {
         if (OS_TRUE != OS_TaskIsSingle(cfg_p)) {
-            OS_LOG(D_DEBUG, "Task is already created!");
+            OS_LOG(L_DEBUG_1, "Task is already created!");
             return S_INVALID_TASK;
         }
     }
@@ -214,11 +214,11 @@ Status s = S_UNDEF;
                                             if (OS_SignalIs(msg_p)) {
                                                 if (OS_SIG_PWR_ACK == OS_SignalIdGet(msg_p)) {
                                                     IF_OK(s = (Status)OS_SignalDataGet(msg_p)) {
-                                                        OS_LOG(D_DEBUG, "[TID:%03u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
+                                                        OS_LOG(L_DEBUG_1, "[TID:%03u]%s: Hello world!", OS_TaskIdGet(thd), cfg_p->name);
                                                     }
                                                 } else {
                                                     s = S_INVALID_SIGNAL;
-                                                    OS_LOG_S(D_WARNING, s);
+                                                    OS_LOG_S(L_WARNING, s);
                                                 }
                                             }
                                         }
@@ -226,7 +226,7 @@ Status s = S_UNDEF;
                                 }
                             } else {
                                 s = S_INVALID_SIGNAL;
-                                OS_LOG_S(D_WARNING, s);
+                                OS_LOG_S(L_WARNING, s);
                             }
                         }
                     }
@@ -269,7 +269,7 @@ Status s = S_OK;
         IF_STATUS(s = OS_TaskPowerStateSet(thd, PWR_SHUTDOWN)) { goto error; } //TODO(A.Filyanov) Status handler!
         if (OS_NULL != cfg_dyn_p->stdin_qhd) {
             IF_STATUS(s = OS_QueueDelete(cfg_dyn_p->stdin_qhd)) {
-                OS_LOG_S(D_WARNING, s);
+                OS_LOG_S(L_WARNING, s);
             }
         }
         if (OS_NULL != cfg_dyn_p->slots_l_p) {
@@ -285,7 +285,7 @@ Status s = S_OK;
         //--tasks_count;
 error:
         OS_MutexRecursiveUnlock(os_task_mutex);
-        OS_LOG(D_DEBUG, "[TID:%03u]%s: Goodbye cruel world!", tid, cfg_p->name);
+        OS_LOG(L_DEBUG_1, "[TID:%03u]%s: Goodbye cruel world!", tid, cfg_p->name);
         vTaskDelete(task_hd); //Task (self-)delete.
     }
     return s;
@@ -603,7 +603,7 @@ Status s = S_OK;
     // Do not call func_power() if the state was already being set.
     if (OS_NULL == cfg_dyn_p) { return S_INVALID_PTR; }
     if (state != cfg_dyn_p->power) {
-        OS_LOG(D_DEBUG, "Power state: %s", OS_PowerStateNameGet(state));
+        OS_LOG(L_DEBUG_1, "Power state: %s", OS_PowerStateNameGet(state));
         if (OS_NULL != cfg_dyn_p->cfg_p->func_power) {
             IF_STATUS(s = cfg_dyn_p->cfg_p->func_power((void*)&cfg_dyn_p->args, state)) {
                 return s;
@@ -706,7 +706,7 @@ error:
         OS_MutexRecursiveUnlock(os_task_mutex);
     }
     IF_OK(s) {
-        OS_LOG(D_DEBUG, "Tasks are connected:\r\nsignal [%03u] %s > slot [%03u] %s",
+        OS_LOG(L_DEBUG_1, "Tasks are connected:\r\nsignal [%03u] %s > slot [%03u] %s",
                OS_TaskIdGet(signal_thd),
                OS_TaskNameGet(signal_thd),
                OS_TaskIdGet(slot_thd),
@@ -734,7 +734,7 @@ error:
         OS_MutexRecursiveUnlock(os_task_mutex);
     }
     IF_OK(s) {
-        OS_LOG(D_DEBUG, "Tasks are disconnected:\r\nsignal [%03u] %s | slot [%03u] %s",
+        OS_LOG(L_DEBUG_1, "Tasks are disconnected:\r\nsignal [%03u] %s | slot [%03u] %s",
                OS_TaskIdGet(signal_thd),
                OS_TaskNameGet(signal_thd),
                OS_TaskIdGet(slot_thd),

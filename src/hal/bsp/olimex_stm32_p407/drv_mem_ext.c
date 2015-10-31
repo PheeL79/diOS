@@ -71,7 +71,7 @@ Status MEM_EXT_SRAM512K_Init(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStruct;
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init: ");
+    HAL_LOG(L_INFO, "Init: ");
     /* Peripheral clock enable */
     __FSMC_CLK_ENABLE();
     /* Enable chosen DMAx clock */
@@ -182,7 +182,7 @@ Status s = S_OK;
     HAL_DMA_Init(&sram1_dma_hd);
 
     /* NVIC configuration for DMA transfer complete interrupt */
-    HAL_NVIC_SetPriority(SRAM_DMAx_IRQn, HAL_IRQ_PRIO_SRAM_DMA, 0);
+    HAL_NVIC_SetPriority(SRAM_DMAx_IRQn, HAL_PRIO_IRQ_DMA_SRAM, 0);
     HAL_NVIC_EnableIRQ(SRAM_DMAx_IRQn);
 
     FSMC_NORSRAM_TimingTypeDef Timing;
@@ -217,14 +217,14 @@ Status s = S_OK;
 
     HAL_SRAM_Init(&sram1_hd, &Timing, NULL);
 
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
 	//Memory test
-    HAL_LOG(D_INFO, "Test: ");
+    HAL_LOG(L_INFO, "Test: ");
     IF_STATUS(s = MEM_EXT_Test()) {
-        HAL_TRACE(D_INFO, "Failed!");
+        HAL_TRACE(L_INFO, "Failed!");
         return s;
     }
-    HAL_TRACE(D_INFO, "Passed");
+    HAL_TRACE(L_INFO, "Passed");
 	HAL_MemSet((void*)HAL_MEM_EXT_SRAM_BASE_ADDRESS, 0x00, HAL_MEM_EXT_SRAM_SIZE);
     return S_OK;
 }

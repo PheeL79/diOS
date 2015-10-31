@@ -18,16 +18,10 @@ Status TIMER_IWDG_Init(void)
 Status s = S_OK;
     __HAL_RCC_LSI_ENABLE();
     while (OS_TRUE != __HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY)) {};
-    /*##-3- Configure the IWDG peripheral ######################################*/
-    /* Set counter reload value to obtain 250ms IWDG TimeOut.
-     IWDG counter clock Frequency = LsiFreq / 32
-     Counter Reload Value = 250ms / IWDG counter clock period
-                          = 0.25s / (32/LsiFreq)
-                          = LsiFreq / (32 * 4)
-                          = LsiFreq / 128 */
-    iwdg_handle.Instance        = IWDG;
 
-    iwdg_handle.Init.Prescaler  = IWDG_PRESCALER_32;
+    iwdg_handle.Instance        = HAL_TIMER_IWDG_ITF;
+
+    iwdg_handle.Init.Prescaler  = HAL_TIMER_IWDG_PRESCALER;
     iwdg_handle.Init.Reload     = HAL_TIMER_IWDG_TIMEOUT;
 
     if (HAL_OK != HAL_IWDG_Init(&iwdg_handle)) {

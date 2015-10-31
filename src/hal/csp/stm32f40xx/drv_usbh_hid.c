@@ -65,7 +65,7 @@ OS_Message* msg_p;
         KeyboardDataTranslate(keyboard_info_p, &keyboard_data);
         msg_p = OS_MessageCreate(OS_MSG_USB_HID_KEYBOARD, &keyboard_data, sizeof(keyboard_data), OS_TIMEOUT_DRIVER);
     } else {
-        OS_LOG(D_WARNING, "Unknown HID type!");
+        OS_LOG(L_WARNING, "Unknown HID type!");
         OS_ASSERT(OS_FALSE);
     }
     OS_ASSERT_VALUE(OS_NULL != msg_p);

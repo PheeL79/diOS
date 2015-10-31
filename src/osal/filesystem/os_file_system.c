@@ -87,7 +87,7 @@ INLINE OS_FileSystemMediaConfigDyn* OS_FileSystemMediaConfigDynGet(const OS_File
 Status OS_FileSystemInit(void)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     os_fs_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_fs_mutex) { return S_INVALID_PTR; }
     OS_ListInit(&os_fs_list);
@@ -181,7 +181,7 @@ Status OS_FileSystemMediaInit(const OS_FileSystemMediaHd fs_media_hd, void* args
 {
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS media init: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS media init: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     {
         const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
         const OS_DriverHd drv_media_hd = cfg_dyn_p->dhd;
@@ -199,17 +199,17 @@ Status OS_FileSystemMediaDeInit(const OS_FileSystemMediaHd fs_media_hd)
 {
 Status s;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS media deinit: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS media deinit: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     const OS_DriverHd drv_media_hd = cfg_dyn_p->dhd;
     IF_STATUS(s = OS_DriverIoCtl(drv_media_hd, DRV_REQ_STD_SYNC, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     if (OS_NULL != drv_media_hd) {
         OS_FileSystemUnMount(fs_media_hd);
     }
     IF_STATUS(s = OS_DriverDeInit(drv_media_hd, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -236,7 +236,7 @@ Status OS_FileSystemMediaCurrentSet(const OS_FileSystemMediaHd fs_media_hd)
 {
 Status s;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS media set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS media set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     IF_OK(s = FResultTranslate(f_chdrive((const char*)cfg_dyn_p->volume))) {
 //        volume_curr = volume;
@@ -276,7 +276,7 @@ Status OS_FileSystemMake(const OS_FileSystemMediaHd fs_media_hd, const OS_FileSy
 const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
                         (OS_FS_PART_RULE_SFD   == part_rule) ? 1 : U8_MAX;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS make: %s, rule: %d, size: %u", OS_FileSystemMediaNameGet(fs_media_hd), part_rule, size);
+    OS_LOG(L_DEBUG_1, "FS make: %s, rule: %d, size: %u", OS_FileSystemMediaNameGet(fs_media_hd), part_rule, size);
     if (U8_MAX == fpart_rule) { return S_FS_INVALID_PARAMETER; }
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return FResultTranslate(f_mkfs((const char*)cfg_dyn_p->volume, fpart_rule, size));
@@ -287,7 +287,7 @@ const BYTE fpart_rule = (OS_FS_PART_RULE_FDISK == part_rule) ? 0 :
 Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 {
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS mount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS mount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
 #ifndef NDEBUG
     OS_MemSet(cfg_dyn_p->fshd, 0xF5, sizeof(FATFS));
@@ -305,7 +305,7 @@ Status OS_FileSystemMount(const OS_FileSystemMediaHd fs_media_hd, void* args_p)
 Status OS_FileSystemUnMount(const OS_FileSystemMediaHd fs_media_hd)
 {
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS unmount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS unmount volume: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     OS_DriverStats stats;
     Status s;
@@ -340,7 +340,7 @@ U8 OS_FileSystemVolumeGet(const OS_FileSystemMediaHd fs_media_hd)
 Status OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_hd, StrP label_p, U32* serial_p)
 {
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS vol label get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS vol label get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return FResultTranslate(f_getlabel((const char*)cfg_dyn_p->volume,
                                        (char*)label_p,
@@ -352,7 +352,7 @@ Status OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrP 
 {
 Str vol_label[OS_FILE_SYSTEM_VOLUME_STR_LEN + OS_FILE_SYSTEM_VOLUME_NAME_LEN];
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS vol label set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS vol label set: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     OS_StrNCpy(vol_label, (char const*)cfg_dyn_p->volume, OS_FILE_SYSTEM_VOLUME_STR_LEN);
     OS_StrCat( vol_label, (char const*)label_p);
@@ -365,7 +365,7 @@ Status OS_FileSystemVolumeStatsGet(const OS_FileSystemMediaHd fs_media_hd, OS_Fi
 Status s = S_UNDEF;
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
     if (OS_NULL == stats_p) { return S_INVALID_PTR; }
-    OS_LOG(D_DEBUG, "FS vol stats get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS vol stats get: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     FATFS* fs_p = cfg_dyn_p->fshd;
     OS_MemSet(stats_p, 0x0, sizeof(OS_FileSystemVolumeStats));
@@ -399,7 +399,7 @@ Status s = S_UNDEF;
 Status OS_FileSystemClustersFreeGet(const OS_FileSystemMediaHd fs_media_hd, const StrP path_p, U32* clusters_free_count_p)
 {
     OS_ASSERT_VALUE(OS_NULL != fs_media_hd);
-    OS_LOG(D_DEBUG, "FS clusters free: %s", OS_FileSystemMediaNameGet(fs_media_hd));
+    OS_LOG(L_DEBUG_1, "FS clusters free: %s", OS_FileSystemMediaNameGet(fs_media_hd));
     const OS_FileSystemMediaConfigDyn* cfg_dyn_p = OS_FileSystemMediaConfigDynGet(fs_media_hd);
     return FResultTranslate(f_getfree((const char*)path_p, (DWORD*)clusters_free_count_p, (FATFS**)&cfg_dyn_p->fshd));
 }
@@ -412,7 +412,7 @@ OS_FileStats stats_file;
 Size path_len;
 StrP file_name_p;
 Status s = S_UNDEF;
-    OS_LOG(D_DEBUG, "FS volume scan: %s", path_p);
+    OS_LOG(L_DEBUG_1, "FS volume scan: %s", path_p);
     if (OS_NULL == stats_p) { return S_INVALID_PTR; }
     dir_hd = OS_Malloc(sizeof(DIR));
     if (OS_NULL == dir_hd) { return S_OUT_OF_MEMORY; }
@@ -452,10 +452,10 @@ error:
 }
 
 /******************************************************************************/
-Status OS_FileCreate(OS_FileHd*fhd_p, ConstStrP file_path_p, const OS_FileOpenMode op_mode)
+Status OS_FileCreate(OS_FileHd* fhd_p, ConstStrP file_path_p, const OS_FileOpenMode op_mode)
 {
 OS_FileOpenMode op_mode_create = op_mode;
-    OS_LOG(D_DEBUG, "File create: %s", file_path_p);
+    OS_LOG(L_DEBUG_1, "File create: %s", file_path_p);
     BIT_SET(op_mode_create, BIT(OS_FS_FILE_OP_MODE_CREATE_NEW));
     return OS_FileOpen(fhd_p, file_path_p, op_mode_create);
 }
@@ -463,20 +463,20 @@ OS_FileOpenMode op_mode_create = op_mode;
 /******************************************************************************/
 Status OS_FileDelete(ConstStrP file_path_p)
 {
-    OS_LOG(D_DEBUG, "File delete: %s", file_path_p);
+    OS_LOG(L_DEBUG_1, "File delete: %s", file_path_p);
     return FResultTranslate(f_unlink((const char*)file_path_p));
 }
 
 /******************************************************************************/
-Status OS_FileOpen(OS_FileHd*fhd_p, ConstStrP file_path_p, const OS_FileOpenMode op_mode)
+Status OS_FileOpen(OS_FileHd* fhd_p, ConstStrP file_path_p, const OS_FileOpenMode op_mode)
 {
 *fhd_p = OS_Malloc(sizeof(FIL));
 const OS_FileHd fhd = *fhd_p;
 Status s;
     if (OS_NULL == fhd) { return S_OUT_OF_MEMORY; }
     s = FResultTranslate(f_open(fhd, (const char*)file_path_p, FOpenModeConvert(op_mode)));
-    OS_LOG(D_DEBUG, "File open : 0x%X %s", fhd, file_path_p);
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    OS_LOG(L_DEBUG_1, "File open : 0x%X %s", fhd, file_path_p);
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 
@@ -484,7 +484,7 @@ Status s;
 Status OS_FileClose(OS_FileHd* fhd_p)
 {
 const OS_FileHd fhd = *fhd_p;
-    OS_LOG(D_DEBUG, "File close: 0x%X", fhd);
+    OS_LOG(L_DEBUG_1, "File close: 0x%X", fhd);
 Status s = FResultTranslate(f_close(fhd));
     OS_Free(fhd);
     *fhd_p = OS_NULL;
@@ -495,7 +495,7 @@ Status s = FResultTranslate(f_close(fhd));
 Status OS_FileRead(const OS_FileHd fhd, void* data_in_p, Size size)
 {
 UInt bytes_read;
-    OS_LOG(D_DEBUG, "File read: 0x%X", fhd);
+    OS_LOG(L_DEBUG_1, "File read: 0x%X", fhd);
 Status s = FResultTranslate(f_read(fhd, data_in_p, size, &bytes_read));
     if (0 == bytes_read) {
         s = S_FS_EOF;
@@ -509,7 +509,7 @@ Status s = FResultTranslate(f_read(fhd, data_in_p, size, &bytes_read));
 Status OS_FileWrite(const OS_FileHd fhd, void* data_out_p, Size size)
 {
 UInt bytes_written;
-    OS_LOG(D_DEBUG, "File write: 0x%X", fhd);
+    OS_LOG(L_DEBUG_1, "File write: 0x%X", fhd);
 Status s = FResultTranslate(f_write(fhd, data_out_p, size, &bytes_written));
     if (bytes_written != size) {
         s = S_INVALID_SIZE;
@@ -520,7 +520,7 @@ Status s = FResultTranslate(f_write(fhd, data_out_p, size, &bytes_written));
 /******************************************************************************/
 Status OS_FileRename(ConstStrP name_old_p, ConstStrP name_new_p)
 {
-    OS_LOG(D_DEBUG, "File rename: %s -> %s", name_old_p, name_new_p);
+    OS_LOG(L_DEBUG_1, "File rename: %s -> %s", name_old_p, name_new_p);
     return FResultTranslate(f_rename((const char*)name_old_p, (const char*)name_new_p));
 }
 
@@ -532,14 +532,14 @@ FILINFO file_info;
 const DWORD fattime = FDateTimeConvert(date_time);
     file_info.fdate = (fattime >> 16) & 0xFFFF;
     file_info.ftime = fattime & 0xFFFF;
-    OS_LOG(D_DEBUG, "File date/time set: %s", file_path_p);
+    OS_LOG(L_DEBUG_1, "File date/time set: %s", file_path_p);
     return FResultTranslate(f_utime((const char*)file_path_p, &file_info));
 }
 
 /******************************************************************************/
 Status OS_FileAttributesSet(ConstStrP file_path_p, const OS_FileAttrs attrs)
 {
-    OS_LOG(D_DEBUG, "File attrs set: %s", file_path_p);
+    OS_LOG(L_DEBUG_1, "File attrs set: %s", file_path_p);
     return FResultTranslate(f_chmod((const char*)file_path_p, FAttributesConvert(attrs), (BYTE)~0U));
 }
 
@@ -592,14 +592,14 @@ U32 OS_FileTell(const OS_FileHd fhd)
 /******************************************************************************/
 Status OS_DirectoryCreate(ConstStrP path_p)
 {
-    OS_LOG(D_DEBUG, "Dir create: %s", path_p);
+    OS_LOG(L_DEBUG_1, "Dir create: %s", path_p);
     return FResultTranslate(f_mkdir((const char*)path_p));
 }
 
 /******************************************************************************/
 Status OS_DirectoryDelete(ConstStrP path_p)
 {
-    OS_LOG(D_DEBUG, "Dir delete: %s", path_p);
+    OS_LOG(L_DEBUG_1, "Dir delete: %s", path_p);
     return OS_FileDelete(path_p);
 }
 
@@ -608,7 +608,7 @@ Status OS_DirectoryOpen(OS_DirHd dhd, StrP path_p)
 {
 Status s = FResultTranslate(f_opendir(dhd, (const char*)path_p));
     //FDirTranslate(&dir, dhd_p);
-    OS_LOG(D_DEBUG, "Dir open: 0x%X %s", dhd, path_p);
+    OS_LOG(L_DEBUG_1, "Dir open: 0x%X %s", dhd, path_p);
     return s;
 }
 
@@ -616,7 +616,7 @@ Status s = FResultTranslate(f_opendir(dhd, (const char*)path_p));
 Status OS_DirectoryRead(OS_DirHd dhd, OS_FileStats* file_stats_p)
 {
 FILINFO file_info;
-    OS_LOG(D_DEBUG, "Dir read: 0x%X", dhd);
+    OS_LOG(L_DEBUG_1, "Dir read: 0x%X", dhd);
     if ((OS_NULL == dhd) || (OS_NULL == file_stats_p)) { return S_INVALID_PTR; }
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
     file_info.lfname = (char*)file_stats_p->long_name_p;
@@ -639,7 +639,7 @@ FILINFO file_info;
 /******************************************************************************/
 Status OS_DirectoryRename(ConstStrP name_old_p, ConstStrP name_new_p)
 {
-    OS_LOG(D_DEBUG, "Dir rename: %s -> %s", name_old_p, name_new_p);
+    OS_LOG(L_DEBUG_1, "Dir rename: %s -> %s", name_old_p, name_new_p);
     return OS_FileRename(name_old_p, name_new_p);
 }
 

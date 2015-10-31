@@ -15,8 +15,6 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME    "drv_eth"
 
-#define ETH0_OS_MEM_TYPE                OS_MEM_RAM_INT_SRAM
-
 //-----------------------------------------------------------------------------
 /// @brief   Init ETH.
 /// @return  #Status.
@@ -66,26 +64,26 @@ Status ETH__Init(void* args_p)
 {
 const OS_NetworkItfInitArgs* init_args_p = (OS_NetworkItfInitArgs*)args_p;
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init: ");
-    dma_rx_desc_tab_p   = OS_MallocEx(sizeof(ETH_DMADescTypeDef) * ETH_RXBUFNB, ETH0_OS_MEM_TYPE);
-    dma_tx_desc_tab_p   = OS_MallocEx(sizeof(ETH_DMADescTypeDef) * ETH_TXBUFNB, ETH0_OS_MEM_TYPE);
-    rx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_RXBUFNB * ETH_RX_BUF_SIZE, ETH0_OS_MEM_TYPE);
-    tx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_TXBUFNB * ETH_TX_BUF_SIZE, ETH0_OS_MEM_TYPE);
+    HAL_LOG(L_INFO, "Init: ");
+    dma_rx_desc_tab_p   = OS_MallocEx(sizeof(ETH_DMADescTypeDef) * ETH_RXBUFNB, HAL_ETH_MEM_TYPE);
+    dma_tx_desc_tab_p   = OS_MallocEx(sizeof(ETH_DMADescTypeDef) * ETH_TXBUFNB, HAL_ETH_MEM_TYPE);
+    rx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_RXBUFNB * ETH_RX_BUF_SIZE, HAL_ETH_MEM_TYPE);
+    tx_buff_p           = OS_MallocEx(sizeof(U8) * ETH_TXBUFNB * ETH_TX_BUF_SIZE, HAL_ETH_MEM_TYPE);
     if ((OS_NULL == dma_rx_desc_tab_p) || (OS_NULL == dma_tx_desc_tab_p) ||
         (OS_NULL == rx_buff_p) || (OS_NULL == tx_buff_p)) {
         return s = S_OUT_OF_MEMORY;
     }
     IF_OK(s = ETH_LL_Init(OS_NULL)) {
         /* Init ETH */
-        eth0_hd.Instance             = ETH;
-        eth0_hd.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
-        eth0_hd.Init.Speed           = ETH_SPEED_100M;
-        eth0_hd.Init.DuplexMode      = ETH_MODE_FULLDUPLEX;
-        eth0_hd.Init.PhyAddress      = ETH0_PHY_ADDR;
-        eth0_hd.Init.MACAddr         = (U8*)(init_args_p->mac_addr_p);
-        eth0_hd.Init.RxMode          = ETH_RXINTERRUPT_MODE;
-        eth0_hd.Init.ChecksumMode    = ETH_CHECKSUM_BY_HARDWARE;
-        eth0_hd.Init.MediaInterface  = ETH_MEDIA_INTERFACE_RMII;
+        eth0_hd.Instance             = HAL_ETH_ITF;
+        eth0_hd.Init.AutoNegotiation = HAL_ETH_AUTO_NEGOTIATION;
+        eth0_hd.Init.Speed           = HAL_ETH_SPEED;
+        eth0_hd.Init.DuplexMode      = HAL_ETH_MODE_DUPLEX;
+        eth0_hd.Init.PhyAddress      = HAL_ETH_ADDR_PHYSICAL;
+        eth0_hd.Init.MACAddr         = HAL_ETH_ADDR_MAC;
+        eth0_hd.Init.RxMode          = HAL_ETH_MODE_RX;
+        eth0_hd.Init.ChecksumMode    = HAL_ETH_MODE_CHECKSUM;
+        eth0_hd.Init.MediaInterface  = HAL_ETH_ITF_MEDIA;
         if (HAL_OK == HAL_ETH_Init(&eth0_hd)) {
             IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_PHY_ID_TEST, OS_NULL)) {
                 IF_OK(s = DRV_ETH0_PHY.Init(OS_NULL)) {
@@ -100,7 +98,7 @@ Status s = S_UNDEF;
             }
         } else { s = S_HARDWARE_ERROR; }
     }
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -108,14 +106,14 @@ Status s = S_UNDEF;
 Status ETH__DeInit(void* args_p)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "DeInit: ");
+    HAL_LOG(L_INFO, "DeInit: ");
     IF_OK(s = ETH_LL_DeInit(OS_NULL)) {
-        OS_FreeEx(tx_buff_p, ETH0_OS_MEM_TYPE);
-        OS_FreeEx(rx_buff_p, ETH0_OS_MEM_TYPE);
-        OS_FreeEx(dma_tx_desc_tab_p, ETH0_OS_MEM_TYPE);
-        OS_FreeEx(dma_rx_desc_tab_p, ETH0_OS_MEM_TYPE);
+        OS_FreeEx(tx_buff_p, HAL_ETH_MEM_TYPE);
+        OS_FreeEx(rx_buff_p, HAL_ETH_MEM_TYPE);
+        OS_FreeEx(dma_tx_desc_tab_p, HAL_ETH_MEM_TYPE);
+        OS_FreeEx(dma_rx_desc_tab_p, HAL_ETH_MEM_TYPE);
     }
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -131,41 +129,43 @@ Status s = S_OK;
     /* Enable GPIOs clocks */
     HAL_ETH_GPIO_CLK_ENABLE();
     /* ETH GPIO Configuration */
-    GPIO_InitStruct.Pin = HAL_ETH_GPIO1_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
-    HAL_GPIO_Init(HAL_ETH_GPIO1, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin         = HAL_ETH_GPIO1_PIN;
+    GPIO_InitStruct.Mode        = HAL_ETH_GPIO1_MODE;
+    GPIO_InitStruct.Pull        = HAL_ETH_GPIO1_PULL;
+    GPIO_InitStruct.Speed       = HAL_ETH_GPIO1_SPEED;
+    GPIO_InitStruct.Alternate   = HAL_ETH_GPIO1_ALT;
+    HAL_GPIO_Init(HAL_ETH_GPIO1_PORT, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = HAL_ETH_GPIO2_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
-    HAL_GPIO_Init(HAL_ETH_GPIO2, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin         = HAL_ETH_GPIO2_PIN;
+    GPIO_InitStruct.Mode        = HAL_ETH_GPIO2_MODE;
+    GPIO_InitStruct.Pull        = HAL_ETH_GPIO2_PULL;
+    GPIO_InitStruct.Speed       = HAL_ETH_GPIO2_SPEED;
+    GPIO_InitStruct.Alternate   = HAL_ETH_GPIO2_ALT;
+    HAL_GPIO_Init(HAL_ETH_GPIO2_PORT, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = HAL_ETH_GPIO3_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(HAL_ETH_GPIO3, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin         = HAL_ETH_GPIO3_PIN;
+    GPIO_InitStruct.Mode        = HAL_ETH_GPIO3_MODE;
+    GPIO_InitStruct.Pull        = HAL_ETH_GPIO3_PULL;
+    GPIO_InitStruct.Speed       = HAL_ETH_GPIO3_SPEED;
+    GPIO_InitStruct.Alternate   = HAL_ETH_GPIO3_ALT;
+    HAL_GPIO_Init(HAL_ETH_GPIO3_PORT, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = HAL_ETH_GPIO4_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
-    HAL_GPIO_Init(HAL_ETH_GPIO4, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin         = HAL_ETH_GPIO4_PIN;
+    GPIO_InitStruct.Mode        = HAL_ETH_GPIO4_MODE;
+    GPIO_InitStruct.Pull        = HAL_ETH_GPIO4_PULL;
+    GPIO_InitStruct.Speed       = HAL_ETH_GPIO4_SPEED;
+    GPIO_InitStruct.Alternate   = HAL_ETH_GPIO4_ALT;
+    HAL_GPIO_Init(HAL_ETH_GPIO4_PORT, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = HAL_ETH_GPIO5_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = HAL_ETH_GPIO_AF;
-    HAL_GPIO_Init(HAL_ETH_GPIO5, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin         = HAL_ETH_GPIO5_PIN;
+    GPIO_InitStruct.Mode        = HAL_ETH_GPIO5_MODE;
+    GPIO_InitStruct.Pull        = HAL_ETH_GPIO5_PULL;
+    GPIO_InitStruct.Speed       = HAL_ETH_GPIO5_SPEED;
+    GPIO_InitStruct.Alternate   = HAL_ETH_GPIO5_ALT;
+    HAL_GPIO_Init(HAL_ETH_GPIO5_PORT, &GPIO_InitStruct);
 
-    HAL_NVIC_SetPriority(HAL_ETH_IRQ, HAL_IRQ_PRIO_ETH, 0);
-    HAL_NVIC_SetPriority(HAL_ETH_MDINT_IRQ, HAL_IRQ_PRIO_ETH0_MDINT, 0);
+    HAL_NVIC_SetPriority(HAL_ETH_IRQ, HAL_PRIO_IRQ_ETH, 0);
+    HAL_NVIC_SetPriority(HAL_ETH_MDINT_IRQ, HAL_PRIO_IRQ_ETH0_MDINT, 0);
     HAL_NVIC_EnableIRQ(HAL_ETH_IRQ);
     HAL_NVIC_EnableIRQ(HAL_ETH_MDINT_IRQ);
     return s;
@@ -186,10 +186,10 @@ Status s = S_UNDEF;
         HAL_ETH_MAC_TX_CLK_DISABLE();
         HAL_ETH_CLK_DISABLE();
         /* ETH GPIO Configuration */
-        HAL_GPIO_DeInit(HAL_ETH_GPIO1, HAL_ETH_GPIO1_PIN);
-        HAL_GPIO_DeInit(HAL_ETH_GPIO2, HAL_ETH_GPIO2_PIN);
-        HAL_GPIO_DeInit(HAL_ETH_GPIO3, HAL_ETH_GPIO3_PIN);
-        HAL_GPIO_DeInit(HAL_ETH_GPIO4, HAL_ETH_GPIO4_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO1_PORT, HAL_ETH_GPIO1_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO2_PORT, HAL_ETH_GPIO2_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO3_PORT, HAL_ETH_GPIO3_PIN);
+        HAL_GPIO_DeInit(HAL_ETH_GPIO4_PORT, HAL_ETH_GPIO4_PIN);
         /* Peripheral interrupt Deinit */
         HAL_NVIC_DisableIRQ(HAL_ETH_IRQ);
         HAL_NVIC_DisableIRQ(HAL_ETH_MDINT_IRQ);
@@ -457,7 +457,7 @@ const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_RX, 0);
 void HAL_ETH_IRQ_HANDLER(void);
 void HAL_ETH_IRQ_HANDLER(void)
 {
-    HAL_NVIC_ClearPendingIRQ(ETH_IRQn);
+    HAL_NVIC_ClearPendingIRQ(HAL_ETH_IRQ);
     HAL_ETH_IRQHandler(&eth0_hd);
 }
 

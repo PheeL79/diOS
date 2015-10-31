@@ -74,21 +74,21 @@ OS_ListItem* item_next_p;
     for (SIZE i = 0; i < 0x10; ++i) {
         item_l_p = OS_ListItemCreate();
         if (OS_NULL == item_l_p) {
-            OS_TRACE(D_CRITICAL, "No memory!\n", OS_NULL);
+            OS_TRACE(L_CRITICAL, "No memory!\n", OS_NULL);
         }
         OS_LIST_ITEM_VALUE_SET(item_l_p, (OS_Value)(rand() % U8_MAX));
         OS_ListAppend(&os_test_list, item_l_p);
     }
-    OS_LOG(D_DEBUG, "Initial list:");
+    OS_LOG(L_DEBUG_1, "Initial list:");
     TestListLog(&os_test_list);
     // Sort the list.
     TestListSort(&os_test_list, SORT_ASCENDING);
-    OS_LOG(D_DEBUG, "List sorted by ascending:");
+    OS_LOG(L_DEBUG_1, "List sorted by ascending:");
     TestListLog(&os_test_list);
     TestListSort(&os_test_list, SORT_DESCENDING);
-    OS_LOG(D_DEBUG, "List sorted by descending:");
+    OS_LOG(L_DEBUG_1, "List sorted by descending:");
     TestListLog(&os_test_list);
-    OS_TRACE(D_DEBUG, "\n", OS_NULL);
+    OS_TRACE(L_DEBUG_1, "\n", OS_NULL);
     // Clean up.
     item_l_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(&os_test_list));
     while (OS_TRUE != OS_LIST_IS_EMPTY(&os_test_list)) {
@@ -137,10 +137,10 @@ OS_ListItem* item_l_p;
 
     if (OS_NULL == list_p) { return; }
     // Trace the results.
-    OS_TRACE(D_DEBUG, "\n", OS_NULL);
+    OS_TRACE(L_DEBUG_1, "\n", OS_NULL);
     item_l_p = OS_LIST_ITEM_NEXT_GET((OS_ListItem*)&OS_LIST_ITEM_LAST_GET(list_p));
     while (OS_DELAY_MAX != OS_LIST_ITEM_VALUE_GET(item_l_p)) {
-        OS_TRACE(D_DEBUG, "%d ", (int)OS_LIST_ITEM_VALUE_GET(item_l_p));
+        OS_TRACE(L_DEBUG_1, "%d ", (int)OS_LIST_ITEM_VALUE_GET(item_l_p));
         item_l_p = OS_LIST_ITEM_NEXT_GET(item_l_p);
     }
 }

@@ -22,7 +22,7 @@
 //-----------------------------------------------------------------------------
 //Task arguments
 typedef struct {
-    OS_DriverHd             drv_led_fs;
+    OS_DriverHd             drv_gpio;
 #if defined(OS_MEDIA_VOL_SDRAM)
     OS_FileSystemMediaHd    fs_media_sdram_hd;
 #endif //defined(OS_MEDIA_VOL_SDRAM)
@@ -57,17 +57,8 @@ Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 TaskStorage* tstor_p = (TaskStorage*)args_p->stor_p;
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init");
-    {
-        //Led FS driver Create/Init
-        const OS_DriverConfig drv_cfg = {
-            .name       = "LED_FS",
-            .itf_p      = drv_led_v[DRV_ID_LED_FS],
-            .prio_power = OS_PWR_PRIO_DEFAULT
-        };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, &(tstor_p->drv_led_fs))) { return s; }
-        IF_STATUS(s = OS_DriverInit(tstor_p->drv_led_fs, OS_NULL)) { return s; }
-    }
+    HAL_LOG(L_INFO, "Init");
+    tstor_p->drv_gpio = OS_DriverGpioGet();
 #if defined(OS_MEDIA_VOL_SDRAM)
     {
         OS_DriverConfig drv_cfg = {
@@ -148,7 +139,7 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            //OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+            //OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
 //#if defined(OS_MEDIA_VOL_USBH_FS) || defined(OS_MEDIA_VOL_USBH_HS)
@@ -184,10 +175,10 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
                         case OS_SIG_TASK_DISCONNECT:
                             break;
                         default:
-                            OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                            OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                             break;
                     }
-//                    OS_LOG(D_DEBUG, "%s %s%s", itf_str_p, class_str_p, state_str_p);
+//                    OS_LOG(L_DEBUG_1, "%s %s%s", itf_str_p, class_str_p, state_str_p);
 //                }
 //#endif //defined(OS_MEDIA_VOL_USBH_FS) || defined(OS_MEDIA_VOL_USBH_HS)
             } else {
@@ -208,19 +199,19 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 #if defined(OS_MEDIA_VOL_USBH_HS)
                         fs_media_usb_hd = tstor_p->fs_media_usbh_hs_hd;
 #endif //defined(OS_MEDIA_VOL_USBH_HS)
-                    } else { OS_LOG_S(D_WARNING, S_UNDEF_ITF); }
+                    } else { OS_LOG_S(L_WARNING, S_UNDEF_ITF); }
                     if (OS_USB_CLASS_MSC == usb_ev_data_p->class) {
                         if (OS_MSG_USB_CONNECT == msg_p->id) {
                             IF_OK(s = OS_FileSystemMediaInit(fs_media_usb_hd, (void*)&drv_args)) {
                                 if (!OS_StrCmp(OS_EnvVariableGet("media_automount"), "on")) {
                                     IF_OK(s = OS_FileSystemMount(fs_media_usb_hd, OS_NULL)) {
-                                    } else { OS_LOG_S(D_WARNING, s); }
+                                    } else { OS_LOG_S(L_WARNING, s); }
                                 }
-                            } else { OS_LOG_S(D_WARNING, s); }
+                            } else { OS_LOG_S(L_WARNING, s); }
                         } else if (OS_MSG_USB_DISCONNECT == msg_p->id) {
                             IF_OK(s = OS_FileSystemUnMount(fs_media_usb_hd)) {
                             }
-                        } else { OS_LOG_S(D_WARNING, S_UNDEF_CLASS); }
+                        } else { OS_LOG_S(L_WARNING, S_UNDEF_CLASS); }
                     }
                 }
 #endif //defined(OS_MEDIA_VOL_USBH_FS) || defined(OS_MEDIA_VOL_USBH_HS)
@@ -239,10 +230,14 @@ Status s = S_OK;
         case PWR_STARTUP:
             IF_STATUS(s = OS_TaskInit(args_p)) {}
             break;
-        case PWR_ON:
-            IF_STATUS(s = OS_DriverOpen(tstor_p->drv_led_fs, OS_NULL)) { goto error; }
+        case PWR_ON: {
+            IF_STATUS(s = OS_DriverOpen(tstor_p->drv_gpio, OS_NULL)) { goto error; }
+            const DrvMediaArgsInit args = {
+                .drv_gpio = tstor_p->drv_gpio,
+                .gpio_led = GPIO_LED_FS
+            };
 #if defined(OS_MEDIA_VOL_SDRAM)
-            IF_STATUS(s = OS_FileSystemMediaInit(tstor_p->fs_media_sdram_hd, &(tstor_p->drv_led_fs))) { goto error; }
+            IF_STATUS(s = OS_FileSystemMediaInit(tstor_p->fs_media_sdram_hd, (void*)&args)) { goto error; }
             //TODO(A. Filyanov) Emit signal from the driver!
             if (!OS_StrCmp(OS_EnvVariableGet("media_automount"), "on")) {
                 IF_STATUS(S_FS_NO_FILESYSTEM == OS_FileSystemMount(tstor_p->fs_media_sdram_hd, OS_NULL)) {
@@ -252,13 +247,14 @@ Status s = S_OK;
             }
 #endif //defined(OS_MEDIA_VOL_SDRAM)
 #if defined(OS_MEDIA_VOL_SDCARD)
-            IF_STATUS(s = OS_FileSystemMediaInit(tstor_p->fs_media_sdcard_hd, &(tstor_p->drv_led_fs))) { goto error; }
+            IF_STATUS(s = OS_FileSystemMediaInit(tstor_p->fs_media_sdcard_hd, (void*)&args)) { goto error; }
             //TODO(A. Filyanov) Emit signal from the driver!
             if (!OS_StrCmp(OS_EnvVariableGet("media_automount"), "on")) {
                 IF_OK(OS_FileSystemMount(tstor_p->fs_media_sdcard_hd, OS_NULL)) {
                 }
             }
 #endif //defined(OS_MEDIA_VOL_SDCARD)
+            }
             break;
         case PWR_STOP:
         case PWR_SHUTDOWN:
@@ -276,14 +272,14 @@ Status s = S_OK;
 #endif //defined(OS_MEDIA_VOL_USBH_HS)
             if (PWR_SHUTDOWN == state) {
                 //Led FS Close/Deinit
-                IF_STATUS(s = OS_DriverDeInit(tstor_p->drv_led_fs, OS_NULL)) { goto error; }
+                IF_STATUS(s = OS_DriverClose(tstor_p->drv_gpio, OS_NULL)) { goto error; }
             }
             break;
         default:
             break;
     }
 error:
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 

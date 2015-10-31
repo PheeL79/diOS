@@ -81,7 +81,7 @@ Status s = S_UNDEF;
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            //OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+            //OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -91,21 +91,21 @@ Status s = S_UNDEF;
                         const OS_AudioVolume volume = (OS_AudioVolume)OS_SignalDataGet(msg_p);
                         Str volume_str[4];
                             if (0 > OS_SNPrintF(volume_str, sizeof(volume_str), "%u", volume)) {
-                                OS_LOG_S(D_WARNING, S_INVALID_VALUE);
+                                OS_LOG_S(L_WARNING, S_INVALID_VALUE);
                             }
                             IF_STATUS(s = OS_EnvVariableSet(env_var_str_p, volume_str, OS_NULL)) {
-                                OS_LOG_S(D_WARNING, s);
+                                OS_LOG_S(L_WARNING, s);
                             }
                         }
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
@@ -163,7 +163,7 @@ Status s = S_UNDEF;
             break;
     }
 error:
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 

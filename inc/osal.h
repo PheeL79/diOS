@@ -29,6 +29,7 @@ typedef struct {
     volatile HAL_Env*   hal_env_p;
     OS_DriverHd         drv_stdin;
     OS_DriverHd         drv_stdout;
+    OS_DriverHd         drv_gpio;
     OS_DriverHd         drv_rtc;
 #if (OS_AUDIO_ENABLED)
     OS_AudioVolume      volume;

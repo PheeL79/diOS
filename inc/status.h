@@ -22,11 +22,14 @@
 
     /// @brief Log levels.
     enum {
-        D_NONE,         ///< verbose off
-        D_CRITICAL,     ///< critical errors
-        D_WARNING,      ///< warnings
-        D_INFO,         ///< information
-        D_DEBUG         ///< debug
+        L_NONE,         ///< verbose off
+        L_CRITICAL,     ///< critical errors
+        L_WARNING,      ///< warnings
+        L_INFO,         ///< information
+        L_DEBUG_3,      ///< debug level 3
+        L_DEBUG_2,      ///< debug level 2
+        L_DEBUG_1,      ///< debug level 1
+        L_LAST
     };
     typedef U8 LogLevel;
 
@@ -49,7 +52,7 @@
     #define HAL_TRACE(level, ...)           TracePrint(level, __VA_ARGS__)
     #define HAL_TRACE_S(level, status)      HAL_TRACE(level, StatusStringGet(status, MDL_STATUS_ITEMS))
 
-    #if (D_DEBUG == HAL_ASSERT_LEVEL)
+    #if (L_DEBUG_1 == HAL_ASSERT_LEVEL)
         void HAL_ASSERT_FAILED(U8* file, U32 line);
         #define HAL_ASSERT(e)               if (!(e)) { HAL_ASSERT_FAILED((U8*)__FILE__, __LINE__); }
         #define HAL_ASSERT_VALUE(e)         HAL_ASSERT(e)
@@ -67,7 +70,7 @@
 /// @brief Overloaded status checking macro.
 /// @details Usage:
 ///          Status s = S_MDL;
-///          IF_STATUS(s) { D_LOG_S(D_WARNING, s); return s; }
+///          IF_STATUS(s) { D_LOG_S(L_WARNING, s); return s; }
 ///          IF_OK(s) {
 ///                     ...
 ///                   }

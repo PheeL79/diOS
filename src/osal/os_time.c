@@ -44,7 +44,7 @@ Status s;
         case OS_TIME_UPTIME:
             break;
         default:
-            OS_Trace(D_WARNING, "\nUndefined time format!");
+            OS_Trace(L_WARNING, "\nUndefined time format!");
             break;
     }
     return s;

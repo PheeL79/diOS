@@ -433,7 +433,7 @@ Status s = S_OK;
             OS_Message* msg_p;
             do {
                 IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-                    OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+                    OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
                     return S_INVALID_MESSAGE;
                 } else {
                     if (OS_SignalIs(msg_p)) {
@@ -447,13 +447,13 @@ Status s = S_OK;
                             case OS_SIG_STDOUT: //emited by OS_Log
                                 break;
                             default:
-                                OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                                OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                                 break;
                         }
                     } else {
                         switch (msg_p->id) {
                             default:
-                                OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                                OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                                 break;
                         }
                         OS_MessageDelete(msg_p); // free message allocated memory

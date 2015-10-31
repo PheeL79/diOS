@@ -51,8 +51,8 @@ Status s = S_OK;
 Status POWER_Init(void* args_p)
 {
 Status s = S_OK;
-    //D_LOG(D_INFO, "Init: ");
-    //D_TRACE_S(D_INFO, S_OK);
+    //D_LOG(L_INFO, "Init: ");
+    //D_TRACE_S(L_INFO, S_OK);
     return s;
 }
 
@@ -60,8 +60,8 @@ Status s = S_OK;
 Status POWER_DeInit(void* args_p)
 {
 Status s = S_OK;
-//    D_LOG(D_INFO, "DeInit: ");
-//    D_TRACE_S(D_INFO, s);
+//    D_LOG(L_INFO, "DeInit: ");
+//    D_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -160,7 +160,7 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                     s = S_OK;
                     break;
                 default:
-                    OS_LOG_S(D_WARNING, s = S_INVALID_STATE);
+                    OS_LOG_S(L_WARNING, s = S_INVALID_STATE);
                     break;
             }
             break;

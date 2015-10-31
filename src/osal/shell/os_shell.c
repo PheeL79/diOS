@@ -270,7 +270,7 @@ static BL is_ctrl = OS_FALSE;
             OS_ShellControlEcho(OS_SHELL_BUTTON_UP); //Cursor up to cancel remote terminal LF.
 #endif // (OS_SHELL_EDIT_ENABLED)
             const Status s = OS_ShellCommandExecute();
-            const OS_LogLevel level = (S_OK != s) ? D_WARNING : D_INFO;
+            const OS_LogLevel level = (S_OK != s) ? L_WARNING : L_INFO;
             OS_ShellClClear();
             OS_LOG_S(level, s);
             }

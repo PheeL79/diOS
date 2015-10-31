@@ -7,10 +7,6 @@
 #define _DRV_TIMER_H_
 
 //-----------------------------------------------------------------------------
-#define TIMER_STOPWATCH             TIM5
-#define TIMER_TIMESTAMP             TIM10
-
-//-----------------------------------------------------------------------------
 enum {
     DRV_ID_TIMER_IWDG,
     DRV_ID_TIMER1,
@@ -48,7 +44,10 @@ Status      TIMER_IWDG_Start(void);
 void        TIMER_IWDG_Reset(void);
 
 void        TIMER_DWT_Init(void);
-Long        TIMER_DWT_Get(void);
+void        TIMER_DWT_Start(void);
+void        TIMER_DWT_Stop(void);
+void        TIMER_DWT_Reset(void);
+U32         TIMER_DWT_Get(void);
 //TODO(A. Filyanov) Move to the driver's private interface.
 void        TIMER10_Reset(void);
 void        TIMER10_Start(void);

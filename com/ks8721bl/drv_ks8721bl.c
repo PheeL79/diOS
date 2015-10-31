@@ -309,7 +309,7 @@ error:
             break;
         default:
             s = S_INVALID_REQ_ID;
-            HAL_LOG_S(D_WARNING, s);
+            HAL_LOG_S(L_WARNING, s);
             break;
     }
     return s;

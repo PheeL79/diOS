@@ -125,7 +125,7 @@ Status s = S_OK;
             os_s = xQueueSendToBack(queue_hd, item_p, ticks);
         } else {
             Status s = S_INVALID_ARG;
-            OS_LOG_S(D_WARNING, s);
+            OS_LOG_S(L_WARNING, s);
             return s;
         }
         if (pdTRUE != os_s) {
@@ -134,14 +134,14 @@ Status s = S_OK;
             } else {
                 s = S_MODULE;
             }
-//            OS_LOG_S(D_WARNING, s);
+//            OS_LOG_S(L_WARNING, s);
         }
 #if (OS_STATS_ENABLED)
         cfg_dyn_p->stats.sended++;
 #endif //(OS_STATS_ENABLED)
     } else {
         s = S_INVALID_QUEUE;
-//        OS_LOG_S(D_WARNING, s);
+//        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -266,7 +266,7 @@ Status s = S_OK;
             os_s = xQueueSendToBackFromISR(queue_hd, item_p, &xHigherPriorityTaskWoken);
         } else {
             Status s = S_INVALID_ARG;
-            //OS_ISR_Log(D_WARNING, s);
+            //OS_ISR_Log(L_WARNING, s);
             return s;
         }
         if (pdTRUE != os_s) {

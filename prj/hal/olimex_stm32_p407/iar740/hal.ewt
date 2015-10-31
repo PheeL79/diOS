@@ -4237,9 +4237,6 @@
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_buzzer.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_led.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407\drv_media_bsp.c</name>
       </file>
       <file>
@@ -4542,9 +4539,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_media_usbh.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_nvic.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\hal\csp\stm32f40xx\drv_power.c</name>

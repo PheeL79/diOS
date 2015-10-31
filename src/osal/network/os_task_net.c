@@ -90,7 +90,7 @@ Status s = S_UNDEF;
 	for(;;) {
         IF_STATUS(s = OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
             if (S_MODULE != s) {
-                OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+                OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
             }
         } else {
             if (OS_SignalIs(msg_p)) {
@@ -111,7 +111,7 @@ Status s = S_UNDEF;
                                         IF_OK(s = OS_NetworkItfAddress4Get(net_itf_hd, &ip_addr4, &netmask4, &gateway4)) {
                                             if (0 == ip_addr4.addr) {
                                                 IF_OK(s = OS_NetworkItfDhcpClientStart(net_itf_hd)) {
-                                                    OS_LOG(D_DEBUG, "%s: DHCP client setup run", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
+                                                    OS_LOG(L_DEBUG_1, "%s: DHCP client setup run", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
                                                     static ConstStrP tim_name_p = "DHCP cli";
                                                     const OS_TimerConfig tim_cfg = {
                                                         .name_p = tim_name_p,
@@ -123,10 +123,10 @@ Status s = S_UNDEF;
                                                     IF_OK(s = OS_TimerCreate(&tim_cfg, &tstor_p->dhcp_cli_timer_hd)) {
                                                         IF_OK(s = OS_TimerStart(tstor_p->dhcp_cli_timer_hd, OS_TIM_DHCP_CLIENT_TIMEOUT_MS)) {
                                                         } else {
-                                                            OS_LOG_S(D_WARNING, s);
+                                                            OS_LOG_S(L_WARNING, s);
                                                         }
                                                     } else {
-                                                        OS_LOG_S(D_WARNING, s);
+                                                        OS_LOG_S(L_WARNING, s);
                                                     }
                                                 }
                                             }
@@ -135,7 +135,7 @@ Status s = S_UNDEF;
 #endif //(OS_NETWORK_DHCP)
                                 }
                             } else {
-                                OS_LOG_S(D_WARNING, s);
+                                OS_LOG_S(L_WARNING, s);
                             }
                         }
                         break;
@@ -147,14 +147,14 @@ Status s = S_UNDEF;
                                 IF_OK(s = OS_NetworkItfAddress4Get(tstor_p->net_itf_hd, &ip_addr4, &netmask4, &gateway4)) {
                                     if (0 != ip_addr4.addr) {
                                         IF_OK(s = OS_NetworkItfDhcpClientStop(tstor_p->net_itf_hd)) {
-                                            OS_LOG(D_DEBUG, "%s: DHCP client setup done", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
+                                            OS_LOG(L_DEBUG_1, "%s: DHCP client setup done", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
                                             IF_OK(s = OS_TimerDelete(tstor_p->dhcp_cli_timer_hd, OS_TIM_DHCP_CLIENT_TIMEOUT_MS)) {
                                                 IF_OK(s = OS_NetworkItfAddress4Log(tstor_p->net_itf_hd)) {
                                                 }
                                             }
                                         }
                                     } else {
-                                        OS_LOG(D_DEBUG, "%s: DHCP client timeout!", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
+                                        OS_LOG(L_DEBUG_1, "%s: DHCP client timeout!", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
                                     }
                                 }
                             }
@@ -162,13 +162,13 @@ Status s = S_UNDEF;
 #endif //(OS_NETWORK_DHCP)
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
@@ -255,7 +255,7 @@ Status s = S_UNDEF;
             break;
     }
 error:
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 

@@ -107,14 +107,14 @@ signal_filter: //Prevent recursion calls.
                         SignalSend(src_tid, s, OS_SIG_PWR_ACK);
                         goto signal_filter;
                     } else {
-                        OS_LOG(D_WARNING, "Power state set failed!");
+                        OS_LOG(L_WARNING, "Power state set failed!");
                     }
-                } else { OS_LOG_S(D_WARNING, S_INVALID_PTR); }
+                } else { OS_LOG_S(L_WARNING, S_INVALID_PTR); }
                 //OS_SchedulerResume();
             }
         }
     } else {
-//        OS_LOG_S(D_DEBUG, s);
+//        OS_LOG_S(L_DEBUG_1, s);
     }
     return s;
 }

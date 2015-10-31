@@ -140,7 +140,7 @@ const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(pool);
             }
         }
     } else {
-        OS_LOG(D_WARNING, "Unknown memory type!");
+        OS_LOG(L_WARNING, "Unknown memory type!");
     }
 }
 

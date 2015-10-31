@@ -11,11 +11,13 @@
 INLINE void TraceVaListPrint(ConstStrP format_str_p, va_list args);
 INLINE void LogVaListPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, va_list args);
 
-ConstStr log_level_v[D_DEBUG + 1][4] = {
+ConstStr log_level_v[L_LAST][4] = {
     "",
     "[c]",
     "[w]",
     "[i]",
+    "[d]",
+    "[d]",
     "[d]"
 };
 
@@ -124,36 +126,40 @@ void TraceVaListPrint(ConstStrP format_str_p, va_list args)
 /******************************************************************************/
 void LogPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, ...)
 {
+    TIMER_DWT_Stop();
     if (hal_env.log_level >= level) {
         va_list args;
         va_start(args, format_str_p);
         LogVaListPrint(level, tid, mdl_name_p, format_str_p, args);
         va_end(args);
     }
+    TIMER_DWT_Start();
 }
 
 /******************************************************************************/
 void LogVaListPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, va_list args)
 {
+static ConstStrP log_level_color_str_v[] = {
+    [L_CRITICAL]= STATUS_COLOR_CRITICAL,
+    [L_WARNING] = STATUS_COLOR_WARNING,
+    [L_INFO]    = STATUS_COLOR_INFO,
+    [L_DEBUG_3] = STATUS_COLOR_DEBUG,
+    [L_DEBUG_2] = STATUS_COLOR_DEBUG,
+    [L_DEBUG_1] = STATUS_COLOR_DEBUG,
+};
 static U32 log_cycles_last;
 UInt elapsed_ms = CYCLES_TO_MS(HAL_CORE_CYCLES - log_cycles_last);
-StrP color_str_p;
     log_cycles_last = HAL_CORE_CYCLES;
     // Reset timer value if exec time was more than OS_LOG_TIME_ELAPSED(ms)!
     if (OS_LOG_TIME_ELAPSED < elapsed_ms) {
         elapsed_ms = 0;
     }
-    if (D_DEBUG == level) {
-        color_str_p = STATUS_COLOR_DEBUG;
-    } else if (D_INFO == level) {
-        color_str_p = STATUS_COLOR_INFO;
-    } else if (D_WARNING == level) {
-        color_str_p = STATUS_COLOR_WARNING;
-    } else if (D_CRITICAL == level) {
-        color_str_p = STATUS_COLOR_CRITICAL;
-    } else {
-        HAL_ASSERT(HAL_FALSE);
-    }
-    printf("\n%s%04u %s %03u %-12s :", color_str_p, elapsed_ms, log_level_v[level], tid, mdl_name_p);
+#if defined(__GNUC__) && defined(USE_SEMIHOSTING)
+    printf("%04u %s %03u %-16s:", elapsed_ms, log_level_v[level], tid, mdl_name_p);
     vprintf((const char*)format_str_p, args);
+    printf("\r\n");
+#else
+    printf("\n%s%04u %s %03u %-12s :", log_level_color_str_v[level], elapsed_ms, log_level_v[level], tid, mdl_name_p);
+    vprintf((const char*)format_str_p, args);
+#endif
 }

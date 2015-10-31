@@ -25,7 +25,7 @@
 //Task arguments
 typedef struct {
 //    OS_DriverHd drv_power;
-    OS_DriverHd drv_led_pulse;
+    OS_DriverHd drv_gpio;
 } TaskStorage;
 
 static TaskStorage tstor;
@@ -60,7 +60,7 @@ const OS_TaskConfig task_sv_cfg = {
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 Status s;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
 //    {
 //        const OS_DriverConfig drv_cfg = {
 //            .name       = "POWER",
@@ -74,14 +74,8 @@ Status s;
 //    }
 
     {
-        const OS_DriverConfig drv_cfg = {
-            .name       = "LED_PLS",
-            .itf_p      = drv_led_v[DRV_ID_LED_PULSE],
-            .prio_power = OS_PWR_PRIO_DEFAULT
-        };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&tstor.drv_led_pulse)) { return s; }
-        IF_STATUS(s = OS_DriverInit(tstor.drv_led_pulse, OS_NULL)) { return s; }
-        IF_STATUS(s = OS_DriverOpen(tstor.drv_led_pulse, OS_NULL)) { return s; }
+        tstor.drv_gpio = OS_DriverGpioGet();
+        IF_STATUS(s = OS_DriverOpen(tstor.drv_gpio, OS_NULL)) { return s; }
     }
     OS_ASSERT(S_OK == (s = OS_TaskCreate(OS_NULL, &task_sv_cfg, OS_NULL)));
     return s;
@@ -112,7 +106,7 @@ Status s = S_OK;
         }
     } else {
         IF_STATUS(s = SystemPowerStateSet(&tstor, state)) {
-            OS_LOG(D_INFO, "Attempt to rollback power state: %s", OS_PowerStateNameGet(state_prev));
+            OS_LOG(L_INFO, "Attempt to rollback power state: %s", OS_PowerStateNameGet(state_prev));
             IF_STATUS(s = SystemPowerStateSet(&tstor, state_prev)) {
             }
             return s;
@@ -135,19 +129,19 @@ Status s;
             IF_OK(s = SystemPowerStateForDriversSet(state)) {
                 IF_OK(s = SystemPowerStateForTasksSet(state)) {
                     os_env.hal_env_p->power = state;
-                    OS_LOG(D_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
+                    OS_LOG(L_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
                 }
             }
-        } else { OS_LOG_S(D_WARNING, s); }
+        } else { OS_LOG_S(L_WARNING, s); }
     } else {
         IF_OK(s = SystemPowerStateForTasksSet(state)) {
             IF_OK(s = SystemPowerStateForDriversSet(state)) {
                 os_env.hal_env_p->power = state;
-                OS_LOG(D_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
+                OS_LOG(L_INFO, "Power state: %s", OS_PowerStateNameGet(os_env.hal_env_p->power));
                 //Direct call to IoCtl func bypass OS_Driver interface.
                 //(no API func calls are allowed with the suspended scheduler).
                 IF_STATUS(s = drv_power_itf_p->IoCtl(DRV_REQ_STD_POWER_SET, (void*)&state)) {
-                    OS_LOG_S(D_WARNING, s);
+                    OS_LOG_S(L_WARNING, s);
                 }
             }
         }
@@ -165,7 +159,7 @@ const OS_TaskHd sv_thd = OS_TaskGet();
 OS_TaskHd thd;
 OS_TaskHd next_thd = OS_NULL;
 Status s = S_OK; //!
-    OS_LOG(D_DEBUG, "Set power state for the tasks");
+    OS_LOG(L_DEBUG_1, "Set power state for the tasks");
     const SortDirection sort_dir = (PWR_ON == state) ? SORT_DESCENDING : SORT_ASCENDING;
     OS_TaskPowerPrioritySort(sort_dir);
     thd = OS_TaskNextGet(next_thd); //first task in the list.
@@ -199,7 +193,7 @@ Status s = S_OK; //!
                                     }
                                     break;
                                 default:
-                                    OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                                    OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                                     break;
                             }
                         } else {
@@ -220,7 +214,7 @@ Status SystemPowerStateForDriversSet(const OS_PowerState state)
 extern void OS_DriverPowerPrioritySort(const SortDirection sort_dir);
 OS_DriverHd dhd;
 Status s;
-    OS_LOG(D_DEBUG, "Set power state for the drivers");
+    OS_LOG(L_DEBUG_1, "Set power state for the drivers");
     const SortDirection sort_dir = (PWR_ON == state) ? SORT_DESCENDING : SORT_ASCENDING;
     OS_DriverPowerPrioritySort(sort_dir);
     dhd = OS_DriverNextGet(OS_NULL); //first driver in the list.
@@ -229,9 +223,9 @@ Status s;
         if (S_OK == s) {
         } else if (S_OPENED == s) { //ignore
         } else if (S_NOT_EXISTS == s) { //ignore absent IoCtl()
-            OS_LOG_S(D_DEBUG, s);
+            OS_LOG_S(L_DEBUG_1, s);
         } else {
-            OS_LOG(D_WARNING, "%s: power state set failed!", OS_DriverNameGet(dhd));
+            OS_LOG(L_WARNING, "%s: power state set failed!", OS_DriverNameGet(dhd));
             return s;
         }
         dhd = OS_DriverNextGet(dhd);
@@ -244,7 +238,6 @@ void MessagesHandler(OS_TaskArgs* args_p)
 {
 extern Status OS_TaskTimeoutReset(const OS_TaskHd thd);
 extern volatile Bool is_idle;
-static State led_state = OFF;
 OS_Message* msg_p;
 
     IF_OK(OS_MessageReceive(sv_stdin_qhd, &msg_p, OS_PULSE_RATE)) {
@@ -261,13 +254,13 @@ OS_Message* msg_p;
                     Shutdown(args_p);
                     break;
                 default:
-                    OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                    OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                     break;
             }
         } else {
             switch (msg_p->id) {
                 default:
-                    OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                    OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                     break;
             }
             OS_MessageDelete(msg_p); // free message allocated memory
@@ -276,16 +269,15 @@ OS_Message* msg_p;
 #if (HAL_TIMER_IWDG_ENABLED)
     TIMER_IWDG_Reset();
 #endif //(HAL_TIMER_IWDG_ENABLED)
-    led_state = (ON == led_state) ? OFF : ON;
-    OS_DriverWrite(tstor.drv_led_pulse, (void*)&led_state, 1, OS_NULL);
+    OS_DriverIoCtl(tstor.drv_gpio, DRV_REQ_GPIO_TOGGLE, (void*)GPIO_LED_PULSE);
 
 #if (OS_TASK_DEADLOCK_TEST_ENABLED)
     if (OS_TRUE != is_idle) {
         Status s;
         IF_OK(s = TaskDeadLockTest()) {
             IF_OK(s = TaskDeadLockAction()) {
-            } else { OS_LOG_S(D_WARNING, s); }
-        } else { OS_LOG_S(D_WARNING, s); }
+            } else { OS_LOG_S(L_WARNING, s); }
+        } else { OS_LOG_S(L_WARNING, s); }
     } else {
         is_idle = OS_FALSE;
         if (OS_NULL != deadlock_thd) {
@@ -310,7 +302,7 @@ OS_TaskStats* task_stats_new_p;
 Status s = S_OK;
     if (OS_NULL == run_stats_old_buf_p) {
         s = S_OUT_OF_MEMORY;
-        OS_LOG_S(D_CRITICAL, s);
+        OS_LOG_S(L_CRITICAL, s);
         goto error;
     }
     //Get current tasks stats.
@@ -328,7 +320,7 @@ Status s = S_OK;
         run_stats_new_buf_p = (OS_TaskStats*)OS_Malloc(task_inf_approx_mem_size * tasks_count_new);
         if (OS_NULL == run_stats_new_buf_p) {
             s = S_OUT_OF_MEMORY;
-            OS_LOG_S(D_CRITICAL, s);
+            OS_LOG_S(L_CRITICAL, s);
             goto error;
         }
         if (tasks_count_new != OS_TasksStatsGet(run_stats_new_buf_p, tasks_count_new, OS_NULL)) {
@@ -381,7 +373,7 @@ Status s = S_UNDEF;
             OS_TaskTimeoutDec(deadlock_thd);
             s = S_OK;
         } else {
-            OS_LOG(D_CRITICAL, "Deadlock detected!");
+            OS_LOG(L_CRITICAL, "Deadlock detected!");
             const void* args_p = OS_TaskArgumentsGet(deadlock_thd);
             IF_OK(s = OS_TaskDelete(deadlock_thd)) {
                 deadlock_thd = OS_NULL;
@@ -392,7 +384,7 @@ Status s = S_UNDEF;
         }
     } else {
         s = S_INVALID_PTR;
-        OS_LOG_S(D_DEBUG, s);
+        OS_LOG_S(L_DEBUG_1, s);
     }
     return s;
 }
@@ -401,7 +393,7 @@ Status s = S_UNDEF;
 /******************************************************************************/
 void Reboot(OS_TaskArgs* args_p)
 {
-    OS_LOG(D_INFO, "Reboot system");
+    OS_LOG(L_INFO, "Reboot system");
     //Prepare system to reboot.
     OS_TaskPower(args_p, PWR_SHUTDOWN);
     printf("\nReboot in");
@@ -416,7 +408,7 @@ void Reboot(OS_TaskArgs* args_p)
 
 /******************************************************************************/
 void Shutdown(OS_TaskArgs* args_p) {
-    OS_LOG(D_INFO, "Shutdown system");
+    OS_LOG(L_INFO, "Shutdown system");
     //Prepare system to shutdown.
     OS_TaskPower(args_p, PWR_SHUTDOWN);
     OS_SchedulerSuspend();

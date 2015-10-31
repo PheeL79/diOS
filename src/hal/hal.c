@@ -33,10 +33,13 @@ Status s = S_OK;
     // Disable interrupts.
     HAL_CRITICAL_SECTION_ENTER(); {
         SystemInit();
-        if (HAL_OK != HAL_Init()) { return S_HARDWARE_ERROR; }
         SystemClock_Config();
         SystemCoreClockKHz  = SystemCoreClock / KHZ;
         SystemCoreClockMHz  = SystemCoreClockKHz / KHZ;
+        if (HAL_OK != HAL_Init()) { return S_HARDWARE_ERROR; }
+        HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4); //By FreeRTOS request.
+        /* Set Priority for SysTick Interrupts */
+        HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0); // highest priority
         TIMER_DWT_Init(); // HAL_LOG depends on this init.
         // HAL environment init
         hal_env.locale      = LOC_EN;
@@ -50,25 +53,27 @@ Status s = S_OK;
         IF_STATUS(HAL_DeviceDescriptionInit()) { return S_MODULE; }
         // Init and open STDIO stream.
         HAL_StdIoCls();
-        HAL_LOG(D_INFO, "-------------------------------");
-        HAL_LOG(D_INFO, "diOS: v%d.%d.%d%s-%s",
+        HAL_LOG(L_INFO, "-------------------------------");
+        HAL_LOG(L_INFO, "Board name: %s", HAL_MB_NAME);
+        HAL_LOG(L_INFO, "Clock core: %u Hz", HAL_SystemCoreClockGet());
+        HAL_LOG(L_INFO, "diOS: v%d.%d.%d%s-%s",
                         ver_p->maj,
                         ver_p->min,
                         ver_p->bld,
                         ver_lbl[ver_p->lbl],
                         ver_p->rev);
-        HAL_LOG(D_INFO, "Built on: %s, %s", __DATE__, __TIME__);
-        HAL_LOG(D_INFO, "-------------------------------");
-        HAL_LOG(D_INFO, "HAL init...");
-        HAL_LOG(D_INFO, "-------------------------------");
+        HAL_LOG(L_INFO, "Built on: %s, %s", __DATE__, __TIME__);
+        HAL_LOG(L_INFO, "-------------------------------");
+        HAL_LOG(L_INFO, "HAL init...");
+        HAL_LOG(L_INFO, "-------------------------------");
         //TODO(A. Filyanov) HAL_CSP_Init(); HAL_MSP_Init()?; HAL_BSP_Init();
         IF_STATUS(s = HAL_BSP_Init()) { return s; }
-        // Enable interrupts.
-        HAL_LOG(D_INFO, "-------------------------------");
+        HAL_LOG(L_INFO, "-------------------------------");
         // Close and deinit STDIO stream(for init HAL output).
         // Stream will be open back again in OSAL init.
         HAL_ASSERT(S_OK == hal_env.stdio_p->Close(OS_NULL));
         HAL_ASSERT(S_OK == hal_env.stdio_p->DeInit(OS_NULL));
+    // Enable interrupts.
     } HAL_CRITICAL_SECTION_EXIT();
     return s;
 }
@@ -190,26 +195,6 @@ U8 c;
 }
 
 /******************************************************************************/
-/**
-  * @brief  System Clock Configuration
-  *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 168000000
-  *            HCLK(Hz)                       = 168000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 4
-  *            APB2 Prescaler                 = 2
-  *            HSE Frequency(Hz)              = 25000000
-  *            PLL_M                          = 25
-  *            PLL_N                          = 336
-  *            PLL_P                          = 2
-  *            PLL_Q                          = 7
-  *            VDD(V)                         = 3.3
-  *            Main regulator output voltage  = Scale1 mode
-  *            Flash Latency(WS)              = 5
-  * @param  None
-  * @retval None
-  */
 void SystemClock_Config(void)
 {
 RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -219,38 +204,38 @@ RCC_OscInitTypeDef RCC_OscInitStruct;
     /* The voltage scaling allows optimizing the power consumption when the device is
      clocked below the maximum system frequency, to update the voltage scaling value
      regarding system frequency refer to product datasheet.  */
-    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    __HAL_PWR_VOLTAGESCALING_CONFIG(HAL_PWR_REGULATOR_VOLTAGE_SCALE);
     /* Enable HSE Oscillator and activate PLL with HSE as source */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 25;                        //TODO(A. Filyanov) Move values to the hal_config.h!
-    RCC_OscInitStruct.PLL.PLLN = 336;
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 7;
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+    RCC_OscInitStruct.OscillatorType= HAL_PWR_RCC_OSCILLATOR_TYPE;
+    RCC_OscInitStruct.HSEState      = HAL_PWR_RCC_HSE_STATE;
+    RCC_OscInitStruct.PLL.PLLState  = HAL_PWR_RCC_PLL_STATE;
+    RCC_OscInitStruct.PLL.PLLSource = HAL_PWR_RCC_PLL_SOURCE;
+    RCC_OscInitStruct.PLL.PLLM      = HAL_PWR_RCC_PLL_M;
+    RCC_OscInitStruct.PLL.PLLN      = HAL_PWR_RCC_PLL_N;
+    RCC_OscInitStruct.PLL.PLLP      = HAL_PWR_RCC_PLL_P;
+    RCC_OscInitStruct.PLL.PLLQ      = HAL_PWR_RCC_PLL_Q;
+    if (HAL_OK != HAL_RCC_OscConfig(&RCC_OscInitStruct)) {
         /* Initialization Error */
         HAL_ASSERT(OS_FALSE);
     }
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
      clocks dividers */
-    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+    RCC_ClkInitStruct.ClockType     = HAL_PWR_RCC_CLOCK_TYPE;
+    RCC_ClkInitStruct.SYSCLKSource  = HAL_PWR_RCC_CLOCK_SYS_SOURCE;
+    RCC_ClkInitStruct.AHBCLKDivider = HAL_PWR_RCC_CLOCK_DIV_AHB;
+    RCC_ClkInitStruct.APB1CLKDivider= HAL_PWR_RCC_CLOCK_DIV_APB1;
+    RCC_ClkInitStruct.APB2CLKDivider= HAL_PWR_RCC_CLOCK_DIV_APB2;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, HAL_PWR_FLASH_LATENCY);
 
     HAL_RCC_EnableCSS();
 }
 
 #ifndef NDEBUG
 /******************************************************************************/
-#pragma inline
+void assert_failed(uint8_t* file, uint32_t line);
 void assert_failed(uint8_t* file, uint32_t line)
 {
-    HAL_ASSERT_PIN_UP();
+    HAL_GPIO_ASSERT_UP();
     /* User can add his own implementation to report the file name and line number,*/
     printf("\nASSERT: %s on line %d\r\n", file, line);
     HAL_CRITICAL_SECTION_ENTER();

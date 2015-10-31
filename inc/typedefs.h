@@ -103,28 +103,28 @@
 #endif
 
 typedef enum {
-    SORT_ASCENDING = 1,
+    SORT_ASCENDING,
     SORT_DESCENDING
 } SortDirection;
 
 typedef enum {
-    OFF = 1,
+    OFF,
     ON
 } State;
 
 typedef enum {
-    DIR_IN = 1,
+    DIR_IN,
     DIR_OUT,
     DIR_BI
 } Direction;
 
 typedef enum {
-    UNLOCKED = 1,
+    UNLOCKED,
     LOCKED
 } MutexState;
 
 typedef enum {
-    DISCONNECTED = 1,
+    DISCONNECTED,
     CONNECTED
 } ConnectState;
 

@@ -17,9 +17,6 @@
 #define MS                          1000UL
 #define US                          1000000UL
 
-//ASCII
-#define ASCII_ESC_LINE_FEED         "\n"
-
 // Common macros.
 // inline
 #if defined(_MSC_VER)               /* Microsoft Compiler */

@@ -50,13 +50,13 @@ Status s = S_UNDEF;
 Status CRC__Init(void* args_p)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "Init: ");
+    HAL_LOG(L_INFO, "Init: ");
     __CRC_CLK_ENABLE();
     crc_hd.Instance = CRC;
     if (HAL_OK == HAL_CRC_Init(&crc_hd)) {
         s = S_OK;
     }
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -64,12 +64,12 @@ Status s = S_UNDEF;
 Status CRC__DeInit(void* args_p)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "DeInit: ");
+    HAL_LOG(L_INFO, "DeInit: ");
     if (HAL_OK == HAL_CRC_DeInit(&crc_hd)) {
         s = S_OK;
     }
     __CRC_CLK_DISABLE();
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 

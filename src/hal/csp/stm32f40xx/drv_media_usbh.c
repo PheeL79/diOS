@@ -20,6 +20,9 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_m_usbh"
 
+#define LED_FS_ON()         OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON)
+#define LED_FS_OFF()        OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF)
+
 //------------------------------------------------------------------------------
 #if defined(OS_MEDIA_VOL_USBH_FS) && (USBH_FS_ENABLED)
 static Status   USBH_FS_MSC_Init(void* args_p);
@@ -117,11 +120,10 @@ Status s = S_UNDEF;
 Status USBH_FS_MSC_Read(void* data_in_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-State state = ON;
 Status s = S_OK;
-//    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
+//    OS_LOG(L_DEBUG_1, "read 0x%X %6d %d", data_in_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_ON();
 //    if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
 //        U32* scratch_p = OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
 //        if (OS_NULL == scratch_p) { return S_OUT_OF_MEMORY; }
@@ -152,8 +154,7 @@ Status s = S_OK;
               break;
         }
     }
-    state = OFF;
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_OFF();
     return s;
 }
 
@@ -161,11 +162,10 @@ Status s = S_OK;
 Status USBH_FS_MSC_Write(void* data_out_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-State state = ON;
 Status s = S_OK;
-//    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
+//    OS_LOG(L_DEBUG_1, "write 0x%X %6d %d", data_out_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_ON();
 //    if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
 //        U32* scratch_p = OS_Malloc(USBH_MSC_BLOCK_SIZE); // Alignment assured
 //        if (OS_NULL == scratch_p) { return S_OUT_OF_MEMORY; }
@@ -199,8 +199,7 @@ Status s = S_OK;
               break;
         }
     }
-    state = OFF;
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_OFF();
     return s;
 }
 
@@ -209,7 +208,7 @@ Status USBH_FS_MSC_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_UNDEF;
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_LOG(D_DEBUG, "ioctl id=%d", request_id);
+//    OS_LOG(L_DEBUG_1, "ioctl id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
             HAL_StatusTypeDef hal_status = HAL_OK;
@@ -347,11 +346,10 @@ Status s = S_UNDEF;
 Status USBH_HS_MSC_Read(void* data_in_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-State state = ON;
 Status s = S_OK;
-//    OS_LOG(D_DEBUG, "read 0x%X %6d %d", data_in_p, sector, size);
+//    OS_LOG(L_DEBUG_1, "read 0x%X %6d %d", data_in_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_ON();
 //    if ((U32)data_in_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
 //        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_Size); // Alignment assured
 //        if (OS_NULL == scratch_p) { return S_OUT_OF_MEMORY; }
@@ -381,8 +379,7 @@ Status s = S_OK;
               break;
         }
     }
-    state = OFF;
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_OFF();
     return s;
 }
 
@@ -390,11 +387,10 @@ Status s = S_OK;
 Status USBH_HS_MSC_Write(void* data_out_p, Size size, void* args_p)
 {
 U32 sector = *(U32*)args_p;
-State state = ON;
 Status s = S_OK;
-//    OS_LOG(D_DEBUG, "write 0x%X %6d %d", data_out_p, sector, size);
+//    OS_LOG(L_DEBUG_1, "write 0x%X %6d %d", data_out_p, sector, size);
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_ON();
 //    if ((U32)data_out_p & 0x03) { // DMA Alignment failure, do single up to aligned buffer
 //        U32* scratch_p = (U32*)OS_Malloc(USBH_MSC_BLOCK_Size); // Alignment assured
 //        if (OS_NULL == scratch_p) { return S_OUT_OF_MEMORY; }
@@ -427,8 +423,7 @@ Status s = S_OK;
               break;
         }
     }
-    state = OFF;
-//    OS_DriverWrite(drv_led_fs, &state, 1, OS_NULL);
+    LED_FS_OFF();
     return s;
 }
 
@@ -437,7 +432,7 @@ Status USBH_HS_MSC_IoCtl(const U32 request_id, void* args_p)
 {
 Status s = S_UNDEF;
 //TODO(A.Filyanov) Test context(ISR) before call.
-//    OS_LOG(D_DEBUG, "ioctl req_id=%d", request_id);
+//    OS_LOG(L_DEBUG_1, "ioctl req_id=%d", request_id);
     switch (request_id) {
         case DRV_REQ_STD_POWER_SET: {
             HAL_StatusTypeDef hal_status = HAL_OK;

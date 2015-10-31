@@ -411,7 +411,7 @@ void sys_arch_unprotect(sys_prot_t pval)
  */
 void sys_assert( const char *msg )
 {
-    OS_TRACE(D_CRITICAL, msg, OS_NULL);
+    OS_TRACE(L_CRITICAL, msg, OS_NULL);
     OS_ASSERT(OS_FALSE);
 }
 

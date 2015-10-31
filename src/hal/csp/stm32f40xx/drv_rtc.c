@@ -50,7 +50,7 @@ static void     RTC_CalendarReset(void);
 
 //-----------------------------------------------------------------------------
 RTC_HandleTypeDef rtc_handle;
-__IO FlagStatus TamperStatus = RESET;
+HAL_IO FlagStatus TamperStatus = RESET;
 
 const U32 rtc_backup_regs[HAL_RTC_BACKUP_REGS_MAX] = {
     RTC_BKP_DR0,  RTC_BKP_DR1,  RTC_BKP_DR2,
@@ -90,7 +90,7 @@ Status s = S_OK;
 Status RTC__Init(void* args_p)
 {
 Status s = S_OK;
-    //HAL_LOG(D_INFO, "Init");
+    //HAL_LOG(L_INFO, "Init");
     RTC_LL_Init();
     /*##-2- Check if Data stored in BackUp register0: No Need to reconfigure RTC#*/
     /* Read the Back Up Register 0 Data */
@@ -100,7 +100,7 @@ Status s = S_OK;
     }
     RTC_AlarmInit();
     RTC_WakeupInit();
-    //HAL_TRACE(D_INFO, S_STRING_GET(S_OK));
+    //HAL_TRACE(L_INFO, S_STRING_GET(S_OK));
     return s;
 }
 
@@ -181,17 +181,17 @@ void RTC_SRAM_BackupReset(void)
 U32 uwIndex, uwErrorIndex = 0;
     /* Write to Backup SRAM with 32-Bit Data */
     for (uwIndex = 0x0; uwIndex < 0x1000; uwIndex += 4) {
-        *(__IO U32*) (BKPSRAM_BASE + uwIndex) = (U32)U32_MAX;
+        *(HAL_IO U32*) (BKPSRAM_BASE + uwIndex) = (U32)U32_MAX;
     }
     /* Check the written Data */
     for (uwIndex = 0x0; uwIndex < 0x1000; uwIndex += 4) {
-        if ((*(__IO U32*) (BKPSRAM_BASE + uwIndex)) != (U32)U32_MAX) {
+        if ((*(HAL_IO U32*) (BKPSRAM_BASE + uwIndex)) != (U32)U32_MAX) {
             uwErrorIndex++;
         }
     }
 
     if (uwErrorIndex) {
-        HAL_TRACE(D_WARNING, "\nBackup SRAM errors = %d", uwErrorIndex);
+        HAL_TRACE(L_WARNING, "\nBackup SRAM errors = %d", uwErrorIndex);
     }
 }
 
@@ -252,7 +252,7 @@ Status s = S_OK;
 Status RTC_WakeupInit(void)
 {
 Status s = S_OK;
-//    //HAL_LOG(D_INFO, "Wakeup init: ");
+//    //HAL_LOG(L_INFO, "Wakeup init: ");
 ////    /* Disable the Wakeup detection */
 //    RTC_WakeUpCmd(DISABLE);
 //    RTC_ClearFlag(RTC_FLAG_WUTF);
@@ -262,7 +262,7 @@ Status s = S_OK;
 //    s = RTC_NVIC_WakeupInit();
 ////    /* Enable the Wakeup detection */
 ////    RTC_WakeUpCmd(ENABLE);
-//    //HAL_TRACE_S(D_INFO, s);
+//    //HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -270,12 +270,12 @@ Status s = S_OK;
 Status RTC__DeInit(void* args_p)
 {
 Status s = S_OK;
-    HAL_LOG(D_INFO, "DeInit: ");
+    HAL_LOG(L_INFO, "DeInit: ");
     if (HAL_OK != HAL_RTC_DeInit(&rtc_handle)) {
         s = S_HARDWARE_ERROR;
     }
     __HAL_RCC_RTC_DISABLE();
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -300,7 +300,7 @@ Status s = S_OK;
 Status RTC_Read(void* data_in_p, Size size, void* args_p)
 {
 Status s = S_OK;
-    __IO U8* sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
+    HAL_IO U8* sram_bkup_p = (HAL_IO U8*)BKPSRAM_BASE;
     /* Read the SRAM Backup Data */
     while (size--) {
         U8* data_in_8p = (U8*)data_in_p;
@@ -314,7 +314,7 @@ Status s = S_OK;
 Status RTC_Write(void* data_out_p, Size size, void* args_p)
 {
 Status s = S_OK;
-    __IO U8* sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
+    HAL_IO U8* sram_bkup_p = (HAL_IO U8*)BKPSRAM_BASE;
     {
         U8* data_out_tmp_p  = data_out_p;
         U32 size_tmp        = size;
@@ -323,7 +323,7 @@ Status s = S_OK;
             *sram_bkup_p++ = *data_out_tmp_p++;
         }
     }
-    sram_bkup_p = (__IO U8*)BKPSRAM_BASE;
+    sram_bkup_p = (HAL_IO U8*)BKPSRAM_BASE;
     /* Check the written Data */
     while (size--) {
         U8* data_out_8p = (U8*)data_out_p;

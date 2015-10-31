@@ -68,7 +68,7 @@
   */
 void NMI_Handler(void)
 {
-    HAL_ASSERT(OS_FALSE);
+    HAL_ExceptionHandler(HAL_EXCEPT_NMI);
 }
 
 /**
@@ -78,11 +78,7 @@ void NMI_Handler(void)
   */
 void HardFault_Handler(void)
 {
-    HAL_ASSERT(OS_FALSE);
-  /* Go to infinite loop when Hard Fault exception occurs */
-//  while (1)
-//  {
-//  }
+    HAL_ExceptionHandler(HAL_EXCEPT_HARD_FAULT);
 }
 
 /**
@@ -92,11 +88,7 @@ void HardFault_Handler(void)
   */
 void MemManage_Handler(void)
 {
-    HAL_ASSERT(OS_FALSE);
-  /* Go to infinite loop when Memory Manage exception occurs */
-//  while (1)
-//  {
-//  }
+    HAL_ExceptionHandler(HAL_EXCEPT_MEM_MANAGE);
 }
 
 /**
@@ -106,11 +98,7 @@ void MemManage_Handler(void)
   */
 void BusFault_Handler(void)
 {
-    HAL_ASSERT(OS_FALSE);
-  /* Go to infinite loop when Bus Fault exception occurs */
-//  while (1)
-//  {
-//  }
+    HAL_ExceptionHandler(HAL_EXCEPT_BUS_FAULT);
 }
 
 /**
@@ -120,11 +108,7 @@ void BusFault_Handler(void)
   */
 void UsageFault_Handler(void)
 {
-    HAL_ASSERT(OS_FALSE);
-  /* Go to infinite loop when Usage Fault exception occurs */
-//  while (1)
-//  {
-//  }
+    HAL_ExceptionHandler(HAL_EXCEPT_USAGE_FAULT);
 }
 
 /**
@@ -132,9 +116,10 @@ void UsageFault_Handler(void)
   * @param  None
   * @retval None
   */
-//void SVC_Handler(void)
-//{
-//}
+void SVC_Handler(void)
+{
+    HAL_ExceptionHandler(HAL_EXCEPT_SVC);
+}
 
 /**
   * @brief  This function handles Debug Monitor exception.
@@ -143,6 +128,7 @@ void UsageFault_Handler(void)
   */
 void DebugMon_Handler(void)
 {
+    HAL_ExceptionHandler(HAL_EXCEPT_DEBUG_MON);
 }
 
 /**
@@ -150,9 +136,10 @@ void DebugMon_Handler(void)
   * @param  None
   * @retval None
   */
-//void PendSV_Handler(void)
-//{
-//}
+void PendSV_Handler(void)
+{
+    HAL_ExceptionHandler(HAL_EXCEPT_PEND_SV);
+}
 
 /**
   * @brief  This function handles SysTick Handler.
@@ -189,26 +176,6 @@ void SysTick_Handler(void)
 }*/
 
 #include "os_config.h"
-/******************************************************************************/
-/**
-* @brief This function handles EXTI3 line interrupt.
-*/
-void EXTI0_IRQHandler(void);
-void EXTI0_IRQHandler(void)
-{
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-}
-
-/******************************************************************************/
-/**
-* @brief This function handles EXTI3 line interrupt.
-*/
-void EXTI3_IRQHandler(void);
-void EXTI3_IRQHandler(void)
-{
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-}
-
 /******************************************************************************/
 /**
 * @brief This function handles USB On The Go FS global interrupt.

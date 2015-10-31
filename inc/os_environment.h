@@ -35,6 +35,10 @@ OS_DriverHd     OS_DriverStdInGet(void);
 /// @return     Driver handle.
 OS_DriverHd     OS_DriverStdOutGet(void);
 
+/// @brief      Get system GPIO driver.
+/// @return     Driver handle.
+OS_DriverHd     OS_DriverGpioGet(void);
+
 /// @brief      Get system realtime clock driver.
 /// @return     Driver handle.
 OS_DriverHd     OS_DriverRtcGet(void);

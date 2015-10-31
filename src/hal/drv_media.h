@@ -16,6 +16,12 @@ enum {
     DRV_REQ_MEDIA_LAST
 };
 
+typedef struct {
+    //TODO(A. Filyanov) Substitute "const void*" with "OS_DriverHd" when header files dependency will solved.
+    const void*   drv_gpio;
+    Gpio          gpio_led;
+} DrvMediaArgsInit;
+
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_media_v[];
 

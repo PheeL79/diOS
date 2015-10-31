@@ -36,12 +36,12 @@ Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     IF_STATUS(s = OS_FileSystemMediaInit(fs_media_hd, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     return s;
@@ -58,12 +58,12 @@ Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     IF_STATUS(s = OS_FileSystemMediaDeInit(fs_media_hd)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     return s;
@@ -80,12 +80,12 @@ Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     IF_STATUS(s = OS_FileSystemMount(fs_media_hd, OS_NULL)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     return s;
@@ -102,12 +102,12 @@ Status s = S_UNDEF;
     const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
     IF_STATUS(s = OS_FileSystemUnMount(fs_media_hd)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     return s;
@@ -133,20 +133,20 @@ Status s = S_UNDEF;
         volume = OS_AtoI((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
-            OS_LOG_S(D_WARNING, s);
-            OS_LOG(D_WARNING, "Current media: %s", OS_FileSystemMediaNameGet(fs_media_hd_curr));
+            OS_LOG_S(L_WARNING, s);
+            OS_LOG(L_WARNING, "Current media: %s", OS_FileSystemMediaNameGet(fs_media_hd_curr));
         } else {
             const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
             IF_STATUS(s = OS_FileSystemMediaCurrentSet(fs_media_hd)) { goto error; }
             fs_media_hd_curr = fs_media_hd;
         }
     }
-    IF_STATUS(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &stats_vol)) { OS_LOG_S(D_WARNING, s); goto error; }
+    IF_STATUS(s = OS_FileSystemVolumeStatsGet(fs_media_hd_curr, &stats_vol)) { OS_LOG_S(L_WARNING, s); goto error; }
     path_p = (StrP)OS_Malloc(OS_FILE_SYSTEM_LONG_NAMES_LEN * 2);
     if (OS_NULL == path_p) { s = S_OUT_OF_MEMORY; goto error; }
     *path_p = OS_ASCII_EOL;
     OS_MemSet(&stats_fs, 0, sizeof(stats_fs));
-    IF_STATUS(s = OS_FileSystemVolumeScan(path_p, &stats_fs)) { OS_LOG_S(D_WARNING, s); goto error; }
+    IF_STATUS(s = OS_FileSystemVolumeScan(path_p, &stats_fs)) { OS_LOG_S(L_WARNING, s); goto error; }
     printf("\nMedia name            :%s"
            "\nVolume name           :%s"
            "\nVolume serial         :0x%X"
@@ -207,7 +207,7 @@ Status s = S_UNDEF;
         const S8 volume = (S8)OS_AtoI((const char*)volume_label_p);
         if (-1 == volume) {
             s = S_FS_MEDIA_INVALID;
-            OS_LOG_S(D_DEBUG, s);
+            OS_LOG_S(L_DEBUG_1, s);
             path_p = (StrP)argv[argc - 1];
         } else {
             const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
@@ -264,7 +264,7 @@ error:
 #if defined(OS_FILE_SYSTEM_LONG_NAMES_ENABLED)
     OS_Free(stats.long_name_p);
 #endif // OS_FILE_SYSTEM_LONG_NAMES_ENABLED
-    IF_STATUS(s) { OS_LOG_S(D_WARNING, s); }
+    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
 
@@ -277,7 +277,7 @@ Status OS_ShellCmdFkHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_UNDEF;
     IF_STATUS(s = OS_DirectoryCreate(argv[0])) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -291,7 +291,7 @@ Status OS_ShellCmdFuHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_UNDEF;
     IF_STATUS(s = OS_DirectoryDelete(argv[0])) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -308,7 +308,7 @@ Status OS_ShellCmdFnHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = S_UNDEF;
     IF_STATUS(s = OS_DirectoryRename(argv[0], argv[1])) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -345,7 +345,7 @@ OS_FileAttrs attrs = OS_FS_FILE_ATTR_UNDEF;
         }
     }
     IF_STATUS(s = OS_FileAttributesSet(argv[1], attrs)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -366,7 +366,7 @@ Status s = S_UNDEF;
     date.seconds= time.seconds;
     if (OS_TRUE != OS_TimeIsValid(date.hours, date.minutes, date.seconds)) { return S_INVALID_VALUE; }
     IF_STATUS(s = OS_FileDateTimeSet(argv[2], date)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -418,7 +418,7 @@ Bool is_exists = OS_FALSE;
         }
     }
     IF_STATUS(s = OS_FileOpen(&fhd, argv[1], op_mode)) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -432,7 +432,7 @@ Status OS_ShellCmdFcHandler(const U32 argc, ConstStrP argv[])
 {
 Status s = OS_FileClose(&fhd);
     IF_STATUS(s) {
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
     }
     return s;
 }
@@ -451,7 +451,7 @@ Status s = S_OK;
 const S8 volume = OS_AtoI((const char*)argv[0]);
     if (-1 == volume) {
         s = S_FS_MEDIA_INVALID;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     //Parse partition rule string.
@@ -464,7 +464,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
         part_rule = OS_FS_PART_RULE_SFD;
     } else {
         s = S_FS_INVALID_PARAMETER;
-        OS_LOG_S(D_WARNING, s);
+        OS_LOG_S(L_WARNING, s);
         return s;
     }
     if (3 == argc) {
@@ -485,7 +485,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
     OS_Message* msg_p;
         do {
             IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-                    OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+                    OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
             } else {
                 if (OS_SignalIs(msg_p)) {
                     switch (OS_SignalIdGet(msg_p)) {
@@ -496,13 +496,13 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
                             i = (++i > ITEMS_COUNT_GET(c_buf, char)) ? --i : i;
                             break;
                         default:
-                            OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                            OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                             break;
                     }
                 } else {
                     switch (msg_p->id) {
                         default:
-                            OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                            OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                             break;
                     }
                     OS_MessageDelete(msg_p); // free message allocated memory
@@ -515,7 +515,7 @@ const S8 volume = OS_AtoI((const char*)argv[0]);
         printf("Formating...");
         const OS_FileSystemMediaHd fs_media_hd = OS_FileSystemMediaByVolumeGet(volume);
         IF_STATUS(s = OS_FileSystemMake(fs_media_hd, part_rule, (Size)size)) {
-            OS_LOG_S(D_WARNING, s);
+            OS_LOG_S(L_WARNING, s);
         }
     }
     return s;

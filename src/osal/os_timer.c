@@ -45,7 +45,7 @@ void OS_TimerCallback(const TimerHandle_t timer_handle)
 {
     const OS_TimerConfigDyn* cfg_dyn_p = (OS_TimerConfigDyn*)pvTimerGetTimerID(timer_handle);
     if ((OS_NULL == timer_handle) || (OS_NULL == cfg_dyn_p)) {
-        OS_LOG_S(D_WARNING, S_INVALID_TIMER);
+        OS_LOG_S(L_WARNING, S_INVALID_TIMER);
         return;
     }
     const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, BIT(OS_TIM_OPT_EVENT)) ? OS_SIG_EVENT : OS_SIG_TIMER;

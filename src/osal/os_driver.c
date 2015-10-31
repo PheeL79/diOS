@@ -356,7 +356,7 @@ Status s = S_OK;
         }
     } else {
         s = S_OPENED;
-        OS_LOG(D_DEBUG, "%s: %s", cfg_dyn_p->cfg.name, StatusStringGet(s, MDL_STATUS_ITEMS));
+        OS_LOG(L_DEBUG_1, "%s: %s", cfg_dyn_p->cfg.name, StatusStringGet(s, MDL_STATUS_ITEMS));
     }
     return s;
 }

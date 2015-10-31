@@ -35,7 +35,7 @@ enum {
 typedef struct {
     U8*  data_p;
     Size size;
-} DrvAudioPlayArgs;
+} DrvAudioArgsPlay;
 
 //-----------------------------------------------------------------------------
 extern HAL_DriverItf* drv_audio_v[];

@@ -22,7 +22,7 @@
     #include "usbd_msc.h"
 #endif //(HAL_USBD_MSC_ENABLED)
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 #define MDL_NAME            "drv_usbd"
 
 //------------------------------------------------------------------------------
@@ -99,13 +99,13 @@ Status s = S_OK;
 #if (HAL_USBD_HID_ENABLED)
 #if (HAL_USBD_FS_ENABLED)
     extern USBD_DescriptorsTypeDef usbd_fs_hid_desc;
-    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_hid_desc, OS_USB_ID_FS)){ return s = S_HARDWARE_ERROR; }
-    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_hid_desc, OS_USB_ID_FS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_HID_CLASS))                { return s = S_HARDWARE_ERROR; }
 #endif //(HAL_USBD_FS_ENABLED)
 #if (HAL_USBD_HS_ENABLED)
     extern USBD_DescriptorsTypeDef usbd_hs_hid_desc;
-    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_hid_desc, OS_USB_ID_HS)){ return s = S_HARDWARE_ERROR; }
-    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_HID_CLASS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_hid_desc, OS_USB_ID_HS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_HID_CLASS))                { return s = S_HARDWARE_ERROR; }
 #endif //(HAL_USBD_HS_ENABLED)
 #endif //(HAL_USBD_HID_ENABLED)
 
@@ -113,16 +113,16 @@ Status s = S_OK;
 #if (HAL_USBD_FS_ENABLED)
     extern USBD_StorageTypeDef      usbd_fs_msc_itf;
     extern USBD_DescriptorsTypeDef  usbd_fs_msc_desc;
-    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_msc_desc, OS_USB_ID_FS)){ return s = S_HARDWARE_ERROR; }
-    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_MSC_CLASS))        { return s = S_HARDWARE_ERROR; }
-    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_fs_hd_p, &usbd_fs_msc_itf)){ return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_Init(usbd_fs_hd_p, &usbd_fs_msc_desc, OS_USB_ID_FS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_fs_hd_p, USBD_MSC_CLASS))                { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_fs_hd_p, &usbd_fs_msc_itf))        { return s = S_HARDWARE_ERROR; }
 #endif //(HAL_USBD_FS_ENABLED)
 #if (HAL_USBD_HS_ENABLED)
     extern USBD_StorageTypeDef      usbd_hs_msc_itf;
     extern USBD_DescriptorsTypeDef  usbd_hs_msc_desc;
-    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_msc_desc, OS_USB_ID_HS)){ return s = S_HARDWARE_ERROR; }
-    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_MSC_CLASS))        { return s = S_HARDWARE_ERROR; }
-    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_hs_hd_p, &usbd_hs_msc_itf)){ return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_Init(usbd_hs_hd_p, &usbd_hs_msc_desc, OS_USB_ID_HS))        { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_RegisterClass(usbd_hs_hd_p, USBD_MSC_CLASS))                { return s = S_HARDWARE_ERROR; }
+    if (USBD_OK != USBD_MSC_RegisterStorage(usbd_hs_hd_p, &usbd_hs_msc_itf))        { return s = S_HARDWARE_ERROR; }
 #endif //(HAL_USBD_HS_ENABLED)
 #endif //(HAL_USBD_MSC_ENABLED)
     return s;
@@ -251,85 +251,83 @@ GPIO_InitTypeDef GPIO_InitStruct;
 
 #if (HAL_USBD_FS_ENABLED)
     if (USB_OTG_FS == hpcd->Instance) {
-        __GPIOA_CLK_ENABLE();
-        __GPIOB_CLK_ENABLE();
-        __GPIOC_CLK_ENABLE();
-        /**USB_OTG_FS GPIO Configuration
-        PA9      ------> USB_OTG_FS_VBUS
-        PA11     ------> USB_OTG_FS_DM
-        PA12     ------> USB_OTG_FS_DP
-        */
-        GPIO_InitStruct.Pin = GPIO_PIN_9;
-        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_USB_OTG_FS_GPIO_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_FS_GPIO1_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_FS_GPIO1_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_FS_GPIO1_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_FS_GPIO1_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_FS_GPIO1_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_FS_GPIO1_PORT, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_2;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_FS_GPIO2_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_FS_GPIO2_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_FS_GPIO2_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_FS_GPIO2_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_FS_GPIO2_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_FS_GPIO2_PORT, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_10;
-        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_FS_GPIO3_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_FS_GPIO3_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_FS_GPIO3_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_FS_GPIO3_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_FS_GPIO3_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_FS_GPIO3_PORT, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_FS_GPIO4_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_FS_GPIO4_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_FS_GPIO4_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_FS_GPIO4_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_FS_GPIO4_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_FS_GPIO4_PORT, &GPIO_InitStruct);
 
         /* Peripheral clock enable */
-        __USB_OTG_FS_CLK_ENABLE();
+        HAL_USB_OTG_FS_CLK_ENABLE();
 
         /* Peripheral interrupt init*/
-        HAL_NVIC_SetPriority(OTG_FS_IRQn, IRQ_PRIO_OTG_FS, 0);
-        HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+        HAL_NVIC_SetPriority(HAL_USB_OTG_FS_IRQ, HAL_PRIO_IRQ_USB_OTG_FS, 0);
+        HAL_NVIC_EnableIRQ(HAL_USB_OTG_FS_IRQ);
     }
 #endif //(HAL_USBD_FS_ENABLED)
 
 #if (HAL_USBD_HS_ENABLED)
     if (USB_OTG_HS == hpcd->Instance) {
-        __GPIOB_CLK_ENABLE();
-        __GPIOD_CLK_ENABLE();
-        __GPIOE_CLK_ENABLE();
-        /**USB_OTG_HS GPIO Configuration
-        PB12     ------> USB_OTG_HS_ID
-        PB13     ------> USB_OTG_HS_VBUS
-        PB14     ------> USB_OTG_HS_DM
-        PB15     ------> USB_OTG_HS_DP
-        */
-        GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        HAL_USB_OTG_HS_GPIO_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = GPIO_PIN_12;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-        GPIO_InitStruct.Pull = GPIO_PULLUP;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_HS_GPIO1_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_HS_GPIO1_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_HS_GPIO1_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_HS_GPIO1_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_HS_GPIO1_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_HS_GPIO1_PORT, &GPIO_InitStruct);
 
-    //    GPIO_InitStruct.Pin = GPIO_PIN_3;
-    //    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    //    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    //    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_HS_GPIO2_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_HS_GPIO2_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_HS_GPIO2_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_HS_GPIO2_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_HS_GPIO2_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_HS_GPIO2_PORT, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_13;
-        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-        HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+//        GPIO_InitStruct.Pin         = HAL_USB_OTG_HS_GPIO3_PIN;
+//        GPIO_InitStruct.Mode        = HAL_USB_OTG_HS_GPIO3_MODE;
+//        GPIO_InitStruct.Pull        = HAL_USB_OTG_HS_GPIO3_PULL;
+//        GPIO_InitStruct.Speed       = HAL_USB_OTG_HS_GPIO3_SPEED;
+//        GPIO_InitStruct.Alternate   = HAL_USB_OTG_HS_GPIO3_ALT;
+//        HAL_GPIO_Init(HAL_USB_OTG_HS_GPIO3_PORT, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin         = HAL_USB_OTG_HS_GPIO4_PIN;
+        GPIO_InitStruct.Mode        = HAL_USB_OTG_HS_GPIO4_MODE;
+        GPIO_InitStruct.Pull        = HAL_USB_OTG_HS_GPIO4_PULL;
+        GPIO_InitStruct.Speed       = HAL_USB_OTG_HS_GPIO4_SPEED;
+        GPIO_InitStruct.Alternate   = HAL_USB_OTG_HS_GPIO4_ALT;
+        HAL_GPIO_Init(HAL_USB_OTG_HS_GPIO4_PORT, &GPIO_InitStruct);
 
         /* Peripheral clock enable */
-        __USB_OTG_HS_CLK_ENABLE();
+        HAL_USB_OTG_HS_CLK_ENABLE();
 
         /* Peripheral interrupt init*/
-        HAL_NVIC_SetPriority(OTG_HS_IRQn, HAL_IRQ_PRIO_OTG_HS, 0);
-        HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
+        HAL_NVIC_SetPriority(HAL_USB_OTG_HS_IRQ, HAL_PRIO_IRQ_USB_OTG_HS, 0);
+        HAL_NVIC_EnableIRQ(HAL_USB_OTG_HS_IRQ);
     }
 #endif //(HAL_USBD_HS_ENABLED)
 }
@@ -344,39 +342,30 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
 #if (HAL_USBD_FS_ENABLED)
     if (USB_OTG_FS == hpcd->Instance) {
         /* Peripheral interrupt Deinit*/
-        HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+        HAL_NVIC_DisableIRQ(HAL_USB_OTG_FS_IRQ);
 
         /* Peripheral clock disable */
-        __USB_OTG_FS_CLK_DISABLE();
+        HAL_USB_OTG_FS_CLK_DISABLE();
 
-        /**USB_OTG_FS GPIO Configuration
-        PA9      ------> USB_OTG_FS_VBUS
-        PA11     ------> USB_OTG_FS_DM
-        PA12     ------> USB_OTG_FS_DP
-        */
-        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_2);
-        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_11|GPIO_PIN_12);
+        HAL_GPIO_DeInit(HAL_USB_OTG_FS_GPIO1_PORT, HAL_USB_OTG_FS_GPIO1_PIN);
+        HAL_GPIO_DeInit(HAL_USB_OTG_FS_GPIO2_PORT, HAL_USB_OTG_FS_GPIO2_PIN);
+        HAL_GPIO_DeInit(HAL_USB_OTG_FS_GPIO3_PORT, HAL_USB_OTG_FS_GPIO3_PIN);
+        HAL_GPIO_DeInit(HAL_USB_OTG_FS_GPIO4_PORT, HAL_USB_OTG_FS_GPIO4_PIN);
     }
 #endif //(HAL_USBD_FS_ENABLED)
 
 #if (HAL_USBD_HS_ENABLED)
     if (USB_OTG_HS == hpcd->Instance) {
         /* Peripheral interrupt Deinit*/
-        HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
+        HAL_NVIC_DisableIRQ(HAL_USB_OTG_HS_IRQ);
 
         /* Peripheral clock disable */
-        __USB_OTG_HS_CLK_DISABLE();
+        HAL_USB_OTG_HS_CLK_DISABLE();
 
-        /**USB_OTG_HS GPIO Configuration
-        PB12     ------> USB_OTG_HS_ID
-        PB13     ------> USB_OTG_HS_VBUS
-        PB14     ------> USB_OTG_HS_DM
-        PB15     ------> USB_OTG_HS_DP
-        */
-        HAL_GPIO_DeInit(GPIOE, GPIO_PIN_3);
-        HAL_GPIO_DeInit(GPIOD, GPIO_PIN_13);
-        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
+        HAL_GPIO_DeInit(HAL_USB_OTG_HS_GPIO1_PORT, HAL_USB_OTG_HS_GPIO1_PIN);
+        HAL_GPIO_DeInit(HAL_USB_OTG_HS_GPIO2_PORT, HAL_USB_OTG_HS_GPIO2_PIN);
+        HAL_GPIO_DeInit(HAL_USB_OTG_HS_GPIO3_PORT, HAL_USB_OTG_HS_GPIO3_PIN);
+        HAL_GPIO_DeInit(HAL_USB_OTG_HS_GPIO4_PORT, HAL_USB_OTG_HS_GPIO4_PIN);
     }
 #endif //(HAL_USBD_HS_ENABLED)
 }
@@ -545,57 +534,50 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 #if (HAL_USBD_FS_ENABLED)
     if (OS_USB_ID_FS == pdev->id) {
         /* Set LL Driver parameters */
-        pcd_fs_hd.Instance = USB_OTG_FS;
-        pcd_fs_hd.Init.dev_endpoints = 4;
-        pcd_fs_hd.Init.use_dedicated_ep1 = DISABLE;
-        pcd_fs_hd.Init.ep0_mps = 0x40;
-        pcd_fs_hd.Init.dma_enable = DISABLE;
-        pcd_fs_hd.Init.low_power_enable = DISABLE;
-        pcd_fs_hd.Init.phy_itface = PCD_PHY_EMBEDDED;
-        pcd_fs_hd.Init.Sof_enable = DISABLE;
-        pcd_fs_hd.Init.speed = PCD_SPEED_FULL;
-        pcd_fs_hd.Init.vbus_sensing_enable = ENABLE;
+        pcd_fs_hd.Instance                  = HAL_USB_OTG_FS_ITF;
+        pcd_fs_hd.Init.dev_endpoints        = HAL_USBD_OTG_FS_DEV_ENDPOINTS;
+        pcd_fs_hd.Init.use_dedicated_ep1    = HAL_USBD_OTG_FS_USE_DED_EP1;
+        pcd_fs_hd.Init.ep0_mps              = HAL_USBD_OTG_FS_EP0_MPS;
+        pcd_fs_hd.Init.dma_enable           = HAL_USBD_OTG_FS_DMA_ENABLE;
+        pcd_fs_hd.Init.low_power_enable     = HAL_USBD_OTG_FS_LOW_POWER_ENABLE;
+        pcd_fs_hd.Init.phy_itface           = HAL_USBD_OTG_FS_PHY_ITF;
+        pcd_fs_hd.Init.Sof_enable           = HAL_USBD_OTG_FS_SOF_ENABLE;
+        pcd_fs_hd.Init.speed                = HAL_USBD_OTG_FS_SPEED;
+        pcd_fs_hd.Init.vbus_sensing_enable  = HAL_USBD_OTG_FS_VBUS_SENS_ENABLE;
         /* Link The driver to the stack */
         pcd_fs_hd.pData = pdev;
         pdev->pData = &pcd_fs_hd;
         /* Initialize LL Driver */
         HAL_PCD_Init(&pcd_fs_hd);
 
-        HAL_PCD_SetRxFiFo(&pcd_fs_hd, 0x80);
-        HAL_PCD_SetTxFiFo(&pcd_fs_hd, 0, 0x40);
-        HAL_PCD_SetTxFiFo(&pcd_fs_hd, 1, 0x80);
+        HAL_PCD_SetRxFiFo(&pcd_fs_hd, HAL_USBD_OTG_FS_FIFO_SIZE_RX);
+        HAL_PCD_SetTxFiFo(&pcd_fs_hd, 0, HAL_USBD_OTG_FS_FIFO_SIZE_TX_0);
+        HAL_PCD_SetTxFiFo(&pcd_fs_hd, 1, HAL_USBD_OTG_FS_FIFO_SIZE_TX_1);
     }
 #endif //(HAL_USBD_FS_ENABLED)
 
 #if (HAL_USBD_HS_ENABLED)
     if (OS_USB_ID_HS == pdev->id) {
         /* Set LL Driver parameters */
-        pcd_hs_hd.Instance = USB_OTG_HS;
-        pcd_hs_hd.Init.dev_endpoints = 6;
-        pcd_hs_hd.Init.use_dedicated_ep1 = DISABLE;
-        pcd_hs_hd.Init.ep0_mps = 0x40;
-
-        /* Be aware that enabling DMA mode will result in data being sent only by
-         multiple of 4 packet sizes. This is due to the fact that USB DMA does
-         not allow sending data from non word-aligned addresses.
-         For this specific application, it is advised to not enable this option
-         unless required. */
-        pcd_hs_hd.Init.dma_enable = ENABLE;
-
-        pcd_hs_hd.Init.low_power_enable = DISABLE;
-        pcd_hs_hd.Init.phy_itface = PCD_PHY_EMBEDDED;
-        pcd_hs_hd.Init.Sof_enable = DISABLE;
-        pcd_hs_hd.Init.speed = PCD_SPEED_FULL;
-        pcd_hs_hd.Init.vbus_sensing_enable = ENABLE;
+        pcd_hs_hd.Instance                  = HAL_USB_OTG_HS_ITF;
+        pcd_hs_hd.Init.dev_endpoints        = HAL_USBD_OTG_HS_DEV_ENDPOINTS;
+        pcd_hs_hd.Init.use_dedicated_ep1    = HAL_USBD_OTG_HS_USE_DED_EP1;
+        pcd_hs_hd.Init.ep0_mps              = HAL_USBD_OTG_HS_EP0_MPS;
+        pcd_hs_hd.Init.dma_enable           = HAL_USBD_OTG_HS_DMA_ENABLE;
+        pcd_hs_hd.Init.low_power_enable     = HAL_USBD_OTG_HS_LOW_POWER_ENABLE;
+        pcd_hs_hd.Init.phy_itface           = HAL_USBD_OTG_HS_PHY_ITF;
+        pcd_hs_hd.Init.Sof_enable           = HAL_USBD_OTG_HS_SOF_ENABLE;
+        pcd_hs_hd.Init.speed                = HAL_USBD_OTG_HS_SPEED;
+        pcd_hs_hd.Init.vbus_sensing_enable  = HAL_USBD_OTG_HS_VBUS_SENS_ENABLE;
         /* Link The driver to the stack */
         pcd_hs_hd.pData = pdev;
         pdev->pData = &pcd_hs_hd;
         /* Initialize LL Driver */
         HAL_PCD_Init(&pcd_hs_hd);
 
-        HAL_PCD_SetRxFiFo(&pcd_hs_hd, 0x200);
-        HAL_PCD_SetTxFiFo(&pcd_hs_hd, 0, 0x80);
-        HAL_PCD_SetTxFiFo(&pcd_hs_hd, 1, 0x174);
+        HAL_PCD_SetRxFiFo(&pcd_hs_hd, HAL_USBD_OTG_HS_FIFO_SIZE_RX);
+        HAL_PCD_SetTxFiFo(&pcd_hs_hd, 0, HAL_USBD_OTG_HS_FIFO_SIZE_TX_0);
+        HAL_PCD_SetTxFiFo(&pcd_hs_hd, 1, HAL_USBD_OTG_HS_FIFO_SIZE_TX_1);
     }
 #endif //(HAL_USBD_HS_ENABLED)
 

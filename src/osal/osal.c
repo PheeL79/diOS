@@ -81,8 +81,8 @@ Status s;
     IF_STATUS(s = OS_PowerInit())       { return s; }
     IF_STATUS(s = OSAL_DriversCreate()) { return s; }
     HAL_CRITICAL_SECTION_EXIT();
-    HAL_LOG(D_INFO, "OSAL init...");
-    HAL_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(L_INFO, "OSAL init...");
+    HAL_LOG(L_INFO, "-------------------------------");
 #if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_FileSystemInit())  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED
@@ -93,7 +93,7 @@ Status s;
     IF_STATUS(s = OS_NetworkInit())     { return s; }
 #endif //(OS_NETWORK_ENABLED)
     //Create environment variables.
-    IF_STATUS(s = OS_EnvVariableSet("locale", HAL_LOCALE_DEFAULT, OS_LocaleSet))            { return s; }
+    IF_STATUS(s = OS_EnvVariableSet("locale", HAL_LOCALE_DEFAULT, OS_LocaleSet))        { return s; }
 //    IF_STATUS(s = OS_EnvVariableSet("stdio", "USART6", OS_StdIoSet))                    { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_level", OS_LOG_LEVEL_DEFAULT, OS_LogLevelSet)) { return s; }
     IF_STATUS(s = OS_EnvVariableSet("log_file", OS_LOG_FILE_PATH, OS_NULL))             { return s; }
@@ -116,7 +116,7 @@ Status s;
     //Create and start system tasks.
     IF_STATUS(s = OS_StartupInit())     { return s; }
     IF_STATUS(s = OS_StartupSystem())   { return s; }
-    HAL_LOG(D_INFO, "-------------------------------");
+    HAL_LOG(L_INFO, "-------------------------------");
     return s;
 }
 
@@ -125,6 +125,26 @@ Status OSAL_DriversCreate(void)
 {
 Status s;
     //Create, init and open system drivers;
+    {
+        const OS_DriverConfig drv_cfg = {
+            .name       = "GPIO",
+            .itf_p      = drv_gpio_v[DRV_ID_GPIO],
+            .prio_power = OS_PWR_PRIO_DEFAULT
+        };
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_gpio)) { return s; }
+        IF_STATUS(s = OS_DriverInit(os_env.drv_gpio, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(os_env.drv_gpio, OS_NULL)) { return s; }
+    }
+    {
+        const OS_DriverConfig drv_cfg = {
+            .name       = "RTC",
+            .itf_p      = drv_rtc_v[DRV_ID_RTC],
+            .prio_power = OS_PWR_PRIO_DEFAULT
+        };
+        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_rtc)) { return s; }
+        IF_STATUS(s = OS_DriverInit(os_env.drv_rtc, OS_NULL)) { return s; }
+        IF_STATUS(s = OS_DriverOpen(os_env.drv_rtc, OS_NULL)) { return s; }
+    }
     {
         const OS_DriverConfig drv_cfg = {
             .name       = "USART6",
@@ -141,17 +161,6 @@ Status s;
         IF_STATUS(s = OS_DriverOpen(drv_stdio, OS_NULL)) { return s; }
         os_env.drv_stdin = drv_stdio;
         os_env.drv_stdout= os_env.drv_stdin;
-    }
-
-    {
-        const OS_DriverConfig drv_cfg = {
-            .name       = "RTC",
-            .itf_p      = drv_rtc_v[DRV_ID_RTC],
-            .prio_power = OS_PWR_PRIO_DEFAULT
-        };
-        IF_STATUS(s = OS_DriverCreate(&drv_cfg, (OS_DriverHd*)&os_env.drv_rtc)) { return s; }
-        IF_STATUS(s = OS_DriverInit(os_env.drv_rtc, OS_NULL)) { return s; }
-        IF_STATUS(s = OS_DriverOpen(os_env.drv_rtc, OS_NULL)) { return s; }
     }
     return s;
 }
@@ -182,6 +191,12 @@ OS_DriverHd OS_DriverStdInGet(void)
 OS_DriverHd OS_DriverStdOutGet(void)
 {
     return os_env.drv_stdout;
+}
+
+/******************************************************************************/
+OS_DriverHd OS_DriverGpioGet(void)
+{
+    return os_env.drv_gpio;
 }
 
 /******************************************************************************/
@@ -252,28 +267,23 @@ OS_LogLevel OS_LogLevelGet(void)
 /******************************************************************************/
 Status OS_LogLevelSet(ConstStrP log_level_p)
 {
-ConstStr none_str[]     = "none";
-ConstStr critical_str[] = "critical";
-ConstStr warning_str[]  = "warning";
-ConstStr info_str[]     = "info";
-ConstStr debug_str[]    = "debug";
-OS_LogLevel level       = D_NONE;
-
+static ConstStrP log_level_sp_v[] = {
+    [L_NONE]    = "none",
+    [L_CRITICAL]= "critical",
+    [L_WARNING] = "warning",
+    [L_INFO]    = "info",
+    [L_DEBUG_3] = "debug3",
+    [L_DEBUG_2] = "debug2",
+    [L_DEBUG_1] = "debug1"
+};
     if (OS_NULL == log_level_p) { return S_INVALID_PTR; }
-    if (!OS_StrCmp((const char*)none_str, (const char*)log_level_p)) {
-    } else if (!OS_StrCmp((const char*)critical_str, (const char*)log_level_p)) {
-        level = D_CRITICAL;
-    } else if (!OS_StrCmp((const char*)warning_str, (const char*)log_level_p)) {
-        level = D_WARNING;
-    } else if (!OS_StrCmp((const char*)info_str, (const char*)log_level_p)) {
-        level = D_INFO;
-    } else if (!OS_StrCmp((const char*)debug_str, (const char*)log_level_p)) {
-        level = D_DEBUG;
-    } else {
-        return S_INVALID_VALUE;
+    for (LogLevel level = L_NONE; level < L_LAST; ++level) {
+        if (!OS_StrCmp((const char*)log_level_sp_v[level], (const char*)log_level_p)) {
+            os_env.hal_env_p->log_level = (LogLevel)level;
+            return S_OK;
+        }
     }
-    os_env.hal_env_p->log_level = (LogLevel)level;
-    return S_OK;
+    return S_INVALID_VALUE;
 }
 
 /******************************************************************************/

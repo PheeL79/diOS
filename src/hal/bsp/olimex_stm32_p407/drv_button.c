@@ -17,14 +17,13 @@
 Status BUTTON_Init_(void);
 
 static Status BUTTON_WakeupInit(void* args_p);
-static Status BUTTON_NVIC_WakeupInit(void);
 static Status BUTTON_WakeupDeInit(void* args_p);
 static Status BUTTON_WakeupOpen(void* args_p);
 static Status BUTTON_WakeupClose(void* args_p);
 static Status BUTTON_WakeupIoCtl(const U32 request_id, void* args_p);
 
 static Status BUTTON_TamperInit(void* args_p);
-static Status BUTTON_NVIC_TamperInit(void);
+static Status BUTTON_LL_TamperInit(void);
 static Status BUTTON_TamperDeInit(void* args_p);
 static Status BUTTON_TamperOpen(void* args_p);
 static Status BUTTON_TamperClose(void* args_p);
@@ -77,34 +76,15 @@ Status s = S_OK;
 /*****************************************************************************/
 Status BUTTON_WakeupInit(void* args_p)
 {
-GPIO_InitTypeDef GPIO_InitStructure;
+//GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Wakeup init: ");
+    HAL_LOG(L_INFO, "Wakeup init: ");
     /* Disable all used wakeup sources: Pin1(PA.0) */
     HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
     /* Clear all related wakeup flags */
     __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-    __GPIOA_CLK_ENABLE();
-    GPIO_InitStructure.Pin      = HAL_BUTTON_WAKEUP_PIN;
-    GPIO_InitStructure.Mode     = GPIO_MODE_IT_RISING_FALLING | GPIO_MODE_EVT_RISING;
-    GPIO_InitStructure.Pull     = GPIO_NOPULL;
-    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-    s = BUTTON_NVIC_WakeupInit();
     HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
-    HAL_TRACE_S(D_INFO, s);
-    return s;
-}
-
-/*****************************************************************************/
-Status BUTTON_NVIC_WakeupInit(void)
-{
-Status s = S_OK;
-    HAL_LOG(D_INFO, "NVIC Wakeup Init: ");
-//    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_IMR_MR0);
-//    __HAL_GPIO_EXTI_CLEAR_IT(EXTI_IMR_MR0);
-    HAL_NVIC_SetPriority(EXTI0_IRQn, HAL_IRQ_PRIO_EXTI0, 0);
-    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
@@ -156,44 +136,34 @@ Status BUTTON_TamperInit(void* args_p)
 {
 GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Tamper init: ");
+    HAL_LOG(L_INFO, "Tamper init: ");
     RTC_TamperTypeDef stamperstructure;
 
-    __GPIOC_CLK_ENABLE();
-    GPIO_InitStructure.Pin      = GPIO_PIN_13;
-    GPIO_InitStructure.Mode     = GPIO_MODE_IT_RISING_FALLING;
-    GPIO_InitStructure.Pull     = GPIO_NOPULL;
-    GPIO_InitStructure.Speed    = GPIO_SPEED_LOW;
-    GPIO_InitStructure.Alternate= GPIO_AF0_TAMPER;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
-
     /* Use PC13 as Tamper 1 with interrupt mode */
-    stamperstructure.Filter                     = RTC_TAMPERFILTER_DISABLE;
-    stamperstructure.PinSelection               = RTC_TAMPERPIN_PC13;
-    stamperstructure.Tamper                     = RTC_TAMPER_1;
-    stamperstructure.Trigger                    = RTC_TAMPERTRIGGER_RISINGEDGE;
-    stamperstructure.SamplingFrequency          = RTC_TAMPERSAMPLINGFREQ_RTCCLK_DIV256;
-    stamperstructure.PrechargeDuration          = RTC_TAMPERPRECHARGEDURATION_1RTCCLK;
-    stamperstructure.TamperPullUp               = RTC_TAMPER_PULLUP_DISABLE;
-    stamperstructure.TimeStampOnTamperDetection = RTC_TIMESTAMPONTAMPERDETECTION_DISABLE;
+    stamperstructure.Filter                     = HAL_GPIO_BUTTON_TAMPER_FILTER;
+    stamperstructure.PinSelection               = HAL_GPIO_BUTTON_TAMPER_PIN_SELECTION;
+    stamperstructure.Tamper                     = HAL_GPIO_BUTTON_TAMPER_TAMPER;
+    stamperstructure.Trigger                    = HAL_GPIO_BUTTON_TAMPER_TRIGGER;
+    stamperstructure.SamplingFrequency          = HAL_GPIO_BUTTON_TAMPER_SAMPLING_FREQ;
+    stamperstructure.PrechargeDuration          = HAL_GPIO_BUTTON_TAMPER_PRECHARGE_DURATION;
+    stamperstructure.TamperPullUp               = HAL_GPIO_BUTTON_TAMPER_PULL_UP;
+    stamperstructure.TimeStampOnTamperDetection = HAL_GPIO_BUTTON_TAMPER_TIME_STAMP_DETECT;
 
     /* Clear the Tamper Flag */
     __HAL_RTC_TAMPER_CLEAR_FLAG(&rtc_handle, RTC_FLAG_TAMP1F);
-    IF_STATUS(s = BUTTON_NVIC_TamperInit())     { return s; }
+    IF_STATUS(s = BUTTON_LL_TamperInit())     { return s; }
     if (HAL_OK != HAL_RTCEx_SetTamper_IT(&rtc_handle, &stamperstructure))   { return s = S_HARDWARE_ERROR; }
-    HAL_TRACE_S(D_INFO, s);
+    HAL_TRACE_S(L_INFO, s);
     return s;
 }
 
 /*****************************************************************************/
-Status BUTTON_NVIC_TamperInit(void)
+Status BUTTON_LL_TamperInit(void)
 {
 Status s = S_OK;
-    HAL_LOG(D_INFO, "NVIC Wakeup Init: ");
+    HAL_LOG(L_INFO, "NVIC Wakeup Init: ");
     __HAL_GPIO_EXTI_CLEAR_FLAG(RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT);
     __HAL_GPIO_EXTI_CLEAR_IT(RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT);
-    HAL_NVIC_SetPriority(TAMP_STAMP_IRQn, HAL_IRQ_PRIO_TAMP_STAMP, 0);
-    HAL_NVIC_EnableIRQ(TAMP_STAMP_IRQn);
     return s;
 }
 

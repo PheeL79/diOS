@@ -40,7 +40,7 @@ const OS_TaskConfig task_log_cfg = {
 Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     return s;
 }
 
@@ -58,7 +58,7 @@ Bool is_prompted = OS_FALSE;
     stdout_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdout_qhd, &msg_p, OS_BLOCK)) {
-            OS_LOG_S(D_WARNING, S_INVALID_MESSAGE);
+            OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -68,13 +68,13 @@ Bool is_prompted = OS_FALSE;
                     case OS_SIG_PWR_ACK:
                         break;
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_SIGNAL);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_INVALID_MESSAGE);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory

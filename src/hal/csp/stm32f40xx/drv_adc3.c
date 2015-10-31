@@ -34,31 +34,31 @@ Status ADC3_Init(void* args_p)
 {
 ADC_ChannelConfTypeDef adc_cfg;
 Status s = S_OK;
-    HAL_LOG(D_INFO, "Init");
+    HAL_LOG(L_INFO, "Init");
     trimmer_stdin_qhd = *(OS_QueueHd*)args_p;
     IF_STATUS(s = ADC3_LL_Init(OS_NULL)) { return s; }
     /* ADC Initialization */
     adc3_hd.Instance                    = HAL_ADC_TRIMMER_ITF;
-    adc3_hd.Init.ClockPrescaler         = ADC_CLOCKPRESCALER_PCLK_DIV2;
-    adc3_hd.Init.Resolution             = ADC_RESOLUTION8b;
-    adc3_hd.Init.ScanConvMode           = ENABLE;
-    adc3_hd.Init.ContinuousConvMode     = ENABLE;
-    adc3_hd.Init.DiscontinuousConvMode  = DISABLE;
-    adc3_hd.Init.NbrOfDiscConversion    = 0;
-    adc3_hd.Init.ExternalTrigConvEdge   = ADC_EXTERNALTRIGCONVEDGE_RISING;
-    adc3_hd.Init.ExternalTrigConv       = ADC_EXTERNALTRIGCONV_T8_TRGO;
-    adc3_hd.Init.DataAlign              = ADC_DATAALIGN_RIGHT;
-    adc3_hd.Init.NbrOfConversion        = 1;
-    adc3_hd.Init.DMAContinuousRequests  = ENABLE;
-    adc3_hd.Init.EOCSelection           = ENABLE;
+    adc3_hd.Init.ClockPrescaler         = HAL_ADC_TRIMMER_CLOCK_PRESCALER;
+    adc3_hd.Init.Resolution             = HAL_ADC_TRIMMER_RESOLUTION;
+    adc3_hd.Init.ScanConvMode           = HAL_ADC_TRIMMER_SCAN_CONV_MODE;
+    adc3_hd.Init.ContinuousConvMode     = HAL_ADC_TRIMMER_CONT_CONV_MODE;
+    adc3_hd.Init.DiscontinuousConvMode  = HAL_ADC_TRIMMER_DISCONT_CONV_MODE;
+    adc3_hd.Init.NbrOfDiscConversion    = HAL_ADC_TRIMMER_DISCONT_CONV_NUM;
+    adc3_hd.Init.ExternalTrigConvEdge   = HAL_ADC_TRIMMER_EXT_TRIG_CONV_EDGE;
+    adc3_hd.Init.ExternalTrigConv       = HAL_ADC_TRIMMER_EXT_TRIG_CONV;
+    adc3_hd.Init.DataAlign              = HAL_ADC_TRIMMER_DATA_ALIGN;
+    adc3_hd.Init.NbrOfConversion        = HAL_ADC_TRIMMER_CONV_NUM;
+    adc3_hd.Init.DMAContinuousRequests  = HAL_ADC_TRIMMER_DMA_CONT_REQ;
+    adc3_hd.Init.EOCSelection           = HAL_ADC_TRIMMER_EOC_SELECTION;
 
     if (HAL_OK != HAL_ADC_Init(&adc3_hd)) { return S_HARDWARE_ERROR; }
 
     /* Configure ADC regular channel */
-    adc_cfg.Channel     = HAL_ADC_TRIMMER_CHANNEL;
-    adc_cfg.Rank        = 1;
-    adc_cfg.SamplingTime= ADC_SAMPLETIME_15CYCLES;
-    adc_cfg.Offset      = 0;
+    adc_cfg.Channel     = HAL_ADC_TRIMMER_CHANNEL_REG;
+    adc_cfg.Rank        = HAL_ADC_TRIMMER_CHANNEL_RANK;
+    adc_cfg.SamplingTime= HAL_ADC_TRIMMER_CHANNEL_SAMPLING_TIME;
+    adc_cfg.Offset      = HAL_ADC_TRIMMER_CHANNEL_OFFSET;
 
     if (HAL_OK != HAL_ADC_ConfigChannel(&adc3_hd, &adc_cfg)) { return S_HARDWARE_ERROR; }
     return s;
@@ -68,7 +68,7 @@ Status s = S_OK;
 Status ADC3_DeInit(void* args_p)
 {
 Status s = S_UNDEF;
-    HAL_LOG(D_INFO, "DeInit");
+    HAL_LOG(L_INFO, "DeInit");
     IF_STATUS(s = ADC3_LL_DeInit(OS_NULL)) { return s; }
     return s;
 }
@@ -85,13 +85,15 @@ Status s = S_OK;
     HAL_ADC_TRIMMER_CLK_ENABLE();
     /*##-2- Configure peripheral GPIO ##########################################*/
     /* ADC Channel GPIO pin configuration */
-    GPIO_InitStruct.Pin = HAL_ADC_TRIMMER_GPIO_PIN;
-    GPIO_InitStruct.Mode= GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull= GPIO_NOPULL;
-    HAL_GPIO_Init(HAL_ADC_TRIMMER_GPIO, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin         = HAL_ADC_TRIMMER_GPIO_PIN;
+    GPIO_InitStruct.Mode        = HAL_ADC_TRIMMER_GPIO_MODE;
+    GPIO_InitStruct.Pull        = HAL_ADC_TRIMMER_GPIO_PULL;
+    GPIO_InitStruct.Speed       = HAL_ADC_TRIMMER_GPIO_SPEED;
+    GPIO_InitStruct.Alternate   = HAL_ADC_TRIMMER_GPIO_ALT;
+    HAL_GPIO_Init(HAL_ADC_TRIMMER_GPIO_PORT, &GPIO_InitStruct);
     /*##-3- Configure the NVIC #################################################*/
     /* NVIC configuration */
-    HAL_NVIC_SetPriority(HAL_ADC_TRIMMER_IRQ, HAL_IRQ_PRIO_ADC_TRIMMER, 0);
+    HAL_NVIC_SetPriority(HAL_ADC_TRIMMER_IRQ, HAL_PRIO_IRQ_ADC_TRIMMER, 0);
     HAL_NVIC_EnableIRQ(HAL_ADC_TRIMMER_IRQ);
     return s;
 }
@@ -105,7 +107,7 @@ Status s = S_OK;
     HAL_ADC_TRIMMER_RELEASE_RESET();
     /*##-2- Disable peripherals and GPIO Clocks ################################*/
     /* De-initialize the ADC Channel GPIO pin */
-    HAL_GPIO_DeInit(HAL_ADC_TRIMMER_GPIO, HAL_ADC_TRIMMER_GPIO_PIN);
+    HAL_GPIO_DeInit(HAL_ADC_TRIMMER_GPIO_PORT, HAL_ADC_TRIMMER_GPIO_PIN);
     return s;
 }
 

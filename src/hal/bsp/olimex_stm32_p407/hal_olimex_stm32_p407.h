@@ -17,7 +17,6 @@
 #include "drv_dma.h"
 #include "drv_rtc.h"
 #include "drv_gpio.h"
-#include "drv_nvic.h"
 #include "drv_timer.h"
 #include "drv_usart.h"
 #include "drv_power.h"
@@ -28,12 +27,13 @@
 #include "drv_mem_ext.h"
 #include "drv_trimmer.h"
 #include "drv_button.h"
-#include "drv_led.h"
 //#include "drv_audio_bsp.h"
 #include "drv_media.h"
 #include "drv_media_bsp.h"
 
 //-----------------------------------------------------------------------------
+#define HAL_IO                          volatile
+
 #define HAL_CRITICAL_SECTION_ENTER()    __disable_irq()
 #define HAL_CRITICAL_SECTION_EXIT()     __enable_irq()
 
@@ -42,9 +42,9 @@
 
 // Joseph Yiu's method
 // From http://forums.arm.com/index.php?showtopic=13949
-#define    DWT_CYCCNT                   *(volatile uint32_t*)0xE0001004
-#define    DWT_CONTROL                  *(volatile uint32_t*)0xE0001000
-#define    SCB_DEMCR                    *(volatile uint32_t*)0xE000EDFC
+#define    DWT_CYCCNT                   *(HAL_IO U32*)0xE0001004
+#define    DWT_CONTROL                  *(HAL_IO U32*)0xE0001000
+#define    SCB_DEMCR                    *(HAL_IO U32*)0xE000EDFC
 extern int cycles_diff;
 extern int cycles_last;
 
@@ -58,10 +58,35 @@ extern U32 SystemCoreClockKHz;
 ///         DWT_STOPWATCH_START;
 ///         HAL_DelayMs(100);
 ///         DWT_STOPWATCH_STOP;
-///         D_LOG(D_DEBUG, "%d(ms)", CYCLES_TO_MS(cycles_diff));
+///         D_LOG(L_DEBUG_1, "%d(ms)", CYCLES_TO_MS(cycles_diff));
 #define CYCLES_TO_MS(cycles)            ((U32)((cycles) / SystemCoreClockKHz))
 
-#define HAL_IO                          volatile
+typedef enum {
+    HAL_EXCEPT_UNDEF,
+    HAL_EXCEPT_NMI,
+    HAL_EXCEPT_HARD_FAULT,
+    HAL_EXCEPT_MEM_MANAGE,
+    HAL_EXCEPT_BUS_FAULT,
+    HAL_EXCEPT_USAGE_FAULT,
+    HAL_EXCEPT_SVC,
+    HAL_EXCEPT_DEBUG_MON,
+    HAL_EXCEPT_PEND_SV,
+    HAL_EXCEPT_WWDG,
+    HAL_EXCEPT_PVD
+} HAL_Exception;
+
+typedef struct {
+    IRQn_Type               irq;
+    U32                     nvic_prio_pre;
+    U32                     nvic_prio_sub;
+} HAL_EXTI_InitStruct;
+
+typedef struct {
+    GPIO_TypeDef*           port;
+    GPIO_InitTypeDef        init;
+    HAL_EXTI_InitStruct     exti;
+    Bool                    is_inverted;
+} HAL_GPIO_InitStruct;
 
 //-----------------------------------------------------------------------------
 /// @brief      Init HAL.
@@ -125,5 +150,9 @@ void            HAL_StdIoCls(void);
 /// @param[in]  size            Description size.
 /// @return     #Status.
 Status          HAL_DeviceDescriptionGet(DeviceDesc* dev_desc_p, const U16 size);
+
+/// @brief      Handle the hardware exception.
+/// @return     None.
+void            HAL_ExceptionHandler(const HAL_Exception exp);
 
 #endif // _HAL_OLIMEX_STM32_P407_H_
