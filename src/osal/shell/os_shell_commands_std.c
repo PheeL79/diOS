@@ -394,7 +394,9 @@ CommandHandler cmd_handlers_v[] = {
 #if (OS_TRIGGERS_ENABLED)
     { "tri", OS_ShellCmdStHandlerTriHelper }, //triggers
 #endif //(OS_TRIGGERS_ENABLED)
+#if (OS_FILE_SYSTEM_ENABLED)
 //    { "fs",  OS_ShellCmdStHandlerFsHelper  }, //file system
+#endif //(OS_FILE_SYSTEM_ENABLED)
 #if (OS_NETWORK_ENABLED)
     { "net", OS_ShellCmdStHandlerNetHelper }, //network itf
 #endif //(OS_NETWORK_ENABLED)

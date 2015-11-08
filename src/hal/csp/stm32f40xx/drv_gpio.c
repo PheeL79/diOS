@@ -351,14 +351,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             }
 #endif //(HAL_ETH_ENABLED)
             break;
-        case GPIO_PIN_13:
-            {
-            extern HAL_IrqCallbackFunc tamper_irq_callback_func;
-            if (OS_NULL != tamper_irq_callback_func) {
-                tamper_irq_callback_func();
-            }
-            }
-            break;
+//        case GPIO_PIN_13:
+//            {
+//            extern HAL_IrqCallbackFunc tamper_irq_callback_func;
+//            if (OS_NULL != tamper_irq_callback_func) {
+//                tamper_irq_callback_func();
+//            }
+//            }
+//            break;
         default:
             OS_ASSERT(OS_FALSE);
             break;

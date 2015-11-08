@@ -35,7 +35,7 @@ extern RTC_HandleTypeDef rtc_handle;
 HAL_DriverItf* drv_button_v[DRV_ID_BUTTON_LAST];
 
 HAL_IrqCallbackFunc wakeup_irq_callback_func = OS_NULL;
-static HAL_IrqCallbackFunc tamper_irq_callback_func = OS_NULL;
+HAL_IrqCallbackFunc tamper_irq_callback_func = OS_NULL;
 
 //-----------------------------------------------------------------------------
 static HAL_DriverItf drv_button_wakeup = {
@@ -134,7 +134,6 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 Status BUTTON_TamperInit(void* args_p)
 {
-GPIO_InitTypeDef GPIO_InitStructure;
 Status s = S_OK;
     HAL_LOG(L_INFO, "Tamper init: ");
     RTC_TamperTypeDef stamperstructure;

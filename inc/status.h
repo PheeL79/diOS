@@ -26,6 +26,9 @@
         L_CRITICAL,     ///< critical errors
         L_WARNING,      ///< warnings
         L_INFO,         ///< information
+        //...
+        //User defined levels. (Do not forget to add support in status.c!)
+        //...
         L_DEBUG_3,      ///< debug level 3
         L_DEBUG_2,      ///< debug level 2
         L_DEBUG_1,      ///< debug level 1
@@ -133,6 +136,8 @@ enum StatusType {
     S_INVALID_TIMER,            //Invalid timer
     S_INVALID_TRIGGER,          //Invalid trigger
     S_INVALID_DRIVER,           //Invalid driver
+    S_INVALID_CLASS,            //Invalid class
+    S_INVALID_ITF,              //Invalid interface
 //hal
     S_HARDWARE_ERROR,           //Hardware error
     S_DEVICE_ERROR,             //Device error

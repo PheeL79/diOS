@@ -458,7 +458,7 @@ Status s = S_UNDEF;
             *(U16*)args_p = HAL_SD_CARD_BLOCK_SIZE;
             s = S_OK;
             break;
-        case CTRL_ERASE_SECTOR: {
+        case CTRL_TRIM: {
             //TODO(A. Filyanov) Check SDHC capability!
             U32 start_sector= ((U32*)args_p)[0] * HAL_SD_CARD_SECTOR_SIZE;
             U32 end_sector  = ((U32*)args_p)[1] * HAL_SD_CARD_SECTOR_SIZE;

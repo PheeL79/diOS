@@ -1,42 +1,34 @@
 /**
   ******************************************************************************
-  * @file           : usbh_conf.h
-  * @date           : 06/08/2014 16:07:57
-  * @version        : v1.0_Cube
-  * @brief          : Header for usbh_conf file.
+  * @file    usbh_conf.h
+  * @author  MCD Application Team
+  * @version V3.2.2
+  * @date    07-July-2015
+  * @brief   Header file for usbh_conf_template.c
   ******************************************************************************
-  * COPYRIGHT(c) 2014 STMicroelectronics
+  * @attention
   *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  * 1. Redistributions of source code must retain the above copyright notice,
-  * this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  * this list of conditions and the following disclaimer in the documentation
-  * and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of its contributors
-  * may be used to endorse or promote products derived from this software
-  * without specific prior written permission.
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
+  *
+  *        http://www.st.com/software_license_agreement_liberty_v2
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
   *
   ******************************************************************************
-*/
+  */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBH_CONF__H__
 #define __USBH_CONF__H__
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -44,6 +36,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "drv_usb.h"
 #include "os_config.h"
 #include "os_memory.h"
@@ -51,51 +46,33 @@
 
 extern OS_QueueHd usbhd_stdin_qhd;
 
-/**
-	MiddleWare name : USB_HOST
-	MiddleWare fileName : usbh_conf.h
-	MiddleWare version :
-*/
-/*----------   -----------*/
-#define USBH_MAX_NUM_ENDPOINTS      4
+/** @addtogroup USBH_OTG_DRIVER
+  * @{
+  */
 
-/*----------   -----------*/
-#define USBH_MAX_NUM_INTERFACES      1
+/** @defgroup USBH_CONF
+  * @brief usb otg low level driver configuration file
+  * @{
+  */
 
-/*----------   -----------*/
-#define USBH_MAX_NUM_CONFIGURATION      1
+/** @defgroup USBH_CONF_Exported_Defines
+  * @{
+  */
 
-/*----------   -----------*/
-#define USBH_KEEP_CFG_DESCRIPTOR      0
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_SUPPORTED_CLASS      4
-
-/*----------   -----------*/
-#define USBH_MAX_SIZE_CONFIGURATION      255
-
-/*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER      HAL_USBH_MSC_BLOCK_SIZE
-
-/*----------   -----------*/
-#define USBH_DEBUG_LEVEL      0
-
-/*----------   -----------*/
-#define USBH_USE_OS      0
+#define USBH_MAX_NUM_ENDPOINTS                4
+#define USBH_MAX_NUM_INTERFACES               1
+#define USBH_MAX_NUM_CONFIGURATION            1
+#define USBH_KEEP_CFG_DESCRIPTOR              0
+#define USBH_MAX_NUM_SUPPORTED_CLASS          4
+#define USBH_MAX_SIZE_CONFIGURATION           0x200
+#define USBH_MAX_DATA_BUFFER                  HAL_USBH_MSC_BLOCK_SIZE
+#define USBH_DEBUG_LEVEL                      0
+#define USBH_USE_OS                           0
 #define USBH_USE_diOS    1
-
-
-/****************************************/
-/* #define for FS and HS identification */
-#define HOST_HS 		USBH_HS_ENABLED
-#define HOST_FS 		USBH_FS_ENABLED
 
 /** @defgroup USBH_Exported_Macros
   * @{
   */
-#if (USBH_USE_OS == 1)
-#   define   USBH_PROCESS_PRIO    OS_PRIORITY_MIN
-#endif
 
  /* Memory management macros */
 #define USBH_malloc               OS_Malloc
@@ -104,6 +81,7 @@ extern OS_QueueHd usbhd_stdin_qhd;
 #define USBH_memcpy               OS_MemCpy
 
  /* DEBUG macros */
+
 
 #if (USBH_DEBUG_LEVEL > 0)
 #define  USBH_UsrLog(...)   printf(__VA_ARGS__);\
@@ -135,11 +113,10 @@ extern OS_QueueHd usbhd_stdin_qhd;
   * @}
   */
 
-
-
 /**
   * @}
   */
+
 
 /** @defgroup USBH_CONF_Exported_Types
   * @{
@@ -147,6 +124,7 @@ extern OS_QueueHd usbhd_stdin_qhd;
 /**
   * @}
   */
+
 
 /** @defgroup USBH_CONF_Exported_Macros
   * @{
@@ -169,7 +147,12 @@ extern OS_QueueHd usbhd_stdin_qhd;
   * @}
   */
 
-#endif //__USBH_CONF__H__
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __USBH_CONF__H */
+
 
 /**
   * @}

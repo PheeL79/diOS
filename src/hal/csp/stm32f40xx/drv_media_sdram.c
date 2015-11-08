@@ -205,7 +205,7 @@ Status s = S_UNDEF;
             *(U16*)args_p = OS_MEDIA_VOL_SDRAM_BLOCK_SIZE;
             s = S_OK;
             break;
-        case CTRL_ERASE_SECTOR: {
+        case CTRL_TRIM: {
             U32 start_sector= ((U32*)args_p)[0] * OS_MEDIA_VOL_SDRAM_BLOCK_SIZE;
             U32 end_sector  = ((U32*)args_p)[1] * OS_MEDIA_VOL_SDRAM_BLOCK_SIZE;
             OS_MemSet((void*)((U8*)sdram_fs_p + (OS_MEDIA_VOL_SDRAM_BLOCK_SIZE * start_sector)),

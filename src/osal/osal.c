@@ -5,6 +5,7 @@
 *******************************************************************************/
 #include <string.h>
 #include "hal.h"
+#include "version.h"
 #include "osal.h"
 #include "os_common.h"
 #include "os_supervise.h"
@@ -83,6 +84,13 @@ Status s;
     HAL_CRITICAL_SECTION_EXIT();
     HAL_LOG(L_INFO, "OSAL init...");
     HAL_LOG(L_INFO, "-------------------------------");
+    HAL_LOG(L_INFO, "diOS: v%d.%d.%d%s-%s",
+                    version.maj,
+                    version.min,
+                    version.bld,
+                    ver_lbl[version.lbl],
+                    version.rev);
+    HAL_LOG(L_INFO, "Built on: %s, %s", __DATE__, __TIME__);
 #if (OS_FILE_SYSTEM_ENABLED)
     IF_STATUS(s = OS_FileSystemInit())  { return s; }
 #endif // OS_FILE_SYSTEM_ENABLED

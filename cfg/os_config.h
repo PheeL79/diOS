@@ -13,8 +13,13 @@
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
+//Debug
 #define OS_DEBUG_ENABLED                            1
 
+//Tests
+#define OS_TEST_ENABLED                             0
+
+//Kernel
 #define OS_IS_PREEMPTIVE                            1
 #define OS_MPU_ENABLED                              0
 #define OS_STATS_ENABLED                            1
@@ -93,19 +98,20 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 //File system
 //Look in ffconf.h for details
 #define OS_FILE_SYSTEM_ENABLED                      1
-#define OS_FILE_SYSTEM_MAKE_ENABLED                 1
+#define OS_FILE_SYSTEM_MAKE_EN                      1
 #define OS_FILE_SYSTEM_TINY                         0
 #define OS_FILE_SYSTEM_READONLY                     0
 #define OS_FILE_SYSTEM_MINIMIZE                     0
 #define OS_FILE_SYSTEM_STRFUNC_EN                   1
-#define OS_FILE_SYSTEM_FASTSEEK                     0
+#define OS_FILE_SYSTEM_FIND_EN                      0
+#define OS_FILE_SYSTEM_FASTSEEK_EN                  0
 #define OS_FILE_SYSTEM_LABEL_EN                     1
 #define OS_FILE_SYSTEM_FORWARD_EN                   0
-#define OS_FILE_SYSTEM_CODEPAGE                     1251
+#define OS_FILE_SYSTEM_CODEPAGE                     866
 #define OS_FILE_SYSTEM_STRF_ENCODE                  3
 #define OS_FILE_SYSTEM_REL_PATH                     2
 #define OS_FILE_SYSTEM_MULTI_PART                   0
-#define OS_FILE_SYSTEM_ERASE_SEC_EN                 0
+#define OS_FILE_SYSTEM_TRIM_EN                      0
 #define OS_FILE_SYSTEM_NO_INFO                      0
 #define OS_FILE_SYSTEM_WORD_ACCESS                  0
 #define OS_FILE_SYSTEM_LOCK                         0
@@ -123,6 +129,10 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_FILE_SYSTEM_DIR_DELIM                    '/'
 #define OS_FILE_SYSTEM_SYNC_OBJ                     OS_MutexHd
 #define OS_FILE_SYSTEM_YEAR_BASE                    1980U
+#define OS_FILE_SYSTEM_NO_RTC                       0
+#define OS_FILE_SYSTEM_NO_RTC_DAY                   1
+#define OS_FILE_SYSTEM_NO_RTC_MONTH                 1
+#define OS_FILE_SYSTEM_NO_RTC_YEAR                  2015U
 
 //Media
 enum OS_MEDIA_VOL {
@@ -550,9 +560,6 @@ enum OS_NETWORK_ITF {
 #define OS_LOCALE_DATE_DELIM_RU                     "."
 #define OS_LOCALE_TIME_DELIM_EN                     ":"
 #define OS_LOCALE_TIME_DELIM_RU                     OS_LOCALE_TIME_DELIM_EN
-
-//Tests
-#define OS_TEST_ENABLED                             0
 
 // cstdlib
 #define OS_AtoI                                     HAL_AtoI

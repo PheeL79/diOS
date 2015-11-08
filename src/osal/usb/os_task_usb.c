@@ -162,7 +162,7 @@ Status s = S_UNDEF;
                                         .class  = (OS_UsbClass)USBH_GetActiveClass(usbh_itf_hd_p)
                                     };
                                     Status s;
-                                    OS_Message* msg_p = OS_MessageCreate(msg_id, usb_ev, sizeof(usb_ev), OS_BLOCK);
+                                    OS_Message* msg_p = OS_MessageCreate(msg_id, (const OS_MessageData)&usb_ev, sizeof(usb_ev), OS_BLOCK);
                                     if (OS_NULL != msg_p) {
                                         IF_STATUS(s = OS_MessageEmit(msg_p, OS_BLOCK, OS_MSG_PRIO_NORMAL)) {
                                             OS_LOG_S(L_WARNING, s);

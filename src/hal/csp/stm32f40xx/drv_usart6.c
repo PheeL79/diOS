@@ -277,30 +277,33 @@ Status s = S_UNDEF;
 // IRQ handlers-----------------------------------------------------------------
 /******************************************************************************/
 /**
-  * @brief  This function handles UART interrupt request.
+  * @brief  This function handles USARTx interrupt request.
   * @param  None
   * @retval None
-  * @Note   This function is redefined in "main.h" and related to DMA stream
-  *         used for USART data transmission
   */
 void HAL_USART_DEBUG_IRQ_HANDLER(void);
 void HAL_USART_DEBUG_IRQ_HANDLER(void)
 {
-    HAL_UART_IRQHandler(&uart_hd);
+UART_HandleTypeDef* uart_hd_p = &uart_hd;
+    HAL_UART_IRQHandler(uart_hd_p);
 
-    extern OS_QueueHd stdin_qhd;
-    const OS_SignalData sig_data = (U16)(HAL_USART_DEBUG_ITF->DR & (U16)0x01FF);
-    const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
-    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
+    const U32 uart_flag_rxne= __HAL_UART_GET_FLAG(uart_hd_p, UART_FLAG_RXNE);
+    const U32 uart_it_rxne  = __HAL_UART_GET_IT_SOURCE(uart_hd_p, UART_IT_RXNE);
+    if ((RESET != uart_flag_rxne) && (RESET != uart_it_rxne)) {
+        if (taskSCHEDULER_NOT_STARTED != xTaskGetSchedulerState()) {
+            extern OS_QueueHd stdin_qhd;
+            const OS_SignalData sig_data = (U16)(HAL_USART_DEBUG_ITF->DR & (U16)0x01FF);
+            const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_USART6, OS_SIG_STDIN, sig_data);
+            OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
+        }
+    }
 }
 
 /******************************************************************************/
 /**
-  * @brief  This function handles DMA interrupt request.
+  * @brief  This function handles DMA RX interrupt request.
   * @param  None
   * @retval None
-  * @Note   This function is redefined in "main.h" and related to DMA stream
-  *         used for USART data transmission
   */
 void HAL_USART_DEBUG_DMA_IRQ_HANDLER_RX(void);
 void HAL_USART_DEBUG_DMA_IRQ_HANDLER_RX(void)
@@ -310,15 +313,12 @@ void HAL_USART_DEBUG_DMA_IRQ_HANDLER_RX(void)
 
 /******************************************************************************/
 /**
-  * @brief  This function handles DMA interrupt request.
+  * @brief  This function handles DMA TX interrupt request.
   * @param  None
   * @retval None
-  * @Note   This function is redefined in "main.h" and related to DMA stream
-  *         used for USART data reception
   */
 void HAL_USART_DEBUG_DMA_IRQ_HANDLER_TX(void);
 void HAL_USART_DEBUG_DMA_IRQ_HANDLER_TX(void)
 {
-    HAL_NVIC_ClearPendingIRQ(HAL_USART_DEBUG_DMA_IRQ_TX);
     HAL_DMA_IRQHandler(uart_hd.hdmatx);
 }

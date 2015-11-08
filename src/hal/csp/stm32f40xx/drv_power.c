@@ -114,8 +114,6 @@ const OS_PowerState state = *(OS_PowerState*)args_p;
                         HAL_SYSTICK_STOP();
                         /* FLASH Deep Power Down Mode enabled */
                         HAL_PWREx_EnableFlashPowerDown();
-                        __SEV(); /* Set event to bring the event register bit into a known state (1) */
-                        __WFE(); /* This will clear the event register and immediately continue to the next instruction and make you ready to go to sleep using WFE */
                         /* Enter Stop Mode */
                         HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFE);
                         /* Configures system clock after wake-up from STOP: enable HSE, PLL and select

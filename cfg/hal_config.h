@@ -356,14 +356,13 @@
 #define HAL_GPIO_BUTTON_TAMPER_TIME_STAMP_DETECT    RTC_TIMESTAMPONTAMPERDETECTION_DISABLE
 
 // Memory
+#define DATA_IN_ExtSRAM
+#define HAL_MEM_EXT_ENABLED                         1
 #define HAL_MEM_BLOCK_SIZE_MIN                      8
 #define HAL_MEM_INT_CCM_BASE_ADDRESS                0x10000000
 #define HAL_MEM_INT_CCM_SIZE                        0x10000
 #define HAL_MEM_EXT_SRAM_BASE_ADDRESS               0x60000000
 #define HAL_MEM_EXT_SRAM_SIZE                       0x80000
-
-// Enable External SRAM
-#define DATA_IN_ExtSRAM
 
 // cstdlib redefenitions
 // Memory

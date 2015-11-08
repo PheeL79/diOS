@@ -188,7 +188,10 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
                     const OS_UsbEventData* usb_ev_data_p = (OS_UsbEventData*)&(msg_p->data);
                     const DrvMediaUsbArgsInit drv_args = {
                         .usb_itf_hd = usb_ev_data_p->itf_hd,
-                        .drv_led_fs = tstor_p->drv_led_fs
+                        .args_init  = {
+                            .drv_gpio = tstor_p->drv_gpio,
+                            .gpio_led = GPIO_LED_FS
+                        }
                     };
                     Status s;
                     if (OS_USB_ID_FS == usb_ev_data_p->itf_id) {
@@ -199,7 +202,7 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
 #if defined(OS_MEDIA_VOL_USBH_HS)
                         fs_media_usb_hd = tstor_p->fs_media_usbh_hs_hd;
 #endif //defined(OS_MEDIA_VOL_USBH_HS)
-                    } else { OS_LOG_S(L_WARNING, S_UNDEF_ITF); }
+                    } else { OS_LOG_S(L_WARNING, S_INVALID_ITF); }
                     if (OS_USB_CLASS_MSC == usb_ev_data_p->class) {
                         if (OS_MSG_USB_CONNECT == msg_p->id) {
                             IF_OK(s = OS_FileSystemMediaInit(fs_media_usb_hd, (void*)&drv_args)) {
@@ -211,7 +214,7 @@ const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK);
                         } else if (OS_MSG_USB_DISCONNECT == msg_p->id) {
                             IF_OK(s = OS_FileSystemUnMount(fs_media_usb_hd)) {
                             }
-                        } else { OS_LOG_S(L_WARNING, S_UNDEF_CLASS); }
+                        } else { OS_LOG_S(L_WARNING, S_INVALID_CLASS); }
                     }
                 }
 #endif //defined(OS_MEDIA_VOL_USBH_FS) || defined(OS_MEDIA_VOL_USBH_HS)

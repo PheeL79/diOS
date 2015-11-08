@@ -116,10 +116,10 @@ void UsageFault_Handler(void)
   * @param  None
   * @retval None
   */
-void SVC_Handler(void)
-{
-    HAL_ExceptionHandler(HAL_EXCEPT_SVC);
-}
+//void SVC_Handler(void)
+//{
+//    HAL_ExceptionHandler(HAL_EXCEPT_SVC);
+//}
 
 /**
   * @brief  This function handles Debug Monitor exception.
@@ -136,10 +136,10 @@ void DebugMon_Handler(void)
   * @param  None
   * @retval None
   */
-void PendSV_Handler(void)
-{
-    HAL_ExceptionHandler(HAL_EXCEPT_PEND_SV);
-}
+//void PendSV_Handler(void)
+//{
+//    HAL_ExceptionHandler(HAL_EXCEPT_PEND_SV);
+//}
 
 /**
   * @brief  This function handles SysTick Handler.
@@ -183,7 +183,6 @@ void SysTick_Handler(void)
 void OTG_FS_IRQHandler(void);
 void OTG_FS_IRQHandler(void)
 {
-    HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
 #if (HAL_USBD_ENABLED)
 #if (HAL_USBD_FS_ENABLED)
     extern PCD_HandleTypeDef pcd_fs_hd;
@@ -206,7 +205,6 @@ void OTG_FS_IRQHandler(void)
 void OTG_HS_IRQHandler(void);
 void OTG_HS_IRQHandler(void)
 {
-    HAL_NVIC_ClearPendingIRQ(OTG_HS_IRQn);
 #if (HAL_USBD_ENABLED)
 #if (HAL_USBD_HS_ENABLED)
     extern PCD_HandleTypeDef pcd_hs_hd;

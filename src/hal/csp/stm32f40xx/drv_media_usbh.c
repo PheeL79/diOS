@@ -24,7 +24,7 @@
 #define LED_FS_OFF()        OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF)
 
 //------------------------------------------------------------------------------
-#if defined(OS_MEDIA_VOL_USBH_FS) && (USBH_FS_ENABLED)
+#if defined(OS_MEDIA_VOL_USBH_FS) && (HAL_USBH_FS_ENABLED)
 static Status   USBH_FS_MSC_Init(void* args_p);
 static Status   USBH_FS_MSC_DeInit(void* args_p);
 static Status   USBH_FS_MSC_Open(void* args_p);
@@ -32,7 +32,7 @@ static Status   USBH_FS_MSC_Close(void* args_p);
 static Status   USBH_FS_MSC_Read(void* data_in_p, Size size, void* args_p);
 static Status   USBH_FS_MSC_Write(void* data_out_p, Size size, void* args_p);
 static Status   USBH_FS_MSC_IoCtl(const U32 request_id, void* args_p);
-#endif //defined(OS_MEDIA_VOL_USBH_FS) && (USBH_FS_ENABLED)
+#endif //defined(OS_MEDIA_VOL_USBH_FS) && (HAL_USBH_FS_ENABLED)
 #if (HAL_USBH_HS_ENABLED)
 static Status   USBH_HS_MSC_Init(void* args_p);
 static Status   USBH_HS_MSC_DeInit(void* args_p);
@@ -78,7 +78,7 @@ static U8 usbh_hs_msc_lun = 0; //!!!Driver (currently) supports only logical uni
 };
 #endif //(HAL_USBH_HS_ENABLED)
 
-static OS_DriverHd drv_led_fs;
+static DrvMediaArgsInit args_init;
 
 #if defined(OS_MEDIA_VOL_USBH_FS) && (HAL_USBH_FS_ENABLED)
 /******************************************************************************/
@@ -87,7 +87,7 @@ Status USBH_FS_MSC_Init(void* args_p)
 const DrvMediaUsbArgsInit* drv_args_p = (DrvMediaUsbArgsInit*)args_p;
 Status s = S_OK;
     usbh_fs_hd_p    = (USBH_HandleTypeDef*)drv_args_p->usb_itf_hd;
-    drv_led_fs      = drv_args_p->drv_led_fs;
+    args_init       = drv_args_p->args_init;
     return s;
 }
 
@@ -102,7 +102,7 @@ Status s = S_OK;
 Status USBH_FS_MSC_Open(void* args_p)
 {
 Status s = S_UNDEF;
-    IF_STATUS(s = OS_DriverOpen(drv_led_fs, OS_NULL)) {}
+    IF_STATUS(s = OS_DriverOpen(args_init.drv_gpio, OS_NULL)) {}
     return s;
 }
 
@@ -111,7 +111,7 @@ Status USBH_FS_MSC_Close(void* args_p)
 {
 Status s = S_UNDEF;
     IF_OK(s = drv_media_usbh_fs.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
-        IF_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
+        IF_OK(s = OS_DriverClose(args_init.drv_gpio, OS_NULL)) {}
     }
     return s;
 }
@@ -295,7 +295,7 @@ Status s = S_UNDEF;
             }
             }
             break;
-        case CTRL_ERASE_SECTOR:
+        case CTRL_TRIM:
             s = S_OK;
             break;
         default:
@@ -506,10 +506,10 @@ Status s = S_UNDEF;
             }
             }
             break;
-        case DRV_REQ_MEDIA_SECTOR_Size_GET:
-        case GET_SECTOR_Size:
-        case DRV_REQ_MEDIA_BLOCK_Size_GET:
-        case GET_BLOCK_Size: {
+        case DRV_REQ_MEDIA_SECTOR_SIZE_GET:
+        case GET_SECTOR_SIZE:
+        case DRV_REQ_MEDIA_BLOCK_SIZE_GET:
+        case GET_BLOCK_SIZE: {
             MSC_LUNTypeDef info;
             if (USBH_OK == USBH_MSC_GetLUNInfo(usbh_hs_hd_p, usbh_hs_msc_lun, &info)) {
                 *(U16*)args_p = info.capacity.block_size;
@@ -519,7 +519,7 @@ Status s = S_UNDEF;
             }
             }
             break;
-        case CTRL_ERASE_SECTOR:
+        case CTRL_TRIM:
             s = S_OK;
             break;
         default:

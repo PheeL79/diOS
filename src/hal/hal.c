@@ -28,7 +28,6 @@ static void     SystemClock_Config(void);
 Status HAL_Init_(void)
 {
 extern Status USART_Init_(void);
-const Version* ver_p = &device_state.description.device_description.version;
 Status s = S_OK;
     // Disable interrupts.
     HAL_CRITICAL_SECTION_ENTER(); {
@@ -56,13 +55,6 @@ Status s = S_OK;
         HAL_LOG(L_INFO, "-------------------------------");
         HAL_LOG(L_INFO, "Board name: %s", HAL_MB_NAME);
         HAL_LOG(L_INFO, "Clock core: %u Hz", HAL_SystemCoreClockGet());
-        HAL_LOG(L_INFO, "diOS: v%d.%d.%d%s-%s",
-                        ver_p->maj,
-                        ver_p->min,
-                        ver_p->bld,
-                        ver_lbl[ver_p->lbl],
-                        ver_p->rev);
-        HAL_LOG(L_INFO, "Built on: %s, %s", __DATE__, __TIME__);
         HAL_LOG(L_INFO, "-------------------------------");
         HAL_LOG(L_INFO, "HAL init...");
         HAL_LOG(L_INFO, "-------------------------------");

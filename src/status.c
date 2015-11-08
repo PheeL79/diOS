@@ -75,6 +75,8 @@ const StatusItem status_items_v[] = {
     "Invalid timer",
     "Invalid trigger",
     "Invalid driver",
+    "Invalid class",
+    "Invalid interface",
 //hal
     "Hardware error",
     "Device error",
