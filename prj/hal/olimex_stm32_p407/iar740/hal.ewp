@@ -182,7 +182,7 @@
         </option>
         <option>
           <name>CCPreprocComments</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCPreprocLine</name>
@@ -4291,10 +4291,16 @@
     </file>
   </group>
   <file>
+    <name>$PROJ_DIR$\..\..\..\..\src\common.c</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\..\..\..\..\src\hal\hal.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\printf-stdarg.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\..\..\src\ring_buffer.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\..\src\status.c</name>

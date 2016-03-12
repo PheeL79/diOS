@@ -97,6 +97,14 @@
 #define HAL_ADC_TRIMMER_GPIO_SPEED          GPIO_SPEED_LOW
 #define HAL_ADC_TRIMMER_GPIO_ALT            0
 
+/**SDIO GPIO Configuration
+PC8     ------> SDIO_D0
+PC9     ------> SDIO_D1
+PC10    ------> SDIO_D2
+PC11    ------> SDIO_D3
+PC12    ------> SDIO_CK
+PD2     ------> SDIO_CMD
+*/
 #define HAL_SD_GPIO_CLK_ENABLE()            __GPIOC_CLK_ENABLE(); __GPIOD_CLK_ENABLE()
 #define HAL_SD_GPIO_CLK_DISABLE()           __GPIOC_CLK_DISABLE(); __GPIOD_CLK_DISABLE()
 #define HAL_SD_GPIO_AF                      GPIO_AF12_SDIO
@@ -195,13 +203,6 @@
 #define HAL_ETH_GPIO2_SPEED                 GPIO_SPEED_HIGH
 #define HAL_ETH_GPIO2_ALT                   HAL_ETH_GPIO_AF
 
-#define HAL_ETH_GPIO3_PORT                  GPIOA
-#define HAL_ETH_GPIO3_PIN                   (GPIO_PIN_3)
-#define HAL_ETH_GPIO3_MODE                  GPIO_MODE_IT_FALLING
-#define HAL_ETH_GPIO3_PULL                  GPIO_NOPULL
-#define HAL_ETH_GPIO3_SPEED                 GPIO_SPEED_HIGH
-#define HAL_ETH_GPIO3_ALT                   0
-
 #define HAL_ETH_GPIO4_PORT                  GPIOB
 #define HAL_ETH_GPIO4_PIN                   (GPIO_PIN_11)
 #define HAL_ETH_GPIO4_MODE                  GPIO_MODE_AF_PP
@@ -215,5 +216,12 @@
 #define HAL_ETH_GPIO5_PULL                  GPIO_NOPULL
 #define HAL_ETH_GPIO5_SPEED                 GPIO_SPEED_HIGH
 #define HAL_ETH_GPIO5_ALT                   GPIO_AF11_ETH
+
+#define HAL_ETH_GPIO_MDINT_PORT             GPIOA
+#define HAL_ETH_GPIO_MDINT_PIN              GPIO_PIN_3
+#define HAL_ETH_GPIO_MDINT_MODE             GPIO_MODE_IT_FALLING
+#define HAL_ETH_GPIO_MDINT_PULL             GPIO_NOPULL
+#define HAL_ETH_GPIO_MDINT_SPEED            GPIO_SPEED_HIGH
+#define HAL_ETH_GPIO_MDINT_ALT              0
 
 #endif //_BSP_CONFIG_H_

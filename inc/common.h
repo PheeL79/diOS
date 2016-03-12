@@ -58,6 +58,10 @@
 #define IS_OVERFLOW(x, y, t)        ((t)CONCAT(t, _MIN) < 0 ? IS_OVERFLOW_S(x, y, t) : IS_OVERFLOW_U(x, y, t))
 #define IS_OVERFLOW_S(x, y, t)      (((t)(y) > 0 && (t)(x) > CONCAT(t, _MAX) - (t)(y)) || ((t)(y) < 0 && (t)(x) < CONCAT(t, _MIN) - (t)(y)))
 #define IS_OVERFLOW_U(x, y, t)      (((t)(x) > (t)CONCAT(t, _MAX) - (t)(y)) || ((t)(x) < (t)CONCAT(t, _MIN) - (t)(y)))
+#define IS_POWER_OF_2(x)            (((x) != 0) && (((x) & ((~x) + 1)) == (x)))
+
+#define GENERATE_ENUM(ENUM)         ENUM,
+#define GENERATE_STRING(STRING)     #STRING,
 
 // Bit operations.
 // http://www.coranac.com/man/tonclib/group__grpCoreBit.htm
@@ -109,5 +113,10 @@
         29, 28, 27, 26, 25, 24, 23, 22, 21, 20, \
         19, 18, 17, 16, 15, 14, 13, 12, 11, 10, \
          9,  8,  7,  6,  5,  4,  3,  2,  1,  0
+
+//------------------------------------------------------------------------------
+// Common functions.
+//------------------------------------------------------------------------------
+UF8 Bit2PositionGet(const U32 value);
 
 #endif // _COMMON_H_

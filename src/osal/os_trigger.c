@@ -54,9 +54,9 @@ Status s = S_OK;
 
     if ((OS_NULL == item_l_p) || (OS_NULL == cfg_dyn_p)) { s = S_OUT_OF_MEMORY; goto error; }
     if (OS_NULL == trigger_hd_p) { s = S_INVALID_PTR;  goto error; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {   // os_list protection;
         OS_TimerHd timer_hd;
-        IF_STATUS_OK(s = OS_TimerCreate(cfg_p->timer_cfg_p, &timer_hd)) {
+        IF_OK(s = OS_TimerCreate(cfg_p->timer_cfg_p, &timer_hd)) {
             cfg_dyn_p->item_p   = cfg_p->item_p;
             cfg_dyn_p->state    = cfg_p->state;
             cfg_dyn_p->timer_hd = timer_hd;
@@ -83,13 +83,13 @@ error:
 }
 
 /******************************************************************************/
-Status OS_TriggerDelete(const OS_TriggerHd trigger_hd, const TimeMs timeout)
+Status OS_TriggerDelete(const OS_TriggerHd trigger_hd, const OS_TimeMs timeout)
 {
 OS_ListItem* item_l_p = (OS_ListItem*)trigger_hd;
 Status s = S_OK;
 
-    if (OS_NULL == trigger_hd) { return S_UNDEF_EVENT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, timeout)) {  // os_list protection;
+    if (OS_NULL == trigger_hd) { return S_INVALID_TRIGGER; }
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, timeout)) {  // os_list protection;
         OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         const OS_TimerHd timer_hd = cfg_dyn_p->timer_hd;
         IF_STATUS(s = OS_TimerDelete(timer_hd, timeout)) {
@@ -112,8 +112,8 @@ error:
 Status OS_TriggerTimerGet(const OS_TriggerHd trigger_hd, OS_TimerHd* timer_hd_p)
 {
 Status s = S_OK;
-    if (OS_NULL == trigger_hd) { return S_UNDEF_EVENT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    if (OS_NULL == trigger_hd) { return S_INVALID_TRIGGER; }
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         if (OS_NULL != timer_hd_p) {
             OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
             *timer_hd_p = cfg_dyn_p->timer_hd;
@@ -127,8 +127,8 @@ Status s = S_OK;
 Status OS_TriggerStateGet(const OS_TriggerHd trigger_hd, OS_TriggerState* state_p)
 {
 Status s = S_OK;
-    if (OS_NULL == trigger_hd) { return S_UNDEF_EVENT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    if (OS_NULL == trigger_hd) { return S_INVALID_TRIGGER; }
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         const OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         *state_p = cfg_dyn_p->state;
         OS_MutexRecursiveUnlock(os_trigger_mutex);
@@ -137,11 +137,11 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_TriggerPeriodGet(const OS_TriggerHd trigger_hd, TimeMs* period_p)
+Status OS_TriggerPeriodGet(const OS_TriggerHd trigger_hd, OS_TimeMs* period_p)
 {
 Status s = S_OK;
-    if (OS_NULL == trigger_hd) { return S_UNDEF_EVENT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    if (OS_NULL == trigger_hd) { return S_INVALID_TRIGGER; }
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         const OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         const OS_TimerHd timer_hd = cfg_dyn_p->timer_hd;
         IF_STATUS(s = OS_TimerPeriodGet(timer_hd, period_p)) {
@@ -153,12 +153,12 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
-Status OS_TriggerStatePeriodSet(const OS_TriggerHd trigger_hd, const TimeMs new_period, const OS_TriggerState new_state,
-                                const TimeMs timeout)
+Status OS_TriggerStatePeriodSet(const OS_TriggerHd trigger_hd, const OS_TimeMs new_period, const OS_TriggerState new_state,
+                                const OS_TimeMs timeout)
 {
 Status s = S_OK;
-    if (OS_NULL == trigger_hd) { return S_UNDEF_EVENT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, timeout)) {  // os_list protection;
+    if (OS_NULL == trigger_hd) { return S_INVALID_TRIGGER; }
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, timeout)) {  // os_list protection;
         OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         const OS_TimerHd timer_hd = cfg_dyn_p->timer_hd;
         cfg_dyn_p->state = new_state;
@@ -189,7 +189,7 @@ Status OS_TriggerItemOwnerAdd(OS_TriggerItem* item_p)
 }
 
 /******************************************************************************/
-Status OS_TriggerItemLock(OS_StorageItem* item_p, const TimeMs timeout)
+Status OS_TriggerItemLock(OS_StorageItem* item_p, const OS_TimeMs timeout)
 {
     return OS_StorageItemLock((OS_StorageItem*)item_p, timeout);
 }
@@ -205,7 +205,7 @@ OS_TriggerItem* OS_TriggerItemGet(const OS_TriggerHd trigger_hd)
 {
 OS_TriggerItem* item_p = OS_NULL;
     if (OS_NULL == trigger_hd) { return OS_NULL; }
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         const OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         item_p = cfg_dyn_p->item_p;
         OS_MutexRecursiveUnlock(os_trigger_mutex);
@@ -217,7 +217,7 @@ OS_TriggerItem* item_p = OS_NULL;
 OS_TriggerItem* OS_TriggerItemByTimerIdGet(const OS_TimerId timer_id)
 {
 OS_TriggerItem* item_p = OS_NULL;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         const OS_ListItem* item_l_p = OS_ListItemByOwnerGet(&os_triggers_list, (OS_Owner)timer_id);
         if (OS_NULL != item_l_p) {
             const OS_TriggerConfigDyn* cfg_dyn_p = (OS_TriggerConfigDyn*)OS_ListItemValueGet(item_l_p);
@@ -245,8 +245,8 @@ OS_TriggerHd trigger_hd = OS_NULL;
 Status OS_TriggerStatsGet(const OS_TriggerHd trigger_hd, OS_TriggerStats* stats_p)
 {
 Status s = S_OK;
-    if (OS_NULL == trigger_hd) { return S_UNDEF_EVENT; }
-    IF_STATUS_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
+    if (OS_NULL == trigger_hd) { return S_INVALID_TRIGGER; }
+    IF_OK(s = OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         const OS_TriggerConfigDyn* cfg_dyn_p = OS_TriggerConfigDynGet(trigger_hd);
         const OS_TimerHd timer_hd = cfg_dyn_p->timer_hd;
         IF_STATUS(s = OS_TimerStatsGet(timer_hd, &stats_p->timer_stats)) { goto error; }
@@ -262,7 +262,7 @@ error:
 OS_TriggerHd OS_TriggerNextGet(const OS_TriggerHd trigger_hd)
 {
 OS_ListItem* iter_li_p = (OS_ListItem*)trigger_hd;
-    IF_STATUS_OK(OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
+    IF_OK(OS_MutexRecursiveLock(os_trigger_mutex, OS_TIMEOUT_MUTEX_LOCK)) {    // os_list protection;
         if (OS_NULL == iter_li_p) {
             iter_li_p = OS_ListItemNextGet((OS_ListItem*)&OS_ListItemLastGet(&os_triggers_list));
             if (OS_DELAY_MAX == OS_ListItemValueGet(iter_li_p)) {

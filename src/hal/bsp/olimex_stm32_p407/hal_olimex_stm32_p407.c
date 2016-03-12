@@ -29,8 +29,6 @@ extern Status   BUTTON_Init_(void);
 extern Status   MEDIA_Init_(void);
 extern Status   AUDIO_Init_(void);
 
-extern volatile HAL_Env hal_env;
-
 /*****************************************************************************/
 Status HAL_BSP_Init(void)
 {

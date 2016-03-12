@@ -55,20 +55,20 @@ OS_Message* msg_p;
     if (HID_MOUSE == hid_type) {
         const HID_MOUSE_Info_TypeDef* mouse_info_p = USBH_HID_GetMouseInfo(phost);
         OS_UsbHidMouseData mouse_data;
-        OS_ASSERT_VALUE(NULL != mouse_info_p);
+        OS_ASSERT_DEBUG(NULL != mouse_info_p);
         MouseDataTranslate(mouse_info_p, &mouse_data);
         msg_p = OS_MessageCreate(OS_MSG_USB_HID_MOUSE, &mouse_data, sizeof(mouse_data), OS_TIMEOUT_DRIVER);
     } else if (HID_KEYBOARD == hid_type) {
         HID_KEYBD_Info_TypeDef* keyboard_info_p = USBH_HID_GetKeybdInfo(phost);
         OS_UsbHidKeyboardData keyboard_data;
-        OS_ASSERT_VALUE(NULL != keyboard_info_p);
+        OS_ASSERT_DEBUG(NULL != keyboard_info_p);
         KeyboardDataTranslate(keyboard_info_p, &keyboard_data);
         msg_p = OS_MessageCreate(OS_MSG_USB_HID_KEYBOARD, &keyboard_data, sizeof(keyboard_data), OS_TIMEOUT_DRIVER);
     } else {
         OS_LOG(L_WARNING, "Unknown HID type!");
         OS_ASSERT(OS_FALSE);
     }
-    OS_ASSERT_VALUE(OS_NULL != msg_p);
+    OS_ASSERT_DEBUG(OS_NULL != msg_p);
     OS_ASSERT(S_OK == OS_MessageEmit(msg_p, OS_TIMEOUT_DRIVER, OS_MSG_PRIO_NORMAL));
 }
 

@@ -313,7 +313,7 @@ Status USBH_HS_MSC_Init(void* args_p)
 const DrvMediaUsbArgsInit* drv_args_p = (DrvMediaUsbArgsInit*)args_p;
 Status s = S_OK;
     usbh_hs_hd_p    = (USBH_HandleTypeDef*)drv_args_p->usb_itf_hd;
-    drv_led_fs      = drv_args_p->drv_led_fs;
+    args_init       = drv_args_p->args_init;
     return s;
 }
 
@@ -328,7 +328,7 @@ Status s = S_OK;
 Status USBH_HS_MSC_Open(void* args_p)
 {
 Status s = S_UNDEF;
-    IF_STATUS(s = OS_DriverOpen(drv_led_fs, OS_NULL)) {}
+    IF_STATUS(s = OS_DriverOpen(args_init.drv_gpio, OS_NULL)) {}
     return s;
 }
 
@@ -337,7 +337,7 @@ Status USBH_HS_MSC_Close(void* args_p)
 {
 Status s = S_UNDEF;
     IF_OK(s = drv_media_usbh_hs.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
-        IF_OK(s = OS_DriverClose(drv_led_fs, OS_NULL)) {}
+        IF_OK(s = OS_DriverClose(args_init.drv_gpio, OS_NULL)) {}
     }
     return s;
 }

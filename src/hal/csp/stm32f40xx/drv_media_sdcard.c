@@ -34,14 +34,6 @@ enum {
     SD_POWER_STATE_ON   = 3
 };
 
-//#ifndef HAL_MB_OLIMEX_STM32_P407 // HAL_MB_OLIMEX_STM32_P407 HAS NO SD DETECT PIN!
-//#define SD_DETECT_PIN                   GPIO_PIN_13
-//#define SD_DETECT_GPIO_PORT             GPIOH
-//#define __SD_DETECT_GPIO_CLK_ENABLE()   __GPIOH_CLK_ENABLE()
-//#define SD_DETECT_IRQn                  EXTI15_10_IRQn
-//#define SD_DetectIRQHandler()           HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13)
-//#endif //HAL_MB_OLIMEX_STM32_P407
-
 //-----------------------------------------------------------------------------
 static Status SDIO_Init_(void* args_p);
 static Status SDIO_DeInit_(void* args_p);
@@ -231,14 +223,6 @@ Status s = S_OK;
     /* Peripheral clock disable */
     HAL_SD_CLK_DISABLE();
 
-    /**SDIO GPIO Configuration
-    PC8     ------> SDIO_D0
-    PC9     ------> SDIO_D1
-    PC10    ------> SDIO_D2
-    PC11    ------> SDIO_D3
-    PC12    ------> SDIO_CK
-    PD2     ------> SDIO_CMD
-    */
     HAL_GPIO_DeInit(HAL_SD_GPIO1_PORT, HAL_SD_GPIO1_PIN);
     HAL_GPIO_DeInit(HAL_SD_GPIO2_PORT, HAL_SD_GPIO2_PIN);
 

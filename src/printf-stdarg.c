@@ -25,28 +25,21 @@
 
 */
 
-//#define putchar(c)
-
 #include <stdarg.h>
 #include "printf-stdarg.h"
 #include "hal.h"
+#include "ring_buffer.h"
 
-ALIGN_BEGIN static char out_buf1[HAL_STDIO_BUFF_LEN] ALIGN_END;
-ALIGN_BEGIN static char out_buf2[HAL_STDIO_BUFF_LEN] ALIGN_END;
-static char* out_buf_curr_p = out_buf1;
+RING_BUFFER_STATIC_CREATE(out_buf, HAL_STDIO_BUFF_LEN);
 
 static void printchar(char **str, int c)
 {
-	extern int putchar(int c);
-
 	if (str) {
 		**str = (char)c;
 		++(*str);
-	}
-	else
-	{
-		(void)putchar(c);
-	}
+	} else {
+        RingBuffer2U8Push(&out_buf, (U8)c);
+    }
 }
 
 #define PAD_RIGHT 1
@@ -195,45 +188,35 @@ static int print( char **out, const char *format, va_list args )
 	return pc;
 }
 
-int vprintf(const char *format, va_list args)
+INLINE static void OutputBufferPrint(int r)
 {
-extern volatile HAL_Env hal_env;
-    // Wait for complete send output buffer.
-    //hal_env.stdio_p->IoCtl(DRV_REQ_STD_SYNC, NULL);
-
-    out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
-    char* out_buf_tmp_p = out_buf_curr_p;
-    const int r = print(&out_buf_tmp_p, format, args );
 #if defined(USE_SEMIHOSTING)
     while (r--) {
-        putchar(*out_buf_curr_p++);
+        putchar(RingBuffer2U8Pop(&out_buf));
     }
 #else
-    hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
+    (void)r;
+    U8* data_p;
+    Size size;
+    RingBuffer2U8Read(&out_buf, &data_p, &size);
+    hal_env.stdio_p->Write(data_p, size, NULL);
 #endif //defined(USE_SEMIHOSTING)
-    return r;
+}
+
+int vprintf(const char *format, va_list args)
+{
+    int r = print(NULL, format, args);
+    OutputBufferPrint(r);
+    return 0;
 }
 
 int printf(const char *format, ...)
 {
-extern volatile HAL_Env hal_env;
     va_list args;
-
     va_start( args, format );
-    // Wait for complete send output buffer.
-    //hal_env.stdio_p->IoCtl(DRV_REQ_STD_SYNC, NULL);
-
-    out_buf_curr_p = (out_buf_curr_p == out_buf1) ? out_buf2 : out_buf1;
-    char* out_buf_tmp_p = out_buf_curr_p;
-    const int r = print(&out_buf_tmp_p, format, args);
-#if defined(USE_SEMIHOSTING)
-    while (r--) {
-        putchar(*out_buf_curr_p++);
-    }
-#else
-    hal_env.stdio_p->Write((U8*)out_buf_curr_p, r, NULL);
-#endif //!defined(USE_SEMIHOSTING)
-    return r;
+    int r = print(NULL, format, args);
+    OutputBufferPrint(r);
+    return 0;
 }
 
 int sprintf(char *out, const char *format, ...)

@@ -31,7 +31,7 @@
 #else
     typedef ptrdiff_t           Ptr;
 #endif //ptrdiff_t
-    typedef size_t              Size;
+    typedef unsigned int        Size;
 
     typedef float               Float;
     typedef double              Double;

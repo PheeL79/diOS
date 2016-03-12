@@ -3,6 +3,8 @@
 * @brief   BSP Hardware Abstraction Layer.
 * @author  A. Filyanov
 ******************************************************************************/
+#define HAL_C
+
 #include <yfuns.h>
 #include <string.h>
 #include "hal.h"
@@ -12,7 +14,6 @@
 #define MDL_NAME    "hal"
 
 //-----------------------------------------------------------------------------
-volatile HAL_Env hal_env;
 int cycles_diff, cycles_last;
 U32 SystemCoreClockKHz;             ///< Core frequency (KHz).
 U32 SystemCoreClockMHz;             ///< Core frequency (MHz).

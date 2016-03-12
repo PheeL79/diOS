@@ -6,6 +6,7 @@
 #ifndef _OS_CONFIG_H_
 #define _OS_CONFIG_H_
 
+#include "hal_config_prio.h"
 //Ensure that is only used by the compiler, and not the assembler.
 #ifdef __ICCARM__
 #include "hal_config.h"
@@ -43,8 +44,8 @@
 #define OS_PRIORITY_MIN                             0x00
 #define OS_PRIORITY_MAX                             U8_MAX
 
-#define OS_PRIORITY_INT_MAX                         0x01
-#define OS_PRIORITY_INT_MIN                         0x0E
+#define OS_PRIORITY_INT_MAX                         HAL_PRIORITY_INT_MAX
+#define OS_PRIORITY_INT_MIN                         HAL_PRIORITY_INT_MIN
 
 #define OS_KERNEL_PRIORITY                          (OS_PRIORITY_INT_MIN + 1)
 

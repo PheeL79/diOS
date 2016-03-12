@@ -4,6 +4,7 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include "lwip/tcpip.h"
+#include "os_supervise.h"
 #include "os_environment.h"
 #include "os_driver.h"
 #include "os_mailbox.h"
@@ -26,6 +27,8 @@ enum {
 };
 
 extern Status OS_NetworkItfAddress4Log(const OS_NetworkItfHd net_itf_hd);
+
+static void ISR_ETH_LinkStateChangedHandler(void* args_p);
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -236,6 +239,19 @@ Status s = S_UNDEF;
                 }
 #endif //(OS_NETWORK_DHCP)
                 IF_STATUS(s = OS_NetworkItfInit(tstor_p->net_itf_hd, &net_itf_init_args)) { goto error; }
+                const OS_DriverHd drv_gpio_dhd = OS_DriverGpioGet();
+                IF_OK(s = OS_DriverInit(drv_gpio_dhd, (void*)GPIO_ETH_MDINT)) {
+                    const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(task_net_cfg.name));
+                    const DrvGpioArgsOpen args = {
+                        .gpio               = GPIO_ETH_MDINT,
+                        .isr_callback_fp    = (HAL_ISR_CallbackFunc)ISR_ETH_LinkStateChangedHandler,
+                        .args_p             = (void*)stdin_qhd
+                    };
+                    IF_STATUS(s = OS_DriverOpen(drv_gpio_dhd, (void*)&args)) { goto error; }
+                } else {
+                    s = (S_INITED == s) ? S_OK : s;
+                    IF_STATUS(s) { goto error; }
+                }
             }
             IF_OK(s = OS_NetworkItfAddress4Log(tstor_p->net_itf_hd)) {
             }
@@ -258,5 +274,14 @@ error:
     IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
     return s;
 }
+
+#if (HAL_ETH_ENABLED)
+/******************************************************************************/
+void ISR_ETH_LinkStateChangedHandler(void* args_p)
+{
+const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_LINK_STATE_CHANGED, 0);
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend((OS_QueueHd)args_p, signal, OS_MSG_PRIO_NORMAL));
+}
+#endif //(HAL_ETH_ENABLED)
 
 #endif //(OS_NETWORK_ENABLED)

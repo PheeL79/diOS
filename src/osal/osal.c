@@ -24,11 +24,11 @@
 #define MDL_NAME    "osal"
 
 //------------------------------------------------------------------------------
-extern volatile HAL_Env hal_env;
 volatile OS_Env os_env = {
     .hal_env_p      = &hal_env,
     .drv_stdin      = OS_NULL,
     .drv_stdout     = OS_NULL,
+    .drv_gpio       = OS_NULL,
     .drv_rtc        = OS_NULL,
 #if (OS_AUDIO_ENABLED)
     .volume         = OS_AUDIO_VOLUME_MIN

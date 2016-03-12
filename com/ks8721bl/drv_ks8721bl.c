@@ -227,8 +227,8 @@ Status s = S_UNDEF;
                     } else { /* AutoNegotiation Disable */
 error:
                         /* Check parameters */
-                        OS_ASSERT_VALUE(IS_ETH_SPEED(eth0_hd.Init.Speed));
-                        OS_ASSERT_VALUE(IS_ETH_DUPLEX_MODE(eth0_hd.Init.DuplexMode));
+                        OS_ASSERT_DEBUG(IS_ETH_SPEED(eth0_hd.Init.Speed));
+                        OS_ASSERT_DEBUG(IS_ETH_DUPLEX_MODE(eth0_hd.Init.DuplexMode));
                         if (HAL_OK == HAL_ETH_ReadPHYRegister(&eth0_hd, REG_00H_BASIC_CTRL, &reg_value)) {
                             if (ETH_SPEED_100M == eth0_hd.Init.Speed) {
                                 BIT_SET(reg_value, BIT(REG_00H_BIT_SPEED_SELECT));

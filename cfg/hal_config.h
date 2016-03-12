@@ -6,20 +6,22 @@
 #ifndef _HAL_CONFIG_H_
 #define _HAL_CONFIG_H_
 
-#include "hal\bsp\olimex_stm32_p407\bsp_config.h"
-#include "hal_config_prio.h"
-#include "hal_config.S"
-
 // HAL ------------------------------------------------------------------------
 
 // DEBUG
-#define HAL_ASSERT_LEVEL                            L_DEBUG_1
-#define HAL_LOG_LEVEL                               L_DEBUG_1
+#ifdef NDEBUG
+#   define HAL_LOG_LEVEL                            L_WARNING
+#else
+#   define HAL_LOG_LEVEL                            L_DEBUG_1
+#endif //NDEBUG
 #define HAL_STDIO_TERM_HEIGHT                       24
 #define HAL_STDIO_TERM_WIDTH                        80
-#define HAL_STDIO_BUFF_LEN                          512
+#define HAL_STDIO_BUFF_LEN                          1024
 #define drv_stdio_p                                 drv_usart_v[DRV_ID_USART6]
 #define drv_stderr_p
+
+//Tests
+#define HAL_TEST_ENABLED                            0
 
 // Common timeouts
 #define HAL_TIMEOUT_DRIVER                          1000U
@@ -116,14 +118,14 @@
 #define HAL_ADC_TRIMMER_RELEASE_RESET()             __ADC_RELEASE_RESET()
 #define HAL_ADC_TRIMMER_IRQ                         ADC_IRQn
 #define HAL_ADC_TRIMMER_CLOCK_PRESCALER             ADC_CLOCKPRESCALER_PCLK_DIV2
-#define HAL_ADC_TRIMMER_RESOLUTION                  ADC_RESOLUTION8b
-#define HAL_ADC_TRIMMER_SCAN_CONV_MODE              ENABLE
+#define HAL_ADC_TRIMMER_RESOLUTION                  ADC_RESOLUTION12b
+#define HAL_ADC_TRIMMER_SCAN_CONV_MODE              DISABLE
 #define HAL_ADC_TRIMMER_CONT_CONV_MODE              ENABLE
 #define HAL_ADC_TRIMMER_DISCONT_CONV_MODE           DISABLE
 #define HAL_ADC_TRIMMER_DISCONT_CONV_NUM            0
 #define HAL_ADC_TRIMMER_EXT_TRIG_CONV_EDGE          ADC_EXTERNALTRIGCONVEDGE_RISING
 #define HAL_ADC_TRIMMER_EXT_TRIG_CONV               ADC_EXTERNALTRIGCONV_T8_TRGO
-#define HAL_ADC_TRIMMER_DATA_ALIGN                  ADC_DATAALIGN_RIGHT
+#define HAL_ADC_TRIMMER_DATA_ALIGN                  ADC_DATAALIGN_LEFT
 #define HAL_ADC_TRIMMER_CONV_NUM                    1
 #define HAL_ADC_TRIMMER_DMA_CONT_REQ                ENABLE
 #define HAL_ADC_TRIMMER_EOC_SELECTION               ENABLE
@@ -342,6 +344,8 @@
 #define HAL_ETH_MAC_ADDR5                           0x00
 #define HAL_ETH_MTU_SIZE                            1500
 
+#define HAL_ETH_GPIO_MDINT_EXTI_IRQ                 EXTI3_IRQn
+
 // Buttons
 #define HAL_GPIO_BUTTON_WAKEUP_EXTI_IRQ             EXTI0_IRQn
 #define HAL_GPIO_BUTTON_TAMPER_EXTI_IRQ             TAMP_STAMP_IRQn
@@ -354,6 +358,12 @@
 #define HAL_GPIO_BUTTON_TAMPER_PRECHARGE_DURATION   RTC_TAMPERPRECHARGEDURATION_1RTCCLK
 #define HAL_GPIO_BUTTON_TAMPER_PULL_UP              RTC_TAMPER_PULLUP_DISABLE
 #define HAL_GPIO_BUTTON_TAMPER_TIME_STAMP_DETECT    RTC_TIMESTAMPONTAMPERDETECTION_DISABLE
+
+// LEDs
+#define HAL_GPIO_LED_MODE                           GPIO_MODE_OUTPUT_PP
+#define HAL_GPIO_LED_PULL                           GPIO_NOPULL
+#define HAL_GPIO_LED_SPEED                          GPIO_SPEED_LOW
+#define HAL_GPIO_LED_ALT                            0
 
 // Memory
 #define DATA_IN_ExtSRAM
@@ -389,5 +399,10 @@
 #define HAL_LOCALE_STRING_EN                        "en"
 #define HAL_LOCALE_STRING_RU                        "ru"
 #define HAL_LOCALE_DEFAULT                          HAL_LOCALE_STRING_EN
+
+//------------------------------------------------------------------------------
+#include "hal\bsp\olimex_stm32_p407\bsp_config.h"
+#include "hal_config_prio.h"
+#include "hal_config.S"
 
 #endif // _HAL_CONFIG_H_

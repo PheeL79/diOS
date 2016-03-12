@@ -37,7 +37,7 @@ static volatile OS_NetworkItfHd def_net_itf_hd;
 static OS_NetworkItfConfigDyn* OS_NetworkItfConfigDynGet(const OS_NetworkItfHd net_itf_hd);
 INLINE OS_NetworkItfConfigDyn* OS_NetworkItfConfigDynGet(const OS_NetworkItfHd net_itf_hd)
 {
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     return ((OS_NetworkItfConfigDyn*)net_itf_hd);
 }
 
@@ -139,8 +139,8 @@ err_t ethernetif_init(OS_NetworkItf* net_itf_p)
 Status OS_NetworkItfInit(const OS_NetworkItfHd net_itf_hd, const OS_NetworkItfInitArgs* init_args_p)
 {
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
-    OS_ASSERT_VALUE(OS_NULL != init_args_p);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != init_args_p);
     OS_LOG(L_DEBUG_1, "%s: itf init", OS_NetworkItfNameGet(net_itf_hd));
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
@@ -221,7 +221,7 @@ Status s = S_UNDEF;
 Status OS_NetworkItfDeInit(const OS_NetworkItfHd net_itf_hd, void* args_p)
 {
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     OS_LOG(L_DEBUG_1, "%s: itf deinit", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
@@ -242,7 +242,7 @@ Status s = S_UNDEF;
 Status OS_NetworkItfOpen(const OS_NetworkItfHd net_itf_hd, const OS_NetworkItfOpenArgs* open_args_p)
 {
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     OS_LOG(L_DEBUG_1, "%s: itf open", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
@@ -261,7 +261,7 @@ Status s = S_UNDEF;
 Status OS_NetworkItfClose(const OS_NetworkItfHd net_itf_hd, void* args_p)
 {
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     OS_LOG(L_DEBUG_1, "%s: itf close", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
@@ -413,10 +413,10 @@ Status OS_NetworkItfAddress4Get(const OS_NetworkItfHd net_itf_hd,
                                 OS_NetworkNetMask4* netmask4_p,
                                 OS_NetworkGateWay4* gateway4_p)
 {
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
-    OS_ASSERT_VALUE(OS_NULL != ip_addr4_p);
-    OS_ASSERT_VALUE(OS_NULL != netmask4_p);
-    OS_ASSERT_VALUE(OS_NULL != gateway4_p);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != ip_addr4_p);
+    OS_ASSERT_DEBUG(OS_NULL != netmask4_p);
+    OS_ASSERT_DEBUG(OS_NULL != gateway4_p);
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
     *ip_addr4_p = net_itf_p->ip_addr;
@@ -448,10 +448,10 @@ Status OS_NetworkItfAddress4Set(const OS_NetworkItfHd net_itf_hd,
                                 const OS_NetworkNetMask4* netmask4_p,
                                 const OS_NetworkGateWay4* gateway4_p)
 {
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
-    OS_ASSERT_VALUE(OS_NULL != ip_addr4_p);
-    OS_ASSERT_VALUE(OS_NULL != netmask4_p);
-    OS_ASSERT_VALUE(OS_NULL != gateway4_p);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != ip_addr4_p);
+    OS_ASSERT_DEBUG(OS_NULL != netmask4_p);
+    OS_ASSERT_DEBUG(OS_NULL != gateway4_p);
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     Status s = S_UNDEF;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
@@ -498,7 +498,7 @@ OS_NetworkItfHd OS_NetworkItfHdByIdGet(const OS_NetworkItfId net_itf_id)
 Status OS_NetworkRead(const OS_NetworkItfHd net_itf_hd, void* data_in_p, Size size)
 {
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd dhd = cfg_dyn_p->dhd;
     OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
@@ -518,7 +518,7 @@ Status s = S_UNDEF;
 Status OS_NetworkWrite(const OS_NetworkItfHd net_itf_hd, void* data_out_p, Size size)
 {
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     const OS_DriverHd dhd = OS_NetworkItfConfigDynGet(net_itf_hd)->dhd;
     IF_STATUS(s = OS_DriverWrite(dhd, data_out_p, size, OS_NULL)) {
         OS_LOG_S(L_WARNING, s);
@@ -532,8 +532,8 @@ Status OS_NetworkMacAddressStrToBin(ConstStrP mac_addr_str_p, OS_NetworkMacAddr 
 {
 U8 mac_addr_tmp[HAL_ETH_MAC_ADDR_SIZE + sizeof(UInt)] = { 0 };
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(mac_addr_str_p);
-    OS_ASSERT_VALUE(mac_addr);
+    OS_ASSERT_DEBUG(mac_addr_str_p);
+    OS_ASSERT_DEBUG(mac_addr);
 //TODO(A. Filyanov) More strict parse.
     if (HAL_ETH_MAC_ADDR_SIZE != OS_SScanF(mac_addr_str_p, "%x:%x:%x:%x:%x:%x",
                                        (UInt*)&mac_addr_tmp[0], (UInt*)&mac_addr_tmp[1], (UInt*)&mac_addr_tmp[2],
@@ -553,8 +553,8 @@ Status OS_NetworkIpAddress4StrToBin(ConstStrP ip_addr4_str_p, OS_NetworkIpAddr4*
 {
 U8 ip_addr4_tmp[OS_NETWORK_IP_ADDR4_SIZE + sizeof(UInt)] = { 0 };
 Status s = S_UNDEF;
-    OS_ASSERT_VALUE(ip_addr4_str_p);
-    OS_ASSERT_VALUE(ip_addr4_p);
+    OS_ASSERT_DEBUG(ip_addr4_str_p);
+    OS_ASSERT_DEBUG(ip_addr4_p);
 //TODO(A. Filyanov) More strict parse.
     if (OS_NETWORK_IP_ADDR4_SIZE != OS_SScanF(ip_addr4_str_p, "%d.%d.%d.%d",
                                               (UInt*)&ip_addr4_tmp[0], (UInt*)&ip_addr4_tmp[1],

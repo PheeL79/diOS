@@ -58,10 +58,10 @@
     #if (L_DEBUG_1 == HAL_ASSERT_LEVEL)
         void HAL_ASSERT_FAILED(U8* file, U32 line);
         #define HAL_ASSERT(e)               if (!(e)) { HAL_ASSERT_FAILED((U8*)__FILE__, __LINE__); }
-        #define HAL_ASSERT_VALUE(e)         HAL_ASSERT(e)
+        #define HAL_ASSERT_DEBUG(e)         HAL_ASSERT(e)
     #else
         #define HAL_ASSERT(e)               if (!(e)) { HAL_CRITICAL_SECTION_ENTER(); HAL_ASSERT_PIN_UP(); while(1) {}; }
-        #define HAL_ASSERT_VALUE(e)         ((void)0)
+        #define HAL_ASSERT_DEBUG(e)         ((void)0)
     #endif // HAL_ASSERT_LEVEL_DEFAULT
 #else
     #error "status.h: Unknown platform!"

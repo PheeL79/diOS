@@ -262,7 +262,7 @@ Status s = S_OK;
         case PWR_STOP:
         case PWR_SHUTDOWN:
 #if defined(OS_MEDIA_VOL_SDRAM)
-            IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_sdram_hd)){ goto error; }
+            IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_sdram_hd)) { goto error; }
 #endif //defined(OS_MEDIA_VOL_SDRAM)
 #if defined(OS_MEDIA_VOL_SDCARD)
             IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_sdcard_hd)) { goto error; }

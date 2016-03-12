@@ -11,15 +11,7 @@
 INLINE void TraceVaListPrint(ConstStrP format_str_p, va_list args);
 INLINE void LogVaListPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, va_list args);
 
-ConstStr log_level_v[L_LAST][4] = {
-    "",
-    "[c]",
-    "[w]",
-    "[i]",
-    "[d]",
-    "[d]",
-    "[d]"
-};
+ConstStr log_level_v[L_LAST] = { ' ', 'c', 'w', 'i', 'd', 'd', 'd' };
 
 const StatusItem status_items_v[] = {
 //system
@@ -91,8 +83,6 @@ const StatusItem status_items_v[] = {
     "Software module error",
 };
 
-extern volatile HAL_Env hal_env;
-
 /******************************************************************************/
 ConstStrP StatusStringGet(const Status status, const StatusItem* status_items_p)
 {
@@ -128,14 +118,14 @@ void TraceVaListPrint(ConstStrP format_str_p, va_list args)
 /******************************************************************************/
 void LogPrint(const LogLevel level, TaskId tid, ConstStrP mdl_name_p, ConstStrP format_str_p, ...)
 {
-    TIMER_DWT_Stop();
     if (hal_env.log_level >= level) {
-        va_list args;
-        va_start(args, format_str_p);
-        LogVaListPrint(level, tid, mdl_name_p, format_str_p, args);
-        va_end(args);
+        TIMER_DWT_Stop(); {
+            va_list args;
+            va_start(args, format_str_p);
+            LogVaListPrint(level, tid, mdl_name_p, format_str_p, args);
+            va_end(args);
+        } TIMER_DWT_Start();
     }
-    TIMER_DWT_Start();
 }
 
 /******************************************************************************/
@@ -154,14 +144,14 @@ UInt elapsed_ms = CYCLES_TO_MS(HAL_CORE_CYCLES - log_cycles_last);
     log_cycles_last = HAL_CORE_CYCLES;
     // Reset timer value if exec time was more than OS_LOG_TIME_ELAPSED(ms)!
     if (OS_LOG_TIME_ELAPSED < elapsed_ms) {
-        elapsed_ms = 0;
+        elapsed_ms = OS_LOG_TIME_ELAPSED;
     }
 #if defined(__GNUC__) && defined(USE_SEMIHOSTING)
-    printf("%04u %s %03u %-16s:", elapsed_ms, log_level_v[level], tid, mdl_name_p);
+    printf("%04u %c %03u %-16s:", elapsed_ms, log_level_v[level], tid, mdl_name_p);
     vprintf((const char*)format_str_p, args);
     printf("\r\n");
 #else
-    printf("\n%s%04u %s %03u %-12s :", log_level_color_str_v[level], elapsed_ms, log_level_v[level], tid, mdl_name_p);
+    printf("\n%s%04u %c %03u %-12s :", log_level_color_str_v[level], elapsed_ms, log_level_v[level], tid, mdl_name_p);
     vprintf((const char*)format_str_p, args);
 #endif
 }

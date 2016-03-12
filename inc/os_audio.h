@@ -23,7 +23,7 @@
 #define OS_AUDIO_VOLUME_MIN                 0
 #define OS_AUDIO_VOLUME_MAX                 100
 
-#define OS_AUDIO_VOLUME_CONVERT(volume)     ((OS_AudioVolume)(((Float)volume / ((Float)U8_MAX * 1.0)) * ((Float)OS_AUDIO_VOLUME_MAX * 1.0)))
+#define OS_AUDIO_VOLUME_CONVERT(volume)     ((OS_AudioVolume)(((Float)(volume) / ((Float)U16_MAX * 1.0f)) * ((Float)OS_AUDIO_VOLUME_MAX * 1.0f)))
 
 //------------------------------------------------------------------------------
 typedef void*   OS_AudioDeviceHd;

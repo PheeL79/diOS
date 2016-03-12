@@ -34,8 +34,8 @@ extern RTC_HandleTypeDef rtc_handle;
 
 HAL_DriverItf* drv_button_v[DRV_ID_BUTTON_LAST];
 
-HAL_IrqCallbackFunc wakeup_irq_callback_func = OS_NULL;
-HAL_IrqCallbackFunc tamper_irq_callback_func = OS_NULL;
+//HAL_IrqCallbackFunc wakeup_irq_callback_func = OS_NULL;
+//HAL_IrqCallbackFunc tamper_irq_callback_func = OS_NULL;
 
 //-----------------------------------------------------------------------------
 static HAL_DriverItf drv_button_wakeup = {
@@ -100,7 +100,7 @@ Status s = S_OK;
 Status BUTTON_WakeupOpen(void* args_p)
 {
 Status s = S_OK;
-    wakeup_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
+//    wakeup_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
     return s;
 }
 
@@ -108,7 +108,7 @@ Status s = S_OK;
 Status BUTTON_WakeupClose(void* args_p)
 {
 Status s = S_OK;
-    wakeup_irq_callback_func = OS_NULL;
+//    wakeup_irq_callback_func = OS_NULL;
     return s;
 }
 
@@ -177,7 +177,7 @@ Status s = S_OK;
 Status BUTTON_TamperOpen(void* args_p)
 {
 Status s = S_OK;
-    tamper_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
+//    tamper_irq_callback_func = ((HAL_IrqCallbackFunc)args_p);
     return s;
 }
 
@@ -185,7 +185,7 @@ Status s = S_OK;
 Status BUTTON_TamperClose(void* args_p)
 {
 Status s = S_OK;
-    tamper_irq_callback_func = OS_NULL;
+//    tamper_irq_callback_func = OS_NULL;
     return s;
 }
 
@@ -221,9 +221,9 @@ Status s = S_UNDEF;
 /******************************************************************************/
 void HAL_RTCEx_Tamper1EventCallback(RTC_HandleTypeDef *hrtc)
 {
-    if (OS_NULL != tamper_irq_callback_func) {
-        tamper_irq_callback_func();
-    }
+//    if (OS_NULL != tamper_irq_callback_func) {
+//        tamper_irq_callback_func();
+//    }
 }
 
 // Buttons IRQ handlers --------------------------------------------------------

@@ -38,23 +38,12 @@ Status s = S_OK;
     return s;
 }
 
-/*****************************************************************************/
-static U8 MovingAverage16s8b(const U8 value);
-U8 MovingAverage16s8b(const U8 value)
-{
-static U8 buf[16] = { 0 };
-static U8 buf_idx = 0;
-U16 buf_sum = 0;
-    buf[buf_idx] = value;
-    ++buf_idx;
-    buf_idx &= (sizeof(buf) - 1);
-    for (register U8 i = 0; i < sizeof(buf); ++i) {
-        buf_sum += buf[i];
-    }
-    return (buf_sum >> 4);
-}
-
 #if (OS_AUDIO_ENABLED)
+#define FILTER_IIR(val_in, state0, shift, val_out)          do {\
+                                                                static volatile S64 state = (state0) << shift;\
+                                                                state = state - (state >> (shift)) + (val_in);\
+                                                                val_out = (S32)(state >> (shift));\
+                                                            } while (0)
 /*****************************************************************************/
 /**
   * @brief  Conversion complete callback in non blocking mode
@@ -66,16 +55,15 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* adc_hd_p)
 extern OS_QueueHd trimmer_stdin_qhd;
     if (ADC3 == adc_hd_p->Instance) {
         static   OS_AudioVolume volume_last = OS_AUDIO_VOLUME_MIN;
-        register OS_AudioVolume volume_curr = OS_AUDIO_VOLUME_CONVERT(HAL_ADC_GetValue(adc_hd_p));
-        //First pass.
+        register OS_AudioVolume volume_curr;
+        register S32 volume_adc = HAL_ADC_GetValue(adc_hd_p);
+        BIT_CLEAR(volume_adc, BIT_MASK(8));
+        FILTER_IIR(volume_adc, OS_AUDIO_VOLUME_MIN, 2, volume_adc);
+        volume_curr = OS_AUDIO_VOLUME_CONVERT(volume_adc);
         if (volume_curr != volume_last) {
-            volume_curr = MovingAverage16s8b((U8)volume_curr);
-            //Second pass.
-            if (volume_curr != volume_last) {
-                volume_last = volume_curr;
-                const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ADC3, OS_SIG_DRV, (OS_SignalData)volume_last);
-                OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(trimmer_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
-            }
+            volume_last = volume_curr;
+            const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ADC3, OS_SIG_DRV, (OS_SignalData)volume_last);
+            OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(trimmer_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
         }
     }
 }
@@ -91,4 +79,3 @@ void ADC_IRQHandler(void)
 extern ADC_HandleTypeDef adc3_hd;
     HAL_ADC_IRQHandler(&adc3_hd);
 }
-

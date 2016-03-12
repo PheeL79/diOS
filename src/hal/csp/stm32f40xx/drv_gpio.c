@@ -12,6 +12,12 @@
 #define MDL_NAME            "drv_gpio"
 
 //-----------------------------------------------------------------------------
+typedef struct {
+    HAL_ISR_CallbackFunc    isr_callback_fp;
+    void*                   args_p;
+} DrvGpioConfigDyn;
+
+//-----------------------------------------------------------------------------
 /// @brief      GPIO initialize.
 /// @return     #Status.
 Status          GPIO_Init_(void);
@@ -42,124 +48,15 @@ static HAL_DriverItf drv_gpio = {
     .IoCtl  = GPIO_IoCtl
 };
 
-//GPIO
-ALIGN_BEGIN static const HAL_GPIO_InitStruct gpio_v[] ALIGN_END = {
-    [GPIO_DEBUG_1] = {
-        .port               = HAL_GPIO_DEBUG_1_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_DEBUG_1_PIN,
-            .Mode           = HAL_GPIO_DEBUG_1_MODE,
-            .Pull           = HAL_GPIO_DEBUG_1_PULL,
-            .Speed          = HAL_GPIO_DEBUG_1_SPEED,
-            .Alternate      = HAL_GPIO_DEBUG_1_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_DEBUG_2] = {
-        .port               = HAL_GPIO_DEBUG_2_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_DEBUG_2_PIN,
-            .Mode           = HAL_GPIO_DEBUG_2_MODE,
-            .Pull           = HAL_GPIO_DEBUG_2_PULL,
-            .Speed          = HAL_GPIO_DEBUG_2_SPEED,
-            .Alternate      = HAL_GPIO_DEBUG_2_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_ASSERT] = {
-        .port               = HAL_GPIO_ASSERT_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_ASSERT_PIN,
-            .Mode           = HAL_GPIO_ASSERT_MODE,
-            .Pull           = HAL_GPIO_ASSERT_PULL,
-            .Speed          = HAL_GPIO_ASSERT_SPEED,
-            .Alternate      = HAL_GPIO_ASSERT_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_PULSE] = {
-        .port               = HAL_GPIO_LED_PULSE_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_PULSE_PIN,
-            .Mode           = GPIO_MODE_OUTPUT_PP,
-            .Pull           = GPIO_NOPULL,
-            .Speed          = GPIO_SPEED_LOW,
-            .Alternate      = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_FS] = {
-        .port               = HAL_GPIO_LED_FS_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_FS_PIN,
-            .Mode           = GPIO_MODE_OUTPUT_PP,
-            .Pull           = GPIO_NOPULL,
-            .Speed          = GPIO_SPEED_LOW,
-            .Alternate      = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_ASSERT] = {
-        .port               = HAL_GPIO_LED_ASSERT_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_ASSERT_PIN,
-            .Mode           = GPIO_MODE_OUTPUT_PP,
-            .Pull           = GPIO_NOPULL,
-            .Speed          = GPIO_SPEED_LOW,
-            .Alternate      = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_USER] = {
-        .port               = HAL_GPIO_LED_USER_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_USER_PIN,
-            .Mode           = GPIO_MODE_OUTPUT_PP,
-            .Pull           = GPIO_NOPULL,
-            .Speed          = GPIO_SPEED_LOW,
-            .Alternate      = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_BUTTON_WAKEUP] = {
-        .port               = HAL_GPIO_BUTTON_WAKEUP_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_BUTTON_WAKEUP_PIN,
-            .Mode           = HAL_GPIO_BUTTON_WAKEUP_MODE,
-            .Pull           = HAL_GPIO_BUTTON_WAKEUP_PULL,
-            .Speed          = HAL_GPIO_BUTTON_WAKEUP_SPEED,
-            .Alternate      = HAL_GPIO_BUTTON_WAKEUP_ALT
-        },
-        .exti = {
-            .irq            = HAL_GPIO_BUTTON_WAKEUP_EXTI_IRQ,
-            .nvic_prio_pre  = HAL_PRIO_IRQ_BUTTON_WAKEUP,
-            .nvic_prio_sub  = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_BUTTON_TAMPER] = {
-        .port               = HAL_GPIO_BUTTON_TAMPER_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_BUTTON_TAMPER_PIN,
-            .Mode           = HAL_GPIO_BUTTON_TAMPER_MODE,
-            .Pull           = HAL_GPIO_BUTTON_TAMPER_PULL,
-            .Speed          = HAL_GPIO_BUTTON_TAMPER_SPEED,
-            .Alternate      = HAL_GPIO_BUTTON_TAMPER_ALT
-        },
-        .exti = {
-            .irq            = HAL_GPIO_BUTTON_TAMPER_EXTI_IRQ,
-            .nvic_prio_pre  = HAL_PRIO_IRQ_BUTTON_TAMPER,
-            .nvic_prio_sub  = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-};
+//TODO(A.Filyanov) Dynamic memory allocation for EXTI only GPIO!
+ALIGN_BEGIN static DrvGpioConfigDyn gpio_dyn_v[16] ALIGN_END;
 
 /*****************************************************************************/
 Status GPIO_Init_(void)
 {
 Status s = S_UNDEF;
     HAL_MemSet(drv_gpio_v, 0x0, sizeof(drv_gpio_v));
+    HAL_MemSet(gpio_dyn_v, 0x0, sizeof(gpio_dyn_v));
     for (Size i = 0; i < ITEMS_COUNT_GET(drv_gpio_v, drv_gpio_v[0]); ++i) {
         drv_gpio_v[i] = &drv_gpio;
         if (OS_NULL != drv_gpio_v[i]) {
@@ -215,10 +112,17 @@ Status s = S_OK;
             break;
         default: break;
     }
+    //Set default pin state before actual output enabled.
+    if ((GPIO_MODE_OUTPUT_PP == init_stc_p->init.Mode) ||
+        (GPIO_MODE_OUTPUT_OD == init_stc_p->init.Mode)) {
+        GPIO_Write((void*)gpio, 0, (void*)OFF);
+    }
     HAL_GPIO_Init(init_stc_p->port, (GPIO_InitTypeDef*)&init_stc_p->init);
     if (0 != init_stc_p->exti.irq) {
         HAL_NVIC_SetPriority(init_stc_p->exti.irq, init_stc_p->exti.nvic_prio_pre, init_stc_p->exti.nvic_prio_sub);
-        HAL_NVIC_EnableIRQ(init_stc_p->exti.irq);
+    }
+    if (HAL_NULL != init_stc_p->timer_hd_p) {
+//        HAL_TIM_PWM_ConfigChannel();
     }
     return s;
 }
@@ -229,13 +133,6 @@ Status GPIO_DeInit(void* args_p)
 const Gpio gpio = (Gpio)args_p;
 const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[gpio];
 Status s = S_OK;
-    if (0 != init_stc_p->exti.irq) {
-        HAL_NVIC_DisableIRQ(init_stc_p->exti.irq);
-    }
-    if ((GPIO_MODE_OUTPUT_PP == init_stc_p->init.Mode) ||
-        (GPIO_MODE_OUTPUT_OD == init_stc_p->init.Mode)) {
-        GPIO_Write((void*)gpio, 0, (void*)OFF);
-    }
     HAL_GPIO_DeInit(init_stc_p->port, init_stc_p->init.Pin);
     return s;
 }
@@ -244,13 +141,38 @@ Status s = S_OK;
 Status GPIO_Open(void* args_p)
 {
 Status s = S_OK;
+    if (HAL_NULL != args_p) {
+        const DrvGpioArgsOpen* open_args_p = (DrvGpioArgsOpen*)args_p;
+        const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[open_args_p->gpio];
+        const U32 gpio_pin = Bit2PositionGet(gpio_v[open_args_p->gpio].init.Pin);
+        DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio_pin];
+        if (HAL_NULL != open_args_p->isr_callback_fp) {
+            gpio_dyn_p->isr_callback_fp = open_args_p->isr_callback_fp;
+            gpio_dyn_p->args_p = open_args_p->args_p;
+        } else {
+            s = S_INVALID_PTR;
+        }
+        if (0 != init_stc_p->exti.irq) {
+            __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+            HAL_NVIC_EnableIRQ(init_stc_p->exti.irq);
+        }
+//        HAL_TIM_PWM_Start();
+    }
     return s;
 }
 
 /*****************************************************************************/
 Status GPIO_Close(void* args_p)
 {
+const Gpio gpio = (Gpio)args_p;
+const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[gpio];
 Status s = S_OK;
+    if (0 != init_stc_p->exti.irq) {
+        HAL_NVIC_DisableIRQ(init_stc_p->exti.irq);
+    }
+DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio];
+    gpio_dyn_p->isr_callback_fp = HAL_NULL;
+//    HAL_TIM_PWM_Stop();
     return s;
 }
 
@@ -303,6 +225,16 @@ Status s = S_UNDEF;
                     break;
             }
             break;
+        case DRV_REQ_GPIO_PWM_SET: {
+            const DrvGpioArgsIoCtlPwm* drv_args_p = (DrvGpioArgsIoCtlPwm*)args_p;
+            TIM_HandleTypeDef* timer_hd_p = gpio_v[drv_args_p->gpio].timer_hd_p;
+                if (HAL_NULL != timer_hd_p) {
+//                    timer_hd_p->Init.
+                } else {
+                    s = S_INVALID_TIMER;
+                }
+            }
+            break;
         case DRV_REQ_GPIO_EXTI_IRQ_ENABLE: {
                 const Int gpio = (Int)args_p;
                 HAL_NVIC_EnableIRQ(gpio_v[gpio].exti.irq);
@@ -328,54 +260,74 @@ Status s = S_UNDEF;
     return s;
 }
 
-/*****************************************************************************/
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    switch (GPIO_Pin) {
-        case GPIO_PIN_0:
-            {
-            extern HAL_IrqCallbackFunc wakeup_irq_callback_func;
-            if (OS_NULL != wakeup_irq_callback_func) {
-                wakeup_irq_callback_func();
-            }
-            }
-            break;
-        case GPIO_PIN_3:
-#if (HAL_ETH_ENABLED)
-            {
-            extern OS_QueueHd netd_stdin_qhd;
-            if (OS_NULL != netd_stdin_qhd) {
-                const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_LINK_STATE_CHANGED, 0);
-                OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_NORMAL));
-            }
-            }
-#endif //(HAL_ETH_ENABLED)
-            break;
-//        case GPIO_PIN_13:
-//            {
-//            extern HAL_IrqCallbackFunc tamper_irq_callback_func;
-//            if (OS_NULL != tamper_irq_callback_func) {
-//                tamper_irq_callback_func();
-//            }
-//            }
-//            break;
-        default:
-            OS_ASSERT(OS_FALSE);
-            break;
-    }
-}
-
 // IRQ handlers-----------------------------------------------------------------
+//TODO(A.Filyanov) Macro expansion functions generator.
 /******************************************************************************/
 void EXTI0_IRQHandler(void);
 void EXTI0_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+static const Int gpio_pin = 0;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+}
+
+/******************************************************************************/
+void EXTI1_IRQHandler(void);
+void EXTI1_IRQHandler(void)
+{
+static const Int gpio_pin = 1;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+}
+
+/******************************************************************************/
+void EXTI2_IRQHandler(void);
+void EXTI2_IRQHandler(void)
+{
+static const Int gpio_pin = 2;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
 }
 
 /******************************************************************************/
 void EXTI3_IRQHandler(void);
 void EXTI3_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+static const Int gpio_pin = 3;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+}
+
+/******************************************************************************/
+void EXTI4_IRQHandler(void);
+void EXTI4_IRQHandler(void)
+{
+static const Int gpio_pin = 4;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+}
+
+/******************************************************************************/
+void EXTI9_5_IRQHandler(void);
+void EXTI9_5_IRQHandler(void)
+{
+static const Int gpio_pin = 5;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+}
+
+/******************************************************************************/
+void EXTI15_10_IRQHandler(void);
+void EXTI15_10_IRQHandler(void)
+{
+static const Int gpio_pin = 10;
+    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
+    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
 }

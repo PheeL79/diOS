@@ -8,12 +8,11 @@
 
 #include <stdarg.h>
 #include "status.h"
-#include "hal_config.h"
 
 //------------------------------------------------------------------------------
 typedef U8 HAL_PowerState;
 typedef U8 HAL_PowerPrio;
-typedef void (*HAL_IrqCallbackFunc)(void);
+typedef void (*HAL_ISR_CallbackFunc)(void* args_p);
 
 // Driver standart requests.
 enum {
@@ -39,6 +38,12 @@ typedef struct {
     const HAL_DriverItf*    stdio_p;
     LogLevel                log_level;
 } HAL_Env;
+
+//------------------------------------------------------------------------------
+#ifndef HAL_C
+extern
+#endif
+volatile HAL_Env hal_env;
 
 #include "olimex_stm32_p407/hal_olimex_stm32_p407.h"
 
