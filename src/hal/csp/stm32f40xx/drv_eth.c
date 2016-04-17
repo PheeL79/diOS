@@ -157,6 +157,7 @@ Status s = S_OK;
     GPIO_InitStruct.Alternate   = HAL_ETH_GPIO5_ALT;
     HAL_GPIO_Init(HAL_ETH_GPIO5_PORT, &GPIO_InitStruct);
 
+    HAL_NVIC_SetPriority(HAL_ETH_IRQ, HAL_PRIO_IRQ_ETH, 0);
     HAL_NVIC_EnableIRQ(HAL_ETH_IRQ);
     return s;
 }
@@ -181,7 +182,6 @@ Status s = S_UNDEF;
         HAL_GPIO_DeInit(HAL_ETH_GPIO4_PORT, HAL_ETH_GPIO4_PIN);
         /* Peripheral interrupt Deinit */
         HAL_NVIC_DisableIRQ(HAL_ETH_IRQ);
-        HAL_NVIC_DisableIRQ(HAL_ETH_MDINT_IRQ);
     }
     return s;
 }

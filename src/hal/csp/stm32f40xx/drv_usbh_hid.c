@@ -20,23 +20,23 @@ INLINE void MouseDataTranslate(const HID_MOUSE_Info_TypeDef* mouse_info_p, OS_Us
 {
     mouse_data_p->x = mouse_info_p->x;
     mouse_data_p->y = mouse_info_p->y;
-    mouse_data_p->buttons_bm = BIT_SHIFT(BIT_TEST(mouse_info_p->buttons[0], 1), OS_USB_HID_MOUSE_BUTTON_LEFT);
-    mouse_data_p->buttons_bm|= BIT_SHIFT(BIT_TEST(mouse_info_p->buttons[1], 1), OS_USB_HID_MOUSE_BUTTON_RIGHT);
-    mouse_data_p->buttons_bm|= BIT_SHIFT(BIT_TEST(mouse_info_p->buttons[2], 1), OS_USB_HID_MOUSE_BUTTON_MIDDLE);
+    mouse_data_p->buttons_bf = BIT_SHIFT(BIT_TEST(mouse_info_p->buttons[0], 1), OS_USB_HID_MOUSE_BUTTON_LEFT);
+    mouse_data_p->buttons_bf|= BIT_SHIFT(BIT_TEST(mouse_info_p->buttons[1], 1), OS_USB_HID_MOUSE_BUTTON_RIGHT);
+    mouse_data_p->buttons_bf|= BIT_SHIFT(BIT_TEST(mouse_info_p->buttons[2], 1), OS_USB_HID_MOUSE_BUTTON_MIDDLE);
 }
 
 /******************************************************************************/
 static void KeyboardDataTranslate(HID_KEYBD_Info_TypeDef* keyboard_info_p, OS_UsbHidKeyboardData* keyboard_data_p);
 INLINE void KeyboardDataTranslate(HID_KEYBD_Info_TypeDef* keyboard_info_p, OS_UsbHidKeyboardData* keyboard_data_p)
 {
-    keyboard_data_p->keys_func_bm  = BIT_SHIFT(BIT_TEST(keyboard_info_p->lctrl, 1), OS_USB_HID_KEY_LEFT_CTRL);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lshift, 1),OS_USB_HID_KEY_LEFT_SHIFT);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lalt, 1),  OS_USB_HID_KEY_LEFT_ALT);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lgui, 1),  OS_USB_HID_KEY_LEFT_GUI);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->rctrl, 1), OS_USB_HID_KEY_RIGHT_CTRL);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->rshift, 1),OS_USB_HID_KEY_RIGHT_SHIFT);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->ralt, 1),  OS_USB_HID_KEY_RIGHT_ALT);
-    keyboard_data_p->keys_func_bm |= BIT_SHIFT(BIT_TEST(keyboard_info_p->rgui, 1),  OS_USB_HID_KEY_RIGHT_GUI);
+    keyboard_data_p->keys_func_bf  = BIT_SHIFT(BIT_TEST(keyboard_info_p->lctrl, 1), OS_USB_HID_KEY_LEFT_CTRL);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lshift, 1),OS_USB_HID_KEY_LEFT_SHIFT);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lalt, 1),  OS_USB_HID_KEY_LEFT_ALT);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->lgui, 1),  OS_USB_HID_KEY_LEFT_GUI);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->rctrl, 1), OS_USB_HID_KEY_RIGHT_CTRL);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->rshift, 1),OS_USB_HID_KEY_RIGHT_SHIFT);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->ralt, 1),  OS_USB_HID_KEY_RIGHT_ALT);
+    keyboard_data_p->keys_func_bf |= BIT_SHIFT(BIT_TEST(keyboard_info_p->rgui, 1),  OS_USB_HID_KEY_RIGHT_GUI);
     keyboard_data_p->key_state     = keyboard_info_p->state;
     keyboard_data_p->key_ascii     = USBH_HID_GetASCIICode(keyboard_info_p);
     OS_MemCpy(keyboard_data_p->keys_raw_v, keyboard_info_p->keys, sizeof(keyboard_data_p->keys_raw_v));

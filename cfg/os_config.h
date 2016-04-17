@@ -82,7 +82,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_TIMERS_STACK_SIZE                        (OS_STACK_SIZE_MIN * 2)
 
 // Events
-#define OS_TRIGGERS_ENABLED                         0
+#define OS_TRIGGERS_ENABLED                         1
 
 // Names length
 #define OS_DRIVER_NAME_LEN                          9

@@ -21,15 +21,18 @@ enum {
     DRV_REQ_GPIO_LAST
 };
 
+//TODO(A. Filyanov) Substitute type for "slot_qhd" with "OS_DriverHd", "signal_data" with "OS_SignalData"
+//                  and "signal_id" with "OS_SignalId" and when header files dependency will solved.
 typedef struct {
-    Gpio                    gpio;
-    HAL_ISR_CallbackFunc    isr_callback_fp;
-    void*                   args_p;
+    Gpio            gpio;
+    U8              signal_id;
+    U16             signal_data;
+    void*           slot_qhd;
 } DrvGpioArgsOpen;
 
 typedef struct {
-    Gpio                    gpio;
-    U32                     pwm_pulse;
+    U32             pwm_pulse;
+    Gpio            gpio;
 } DrvGpioArgsIoCtlPwm;
 
 //-----------------------------------------------------------------------------

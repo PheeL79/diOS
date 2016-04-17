@@ -135,7 +135,7 @@ const S8 freq_idx = FrequencyIdxGet(drv_args_p->info.sample_rate);
     GPIO_InitStruct.Pin         = CS4344_I2Sx_SCK_PIN;
     GPIO_InitStruct.Mode        = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull        = GPIO_NOPULL;
-    GPIO_InitStruct.Speed       = GPIO_SPEED_FAST;
+    GPIO_InitStruct.Speed       = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate   = CS4344_I2Sx_SCK_SD_WS_AF;
     HAL_GPIO_Init(CS4344_I2Sx_SCK_SD_GPIO_PORT, &GPIO_InitStruct);
 
@@ -150,7 +150,7 @@ const S8 freq_idx = FrequencyIdxGet(drv_args_p->info.sample_rate);
 
     /* CODEC_I2S pins configuration: MCK pin */
     GPIO_InitStruct.Pin         = CS4344_I2Sx_MCK_PIN;
-    GPIO_InitStruct.Speed       = GPIO_SPEED_FAST;
+    GPIO_InitStruct.Speed       = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(CS4344_I2Sx_MCK_GPIO_PORT, &GPIO_InitStruct);
 
     /* Enable the DMA clock */

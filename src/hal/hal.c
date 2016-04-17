@@ -164,6 +164,12 @@ U32 HAL_SystemCoreClockGet(void)
     return SystemCoreClock;
 }
 
+/*****************************************************************************/
+Bool HAL_IsInterrupt(void)
+{
+    return (0 != (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk));
+}
+
 /******************************************************************************/
 void HAL_StdIoCls(void)
 {

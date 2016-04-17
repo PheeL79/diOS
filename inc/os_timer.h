@@ -34,7 +34,7 @@ enum {
 typedef enum {
     OS_TIM_OPT_UNDEF,
     OS_TIM_OPT_PERIODIC = 0,
-    OS_TIM_OPT_EVENT,
+    OS_TIM_OPT_TRIGGER,
     //OS_TIM_OPT_PRIO_HIGH
 } OS_TimerOptions;
 

@@ -3,6 +3,8 @@
 * @brief   GPIO driver.
 * @author  A. Filyanov
 ******************************************************************************/
+#define _DRV_GPIO_C_
+
 #include "hal.h"
 #include "os_debug.h"
 #include "os_supervise.h"
@@ -13,8 +15,9 @@
 
 //-----------------------------------------------------------------------------
 typedef struct {
-    HAL_ISR_CallbackFunc    isr_callback_fp;
-    void*                   args_p;
+    OS_QueueHd      slot_qhd;
+    OS_SignalId     signal_id;
+    OS_SignalData   signal_data;
 } DrvGpioConfigDyn;
 
 //-----------------------------------------------------------------------------
@@ -48,7 +51,6 @@ static HAL_DriverItf drv_gpio = {
     .IoCtl  = GPIO_IoCtl
 };
 
-//TODO(A.Filyanov) Dynamic memory allocation for EXTI only GPIO!
 ALIGN_BEGIN static DrvGpioConfigDyn gpio_dyn_v[16] ALIGN_END;
 
 /*****************************************************************************/
@@ -122,7 +124,59 @@ Status s = S_OK;
         HAL_NVIC_SetPriority(init_stc_p->exti.irq, init_stc_p->exti.nvic_prio_pre, init_stc_p->exti.nvic_prio_sub);
     }
     if (HAL_NULL != init_stc_p->timer_hd_p) {
-//        HAL_TIM_PWM_ConfigChannel();
+        switch ((Int)init_stc_p->timer_itf) {
+            case (Int)TIM1:
+                __TIM1_CLK_ENABLE();
+                break;
+            case (Int)TIM2:
+                __TIM2_CLK_ENABLE();
+                break;
+            case (Int)TIM3:
+                __TIM3_CLK_ENABLE();
+                break;
+            case (Int)TIM4:
+                __TIM4_CLK_ENABLE();
+                break;
+            case (Int)TIM5:
+                __TIM5_CLK_ENABLE();
+                break;
+            case (Int)TIM6:
+                __TIM6_CLK_ENABLE();
+                break;
+            case (Int)TIM7:
+                __TIM7_CLK_ENABLE();
+                break;
+            case (Int)TIM8:
+                __TIM8_CLK_ENABLE();
+                break;
+            case (Int)TIM9:
+                __TIM9_CLK_ENABLE();
+                break;
+            case (Int)TIM10:
+                __TIM10_CLK_ENABLE();
+                break;
+            case (Int)TIM11:
+                __TIM11_CLK_ENABLE();
+                break;
+            case (Int)TIM12:
+                __TIM12_CLK_ENABLE();
+                break;
+            case (Int)TIM13:
+                __TIM13_CLK_ENABLE();
+                break;
+            case (Int)TIM14:
+                __TIM14_CLK_ENABLE();
+                break;
+            default:
+                s = S_INVALID_TIMER;
+                break;
+        }
+        init_stc_p->timer_hd_p->Instance = init_stc_p->timer_itf;
+        init_stc_p->timer_hd_p->Init = init_stc_p->timer_init;
+        if (HAL_OK == HAL_TIM_PWM_Init(init_stc_p->timer_hd_p)) {
+            if (HAL_OK == HAL_TIM_PWM_ConfigChannel(init_stc_p->timer_hd_p, (TIM_OC_InitTypeDef*)&init_stc_p->timer_oc, init_stc_p->timer_channel)) {
+            } else { s = S_DRIVER_ERROR; }
+        } else { s = S_DRIVER_ERROR; }
     }
     return s;
 }
@@ -133,6 +187,11 @@ Status GPIO_DeInit(void* args_p)
 const Gpio gpio = (Gpio)args_p;
 const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[gpio];
 Status s = S_OK;
+    if (HAL_NULL != init_stc_p->timer_itf) {
+        if (HAL_OK == HAL_TIM_PWM_DeInit(init_stc_p->timer_hd_p)) {
+//TODO(A. Filyanov) Disable timer peripheral clock!
+        } else { s = S_DRIVER_ERROR; }
+    }
     HAL_GPIO_DeInit(init_stc_p->port, init_stc_p->init.Pin);
     return s;
 }
@@ -146,17 +205,18 @@ Status s = S_OK;
         const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[open_args_p->gpio];
         const U32 gpio_pin = Bit2PositionGet(gpio_v[open_args_p->gpio].init.Pin);
         DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio_pin];
-        if (HAL_NULL != open_args_p->isr_callback_fp) {
-            gpio_dyn_p->isr_callback_fp = open_args_p->isr_callback_fp;
-            gpio_dyn_p->args_p = open_args_p->args_p;
-        } else {
-            s = S_INVALID_PTR;
-        }
+
+        gpio_dyn_p->signal_id   = open_args_p->signal_id;
+        gpio_dyn_p->signal_data = open_args_p->signal_data;
+        gpio_dyn_p->slot_qhd    = open_args_p->slot_qhd;
         if (0 != init_stc_p->exti.irq) {
             __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
             HAL_NVIC_EnableIRQ(init_stc_p->exti.irq);
         }
-//        HAL_TIM_PWM_Start();
+        if (HAL_NULL != init_stc_p->timer_hd_p) {
+            if (HAL_OK == HAL_TIM_PWM_Start(init_stc_p->timer_hd_p, init_stc_p->timer_channel)) {
+            } else { s = S_DRIVER_ERROR; }
+        }
     }
     return s;
 }
@@ -170,9 +230,12 @@ Status s = S_OK;
     if (0 != init_stc_p->exti.irq) {
         HAL_NVIC_DisableIRQ(init_stc_p->exti.irq);
     }
+    if (HAL_NULL != init_stc_p->timer_hd_p) {
+        if (HAL_OK == HAL_TIM_PWM_Stop(init_stc_p->timer_hd_p, init_stc_p->timer_channel)) {
+        } else { s = S_DRIVER_ERROR; }
+    }
 DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio];
-    gpio_dyn_p->isr_callback_fp = HAL_NULL;
-//    HAL_TIM_PWM_Stop();
+    gpio_dyn_p->slot_qhd = OS_NULL;
     return s;
 }
 
@@ -226,10 +289,11 @@ Status s = S_UNDEF;
             }
             break;
         case DRV_REQ_GPIO_PWM_SET: {
-            const DrvGpioArgsIoCtlPwm* drv_args_p = (DrvGpioArgsIoCtlPwm*)args_p;
-            TIM_HandleTypeDef* timer_hd_p = gpio_v[drv_args_p->gpio].timer_hd_p;
-                if (HAL_NULL != timer_hd_p) {
-//                    timer_hd_p->Init.
+            const DrvGpioArgsIoCtlPwm* io_pwm_args_p = (DrvGpioArgsIoCtlPwm*)args_p;
+            const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[io_pwm_args_p->gpio];
+                s = S_OK;
+                if (HAL_NULL != init_stc_p->timer_hd_p) {
+                    __HAL_TIM_SET_COMPARE(init_stc_p->timer_hd_p, init_stc_p->timer_channel, io_pwm_args_p->pwm_pulse);
                 } else {
                     s = S_INVALID_TIMER;
                 }
@@ -261,6 +325,14 @@ Status s = S_UNDEF;
 }
 
 // IRQ handlers-----------------------------------------------------------------
+/******************************************************************************/
+INLINE static void ISR_Handler(const OS_QueueHd slot_qhd, const OS_SignalId id, const OS_SignalData data);
+void ISR_Handler(const OS_QueueHd slot_qhd, const OS_SignalId id, const OS_SignalData data)
+{
+const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_GPIO, id, data);
+    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(slot_qhd, signal, OS_MSG_PRIO_HIGH));
+}
+
 //TODO(A.Filyanov) Macro expansion functions generator.
 /******************************************************************************/
 void EXTI0_IRQHandler(void);
@@ -268,8 +340,7 @@ void EXTI0_IRQHandler(void)
 {
 static const Int gpio_pin = 0;
     __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }
 
 /******************************************************************************/
@@ -278,8 +349,7 @@ void EXTI1_IRQHandler(void)
 {
 static const Int gpio_pin = 1;
     __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }
 
 /******************************************************************************/
@@ -288,8 +358,7 @@ void EXTI2_IRQHandler(void)
 {
 static const Int gpio_pin = 2;
     __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }
 
 /******************************************************************************/
@@ -298,8 +367,7 @@ void EXTI3_IRQHandler(void)
 {
 static const Int gpio_pin = 3;
     __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }
 
 /******************************************************************************/
@@ -308,8 +376,7 @@ void EXTI4_IRQHandler(void)
 {
 static const Int gpio_pin = 4;
     __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }
 
 /******************************************************************************/
@@ -317,9 +384,9 @@ void EXTI9_5_IRQHandler(void);
 void EXTI9_5_IRQHandler(void)
 {
 static const Int gpio_pin = 5;
-    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+//TODO(A.Filyanov) Test asserted IRQ lines for actual pins numbers.
+    __HAL_GPIO_EXTI_CLEAR_IT(BF_PREP(UINT_MAX, gpio_pin, (9 - (gpio_pin - 1))));
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }
 
 /******************************************************************************/
@@ -327,7 +394,7 @@ void EXTI15_10_IRQHandler(void);
 void EXTI15_10_IRQHandler(void)
 {
 static const Int gpio_pin = 10;
-    __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-    HAL_ASSERT_DEBUG(HAL_NULL != gpio_dyn_v[gpio_pin].isr_callback_fp);
-    gpio_dyn_v[gpio_pin].isr_callback_fp((void*)gpio_dyn_v[gpio_pin].args_p);
+//TODO(A.Filyanov) Test asserted IRQ lines for actual pins numbers.
+    __HAL_GPIO_EXTI_CLEAR_IT(BF_PREP(UINT_MAX, gpio_pin, (15 - (gpio_pin - 1))));
+    ISR_Handler(gpio_dyn_v[gpio_pin].slot_qhd, gpio_dyn_v[gpio_pin].signal_id, gpio_dyn_v[gpio_pin].signal_data);
 }

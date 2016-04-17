@@ -122,13 +122,13 @@ typedef struct {
 typedef struct {
     S16  x;
     S16  y;
-    S8   buttons_bm;
+    S8   buttons_bf;
 } OS_UsbHidMouseData;
 
 typedef struct {
     U8  key_state;
     U8  key_ascii;
-    U16 keys_func_bm;
+    U16 keys_func_bf;
     U8  keys_raw_v[6];
 } OS_UsbHidKeyboardData;
 

@@ -37,11 +37,11 @@ Status s = S_UNDEF;
 #if (HAL_TIMER_IWDG_ENABLED)
     IF_STATUS(s = TIMER_IWDG_Init()){ return s; }
 #endif //(HAL_TIMER_IWDG_ENABLED)
+    IF_STATUS(s = POWER_Init_())    { return s; }
     IF_STATUS(s = GPIO_Init_())     { return s; }
     IF_STATUS(s = DMA_Init_())      { return s; }
     IF_STATUS(s = RTC_Init_())      { return s; }
     IF_STATUS(s = CRC_Init_())      { return s; }
-    IF_STATUS(s = POWER_Init_())    { return s; }
 #if (HAL_MEM_EXT_ENABLED)
     IF_STATUS(s = MEM_EXT_Init_())  { return s; }
 #endif //(HAL_MEM_EXT_ENABLED)

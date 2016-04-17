@@ -48,7 +48,7 @@ void OS_TimerCallback(const TimerHandle_t timer_handle)
         OS_LOG_S(L_WARNING, S_INVALID_TIMER);
         return;
     }
-    const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, BIT(OS_TIM_OPT_EVENT)) ? OS_SIG_EVENT : OS_SIG_TIMER;
+    const OS_SignalId sig_id = BIT_TEST(cfg_dyn_p->options, BIT(OS_TIM_OPT_TRIGGER)) ? OS_SIG_TRIGGER : OS_SIG_TIMER;
     const OS_Signal signal = OS_SignalCreate(sig_id, cfg_dyn_p->id);
     OS_SignalSend(cfg_dyn_p->slot, signal, OS_MSG_PRIO_HIGH);
 }

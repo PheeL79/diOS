@@ -131,7 +131,7 @@ Status s = S_OK;
 //    /* SD Card detect pin configuration */
 //    GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
 //    GPIO_InitStruct.Pull      = GPIO_PULLUP;
-//    GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+//    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
 //    GPIO_InitStruct.Pin       = SD_DETECT_PIN;
 //    HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStruct);
 //#endif //HAL_MB_OLIMEX_STM32_P407
@@ -236,7 +236,7 @@ Status s = S_OK;
 Status SDIO_Open(void* args_p)
 {
 Status s = S_OK;
-    IF_STATUS(s = OS_DriverOpen(args_init.drv_gpio, OS_NULL)) {}
+//    IF_STATUS(s = OS_DriverOpen(args_init.drv_gpio, OS_NULL)) {}
     return s;
 }
 
@@ -245,7 +245,7 @@ Status SDIO_Close(void* args_p)
 {
 Status s = S_OK;
     IF_OK(s = drv_media_sdcard.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
-        IF_OK(s = OS_DriverClose(args_init.drv_gpio, OS_NULL)) {}
+//        IF_OK(s = OS_DriverClose(args_init.drv_gpio, OS_NULL)) {}
     }
     return s;
 }

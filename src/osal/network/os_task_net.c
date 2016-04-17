@@ -28,7 +28,7 @@ enum {
 
 extern Status OS_NetworkItfAddress4Log(const OS_NetworkItfHd net_itf_hd);
 
-static void ISR_ETH_LinkStateChangedHandler(void* args_p);
+//static void ISR_ETH_LinkStateChangedHandler(void* args_p);
 
 //-----------------------------------------------------------------------------
 //Task arguments
@@ -118,7 +118,7 @@ Status s = S_UNDEF;
                                                     static ConstStrP tim_name_p = "DHCP cli";
                                                     const OS_TimerConfig tim_cfg = {
                                                         .name_p = tim_name_p,
-                                                        .slot   = OS_TaskStdInGet(OS_THIS_TASK),
+                                                        .slot   = stdin_qhd,
                                                         .id     = OS_TIM_ID_DHCP_CLIENT,
                                                         .period = OS_TIM_DHCP_CLIENT_PERIOD_MS,
                                                         .options= BIT(OS_TIM_OPT_PERIODIC)
@@ -243,9 +243,10 @@ Status s = S_UNDEF;
                 IF_OK(s = OS_DriverInit(drv_gpio_dhd, (void*)GPIO_ETH_MDINT)) {
                     const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(task_net_cfg.name));
                     const DrvGpioArgsOpen args = {
-                        .gpio               = GPIO_ETH_MDINT,
-                        .isr_callback_fp    = (HAL_ISR_CallbackFunc)ISR_ETH_LinkStateChangedHandler,
-                        .args_p             = (void*)stdin_qhd
+                        .gpio       = GPIO_ETH_MDINT,
+                        .signal_id  = OS_SIG_ETH_LINK_STATE_CHANGED,
+                        .signal_data= 0,
+                        .slot_qhd   = stdin_qhd
                     };
                     IF_STATUS(s = OS_DriverOpen(drv_gpio_dhd, (void*)&args)) { goto error; }
                 } else {
@@ -275,13 +276,13 @@ error:
     return s;
 }
 
-#if (HAL_ETH_ENABLED)
-/******************************************************************************/
-void ISR_ETH_LinkStateChangedHandler(void* args_p)
-{
-const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_LINK_STATE_CHANGED, 0);
-    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend((OS_QueueHd)args_p, signal, OS_MSG_PRIO_NORMAL));
-}
-#endif //(HAL_ETH_ENABLED)
+//#if (HAL_ETH_ENABLED)
+///******************************************************************************/
+//void ISR_ETH_LinkStateChangedHandler(void* args_p)
+//{
+//const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_LINK_STATE_CHANGED, 0);
+//    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend((OS_QueueHd)args_p, signal, OS_MSG_PRIO_NORMAL));
+//}
+//#endif //(HAL_ETH_ENABLED)
 
 #endif //(OS_NETWORK_ENABLED)

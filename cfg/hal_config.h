@@ -6,6 +6,10 @@
 #ifndef _HAL_CONFIG_H_
 #define _HAL_CONFIG_H_
 
+#include "hal\bsp\olimex_stm32_p407\bsp_config.h"
+#include "hal_config_prio.h"
+#include "hal_config.S"
+
 // HAL ------------------------------------------------------------------------
 
 // DEBUG
@@ -135,13 +139,6 @@
 #define HAL_ADC_TRIMMER_CHANNEL_OFFSET              0
 
 // U(S)ART
-#define HAL_USART_DEBUG_ITF                         USART6
-#define HAL_USART_DEBUG_CLK_ENABLE()                __USART6_CLK_ENABLE()
-#define HAL_USART_DEBUG_DMA_CLK_ENABLE()            __DMA2_CLK_ENABLE()
-#define HAL_USART_DEBUG_FORCE_RESET()               __USART6_FORCE_RESET()
-#define HAL_USART_DEBUG_RELEASE_RESET()             __USART6_RELEASE_RESET()
-#define HAL_USART_DEBUG_IRQ                         USART6_IRQn
-#define HAL_USART_DEBUG_IRQ_HANDLER                 USART6_IRQHandler
 #define HAL_USART_DEBUG_DMA_CHAN_RX                 DMA_CHANNEL_5
 #define HAL_USART_DEBUG_DMA_STREAM_RX               DMA2_Stream2
 #define HAL_USART_DEBUG_DMA_IRQ_RX                  DMA2_Stream2_IRQn
@@ -182,11 +179,6 @@
 
 // SDIO SD
 #define HAL_SDIO_SD_ENABLED                         1
-#define HAL_SD_ITF                                  SDIO
-#define HAL_SD_CLK_ENABLE()                         __SDIO_CLK_ENABLE()
-#define HAL_SD_CLK_DISABLE()                        __SDIO_CLK_DISABLE()
-#define HAL_SD_IRQ                                  SDIO_IRQn
-#define HAL_SD_IRQ_HANDLER                          SDIO_IRQHandler
 #define HAL_SD_DMA_CLK()                            __DMA2_CLK_ENABLE()
 #define HAL_SD_DMA_CHAN_RX                          DMA_CHANNEL_4
 #define HAL_SD_DMA_STREAM_RX                        DMA2_Stream3
@@ -235,14 +227,6 @@
 #define HAL_SD_TIMEOUT_TRANSFER                     ((U32)100000000)
 
 // USB OTG
-#define HAL_USB_OTG_FS_ITF                          USB_OTG_FS
-#define HAL_USB_OTG_HS_ITF                          USB_OTG_HS
-#define HAL_USB_OTG_FS_CLK_ENABLE()                 __USB_OTG_FS_CLK_ENABLE()
-#define HAL_USB_OTG_FS_CLK_DISABLE()                __USB_OTG_FS_CLK_DISABLE()
-#define HAL_USB_OTG_HS_CLK_ENABLE()                 __USB_OTG_HS_CLK_ENABLE()
-#define HAL_USB_OTG_HS_CLK_DISABLE()                __USB_OTG_HS_CLK_DISABLE()
-#define HAL_USB_OTG_FS_IRQ                          OTG_FS_IRQn
-#define HAL_USB_OTG_HS_IRQ                          OTG_HS_IRQn
 
 // USB Host
 #define HAL_USBH_ENABLED                            0
@@ -316,16 +300,6 @@
 
 // Ethernet
 #define HAL_ETH_ENABLED                             1
-#define HAL_ETH_ITF                                 ETH
-#define HAL_ETH_CLK_ENABLE()                        __ETH_CLK_ENABLE()
-#define HAL_ETH_CLK_DISABLE()                       __ETH_CLK_DISABLE()
-#define HAL_ETH_MAC_TX_CLK_ENABLE()                 __ETHMACTX_CLK_ENABLE()
-#define HAL_ETH_MAC_TX_CLK_DISABLE()                __ETHMACTX_CLK_DISABLE()
-#define HAL_ETH_MAC_RX_CLK_ENABLE()                 __ETHMACRX_CLK_ENABLE()
-#define HAL_ETH_MAC_RX_CLK_DISABLE()                __ETHMACRX_CLK_DISABLE()
-#define HAL_ETH_IRQ                                 ETH_IRQn
-#define HAL_ETH_IRQ_HANDLER                         ETH_IRQHandler
-#define HAL_ETH_MDINT_IRQ                           EXTI3_IRQn
 #define HAL_ETH_AUTO_NEGOTIATION                    ETH_AUTONEGOTIATION_ENABLE
 #define HAL_ETH_SPEED                               ETH_SPEED_100M
 #define HAL_ETH_ADDR_PHYSICAL                       ETH0_PHY_ADDR
@@ -344,12 +318,7 @@
 #define HAL_ETH_MAC_ADDR5                           0x00
 #define HAL_ETH_MTU_SIZE                            1500
 
-#define HAL_ETH_GPIO_MDINT_EXTI_IRQ                 EXTI3_IRQn
-
 // Buttons
-#define HAL_GPIO_BUTTON_WAKEUP_EXTI_IRQ             EXTI0_IRQn
-#define HAL_GPIO_BUTTON_TAMPER_EXTI_IRQ             TAMP_STAMP_IRQn
-
 #define HAL_GPIO_BUTTON_TAMPER_FILTER               RTC_TAMPERFILTER_DISABLE
 #define HAL_GPIO_BUTTON_TAMPER_PIN_SELECTION        RTC_TAMPERPIN_PC13
 #define HAL_GPIO_BUTTON_TAMPER_TAMPER               RTC_TAMPER_1
@@ -361,9 +330,181 @@
 
 // LEDs
 #define HAL_GPIO_LED_MODE                           GPIO_MODE_OUTPUT_PP
+#define HAL_GPIO_LED_MODE_PWM                       GPIO_MODE_AF_PP
 #define HAL_GPIO_LED_PULL                           GPIO_NOPULL
-#define HAL_GPIO_LED_SPEED                          GPIO_SPEED_LOW
+#define HAL_GPIO_LED_SPEED                          GPIO_SPEED_FREQ_LOW
 #define HAL_GPIO_LED_ALT                            0
+
+#define FOREACH_GPIO(GPIO)       \
+        GPIO(GPIO_DEBUG_1)       \
+        GPIO(GPIO_DEBUG_2)       \
+        GPIO(GPIO_ASSERT)        \
+        GPIO(GPIO_LED_PULSE)     \
+        GPIO(GPIO_LED_FS)        \
+        GPIO(GPIO_LED_ASSERT)    \
+        GPIO(GPIO_LED_USER)      \
+        GPIO(GPIO_BUTTON_WAKEUP) \
+        GPIO(GPIO_BUTTON_TAMPER) \
+        GPIO(GPIO_ETH_MDINT)     \
+        GPIO(GPIO_LAST)          \
+
+#define GENERATE_ENUM(ENUM)                         ENUM,
+#define GENERATE_STRING(STRING)                     #STRING,
+
+typedef enum {
+    FOREACH_GPIO(GENERATE_ENUM)
+} Gpio;
+
+#ifdef _DRV_GPIO_C_
+/// @note Define timers handlers for GPIO.
+static TIM_HandleTypeDef gpio_led_user_tim;
+
+ALIGN_BEGIN static const HAL_GPIO_InitStruct gpio_v[] ALIGN_END = {
+    [GPIO_DEBUG_1] = {
+        .port               = HAL_GPIO_DEBUG_1_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_DEBUG_1_PIN,
+            .Mode           = HAL_GPIO_DEBUG_1_MODE,
+            .Pull           = HAL_GPIO_DEBUG_1_PULL,
+            .Speed          = HAL_GPIO_DEBUG_1_SPEED,
+            .Alternate      = HAL_GPIO_DEBUG_1_ALT
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_DEBUG_2] = {
+        .port               = HAL_GPIO_DEBUG_2_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_DEBUG_2_PIN,
+            .Mode           = HAL_GPIO_DEBUG_2_MODE,
+            .Pull           = HAL_GPIO_DEBUG_2_PULL,
+            .Speed          = HAL_GPIO_DEBUG_2_SPEED,
+            .Alternate      = HAL_GPIO_DEBUG_2_ALT
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_ASSERT] = {
+        .port               = HAL_GPIO_ASSERT_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_ASSERT_PIN,
+            .Mode           = HAL_GPIO_ASSERT_MODE,
+            .Pull           = HAL_GPIO_ASSERT_PULL,
+            .Speed          = HAL_GPIO_ASSERT_SPEED,
+            .Alternate      = HAL_GPIO_ASSERT_ALT
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_LED_PULSE] = {
+        .port               = HAL_GPIO_LED_PULSE_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_LED_PULSE_PIN,
+            .Mode           = HAL_GPIO_LED_MODE,
+            .Pull           = HAL_GPIO_LED_PULL,
+            .Speed          = HAL_GPIO_LED_SPEED,
+            .Alternate      = HAL_GPIO_LED_ALT
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_LED_FS] = {
+        .port               = HAL_GPIO_LED_FS_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_LED_FS_PIN,
+            .Mode           = HAL_GPIO_LED_MODE,
+            .Pull           = HAL_GPIO_LED_PULL,
+            .Speed          = HAL_GPIO_LED_SPEED,
+            .Alternate      = HAL_GPIO_LED_ALT
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_LED_ASSERT] = {
+        .port               = HAL_GPIO_LED_ASSERT_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_LED_ASSERT_PIN,
+            .Mode           = HAL_GPIO_LED_MODE,
+            .Pull           = HAL_GPIO_LED_PULL,
+            .Speed          = HAL_GPIO_LED_SPEED,
+            .Alternate      = HAL_GPIO_LED_ALT
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_LED_USER] = {
+        .port               = HAL_GPIO_LED_USER_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_LED_USER_PIN,
+            .Mode           = HAL_GPIO_LED_MODE_PWM,
+            .Pull           = HAL_GPIO_LED_PULL,
+            .Speed          = HAL_GPIO_LED_SPEED,
+            .Alternate      = GPIO_AF9_TIM14
+        },
+        .timer_itf          = TIM14,
+        .timer_channel      = TIM_CHANNEL_1,
+        .timer_init = {
+            .Period         = U16_MAX,
+            .Prescaler      = 4,
+            .ClockDivision  = TIM_CLOCKDIVISION_DIV4,
+            .CounterMode    = TIM_COUNTERMODE_UP
+        },
+        .timer_oc = {
+            .OCMode         = TIM_OCMODE_PWM1,
+            .Pulse          = 0,
+            .OCPolarity     = TIM_OCPOLARITY_HIGH,
+            .OCNPolarity    = TIM_OCNPOLARITY_HIGH,
+            .OCFastMode     = TIM_OCFAST_DISABLE,
+            .OCIdleState    = TIM_OCIDLESTATE_RESET,
+            .OCNIdleState   = TIM_OCNIDLESTATE_RESET
+        },
+        .timer_hd_p         = &gpio_led_user_tim,
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_BUTTON_WAKEUP] = {
+        .port               = HAL_GPIO_BUTTON_WAKEUP_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_BUTTON_WAKEUP_PIN,
+            .Mode           = HAL_GPIO_BUTTON_WAKEUP_MODE,
+            .Pull           = HAL_GPIO_BUTTON_WAKEUP_PULL,
+            .Speed          = HAL_GPIO_BUTTON_WAKEUP_SPEED,
+            .Alternate      = HAL_GPIO_BUTTON_WAKEUP_ALT
+        },
+        .exti = {
+            .irq            = HAL_GPIO_BUTTON_WAKEUP_EXTI_IRQ,
+            .nvic_prio_pre  = HAL_PRIO_IRQ_BUTTON_WAKEUP,
+            .nvic_prio_sub  = 0
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_BUTTON_TAMPER] = {
+        .port               = HAL_GPIO_BUTTON_TAMPER_PORT,
+        .init = {
+            .Pin            = HAL_GPIO_BUTTON_TAMPER_PIN,
+            .Mode           = HAL_GPIO_BUTTON_TAMPER_MODE,
+            .Pull           = HAL_GPIO_BUTTON_TAMPER_PULL,
+            .Speed          = HAL_GPIO_BUTTON_TAMPER_SPEED,
+            .Alternate      = HAL_GPIO_BUTTON_TAMPER_ALT
+        },
+        .exti = {
+            .irq            = HAL_GPIO_BUTTON_TAMPER_EXTI_IRQ,
+            .nvic_prio_pre  = HAL_PRIO_IRQ_BUTTON_TAMPER,
+            .nvic_prio_sub  = 0
+        },
+        .is_inverted        = HAL_FALSE
+    },
+    [GPIO_ETH_MDINT] = {
+        .port               = HAL_ETH_GPIO_MDINT_PORT,
+        .init = {
+            .Pin            = HAL_ETH_GPIO_MDINT_PIN,
+            .Mode           = HAL_ETH_GPIO_MDINT_MODE,
+            .Pull           = HAL_ETH_GPIO_MDINT_PULL,
+            .Speed          = HAL_ETH_GPIO_MDINT_SPEED,
+            .Alternate      = HAL_ETH_GPIO_MDINT_ALT
+        },
+        .exti = {
+            .irq            = HAL_ETH_GPIO_MDINT_EXTI_IRQ,
+            .nvic_prio_pre  = HAL_PRIO_IRQ_ETH0_MDINT,
+            .nvic_prio_sub  = 0
+        },
+        .is_inverted        = HAL_FALSE
+    },
+};
+#endif //_DRV_GPIO_C_
 
 // Memory
 #define DATA_IN_ExtSRAM
@@ -399,10 +540,5 @@
 #define HAL_LOCALE_STRING_EN                        "en"
 #define HAL_LOCALE_STRING_RU                        "ru"
 #define HAL_LOCALE_DEFAULT                          HAL_LOCALE_STRING_EN
-
-//------------------------------------------------------------------------------
-#include "hal\bsp\olimex_stm32_p407\bsp_config.h"
-#include "hal_config_prio.h"
-#include "hal_config.S"
 
 #endif // _HAL_CONFIG_H_

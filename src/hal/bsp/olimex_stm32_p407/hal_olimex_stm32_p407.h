@@ -7,7 +7,6 @@
 #define _HAL_OLIMEX_STM32_P407_H_
 
 #include "stm32f4xx_hal.h"
-#include "hal_config.h"
 #include "common.h"
 
 //-----------------------------------------------------------------------------
@@ -65,157 +64,17 @@ typedef struct {
     GPIO_TypeDef*           port;
     GPIO_InitTypeDef        init;
     HAL_EXTI_InitStruct     exti;
-    TIM_HandleTypeDef*      timer_hd_p;         ///< for PWM mode.
+//PWM Mode -------------------------------
+    TIM_TypeDef*            timer_itf;
+    U32                     timer_channel;
+    TIM_Base_InitTypeDef    timer_init;
+    TIM_OC_InitTypeDef      timer_oc;
+    TIM_HandleTypeDef*      timer_hd_p;
+//----------------------------------------
     Bool                    is_inverted;
 } HAL_GPIO_InitStruct;
 
-#define FOREACH_GPIO(GPIO)       \
-        GPIO(GPIO_DEBUG_1)       \
-        GPIO(GPIO_DEBUG_2)       \
-        GPIO(GPIO_ASSERT)        \
-        GPIO(GPIO_LED_PULSE)     \
-        GPIO(GPIO_LED_FS)        \
-        GPIO(GPIO_LED_ASSERT)    \
-        GPIO(GPIO_LED_USER)      \
-        GPIO(GPIO_BUTTON_WAKEUP) \
-        GPIO(GPIO_BUTTON_TAMPER) \
-        GPIO(GPIO_ETH_MDINT)     \
-        GPIO(GPIO_LAST)          \
-
-typedef enum {
-    FOREACH_GPIO(GENERATE_ENUM)
-} Gpio;
-
-//#ifndef _HAL_OLIMEX_STM32_P407_H_
-//extern
-//#endif
-ALIGN_BEGIN static const HAL_GPIO_InitStruct gpio_v[] ALIGN_END = {
-    [GPIO_DEBUG_1] = {
-        .port               = HAL_GPIO_DEBUG_1_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_DEBUG_1_PIN,
-            .Mode           = HAL_GPIO_DEBUG_1_MODE,
-            .Pull           = HAL_GPIO_DEBUG_1_PULL,
-            .Speed          = HAL_GPIO_DEBUG_1_SPEED,
-            .Alternate      = HAL_GPIO_DEBUG_1_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_DEBUG_2] = {
-        .port               = HAL_GPIO_DEBUG_2_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_DEBUG_2_PIN,
-            .Mode           = HAL_GPIO_DEBUG_2_MODE,
-            .Pull           = HAL_GPIO_DEBUG_2_PULL,
-            .Speed          = HAL_GPIO_DEBUG_2_SPEED,
-            .Alternate      = HAL_GPIO_DEBUG_2_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_ASSERT] = {
-        .port               = HAL_GPIO_ASSERT_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_ASSERT_PIN,
-            .Mode           = HAL_GPIO_ASSERT_MODE,
-            .Pull           = HAL_GPIO_ASSERT_PULL,
-            .Speed          = HAL_GPIO_ASSERT_SPEED,
-            .Alternate      = HAL_GPIO_ASSERT_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_PULSE] = {
-        .port               = HAL_GPIO_LED_PULSE_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_PULSE_PIN,
-            .Mode           = HAL_GPIO_LED_MODE,
-            .Pull           = HAL_GPIO_LED_PULL,
-            .Speed          = HAL_GPIO_LED_SPEED,
-            .Alternate      = HAL_GPIO_LED_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_FS] = {
-        .port               = HAL_GPIO_LED_FS_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_FS_PIN,
-            .Mode           = HAL_GPIO_LED_MODE,
-            .Pull           = HAL_GPIO_LED_PULL,
-            .Speed          = HAL_GPIO_LED_SPEED,
-            .Alternate      = HAL_GPIO_LED_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_ASSERT] = {
-        .port               = HAL_GPIO_LED_ASSERT_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_ASSERT_PIN,
-            .Mode           = HAL_GPIO_LED_MODE,
-            .Pull           = HAL_GPIO_LED_PULL,
-            .Speed          = HAL_GPIO_LED_SPEED,
-            .Alternate      = HAL_GPIO_LED_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_LED_USER] = {
-        .port               = HAL_GPIO_LED_USER_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_LED_USER_PIN,
-            .Mode           = HAL_GPIO_LED_MODE,
-            .Pull           = HAL_GPIO_LED_PULL,
-            .Speed          = HAL_GPIO_LED_SPEED,
-            .Alternate      = HAL_GPIO_LED_ALT
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_BUTTON_WAKEUP] = {
-        .port               = HAL_GPIO_BUTTON_WAKEUP_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_BUTTON_WAKEUP_PIN,
-            .Mode           = HAL_GPIO_BUTTON_WAKEUP_MODE,
-            .Pull           = HAL_GPIO_BUTTON_WAKEUP_PULL,
-            .Speed          = HAL_GPIO_BUTTON_WAKEUP_SPEED,
-            .Alternate      = HAL_GPIO_BUTTON_WAKEUP_ALT
-        },
-        .exti = {
-            .irq            = HAL_GPIO_BUTTON_WAKEUP_EXTI_IRQ,
-            .nvic_prio_pre  = HAL_PRIO_IRQ_BUTTON_WAKEUP,
-            .nvic_prio_sub  = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_BUTTON_TAMPER] = {
-        .port               = HAL_GPIO_BUTTON_TAMPER_PORT,
-        .init = {
-            .Pin            = HAL_GPIO_BUTTON_TAMPER_PIN,
-            .Mode           = HAL_GPIO_BUTTON_TAMPER_MODE,
-            .Pull           = HAL_GPIO_BUTTON_TAMPER_PULL,
-            .Speed          = HAL_GPIO_BUTTON_TAMPER_SPEED,
-            .Alternate      = HAL_GPIO_BUTTON_TAMPER_ALT
-        },
-        .exti = {
-            .irq            = HAL_GPIO_BUTTON_TAMPER_EXTI_IRQ,
-            .nvic_prio_pre  = HAL_PRIO_IRQ_BUTTON_TAMPER,
-            .nvic_prio_sub  = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-    [GPIO_ETH_MDINT] = {
-        .port               = HAL_ETH_GPIO_MDINT_PORT,
-        .init = {
-            .Pin            = HAL_ETH_GPIO_MDINT_PIN,
-            .Mode           = HAL_ETH_GPIO_MDINT_MODE,
-            .Pull           = HAL_ETH_GPIO_MDINT_PULL,
-            .Speed          = HAL_ETH_GPIO_MDINT_SPEED,
-            .Alternate      = HAL_ETH_GPIO_MDINT_ALT
-        },
-        .exti = {
-            .irq            = HAL_ETH_GPIO_MDINT_EXTI_IRQ,
-            .nvic_prio_pre  = HAL_PRIO_IRQ_ETH0_MDINT,
-            .nvic_prio_sub  = 0
-        },
-        .is_inverted        = HAL_FALSE
-    },
-};
+#include "hal_config.h"
 
 //CSP
 #include "drv_crc.h"
@@ -291,6 +150,10 @@ void            HAL_SoftReset(void);
 /// @brief      Get system core clock value.
 /// @return     System core clock value (Hz).
 U32             HAL_SystemCoreClockGet(void);
+
+/// @brief      Is executing context inside interrupt?
+/// @return     #Bool.
+Bool            HAL_IsInterrupt(void);
 
 /// @brief      Clear standart I/O shell stream.
 /// @return     None.

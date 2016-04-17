@@ -38,7 +38,7 @@ enum {
     OS_SIG_PULSE,
     OS_SIG_PULSE_ACK,
     OS_SIG_TIMER,                           // data == OS_TimerId;
-    OS_SIG_EVENT,                           // data == OS_TimerId;
+    OS_SIG_TRIGGER,                         // data == OS_TimerId;
     OS_SIG_APP = 32,                        // app dependent
     OS_SIG_LAST = OS_SIGNAL_ID_BM
 };
