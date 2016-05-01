@@ -35,9 +35,14 @@
 //#include "cmsis_os.h"
 #include "os_common.h"
 #include "os_semaphore.h"
+#include "os_memory.h"
 #include "os_mutex.h"
 #include "os_queue.h"
 #include "os_task.h"
+
+#define malloc(size)    OS_MallocEx(size, OS_NETWORK_MEM_HEAP)
+#define calloc(size)    OS_MallocEx(size, OS_NETWORK_MEM_HEAP)
+#define free(p)         OS_FreeEx(p, OS_NETWORK_MEM_HEAP)
 
 #define SYS_MBOX_NULL (OS_QueueHd)OS_NULL
 #define SYS_SEM_NULL  (OS_SemaphoreHd)OS_NULL

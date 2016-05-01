@@ -276,13 +276,4 @@ error:
     return s;
 }
 
-//#if (HAL_ETH_ENABLED)
-///******************************************************************************/
-//void ISR_ETH_LinkStateChangedHandler(void* args_p)
-//{
-//const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_LINK_STATE_CHANGED, 0);
-//    OS_ISR_ContextSwitchForce(OS_ISR_SignalSend((OS_QueueHd)args_p, signal, OS_MSG_PRIO_NORMAL));
-//}
-//#endif //(HAL_ETH_ENABLED)
-
 #endif //(OS_NETWORK_ENABLED)

@@ -14,8 +14,31 @@
 #include "os_memory.h"
 
 //------------------------------------------------------------------------------
+#define OS_MemSet                                   HAL_MemSet
+#define OS_MemCmp                                   HAL_MemCmp
+#define OS_MemCpy                                   HAL_MemCpy
+#define OS_MemCpy32(dst_p, src_p, size)             OS_MemCpy(dst_p, src_p, ((size) * sizeof(U32)))
+#define OS_MemMov                                   HAL_MemMov
+#define OS_MemMov32(dst_p, src_p, size)             OS_MemMov(dst_p, src_p, ((size) * sizeof(U32)))
+
+// cstdlib
+#define OS_AtoI                                     HAL_AtoI
+#define OS_StrLen                                   HAL_StrLen
+#define OS_StrChr                                   HAL_StrChr
+#define OS_StrCmp                                   HAL_StrCmp
+#define OS_StrCpy                                   HAL_StrCpy
+#define OS_StrCat                                   HAL_StrCat
+#define OS_StrToL                                   HAL_StrToL
+#define OS_StrToK                                   HAL_StrToK
+#define OS_StrToUL                                  HAL_StrToUL
+#define OS_StrNCpy                                  HAL_StrNCpy
+#define OS_SPrintF                                  HAL_SPrintF
+#define OS_SNPrintF                                 HAL_SNPrintF
+#define OS_SScanF                                   HAL_SScanF
+
 //Debug
 #define OS_DEBUG_ENABLED                            1
+#define OS_DEBUG_MEMORY                             0
 
 //Tests
 #define OS_TEST_ENABLED                             0
@@ -61,19 +84,20 @@ enum {
 };
 #define OS_MEM_HEAP_SYS                             OS_MEM_RAM_INT_SRAM
 #define OS_MEM_HEAP_APP                             OS_MEM_RAM_EXT_SRAM
+#define OS_NETWORK_MEM_SIZE                         0x8000
 #define OS_STACK_SIZE_MIN                           0x200
-#define OS_HEAP_SIZE                                0x15000 //0x1C000
+#define OS_HEAP_SIZE                                0x1C000
 
-/*__no_init*/ static U8 pool_int_sram[OS_HEAP_SIZE];            //@ RAM_region;
-/*__no_init*/ static U8 pool_int_ccm[HAL_MEM_INT_CCM_SIZE]          @ HAL_MEM_INT_CCM_BASE_ADDRESS;
-__no_init static U8 pool_ext_sram[HAL_MEM_EXT_SRAM_SIZE]        @ HAL_MEM_EXT_SRAM_BASE_ADDRESS;
+/*__no_init*/ static U8 pool_int_sram[OS_HEAP_SIZE];                          //@ RAM_region;
+/*__no_init*/ static U8 pool_int_ccm[HAL_MEM_INT_CCM_SIZE]                      @ HAL_MEM_INT_CCM_BASE_ADDRESS;
+__no_init static U8 pool_ext_sram[HAL_MEM_EXT_SRAM_SIZE - OS_NETWORK_MEM_SIZE]  @ HAL_MEM_EXT_SRAM_BASE_ADDRESS;
 
 /// @brief   Memory config vector.
 static const OS_MemoryDesc memory_cfg_v[] = {
-    { (void*)&pool_int_sram,    sizeof(pool_int_sram),      HAL_MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_SRAM,    "SRAM Int." },
-    { (void*)&pool_int_ccm,     sizeof(pool_int_ccm),       HAL_MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_INT_CCM,     "CCM"       },
-    { (void*)&pool_ext_sram,    sizeof(pool_ext_sram),      HAL_MEM_BLOCK_SIZE_MIN,     OS_MEM_RAM_EXT_SRAM,    "SRAM Ext." },
-    { 0,                        0,                          0,                          OS_MEM_LAST,            ""          }
+    { (void*)&pool_int_sram,    sizeof(pool_int_sram),  HAL_MEM_BLOCK_SIZE_MIN, OS_MEM_RAM_INT_SRAM,    "SRAM Int." },
+    { (void*)&pool_int_ccm,     sizeof(pool_int_ccm),   HAL_MEM_BLOCK_SIZE_MIN, OS_MEM_RAM_INT_CCM,     "CCM"       },
+    { (void*)&pool_ext_sram,    sizeof(pool_ext_sram),  HAL_MEM_BLOCK_SIZE_MIN, OS_MEM_RAM_EXT_SRAM,    "SRAM Ext." },
+    { 0,                        0,                      0,                      OS_MEM_LAST,            ""          }
 };
 
 // Timers
@@ -81,7 +105,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_TIMERS_QUEUE_LEN                         10
 #define OS_TIMERS_STACK_SIZE                        (OS_STACK_SIZE_MIN * 2)
 
-// Events
+// Triggers
 #define OS_TRIGGERS_ENABLED                         1
 
 // Names length
@@ -133,7 +157,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_FILE_SYSTEM_NO_RTC                       0
 #define OS_FILE_SYSTEM_NO_RTC_DAY                   1
 #define OS_FILE_SYSTEM_NO_RTC_MONTH                 1
-#define OS_FILE_SYSTEM_NO_RTC_YEAR                  2015U
+#define OS_FILE_SYSTEM_NO_RTC_YEAR                  2016U
 
 //Media
 enum OS_MEDIA_VOL {
@@ -146,9 +170,9 @@ enum OS_MEDIA_VOL {
         OS_MEDIA_VOL_SDCARD,
 #define OS_MEDIA_VOL_SDCARD                         OS_MEDIA_VOL_SDCARD
 
-//        OS_MEDIA_VOL_USBH_FS,
-//#define OS_MEDIA_VOL_USBH_FS                        OS_MEDIA_VOL_USBH_FS
-//
+        OS_MEDIA_VOL_USBH_FS,
+#define OS_MEDIA_VOL_USBH_FS                        OS_MEDIA_VOL_USBH_FS
+
 //        OS_MEDIA_VOL_USBH_HS,
 //#define OS_MEDIA_VOL_USBH_HS                        OS_MEDIA_VOL_USBH_HS
 
@@ -184,15 +208,16 @@ enum OS_AUDIO_DEV {
 
 //Memory options
 #define OS_NETWORK_MEM_LIBC_MALLOC                  0
-#define OS_NETWORK_MEMP_MEM_MALLOC                  0
+#define OS_NETWORK_MEMP_MEM_MALLOC                  1
 #define OS_NETWORK_MEM_ALIGNMENT                    4
-#define OS_NETWORK_MEM_SIZE                         (10*1024)
 #define OS_NETWORK_MEMP_SEPARATE_POOLS              0
 #define OS_NETWORK_MEMP_OVERFLOW_CHECK              0
 #define OS_NETWORK_MEMP_SANITY_CHECK                0
 #define OS_NETWORK_MEM_USE_POOLS                    0
 #define OS_NETWORK_MEM_USE_POOLS_TRY_BIGGER_POOL    0
 #define OS_NETWORK_MEMP_USE_CUSTOM_POOLS            0
+#define OS_NETWORK_MEM_HEAP                         OS_MEM_HEAP_APP
+#define OS_NETWORK_RAM_HEAP_POINTER                 (HAL_MEM_EXT_SRAM_BASE_ADDRESS + (HAL_MEM_EXT_SRAM_SIZE - OS_NETWORK_MEM_SIZE))
 #define OS_NETWORK_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 0
 
 //Internal Memory Pool Sizes
@@ -561,21 +586,6 @@ enum OS_NETWORK_ITF {
 #define OS_LOCALE_DATE_DELIM_RU                     "."
 #define OS_LOCALE_TIME_DELIM_EN                     ":"
 #define OS_LOCALE_TIME_DELIM_RU                     OS_LOCALE_TIME_DELIM_EN
-
-// cstdlib
-#define OS_AtoI                                     HAL_AtoI
-#define OS_StrLen                                   HAL_StrLen
-#define OS_StrChr                                   HAL_StrChr
-#define OS_StrCmp                                   HAL_StrCmp
-#define OS_StrCpy                                   HAL_StrCpy
-#define OS_StrCat                                   HAL_StrCat
-#define OS_StrToL                                   HAL_StrToL
-#define OS_StrToK                                   HAL_StrToK
-#define OS_StrToUL                                  HAL_StrToUL
-#define OS_StrNCpy                                  HAL_StrNCpy
-#define OS_SPrintF                                  HAL_SPrintF
-#define OS_SNPrintF                                 HAL_SNPrintF
-#define OS_SScanF                                   HAL_SScanF
 
 #endif // __ICCARM__
 #endif // _OS_CONFIG_H_

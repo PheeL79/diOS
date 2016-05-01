@@ -45,11 +45,13 @@ Status OSAL_Init(void)
 extern Status OS_MemoryInit(void);
 extern Status OS_SettingsInit(void);
 extern Status OS_EnvInit(void);
-extern Status OS_EventInit(void);
 extern Status OS_TimeInit(void);
 #if (OS_TIMERS_ENABLED)
 extern Status OS_TimerInit(void);
 #endif //(OS_TIMERS_ENABLED)
+#if (OS_TRIGGERS_ENABLED)
+extern Status OS_TriggerInit(void);
+#endif //(OS_TRIGGERS_ENABLED)
 extern Status OS_DriverInit_(void);
 extern Status OS_QueueInit(void);
 extern Status OS_TaskInit_(void);
@@ -68,6 +70,9 @@ Status s;
 #if (OS_TIMERS_ENABLED)
     IF_STATUS(s = OS_TimerInit())       { return s; }
 #endif //(OS_TIMERS_ENABLED)
+#if (OS_TRIGGERS_ENABLED)
+    IF_STATUS(s = OS_TriggerInit())     { return s; }
+#endif //(OS_TRIGGERS_ENABLED)
     IF_STATUS(s = OS_TimeInit())        { return s; }
     IF_STATUS(s = OS_DriverInit_())     { return s; }
     IF_STATUS(s = OS_DebugInit())       { return s; }
@@ -75,9 +80,6 @@ Status s;
     IF_STATUS(s = OS_TaskInit_())       { return s; }
     IF_STATUS(s = OS_ShellInit())       { return s; }
     IF_STATUS(s = OS_EnvInit())         { return s; }
-#if (OS_EVENTS_ENABLED)
-    IF_STATUS(s = OS_EventInit())       { return s; }
-#endif //(OS_EVENTS_ENABLED)
     IF_STATUS(s = OS_SettingsInit())    { return s; }
     IF_STATUS(s = OS_PowerInit())       { return s; }
     IF_STATUS(s = OSAL_DriversCreate()) { return s; }

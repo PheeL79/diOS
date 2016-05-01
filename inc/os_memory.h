@@ -37,16 +37,7 @@ typedef struct {
 } OS_MemoryStats;
 
 //------------------------------------------------------------------------------
-/// @brief   Common functions.
-#define malloc(s)   OS_Malloc(s)
-#define free(p)     OS_Free(p)
-
-#define OS_MemSet   HAL_MemSet
-#define OS_MemCmp   HAL_MemCmp
-#define OS_MemCpy   HAL_MemCpy
-#define OS_MemCpy32(dst_p, src_p, size) OS_MemCpy(dst_p, src_p, ((size) * sizeof(U32)))
-#define OS_MemMov   HAL_MemMov
-#define OS_MemMov32(dst_p, src_p, size) OS_MemMov(dst_p, src_p, ((size) * sizeof(U32)))
+/// @brief      Common functions.
 
 /// @brief      Allocate memory.
 /// @param[in]  size            Allocation size (in bytes).

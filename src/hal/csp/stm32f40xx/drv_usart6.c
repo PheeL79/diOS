@@ -53,13 +53,14 @@ Status s = S_UNDEF;
     /* Enable USARTx clock */
     HAL_USART_DEBUG_CLK_ENABLE();
     /*##-1- Configure the UART peripheral ######################################*/
-    uart_hd.Instance        = HAL_USART_DEBUG_ITF;
-    uart_hd.Init.BaudRate   = HAL_USART_DEBUG_BAUD_RATE;
-    uart_hd.Init.WordLength = HAL_USART_DEBUG_WORD_LENGTH;
-    uart_hd.Init.StopBits   = HAL_USART_DEBUG_STOP_BITS;
-    uart_hd.Init.Parity     = HAL_USART_DEBUG_PARITY;
-    uart_hd.Init.HwFlowCtl  = HAL_USART_DEBUG_HW_FLOW_CONTROL;
-    uart_hd.Init.Mode       = HAL_USART_DEBUG_MODE;
+    uart_hd.Instance            = HAL_USART_DEBUG_ITF;
+    uart_hd.Init.BaudRate       = HAL_USART_DEBUG_BAUD_RATE;
+    uart_hd.Init.WordLength     = HAL_USART_DEBUG_WORD_LENGTH;
+    uart_hd.Init.StopBits       = HAL_USART_DEBUG_STOP_BITS;
+    uart_hd.Init.Parity         = HAL_USART_DEBUG_PARITY;
+    uart_hd.Init.HwFlowCtl      = HAL_USART_DEBUG_HW_FLOW_CONTROL;
+    uart_hd.Init.Mode           = HAL_USART_DEBUG_MODE;
+    uart_hd.Init.OverSampling   = HAL_USART_DEBUG_OVERSAMPLING;
 
     if (HAL_OK == HAL_UART_Init(&uart_hd)) {
         /* Enable the UART Data Register not empty Interrupt */

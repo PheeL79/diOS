@@ -8,7 +8,7 @@
 
 //------------------------------------------------------------------------------
 // runtime (initial) priority
-#define OS_PRIO_TASK_TIMERS                 (2)
+#define OS_PRIO_TASK_TIMERS                 (OS_PRIORITY_MAX - 60)
 #define OS_PRIO_TASK_LOG                    (20)
 #define OS_PRIO_TASK_FS                     (90)
 #define OS_PRIO_TASK_USB                    (100)

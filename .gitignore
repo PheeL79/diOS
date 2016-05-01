@@ -19,3 +19,4 @@
 /prj/osal/cm4f/iar740/*.ewt
 /prj/rtos/cm4f/iar740/settings/*.crun
 /prj/rtos/cm4f/iar740/settings/*.xcl
+/prj/osal/cm4f/iar740/Debug/Obj/*.xcl

@@ -12,6 +12,27 @@
 
 // HAL ------------------------------------------------------------------------
 
+// cstdlib redefenitions
+// Memory
+#define HAL_MemSet                                  memset
+#define HAL_MemCmp                                  memcmp
+#define HAL_MemCpy                                  memcpy
+#define HAL_MemMov                                  memmove
+// String
+#define HAL_AtoI                                    atoi
+#define HAL_StrLen                                  strlen
+#define HAL_StrChr                                  strchr
+#define HAL_StrCmp                                  strcmp
+#define HAL_StrCpy                                  strcpy
+#define HAL_StrCat                                  strcat
+#define HAL_StrToK                                  strtok
+#define HAL_StrToL                                  strtol
+#define HAL_StrToUL                                 strtoul
+#define HAL_StrNCpy                                 strncpy
+#define HAL_SPrintF                                 sprintf
+#define HAL_SNPrintF                                snprintf
+#define HAL_SScanF                                  sscanf
+
 // DEBUG
 #ifdef NDEBUG
 #   define HAL_LOG_LEVEL                            L_WARNING
@@ -176,6 +197,7 @@
 #define HAL_USART_DEBUG_PARITY                      UART_PARITY_NONE
 #define HAL_USART_DEBUG_HW_FLOW_CONTROL             UART_HWCONTROL_NONE
 #define HAL_USART_DEBUG_MODE                        UART_MODE_TX_RX
+#define HAL_USART_DEBUG_OVERSAMPLING                UART_OVERSAMPLING_8
 
 // SDIO SD
 #define HAL_SDIO_SD_ENABLED                         1
@@ -229,7 +251,7 @@
 // USB OTG
 
 // USB Host
-#define HAL_USBH_ENABLED                            0
+#define HAL_USBH_ENABLED                            1
 #define HAL_USBH_FS_ENABLED                         1
 #define HAL_USBH_HS_ENABLED                         0
 
@@ -308,7 +330,7 @@
 #define HAL_ETH_MODE_DUPLEX                         ETH_MODE_FULLDUPLEX
 #define HAL_ETH_MODE_CHECKSUM                       ETH_CHECKSUM_BY_HARDWARE
 #define HAL_ETH_ITF_MEDIA                           ETH_MEDIA_INTERFACE_RMII
-#define HAL_ETH_MEM_TYPE                            OS_MEM_RAM_INT_SRAM
+#define HAL_ETH_MEM_TYPE                            OS_MEM_RAM_EXT_SRAM
 #define HAL_ETH_MAC_ADDR_SIZE                       6
 #define HAL_ETH_MAC_ADDR0                           0x00
 #define HAL_ETH_MAC_ADDR1                           0x80
@@ -514,27 +536,6 @@ ALIGN_BEGIN static const HAL_GPIO_InitStruct gpio_v[] ALIGN_END = {
 #define HAL_MEM_INT_CCM_SIZE                        0x10000
 #define HAL_MEM_EXT_SRAM_BASE_ADDRESS               0x60000000
 #define HAL_MEM_EXT_SRAM_SIZE                       0x80000
-
-// cstdlib redefenitions
-// Memory
-#define HAL_MemSet                                  memset
-#define HAL_MemCmp                                  memcmp
-#define HAL_MemCpy                                  memcpy
-#define HAL_MemMov                                  memmove
-// String
-#define HAL_AtoI                                    atoi
-#define HAL_StrLen                                  strlen
-#define HAL_StrChr                                  strchr
-#define HAL_StrCmp                                  strcmp
-#define HAL_StrCpy                                  strcpy
-#define HAL_StrCat                                  strcat
-#define HAL_StrToK                                  strtok
-#define HAL_StrToL                                  strtol
-#define HAL_StrToUL                                 strtoul
-#define HAL_StrNCpy                                 strncpy
-#define HAL_SPrintF                                 sprintf
-#define HAL_SNPrintF                                snprintf
-#define HAL_SScanF                                  sscanf
 
 // Locale
 #define HAL_LOCALE_STRING_EN                        "en"
