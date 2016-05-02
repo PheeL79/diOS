@@ -572,6 +572,7 @@ enum OS_NETWORK_ITF {
 //Shell
 #define OS_SHELL_HEIGHT                             HAL_STDIO_TERM_HEIGHT
 #define OS_SHELL_WIDTH                              HAL_STDIO_TERM_WIDTH
+#define OS_SHELL_COLOR                              "\033[37m"
 #define OS_SHELL_PROMPT_ROOT                        #
 #define OS_SHELL_PROMPT_USER                        $
 #define OS_SHELL_PROMPT                             OS_SHELL_PROMPT_ROOT

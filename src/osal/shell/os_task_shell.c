@@ -70,8 +70,6 @@ const OS_TaskHd usbd_thd = OS_TaskByNameGet(OS_DAEMON_NAME_USBD);
                         // get char from STDIO driver.
                         OS_ShellClHandler((U8)OS_SignalDataGet(msg_p));
                         break;
-                    case OS_SIG_PWR_ACK:
-                        break;
                     case OS_SIG_DRV:
                         break;
                     case OS_SIG_TASK_DISCONNECT:

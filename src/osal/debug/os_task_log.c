@@ -48,11 +48,11 @@ Status s = S_OK;
 void OS_TaskMain(OS_TaskArgs* args_p)
 {
 extern volatile OS_QueueHd stdout_qhd;
-ConstStrP shell_prompt_p  = OS_ShellPromptGet();
-const U8 shell_prompt_len = OS_StrLen((char const*)shell_prompt_p);
-const OS_DriverHd drv_log = OS_DriverStdOutGet();
+//ConstStrP shell_prompt_p  = OS_ShellPromptGet();
+//const U8 shell_prompt_len = OS_StrLen((char const*)shell_prompt_p);
+//const OS_DriverHd drv_log = OS_DriverStdOutGet();
 OS_Message* msg_p;
-Bool is_prompted = OS_FALSE;
+//Bool is_prompted = OS_FALSE;
 //    OS_TaskPrioritySet(OS_THIS_TASK, OS_TASK_PRIO_LOW);
     //Init stdout_qhd before all other tasks and return to the base priority.
     stdout_qhd = OS_TaskStdInGet(OS_THIS_TASK);
@@ -63,9 +63,7 @@ Bool is_prompted = OS_FALSE;
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
                     case OS_SIG_STDOUT:
-                        is_prompted = OS_FALSE;
-                        break;
-                    case OS_SIG_PWR_ACK:
+//                        is_prompted = OS_FALSE;
                         break;
                     default:
                         OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
@@ -80,13 +78,13 @@ Bool is_prompted = OS_FALSE;
                 OS_MessageDelete(msg_p); // free message allocated memory
             }
         }
-        if (OS_TRUE != is_prompted) {
-            //If there are no more messages in the input queue - print a shell prompt.
-            if (0 == OS_QueueItemsCountGet(stdout_qhd) && (OS_TRUE != is_prompted)) {
-                OS_DriverWrite(drv_log, (void*)shell_prompt_p, shell_prompt_len, OS_NULL);
-                is_prompted = OS_TRUE;
-            }
-        }
+//        if (OS_TRUE != is_prompted) {
+//            //If there are no more messages in the input queue - print a shell prompt.
+//            if (0 == OS_QueueItemsCountGet(stdout_qhd) && (OS_TRUE != is_prompted)) {
+//                OS_DriverWrite(drv_log, (void*)shell_prompt_p, shell_prompt_len, OS_NULL);
+//                is_prompted = OS_TRUE;
+//            }
+//        }
     }
 }
 

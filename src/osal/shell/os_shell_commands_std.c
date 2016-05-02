@@ -446,7 +446,7 @@ Status s = S_OK;
                                 s = OS_TaskDelete(dst_thd);
                                 return s;
                                 break;
-                            case OS_SIG_STDOUT: //emited by OS_Log
+                            case OS_SIG_STDOUT:
                                 break;
                             default:
                                 OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);

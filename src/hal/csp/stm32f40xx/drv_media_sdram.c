@@ -16,8 +16,21 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_m_sdram"
 
-#define LED_FS_ON()         OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON)
-#define LED_FS_OFF()        OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF)
+#define LED_FS_ON()         do {\
+                                if (HAL_IsInterrupt()) {\
+                                    OS_ISR_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON);\
+                                } else {\
+                                    OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON);\
+                                }\
+                            } while (0)
+
+#define LED_FS_OFF()        do {\
+                                if (HAL_IsInterrupt()) {\
+                                    OS_ISR_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF);\
+                                } else {\
+                                    OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF);\
+                                }\
+                            } while (0)
 
 //-----------------------------------------------------------------------------
 static Status SDRAM_Init_(void* args_p);

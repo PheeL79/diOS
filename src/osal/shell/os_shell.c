@@ -28,14 +28,11 @@
 ///          (It's the same task as log, so no need to protect stdio output).
 
 //------------------------------------------------------------------------------
-#define OS_SHELL_PROMPT_CREATE(cr, prompt, space)  cr QUOTED(prompt) space
-
-//------------------------------------------------------------------------------
 static OS_List os_commands_list;
 static OS_MutexHd os_shell_mutex;
 
 //------------------------------------------------------------------------------
-static ConstStr shell_prompt[] = OS_SHELL_PROMPT_CREATE("\n", OS_SHELL_PROMPT, " ");
+static ConstStr shell_prompt[] = ("\n" OS_SHELL_COLOR QUOTED(prompt) " ");
 static Str shell_cl[OS_SHELL_CL_LEN] = { OS_ASCII_EOL };
 static S32 shell_cr_pos = 0;
 static ConstStrP argv[OS_SHELL_CL_ARGS_MAX];

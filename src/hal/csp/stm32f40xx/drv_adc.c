@@ -39,11 +39,23 @@ Status s = S_OK;
 }
 
 #if (OS_AUDIO_ENABLED)
-#define FILTER_IIR(val_in, state0, shift, val_out)          do {\
-                                                                static volatile S64 state = (state0) << shift;\
-                                                                state = state - (state >> (shift)) + (val_in);\
-                                                                val_out = (S32)(state >> (shift));\
-                                                            } while (0)
+//#define FILTER_IIR(val_in, state0, shift, val_out)          do {\
+//                                                                static S64 state = (state0) << shift;\
+//                                                                state = state - (state >> (shift)) + (val_in);\
+//                                                                val_out = (S32)(state >> (shift));\
+//                                                            } while (0)
+
+#define FILTER_IIR_RESETABLE(val_in, state0, shift, val_out)    do {\
+                                                                    static S64 state;\
+                                                                    static Bool reset = OS_TRUE;\
+                                                                    if (reset) {\
+                                                                        reset = OS_FALSE;\
+                                                                        state = (S64)(state0) << shift;\
+                                                                    }\
+                                                                    state = state - (state >> (shift)) + (val_in);\
+                                                                    val_out = (S32)(state >> (shift));\
+                                                                } while (0)
+
 /*****************************************************************************/
 /**
   * @brief  Conversion complete callback in non blocking mode
@@ -57,8 +69,7 @@ extern OS_QueueHd trimmer_stdin_qhd;
         static   OS_AudioVolume volume_last = OS_AUDIO_VOLUME_MIN;
         register OS_AudioVolume volume_curr;
         register S32 volume_adc = HAL_ADC_GetValue(adc_hd_p);
-        BIT_CLEAR(volume_adc, BIT_MASK(8));
-        FILTER_IIR(volume_adc, OS_AUDIO_VOLUME_MIN, 2, volume_adc);
+        FILTER_IIR_RESETABLE(volume_adc, volume_adc, 4, volume_adc);
         volume_curr = OS_AUDIO_VOLUME_CONVERT(volume_adc);
         if (volume_curr != volume_last) {
             volume_last = volume_curr;

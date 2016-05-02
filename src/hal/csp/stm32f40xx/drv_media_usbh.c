@@ -20,9 +20,21 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_m_usbh"
 
-#define LED_FS_ON()         OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON)
-#define LED_FS_OFF()        OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF)
+#define LED_FS_ON()         do {\
+                                if (HAL_IsInterrupt()) {\
+                                    OS_ISR_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON);\
+                                } else {\
+                                    OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)ON);\
+                                }\
+                            } while (0)
 
+#define LED_FS_OFF()        do {\
+                                if (HAL_IsInterrupt()) {\
+                                    OS_ISR_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF);\
+                                } else {\
+                                    OS_DriverWrite(args_init.drv_gpio, (void*)args_init.gpio_led, 0, (void*)OFF);\
+                                }\
+                            } while (0)
 //------------------------------------------------------------------------------
 #if defined(OS_MEDIA_VOL_USBH_FS) && (HAL_USBH_FS_ENABLED)
 static Status   USBH_FS_MSC_Init(void* args_p);
