@@ -5,6 +5,7 @@
 *******************************************************************************/
 #include "lwip/tcpip.h"
 #include "lwip/dhcp.h"
+#include "lwip/snmp.h"
 #include "netif/etharp.h"
 #include "os_network.h"
 #include "os_debug.h"
@@ -20,6 +21,7 @@ typedef struct {
     OS_DriverHd     dhd;
     OS_NetworkItf*  net_itf_p;
     U8              net_itf_id; //OS_NETWORK_ITF
+    Bool            is_loopback;
 } OS_NetworkItfConfigDyn;
 
 //------------------------------------------------------------------------------
@@ -31,7 +33,7 @@ Status          OS_NetworkItfAddress4Log(const OS_NetworkItfHd net_itf_hd);
 //------------------------------------------------------------------------------
 static OS_MutexHd os_net_mutex;
 static volatile OS_NetworkItfConfigDyn* net_itf_v[OS_NETWORK_ITF_LAST];
-static volatile OS_NetworkItfHd def_net_itf_hd;
+static volatile OS_NetworkItfHd net_itf_def_hd;
 
 /******************************************************************************/
 static OS_NetworkItfConfigDyn* OS_NetworkItfConfigDynGet(const OS_NetworkItfHd net_itf_hd);
@@ -44,13 +46,12 @@ INLINE OS_NetworkItfConfigDyn* OS_NetworkItfConfigDynGet(const OS_NetworkItfHd n
 /*****************************************************************************/
 Status OS_NetworkInit(void)
 {
-Status s = S_UNDEF;
+Status s = S_OK;
     HAL_LOG(L_INFO, "Init");
-    def_net_itf_hd = OS_NULL;
+    net_itf_def_hd = OS_NULL;
     os_net_mutex = OS_MutexRecursiveCreate();
     if (OS_NULL == os_net_mutex) { return S_INVALID_PTR; }
     OS_MemSet(net_itf_v, 0, sizeof(net_itf_v));
-s = S_OK;
     return s;
 }
 
@@ -75,12 +76,18 @@ Status s = S_UNDEF;
         OS_Free(cfg_dyn_p);
         return S_OUT_OF_MEMORY;
     }
-    IF_STATUS(s = OS_DriverCreate(cfg_p->drv_cfg_p, &cfg_dyn_p->dhd)) {
-        OS_Free(cfg_dyn_p->net_itf_p);
-        OS_Free(cfg_dyn_p);
-        return s;
+    if (OS_NULL != cfg_p->drv_cfg_p) {
+        IF_STATUS(s = OS_DriverCreate(cfg_p->drv_cfg_p, &cfg_dyn_p->dhd)) {
+            OS_Free(cfg_dyn_p->net_itf_p);
+            OS_Free(cfg_dyn_p);
+            return s;
+        }
+    } else {
+        cfg_dyn_p->dhd = OS_NULL;
+        s = S_OK;
     }
     cfg_dyn_p->net_itf_id = cfg_p->net_itf_id;
+    cfg_dyn_p->is_loopback= cfg_p->is_loopback;
     OS_StrNCpy(cfg_dyn_p->name, (const char*)cfg_p->name, sizeof(cfg_dyn_p->name));
     if (OS_NULL != net_itf_hd_p) {
         *net_itf_hd_p = (OS_NetworkItfHd)cfg_dyn_p;
@@ -92,7 +99,9 @@ Status s = S_UNDEF;
 //error:
     IF_STATUS(s) {
         Status s_drv;
-        IF_STATUS(s_drv = OS_DriverDelete(cfg_dyn_p->dhd)) { s = s_drv; }
+        if (OS_NULL != cfg_dyn_p->dhd) {
+            IF_STATUS(s_drv = OS_DriverDelete(cfg_dyn_p->dhd)) { s = s_drv; }
+        } else { s = S_OK; }
         OS_Free(cfg_dyn_p->net_itf_p);
         OS_Free(cfg_dyn_p);
         net_itf_v[cfg_p->net_itf_id] = OS_NULL;
@@ -107,7 +116,9 @@ Status s = S_UNDEF;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
         Status s_drv;
-        IF_STATUS(s_drv = OS_DriverDelete(cfg_dyn_p->dhd)) { s = s_drv; }
+        if (OS_NULL != cfg_dyn_p->dhd) {
+            IF_STATUS(s_drv = OS_DriverDelete(cfg_dyn_p->dhd)) { s = s_drv; }
+        } else { s = S_OK; }
         net_itf_v[cfg_dyn_p->net_itf_id] = OS_NULL;
         OS_Free(cfg_dyn_p->net_itf_p);
         OS_Free(cfg_dyn_p);
@@ -129,8 +140,8 @@ const OS_NetworkItfHd net_itf_hd = OS_NetworkItfHdByIdGet(net_itf_p->num);
 }
 
 /*****************************************************************************/
-static err_t ethernetif_init(OS_NetworkItf* net_itf_p);
-err_t ethernetif_init(OS_NetworkItf* net_itf_p)
+static err_t dummy_init(OS_NetworkItf* net_itf_p);
+err_t dummy_init(OS_NetworkItf* net_itf_p)
 {
     return ERR_OK;
 }
@@ -144,75 +155,85 @@ Status s = S_UNDEF;
     OS_LOG(L_DEBUG_1, "%s: itf init", OS_NetworkItfNameGet(net_itf_hd));
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
-        const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
         OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
-        OS_DriverStats stats;
-        IF_STATUS(s = OS_DriverStatsGet(drv_net_itf_hd, &stats)) { return s; }
-        if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_INIT))) {
-            /* Create tcp_ip stack thread */
-            tcpip_init(OS_NULL, OS_NULL);
-            IF_OK(s = OS_NetworkItfDownSet(net_itf_hd)) {}
-            /* add the network interface */
-            /* - netif_add(struct netif *netif, struct ip_addr *ipaddr,
-            struct ip_addr *netmask, struct ip_addr *gw,
-            void *state, err_t (* init)(struct netif *netif),
-            err_t (* input)(struct pbuf *p, struct netif *netif))
-
-            Adds your network interface to the netif_list. Allocate a struct
-            netif and pass a pointer to this structure as the first argument.
-            Give pointers to cleared ip_addr structures when using DHCP,
-            or fill them with sane numbers otherwise. The state pointer may be NULL.
-
-            The init function pointer must point to a initialization function for
-            your ethernet netif interface. The following code illustrates it's use.*/
+        if (cfg_dyn_p->is_loopback) {
             netif_add(net_itf_p, init_args_p->ip_addr4_p, init_args_p->netmask4_p, init_args_p->gateway4_p,
-                      OS_NULL, &ethernetif_init, &tcpip_input);
-            if (OS_NULL == OS_NetworkItfDefaultGet()) {
-                IF_STATUS(s = OS_NetworkItfDefaultSet(net_itf_hd)) {
+                      OS_NULL, &dummy_init, &tcpip_input);
+            /* initialize the snmp variables and counters inside the struct netif
+            * ifSpeed: no assumption can be made!
+            */
+            NETIF_INIT_SNMP(net_itf_p, snmp_ifType_softwareLoopback, 0);
+            net_itf_p->name[0] = 'l';
+            net_itf_p->name[1] = 'o';
+            net_itf_p->output = netif_loop_output;
+            net_itf_p->mtu = U16_MAX;
+        } else {
+            const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
+            const OS_DriverState drv_net_itf_state = OS_DriverStateGet(drv_net_itf_hd);
+            if (!BIT_TEST(drv_net_itf_state, BIT(OS_DRV_STATE_IS_INIT))) {
+                IF_OK(s = OS_NetworkItfDownSet(net_itf_hd)) {}
+                /* add the network interface */
+                /* - netif_add(struct netif *netif, struct ip_addr *ipaddr,
+                struct ip_addr *netmask, struct ip_addr *gw,
+                void *state, err_t (* init)(struct netif *netif),
+                err_t (* input)(struct pbuf *p, struct netif *netif))
+
+                Adds your network interface to the netif_list. Allocate a struct
+                netif and pass a pointer to this structure as the first argument.
+                Give pointers to cleared ip_addr structures when using DHCP,
+                or fill them with sane numbers otherwise. The state pointer may be NULL.
+
+                The init function pointer must point to a initialization function for
+                your ethernet netif interface. The following code illustrates it's use.*/
+                netif_add(net_itf_p, init_args_p->ip_addr4_p, init_args_p->netmask4_p, init_args_p->gateway4_p,
+                          OS_NULL, &dummy_init, &tcpip_input);
+                if (OS_NULL == OS_NetworkItfDefaultGet()) {
+                    IF_STATUS(s = OS_NetworkItfDefaultSet(net_itf_hd)) {
+                        OS_MutexRecursiveUnlock(os_net_mutex);
+                        return s;
+                    }
+                }
+                /* set netif MAC hardware address length */
+                net_itf_p->hwaddr_len = HAL_ETH_MAC_ADDR_SIZE;
+                /* set netif MAC hardware address */
+                OS_MemCpy(net_itf_p->hwaddr, init_args_p->mac_addr_p, sizeof(net_itf_p->hwaddr));
+                /* set netif maximum transfer unit */
+                net_itf_p->mtu = HAL_ETH_MTU_SIZE;
+                /* We directly use etharp_output() here to save a function call.
+                * You can instead declare your own function an call etharp_output()
+                * from it if you have to do some checks before sending (e.g. if link
+                * is available...) */
+#if ((OS_NETWORK_ARP) || (OS_NETWORK_ETHERNET))
+#if (OS_NETWORK_ARP)
+                net_itf_p->output = etharp_output;
+#else
+                /* The user should write ist own code in low_level_output_arp_off function */
+                net_itf_p->output = low_level_output_arp_off;
+#endif //(OS_NETWORK_ARP)
+#endif //((OS_NETWORK_ARP) || (OS_NETWORK_ETHERNET))
+                net_itf_p->linkoutput = low_level_output;
+#if (OS_NETWORK_NETIF_HOSTNAME)
+                /* Initialize interface hostname */
+                net_itf_p->hostname = OS_NETWORK_HOST_NAME;
+#endif //(OS_NETWORK_NETIF_HOSTNAME)
+                /* Define those to better describe your network interface. */
+                net_itf_p->name[0]  = 'e';
+                net_itf_p->name[1]  = 't';
+                net_itf_p->num      = cfg_dyn_p->net_itf_id;
+                /* Accept broadcast address and ARP traffic */
+                /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
+#if (OS_NETWORK_ARP)
+                net_itf_p->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+#else
+                net_itf_p->flags |= NETIF_FLAG_BROADCAST;
+#endif //(OS_NETWORK_ARP)
+                IF_STATUS(s = OS_DriverInit(drv_net_itf_hd, (void*)init_args_p)) {
                     OS_MutexRecursiveUnlock(os_net_mutex);
                     return s;
                 }
             }
-            /* set netif MAC hardware address length */
-            net_itf_p->hwaddr_len = HAL_ETH_MAC_ADDR_SIZE;
-            /* set netif MAC hardware address */
-            OS_MemCpy(net_itf_p->hwaddr, init_args_p->mac_addr_p, sizeof(net_itf_p->hwaddr));
-            /* set netif maximum transfer unit */
-            net_itf_p->mtu = HAL_ETH_MTU_SIZE;
-            /* We directly use etharp_output() here to save a function call.
-            * You can instead declare your own function an call etharp_output()
-            * from it if you have to do some checks before sending (e.g. if link
-            * is available...) */
-#if LWIP_ARP || LWIP_ETHERNET
-#if LWIP_ARP
-            net_itf_p->output = etharp_output;
-#else
-            /* The user should write ist own code in low_level_output_arp_off function */
-            net_itf_p->output = low_level_output_arp_off;
-#endif /* LWIP_ARP */
-#endif  /* LWIP_ARP || LWIP_ETHERNET */
-            net_itf_p->linkoutput = low_level_output;
-#if LWIP_NETIF_HOSTNAME
-            /* Initialize interface hostname */
-            net_itf_p->hostname = OS_NETWORK_HOST_NAME;
-#endif /* LWIP_NETIF_HOSTNAME */
-            /* Define those to better describe your network interface. */
-            net_itf_p->name[0]  = 'e';
-            net_itf_p->name[1]  = 't';
-            net_itf_p->num      = cfg_dyn_p->net_itf_id;
-            /* Accept broadcast address and ARP traffic */
-            /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
-#if LWIP_ARP
-            net_itf_p->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
-#else
-            net_itf_p->flags |= NETIF_FLAG_BROADCAST;
-#endif /* LWIP_ARP */
-            IF_STATUS(s = OS_DriverInit(drv_net_itf_hd, (void*)init_args_p)) {
-                OS_MutexRecursiveUnlock(os_net_mutex);
-                return s;
-            }
-            OS_MutexRecursiveUnlock(os_net_mutex);
         }
+        OS_MutexRecursiveUnlock(os_net_mutex);
     }
     return s;
 }
@@ -227,12 +248,11 @@ Status s = S_UNDEF;
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         netif_remove(cfg_dyn_p->net_itf_p);
-        IF_STATUS(s = OS_DriverIoCtl(drv_net_itf_hd, DRV_REQ_STD_SYNC, args_p)) {
-            OS_LOG_S(L_WARNING, s);
-        }
-        IF_STATUS(s = OS_DriverDeInit(drv_net_itf_hd, args_p)) {
-            OS_LOG_S(L_WARNING, s);
-        }
+        if (OS_NULL != drv_net_itf_hd) {
+            IF_STATUS(s = OS_DriverDeInit(drv_net_itf_hd, args_p)) {
+                OS_LOG_S(L_WARNING, s);
+            }
+        } else { s = S_OK; }
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
     return s;
@@ -246,14 +266,15 @@ Status s = S_UNDEF;
     OS_LOG(L_DEBUG_1, "%s: itf open", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
-    OS_DriverStats stats;
-    IF_STATUS(s = OS_DriverStatsGet(drv_net_itf_hd, &stats)) { return s; }
-    if (!BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
-        IF_OK(s = OS_DriverOpen(drv_net_itf_hd, (void*)open_args_p)) {
-            IF_OK(s = OS_NetworkItfLinkStateSet(net_itf_hd)) {
+    if (OS_NULL != drv_net_itf_hd) {
+        const OS_DriverState drv_net_itf_state = OS_DriverStateGet(drv_net_itf_hd);
+        if (!BIT_TEST(drv_net_itf_state, BIT(OS_DRV_STATE_IS_OPEN))) {
+            IF_OK(s = OS_DriverOpen(drv_net_itf_hd, (void*)open_args_p)) {
+                IF_OK(s = OS_NetworkItfLinkStateRefresh(net_itf_hd)) {
+                }
             }
         }
-    }
+    } else { s = S_OK; }
     return s;
 }
 
@@ -265,18 +286,22 @@ Status s = S_UNDEF;
     OS_LOG(L_DEBUG_1, "%s: itf close", OS_NetworkItfNameGet(net_itf_hd));
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
-    OS_DriverStats stats;
-    IF_STATUS(s = OS_DriverStatsGet(drv_net_itf_hd, &stats)) { return s; }
-    if (BIT_TEST(stats.state, BIT(OS_DRV_STATE_IS_OPEN))) {
-        IF_STATUS(s = OS_DriverClose(drv_net_itf_hd, args_p)) { return s; }
-        if (1 > OS_DriverOwnersCountGet(drv_net_itf_hd)) {
-            if (net_itf_hd == OS_NetworkItfDefaultGet()) {
-                IF_STATUS(s = OS_NetworkItfDefaultSet(OS_NULL)) { return s; }
+    if (OS_NULL != drv_net_itf_hd) {
+        const OS_DriverState drv_net_itf_state = OS_DriverStateGet(drv_net_itf_hd);
+        if (BIT_TEST(drv_net_itf_state, BIT(OS_DRV_STATE_IS_OPEN))) {
+            IF_STATUS(s = OS_DriverIoCtl(drv_net_itf_hd, DRV_REQ_STD_SYNC, args_p)) {
+                OS_LOG_S(L_WARNING, s);
+            }
+            IF_STATUS(s = OS_DriverClose(drv_net_itf_hd, args_p)) { return s; }
+            if (1 > OS_DriverOwnersCountGet(drv_net_itf_hd)) {
+                if (net_itf_hd == OS_NetworkItfDefaultGet()) {
+                    IF_STATUS(s = OS_NetworkItfDefaultSet(OS_NULL)) { return s; }
+                }
             }
         }
-        if (OS_NetworkItfLinkStateGet(net_itf_hd)) {
-            s = OS_NetworkItfDownSet(net_itf_hd);
-        }
+    } else { s = S_OK; }
+    if (OS_NetworkItfLinkStateGet(net_itf_hd)) {
+        s = OS_NetworkItfDownSet(net_itf_hd);
     }
     return s;
 }
@@ -290,7 +315,7 @@ OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
 }
 
 /*****************************************************************************/
-Status OS_NetworkItfLinkStateSet(const OS_NetworkItfHd net_itf_hd)
+Status OS_NetworkItfLinkStateRefresh(const OS_NetworkItfHd net_itf_hd)
 {
 const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
 Bool link_state;
@@ -369,7 +394,7 @@ Status s = S_UNDEF;
     return s;
 }
 
-#if (LWIP_DHCP)
+#if (OS_NETWORK_DHCP)
 /*****************************************************************************/
 Status OS_NetworkItfDhcpClientStart(const OS_NetworkItfHd net_itf_hd)
 {
@@ -397,7 +422,48 @@ Status s = S_UNDEF;
     OS_LOG(L_DEBUG_1, "%s: DHCP client stopped", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
-#endif //(LWIP_DHCP)
+#endif //(OS_NETWORK_DHCP)
+
+/*****************************************************************************/
+Status OS_NetworkItfStatsGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkItfStats* net_itf_stats_p)
+{
+const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+OS_DriverStats drv_stats;
+Status s = S_UNDEF;
+    IF_OK(s = OS_DriverStatsGet(cfg_dyn_p->dhd, &drv_stats)) {
+        net_itf_stats_p->received_octets    = drv_stats.received;
+        net_itf_stats_p->sent_octets        = drv_stats.sent;
+#if (OS_NETWORK_SNMP)
+        net_itf_stats_p->link_speed         = net_itf_p->link_speed;
+        net_itf_stats_p->packets_in         = net_itf_p->ifinnucastpkts;
+        net_itf_stats_p->packets_uni_in     = net_itf_p->ifinucastpkts;
+        net_itf_stats_p->packets_octets_in  = net_itf_p->ifinoctets;
+        net_itf_stats_p->packets_discard_in = net_itf_p->ifindiscards;
+        net_itf_stats_p->packets_out        = net_itf_p->ifoutnucastpkts;
+        net_itf_stats_p->packets_uni_out    = net_itf_p->ifoutucastpkts;
+        net_itf_stats_p->packets_octets_out = net_itf_p->ifoutoctets;
+        net_itf_stats_p->packets_discard_out= net_itf_p->ifoutdiscards;
+#endif //(OS_NETWORK_SNMP)
+    }
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkItfDescGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkItfDesc* net_itf_desc_p)
+{
+Status s = S_OK;
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_desc_p);
+    const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+    OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
+    net_itf_desc_p->hostname_sp         = net_itf_p->hostname;
+    net_itf_desc_p->name_sp             = net_itf_p->name;
+    net_itf_desc_p->mtu                 = net_itf_p->mtu;
+    net_itf_desc_p->id                  = cfg_dyn_p->net_itf_id;
+    net_itf_desc_p->flags               = net_itf_p->flags;
+    net_itf_desc_p->is_loopback         = cfg_dyn_p->is_loopback;
+    return s;
+}
 
 /******************************************************************************/
 ConstStrP OS_NetworkItfNameGet(const OS_NetworkItfHd net_itf_hd)
@@ -405,6 +471,17 @@ ConstStrP OS_NetworkItfNameGet(const OS_NetworkItfHd net_itf_hd)
     if (OS_NULL == net_itf_hd) { return OS_NULL; }
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     return cfg_dyn_p->name;
+}
+
+/*****************************************************************************/
+Status OS_NetworkItfMacAddrGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkMacAddr mac_addr_p)
+{
+    OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
+    OS_ASSERT_DEBUG(OS_NULL != mac_addr_p);
+    const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+    OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
+    OS_MemCpy(mac_addr_p, net_itf_p->hwaddr, net_itf_p->hwaddr_len);
+    return S_OK;
 }
 
 /*****************************************************************************/
@@ -420,8 +497,8 @@ Status OS_NetworkItfAddress4Get(const OS_NetworkItfHd net_itf_hd,
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
     *ip_addr4_p = net_itf_p->ip_addr;
-    *netmask4_p  = net_itf_p->netmask;
-    *gateway4_p  = net_itf_p->gw;
+    *netmask4_p = net_itf_p->netmask;
+    *gateway4_p = net_itf_p->gw;
     return S_OK;
 }
 
@@ -468,7 +545,7 @@ Status OS_NetworkItfAddress4Set(const OS_NetworkItfHd net_itf_hd,
 /*****************************************************************************/
 OS_NetworkItfHd OS_NetworkItfDefaultGet(void)
 {
-    return def_net_itf_hd;
+    return net_itf_def_hd;
 }
 
 /*****************************************************************************/
@@ -476,7 +553,7 @@ Status OS_NetworkItfDefaultSet(const OS_NetworkItfHd net_itf_hd)
 {
 Status s = S_UNDEF;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        def_net_itf_hd = net_itf_hd;
+        net_itf_def_hd = net_itf_hd;
         if (net_itf_hd) {
             const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
             OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
@@ -491,7 +568,12 @@ Status s = S_UNDEF;
 /*****************************************************************************/
 OS_NetworkItfHd OS_NetworkItfHdByIdGet(const OS_NetworkItfId net_itf_id)
 {
-    return ((OS_NetworkItfHd)net_itf_v[net_itf_id]);
+OS_NetworkItfHd net_itf_hd = OS_NULL;
+    OS_ASSERT_DEBUG(net_itf_id <= sizeof(net_itf_v));
+    if (net_itf_id <= sizeof(net_itf_v)) {
+        net_itf_hd = (OS_NetworkItfHd)net_itf_v[net_itf_id];
+    }
+    return net_itf_hd;
 }
 
 /*****************************************************************************/
@@ -503,14 +585,16 @@ Status s = S_UNDEF;
     const OS_DriverHd dhd = cfg_dyn_p->dhd;
     OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
     OS_NetworkBuf* buf_p;
-    IF_STATUS(s = OS_DriverRead(dhd, data_in_p, size, &buf_p)) {
-        OS_LOG_S(L_WARNING, s);
-        return s;
+    if (OS_NULL != dhd) {
+        IF_STATUS(s = OS_DriverRead(dhd, data_in_p, size, (void*)&buf_p)) {
+            OS_LOG_S(L_WARNING, s);
+            return s;
+        }
     }
     if (ERR_OK != net_itf_p->input(buf_p, net_itf_p)) {
         pbuf_free(buf_p);
     }
-    OS_LOG(L_DEBUG_1, "read: 0x%X, size %u", net_itf_hd, buf_p->tot_len);
+    OS_LOG(L_DEBUG_1, "read: 0x%X, size %u", net_itf_hd, size);
     return s;
 }
 
@@ -520,10 +604,28 @@ Status OS_NetworkWrite(const OS_NetworkItfHd net_itf_hd, void* data_out_p, Size 
 Status s = S_UNDEF;
     OS_ASSERT_DEBUG(OS_NULL != net_itf_hd);
     const OS_DriverHd dhd = OS_NetworkItfConfigDynGet(net_itf_hd)->dhd;
-    IF_STATUS(s = OS_DriverWrite(dhd, data_out_p, size, OS_NULL)) {
-        OS_LOG_S(L_WARNING, s);
+    if (OS_NULL != dhd) {
+        IF_STATUS(s = OS_DriverWrite(dhd, data_out_p, size, OS_NULL)) {
+            OS_LOG_S(L_WARNING, s);
+        }
     }
     OS_LOG(L_DEBUG_1, "write: 0x%X, size %u", net_itf_hd, size);
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkArpStaticEntryAppend(const OS_NetworkIpAddr4 ip_addr4, const OS_NetworkMacAddr mac_addr)
+{
+Status s = S_UNDEF;
+//    etharp_add_static_entry();
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkArpStaticEntryRemove(const OS_NetworkIpAddr4 ip_addr4)
+{
+Status s = S_UNDEF;
+//    etharp_remove_static_entry();
     return s;
 }
 

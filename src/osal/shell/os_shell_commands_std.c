@@ -16,6 +16,7 @@
 #include "os_trigger.h"
 #include "os_driver.h"
 #include "os_mailbox.h"
+#include "os_network.h"
 #include "os_environment.h"
 #include "os_shell_commands_std.h"
 #include "os_shell.h"
@@ -267,7 +268,7 @@ OS_TaskHd thd;
 OS_QueueHd qhd = OS_NULL;
 
     printf("\n%-12s %-4s %-4s %-6s %-6s %-12s %-12s",
-           "Parent", "PTId", "Len", "ISize", "Items", "Sended", "Received");
+           "Parent", "PTId", "Len", "ISize", "Items", "Sent", "Received");
     while (OS_NULL != (qhd = OS_QueueNextGet(qhd))) {
         OS_QueueConfig que_config;
         OS_QueueStats que_stats;
@@ -282,7 +283,7 @@ OS_QueueHd qhd = OS_NULL;
                    que_config.len,
                    que_config.item_size,
                    OS_QueueItemsCountGet(qhd),
-                   que_stats.sended,
+                   que_stats.sent,
                    que_stats.received);
         }
     }
@@ -295,7 +296,7 @@ void OS_ShellCmdStHandlerDrvHelper(void)
 OS_DriverHd dhd = OS_NULL;
 
     printf("\n%-8s %-6s %-7s %-4s %-6s %-12s %-12s %-8s %-9s",
-           "Name", "State", "Power", "PriP", "Owners", "Sended", "Received", "Errors", "Status");
+           "Name", "State", "Power", "PriP", "Owners", "Sent", "Received", "Errors", "Status");
     while (OS_NULL != (dhd = OS_DriverNextGet(dhd))) {
         OS_DriverStats drv_stats;
         IF_STATUS(OS_DriverStatsGet(dhd, &drv_stats)) { return; }
@@ -307,7 +308,7 @@ OS_DriverHd dhd = OS_NULL;
                OS_PowerStateNameGet(drv_stats.power),
                drv_cfg_p->prio_power,
                drv_stats.owners,
-               drv_stats.sended,
+               drv_stats.sent,
                drv_stats.received,
                drv_stats.errors_cnt,
                StatusStringGet(drv_stats.status_last, STATUS_ITEMS_COMMON));
@@ -372,6 +373,79 @@ OS_TriggerHd tigger_hd = OS_NULL;
 static void OS_ShellCmdStHandlerNetHelper(void);
 void OS_ShellCmdStHandlerNetHelper(void)
 {
+Status s = S_UNDEF;
+    for (OS_NetworkItfId net_itf_id = 0; net_itf_id < OS_NETWORK_ITF_LAST; ++net_itf_id) {
+        const OS_NetworkItfHd net_itf_hd = OS_NetworkItfHdByIdGet(net_itf_id);
+        if (OS_NULL != net_itf_hd) {
+            OS_NetworkItfDesc net_itf_desc = { 0 };
+            IF_OK(s = OS_NetworkItfDescGet(net_itf_hd, &net_itf_desc)) {
+                printf("\nItf: %u, Name: %-" STRING(OS_NETWORK_ITF_NAME_LEN) "s, Hostname: %s\nStatus: %s\nLink: %s %s %s %s %s %s %s %s",
+                       net_itf_desc.id,
+                       OS_NetworkItfNameGet(net_itf_hd),
+                       net_itf_desc.hostname_sp,
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_UP)) ? "up" : "down",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_LINK_UP)) ? "up" : "down",
+                       net_itf_desc.is_loopback ? "loopback" : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_ETHERNET)) ? "ethernet" : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_BROADCAST)) ? "broadcast" : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_POINTTOPOINT)) ? "point_to_point" : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_ETHARP)) ? "arp" : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_DHCP)) ? "dhcp" : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_IGMP)) ? "igmp" : "");
+                {
+                    U8 mac_addr[HAL_ETH_MAC_ADDR_SIZE] = { 0 };
+                    IF_OK(s = OS_NetworkItfMacAddrGet(net_itf_hd, mac_addr)) {
+                        printf("\nETH MAC: %02X:%02X:%02X:%02X:%02X:%02X, MTU: %u",
+                               mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5],
+                               net_itf_desc.mtu);
+                    }
+                }
+                {
+    //                printf("IP6Addr: %04X::%04X:%04X:%04X:%04X/%u\n");
+                }
+                {
+                    OS_NetworkIpAddr4  ip_addr4 = { 0 };
+                    OS_NetworkNetMask4 netmask4 = { 0 };
+                    OS_NetworkGateWay4 gateway4 = { 0 };
+                    IF_OK(s = OS_NetworkItfAddress4Get(net_itf_hd, &ip_addr4, &netmask4, &gateway4)) {
+                        const U8* ip_addr4_p = (U8*)&ip_addr4.addr;
+                        const U8* netmask4_p = (U8*)&netmask4.addr;
+                        const U8* gateway4_p = (U8*)&gateway4.addr;
+                            printf("\nIP4Addr: %u.%u.%u.%u, Netmask: %u.%u.%u.%u, Gateway: %u.%u.%u.%u",
+                                    ip_addr4_p[0], ip_addr4_p[1], ip_addr4_p[2], ip_addr4_p[3],
+                                    netmask4_p[0], netmask4_p[1], netmask4_p[2], netmask4_p[3],
+                                    gateway4_p[0], gateway4_p[1], gateway4_p[2], gateway4_p[3]);
+                    }
+                }
+                {
+                    OS_NetworkItfStats net_itf_stats = { 0 };
+                    IF_OK(s = OS_NetworkItfStatsGet(net_itf_hd, &net_itf_stats)) {
+#if (OS_NETWORK_SNMP)   //extended statistics
+                        printf("SNMP statistics:"
+                               "\nLink speed: %u"
+                               "\nRX: bytes: %10u, packets: %10u, packets uni: %10u, discard: %10u"
+                               "\nTX: bytes: %10u, packets: %10u, packets uni: %10u, discard: %10u",
+                               net_itf_stats.link_speed,
+                               net_itf_stats.packets_octets_in,
+                               net_itf_stats.packets_in,
+                               net_itf_stats.packets_uni_in,
+                               net_itf_stats.packets_discard_in,
+                               net_itf_stats.packets_octets_out,
+                               net_itf_stats.packets_out,
+                               net_itf_stats.packets_uni_out,
+                               net_itf_stats.packets_discard_out);
+#else                   //regular statistics
+                        printf("\nRX: bytes: %10u"
+                               "\nTX: bytes: %10u",
+                               net_itf_stats.received_octets,
+                               net_itf_stats.sent_octets);
+#endif //(OS_NETWORK_SNMP)
+                    }
+                }
+            }
+            printf("\n");
+        }
+    }
 }
 #endif //(OS_NETWORK_ENABLED)
 

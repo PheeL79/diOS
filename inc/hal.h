@@ -14,7 +14,7 @@ typedef U8 HAL_PowerState;
 typedef U8 HAL_PowerPrio;
 typedef void (*HAL_ISR_CallbackFunc)(void* args_p);
 
-// Driver standart requests.
+// Driver standard requests.
 enum {
     DRV_REQ_STD_UNDEF = 64,
     DRV_REQ_STD_SYNC,

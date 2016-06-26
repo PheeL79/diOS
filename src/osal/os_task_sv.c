@@ -75,7 +75,6 @@ Status s;
 
     {
         tstor.drv_gpio = OS_DriverGpioGet();
-        IF_STATUS(s = OS_DriverOpen(tstor.drv_gpio, OS_NULL)) { return s; }
     }
     OS_ASSERT(S_OK == (s = OS_TaskCreate(OS_NULL, &task_sv_cfg, OS_NULL)));
     return s;
@@ -165,8 +164,10 @@ Status s = S_OK; //!
     thd = OS_TaskNextGet(next_thd); //first task in the list.
     while (OS_NULL != thd) {
         const OS_TaskHd par_thd = OS_TaskParentByHdGet(thd);
+        const OS_TaskAttrs task_attrs = OS_TaskAttrsGet(thd);
         next_thd = OS_TaskNextGet(thd);
-        if ((par_thd != OS_NULL) && (sv_thd != thd)) { //ignore OS system tasks.
+        if ((par_thd != OS_NULL) && (sv_thd != thd) &&                      //ignore OS system tasks...
+            (OS_FALSE == BIT_TEST(task_attrs, BIT(OS_TASK_ATTR_CUSTOM)))) { //...and a custom ones without stdin queue.
             const OS_QueueHd stdin_qhd = OS_TaskStdInGet(thd);
             if (OS_NULL != stdin_qhd) {
                 IF_OK(s = OS_SignalSend(stdin_qhd, signal, OS_MSG_PRIO_HIGH)) {

@@ -57,7 +57,7 @@ Status s = S_OK;
     cfg_dyn_p->cfg.item_size        = cfg_p->item_size;
 #if (OS_STATS_ENABLED)
     cfg_dyn_p->stats.received       = 0;
-    cfg_dyn_p->stats.sended         = 0;
+    cfg_dyn_p->stats.sent           = 0;
 #endif // (OS_STATS_ENABLED)
     OS_ListItemValueSet(item_l_p, (OS_Value)cfg_dyn_p);
     OS_ListItemOwnerSet(item_l_p, (OS_Owner)queue_hd);
@@ -137,7 +137,7 @@ Status s = S_OK;
 //            OS_LOG_S(L_WARNING, s);
         }
 #if (OS_STATS_ENABLED)
-        cfg_dyn_p->stats.sended++;
+        cfg_dyn_p->stats.sent++;
 #endif //(OS_STATS_ENABLED)
     } else {
         s = S_INVALID_QUEUE;
@@ -277,7 +277,7 @@ Status s = S_OK;
             }
         } else {
 #if (OS_STATS_ENABLED)
-            cfg_dyn_p->stats.sended++;
+            cfg_dyn_p->stats.sent++;
 #endif //(OS_STATS_ENABLED)
             if (xHigherPriorityTaskWoken) {
                 s = 1;

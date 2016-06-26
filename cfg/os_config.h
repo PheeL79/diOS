@@ -170,8 +170,8 @@ enum OS_MEDIA_VOL {
         OS_MEDIA_VOL_SDCARD,
 #define OS_MEDIA_VOL_SDCARD                         OS_MEDIA_VOL_SDCARD
 
-        OS_MEDIA_VOL_USBH_FS,
-#define OS_MEDIA_VOL_USBH_FS                        OS_MEDIA_VOL_USBH_FS
+//        OS_MEDIA_VOL_USBH_FS,
+//#define OS_MEDIA_VOL_USBH_FS                        OS_MEDIA_VOL_USBH_FS
 
 //        OS_MEDIA_VOL_USBH_HS,
 //#define OS_MEDIA_VOL_USBH_HS                        OS_MEDIA_VOL_USBH_HS
@@ -180,7 +180,7 @@ enum OS_MEDIA_VOL {
 };
 
 //Audio
-#define OS_AUDIO_ENABLED                            1
+#define OS_AUDIO_ENABLED                            0
 #define OS_AUDIO_OUT_SAMPLE_RATE_DEFAULT            44100
 #define OS_AUDIO_OUT_SAMPLE_BITS_DEFAULT            16
 #define OS_AUDIO_OUT_CHANNELS_DEFAULT               (OS_AUDIO_CHANNELS_STEREO)
@@ -209,7 +209,7 @@ enum OS_AUDIO_DEV {
 //Memory options
 #define OS_NETWORK_MEM_LIBC_MALLOC                  0
 #define OS_NETWORK_MEMP_MEM_MALLOC                  1
-#define OS_NETWORK_MEM_ALIGNMENT                    4
+#define OS_NETWORK_MEM_ALIGNMENT                    HAL_PLATFORM_MEM_ALIGN
 #define OS_NETWORK_MEMP_SEPARATE_POOLS              0
 #define OS_NETWORK_MEMP_OVERFLOW_CHECK              0
 #define OS_NETWORK_MEMP_SANITY_CHECK                0
@@ -252,7 +252,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_ETHARP_SUPPORT_VLAN              1
 #define OS_NETWORK_ETHERNET                         (OS_NETWORK_ARP)
 #define OS_NETWORK_ETH_PAD_SIZE                     0
-#define OS_NETWORK_ETHARP_SUPPORT_STATIC_ENTRIES    0
+#define OS_NETWORK_ETHARP_SUPPORT_STATIC_ENTRIES    1
 
 //IP options
 #define OS_NETWORK_IP_FORWARD                       0
@@ -363,7 +363,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_NETIF_TX_SINGLE_PBUF             0
 
 //LOOPIF options
-#define OS_NETWORK_HAVE_LOOPIF                      0
+#define OS_NETWORK_HAVE_LOOPIF                      1
 
 //SLIPIF options
 #define OS_NETWORK_HAVE_SLIPIF                      0
@@ -411,7 +411,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_SO_REUSE_RXTOALL                 0
 
 //Statistics options
-#define OS_NETWORK_STATS                            0
+#define OS_NETWORK_STATS                            1
 
 #if (OS_NETWORK_STATS)
 
@@ -557,6 +557,11 @@ enum OS_AUDIO_DEV {
 enum OS_NETWORK_ITF {
         OS_NETWORK_ITF_ETH0,
 #define OS_NETWORK_ITF_ETH0                         OS_NETWORK_ITF_ETH0
+
+#if (OS_NETWORK_HAVE_LOOPIF)
+        OS_NETWORK_ITF_LO,
+#define OS_NETWORK_ITF_LO                           OS_NETWORK_ITF_LO
+#endif //(OS_NETWORK_HAVE_LOOPIF)
 
         OS_NETWORK_ITF_LAST
 };

@@ -86,15 +86,18 @@ Status s = S_UNDEF;
         eth0_hd.Init.MediaInterface  = HAL_ETH_ITF_MEDIA;
         if (HAL_OK == HAL_ETH_Init(&eth0_hd)) {
             IF_OK(s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_PHY_ID_TEST, OS_NULL)) {
-                IF_OK(s = DRV_ETH0_PHY.Init(OS_NULL)) {
-                    extern void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err);
-                    /* Config MAC and DMA */
-                    ETH_MACDMAConfig(&eth0_hd, ETH_SUCCESS);
-                    /* Initialize Tx Descriptors list: Chain Mode */
-                    OS_ASSERT(HAL_OK == HAL_ETH_DMATxDescListInit(&eth0_hd, dma_tx_desc_tab_p, tx_buff_p, ETH_TXBUFNB));
-                    /* Initialize Rx Descriptors list: Chain Mode  */
-                    OS_ASSERT(HAL_OK == HAL_ETH_DMARxDescListInit(&eth0_hd, dma_rx_desc_tab_p, rx_buff_p, ETH_RXBUFNB));
+                IF_STATUS(s = DRV_ETH0_PHY.Init(OS_NULL)) {
+                    if (S_DISCONNECTED == s) {
+                        s = S_OK; //Shadow disconnect status to succeed init driver stage. Otherwise it will fail to open later.
+                    }
                 }
+                extern void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err);
+                /* Config MAC and DMA */
+                ETH_MACDMAConfig(&eth0_hd, ETH_SUCCESS);
+                /* Initialize Tx Descriptors list: Chain Mode */
+                OS_ASSERT(HAL_OK == HAL_ETH_DMATxDescListInit(&eth0_hd, dma_tx_desc_tab_p, tx_buff_p, ETH_TXBUFNB));
+                /* Initialize Rx Descriptors list: Chain Mode  */
+                OS_ASSERT(HAL_OK == HAL_ETH_DMARxDescListInit(&eth0_hd, dma_rx_desc_tab_p, rx_buff_p, ETH_RXBUFNB));
             }
         } else { s = S_HARDWARE_ERROR; }
     }
@@ -222,18 +225,16 @@ U32 buffer_offset = 0;
 U32 payload_offset = 0;
 U32 bytes_left_to_copy = 0;
 U32 i = 0;
-U16 len = 0;
 Status s = S_OK;
     /* get received frame */
     if (HAL_OK != HAL_ETH_GetReceivedFrame_IT(&eth0_hd)) {
         return (s = S_HARDWARE_ERROR);
     }
     /* Obtain the size of the packet and put it into the "len" variable. */
-    len = eth0_hd.RxFrameInfos.length;
     buffer_p = (U8*)eth0_hd.RxFrameInfos.buffer;
-    if (len > 0) {
+    if (size > 0) {
         /* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
-        p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+        p = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
     }
 
     if (p) {
@@ -365,6 +366,9 @@ Status s = S_UNDEF;
             if (HAL_OK != hal_status) { s = S_HARDWARE_ERROR; }
             }
             break;
+        case DRV_REQ_STD_SYNC:
+            s = S_OK;
+            break;
         case DRV_REQ_ETH_LINK_INT_CLEAR:
             s = DRV_ETH0_PHY.IoCtl(DRV_REQ_KS8721BL_LINK_INT_CLEAR, OS_NULL);
             break;
@@ -396,6 +400,8 @@ Status s = S_UNDEF;
                             s = S_HARDWARE_ERROR;
                         }
                     }
+                } else {
+                    s = S_OK;
                 }
             }
             break;
@@ -434,7 +440,7 @@ Status s = S_UNDEF;
   */
 void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *eth0_hd_p)
 {
-const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_RX, 0);
+const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_RX, (OS_SignalData)eth0_hd.RxFrameInfos.length);
     OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_HIGH));
 }
 

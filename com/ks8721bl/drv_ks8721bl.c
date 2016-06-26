@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME            "drv_ks8721bl"
 
+#define KS8721BL_NEGOTIATING_TIMEOUT        4000U
+
 //@brief Register map
 enum {
     REG_00H_BASIC_CTRL,
@@ -81,10 +83,10 @@ Status s = S_UNDEF;
                 s = S_TIMEOUT;
                 return s;
             }
-            /* Check for the Timeout ( 3s ) */
-            if ((HAL_GetTick() - tick_start) > OS_MS_TO_TICKS(3000)) {
+            /* Check for the Timeout ( 4s - maximum timeout for auto-negotiation standard) */
+            if ((HAL_GetTick() - tick_start) > OS_MS_TO_TICKS(KS8721BL_NEGOTIATING_TIMEOUT)) {
                 /* In case of timeout */
-                s = S_TIMEOUT;
+                s = S_DISCONNECTED;
                 return s;
             }
         } while (!BIT_TEST(reg_value, BIT(REG_01H_BIT_AUTO_NEG_COMPLETE)));
@@ -194,8 +196,8 @@ Status s = S_UNDEF;
                                         s = S_TIMEOUT;
                                         goto error;
                                     }
-                                    /* Check for the Timeout ( 3s ) */
-                                    if ((HAL_GetTick() - tick_start) > OS_MS_TO_TICKS(3000)) {
+                                    /* Check for the Timeout ( 4s ) */
+                                    if ((HAL_GetTick() - tick_start) > OS_MS_TO_TICKS(KS8721BL_NEGOTIATING_TIMEOUT)) {
                                         /* In case of timeout */
                                         s = S_TIMEOUT;
                                         goto error;

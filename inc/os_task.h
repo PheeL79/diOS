@@ -30,6 +30,7 @@ enum {
     OS_TASK_ATTR_RECREATE,
 //    OS_TASK_ATTR_MPU,
 //    OS_TASK_ATTR_FPU,
+    OS_TASK_ATTR_CUSTOM,
     OS_TASK_ATTR_LAST
 };
 typedef U8 OS_TaskAttrs;

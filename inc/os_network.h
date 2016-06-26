@@ -17,6 +17,10 @@ extern "C" {
 #include "os_driver.h"
 
 #if (OS_NETWORK_ENABLED)
+
+//------------------------------------------------------------------------------
+#define OS_NETWORK_IP4_ADDR IP4_ADDR
+
 //------------------------------------------------------------------------------
 typedef struct pbuf         OS_NetworkBuf;
 typedef struct netif        OS_NetworkItf;
@@ -37,6 +41,18 @@ typedef enum {
 } OS_NetworkStatus;
 
 enum {
+    OS_NET_ITF_FLAG_UP          = NETIF_FLAG_UP,
+    OS_NET_ITF_FLAG_BROADCAST   = NETIF_FLAG_BROADCAST,
+    OS_NET_ITF_FLAG_POINTTOPOINT= NETIF_FLAG_POINTTOPOINT,
+    OS_NET_ITF_FLAG_DHCP        = NETIF_FLAG_DHCP,
+    OS_NET_ITF_FLAG_LINK_UP     = NETIF_FLAG_LINK_UP,
+    OS_NET_ITF_FLAG_ETHARP      = NETIF_FLAG_ETHARP,
+    OS_NET_ITF_FLAG_ETHERNET    = NETIF_FLAG_ETHERNET,
+    OS_NET_ITF_FLAG_IGMP        = NETIF_FLAG_IGMP
+};
+typedef U8 OS_NetworkItfFlags;
+
+enum {
 //ETH Common
     OS_SIG_ETH_LINK_UP = OS_SIG_APP,
     OS_SIG_ETH_LINK_DOWN,
@@ -52,7 +68,33 @@ typedef struct {
     Str                     name[OS_NETWORK_ITF_NAME_LEN];
     OS_DriverConfig*        drv_cfg_p;
     U8                      net_itf_id; //OS_NETWORK_ITF
+    Bool                    is_loopback;
 } OS_NetworkItfConfig;
+
+typedef struct {
+    StrP                    hostname_sp;
+    StrP                    name_sp;
+    U16                     mtu;
+    OS_NetworkItfId         id;
+    OS_NetworkItfFlags      flags;
+    Bool                    is_loopback;
+} OS_NetworkItfDesc;
+
+typedef struct {
+    Size                    received_octets;
+    Size                    sent_octets;
+#if (OS_NETWORK_SNMP)
+    U32                     link_speed;
+    U32                     packets_in;
+    U32                     packets_uni_in;
+    U32                     packets_octets_in;
+    U32                     packets_discard_in;
+    U32                     packets_out;
+    U32                     packets_uni_out;
+    U32                     packets_octets_out;
+    U32                     packets_discard_out;
+#endif //(OS_NETWORK_SNMP)
+} OS_NetworkItfStats;
 
 typedef struct {
     OS_NetworkMacAddr*      mac_addr_p;
@@ -106,7 +148,7 @@ Status          OS_NetworkItfClose(const OS_NetworkItfHd net_itf_hd, void* args_
 
 Bool            OS_NetworkItfLinkStateGet(const OS_NetworkItfHd net_itf_hd);
 
-Status          OS_NetworkItfLinkStateSet(const OS_NetworkItfHd net_itf_hd);
+Status          OS_NetworkItfLinkStateRefresh(const OS_NetworkItfHd net_itf_hd);
 
 /// @brief      Set the network interface link up.
 /// @param[in]  net_itf_hd      Network interface.
@@ -121,12 +163,22 @@ Status          OS_NetworkItfLinkDownSet(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfUpSet(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfDownSet(const OS_NetworkItfHd net_itf_hd);
 
-#if (LWIP_DHCP)
+#if (OS_NETWORK_DHCP)
 Status          OS_NetworkItfDhcpClientStart(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfDhcpClientStop(const OS_NetworkItfHd net_itf_hd);
-#endif //(LWIP_DHCP)
+#endif //(OS_NETWORK_DHCP)
+
+Status          OS_NetworkItfStatsGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkItfStats* net_itf_stats_p);
+
+Status          OS_NetworkItfDescGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkItfDesc* net_itf_desc_p);
 
 ConstStrP       OS_NetworkItfNameGet(const OS_NetworkItfHd net_itf_hd);
+
+/// @brief      Get the network interface MAC address.
+/// @param[in]  net_itf_hd      Network interface.
+/// @param[out] mac_addr_p      MAC address.
+/// @return     #Status.
+Status          OS_NetworkItfMacAddrGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkMacAddr mac_addr_p);
 
 /// @brief      Get the network interface v4 address.
 /// @param[in]  net_itf_hd      Network interface.
@@ -215,6 +267,9 @@ Status          OS_NetworkListen(void);
 /// @param[out] dhd_p          Driver's handle.
 /// @return     #Status.
 Status          OS_NetworkAccept(void);
+
+Status          OS_NetworkArpStaticEntryAppend(const OS_NetworkIpAddr4 ip_addr4, const OS_NetworkMacAddr mac_addr);
+Status          OS_NetworkArpStaticEntryRemove(const OS_NetworkIpAddr4 ip_addr4);
 
 Status          OS_NetworkMacAddressStrToBin(ConstStrP mac_addr_str_p, OS_NetworkMacAddr mac_addr);
 Status          OS_NetworkIpAddress4StrToBin(ConstStrP ip_addr4_str_p, OS_NetworkIpAddr4* ip_addr4_p);

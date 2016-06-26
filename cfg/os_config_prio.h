@@ -23,7 +23,7 @@
 
 // power priority
 #define OS_PRIO_PWR_TASK_LOG                (OS_PWR_PRIO_MAX - 20)
-#define OS_PRIO_PWR_TASK_FS                 (OS_PWR_PRIO_MAX - 10)
+#define OS_PRIO_PWR_TASK_FS                 (OS_PWR_PRIO_MAX - 2)
 #define OS_PRIO_PWR_TASK_USB                (OS_PWR_PRIO_MAX - 5)
 #define OS_PRIO_PWR_TASK_NET                (OS_PWR_PRIO_MAX - 5)
 #define OS_PRIO_PWR_TASK_AUDIO              (OS_PWR_PRIO_MAX - 10)

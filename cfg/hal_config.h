@@ -48,6 +48,10 @@
 //Tests
 #define HAL_TEST_ENABLED                            0
 
+//Platform
+#define HAL_PLATFORM_WORD_SIZE                      sizeof(int)
+#define HAL_PLATFORM_MEM_ALIGN                      4
+
 // Common timeouts
 #define HAL_TIMEOUT_DRIVER                          1000U
 
@@ -251,7 +255,7 @@
 // USB OTG
 
 // USB Host
-#define HAL_USBH_ENABLED                            1
+#define HAL_USBH_ENABLED                            0
 #define HAL_USBH_FS_ENABLED                         1
 #define HAL_USBH_HS_ENABLED                         0
 
@@ -280,7 +284,7 @@
 #define HAL_USBH_MSC_SECTOR_SIZE                    USBH_MSC_BLOCK_SIZE
 
 // USB Device
-#define HAL_USBD_ENABLED                            1
+#define HAL_USBD_ENABLED                            0
 #define HAL_USBD_FS_ENABLED                         0
 #define HAL_USBD_HS_ENABLED                         1
 

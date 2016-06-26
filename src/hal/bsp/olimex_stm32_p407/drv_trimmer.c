@@ -19,13 +19,15 @@ static Status TRIMMER_Init(void* args_p);
 static Status TRIMMER_DeInit(void* args_p);
 static Status TRIMMER_Open(void* args_p);
 static Status TRIMMER_Close(void* args_p);
+static Status TRIMMER_IoCtl(const U32 request_id, void* args_p);
 
 //-----------------------------------------------------------------------------
 HAL_DriverItf drv_trimmer = {
     .Init   = TRIMMER_Init,
     .DeInit = TRIMMER_DeInit,
     .Open   = TRIMMER_Open,
-    .Close  = TRIMMER_Close
+    .Close  = TRIMMER_Close,
+    .IoCtl  = TRIMMER_IoCtl
 };
 
 /*****************************************************************************/
@@ -61,5 +63,14 @@ Status TRIMMER_Close(void* args_p)
 Status s = S_UNDEF;
     IF_STATUS(s = drv_timer_v[TRIMMER_DRV_TIMER]->Close(OS_NULL)){ return s; }
     IF_STATUS(s = drv_adc_v[TRIMMER_DRV_ADC]->Close(OS_NULL))    { return s; }
+    return s;
+}
+
+/*****************************************************************************/
+static Status TRIMMER_IoCtl(const U32 request_id, void* args_p)
+{
+Status s = S_OK;
+    (void)request_id;
+    (void)args_p;
     return s;
 }

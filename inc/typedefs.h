@@ -10,6 +10,7 @@
 
 //------------------------------------------------------------------------------
 #define QUOTED(a)                       #a
+#define STRING(a)                       QUOTED(a)
 
 // packed structs
 #if defined(_MSC_VER)

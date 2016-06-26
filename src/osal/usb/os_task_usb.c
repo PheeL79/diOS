@@ -324,7 +324,9 @@ Status s = S_OK;
             IF_STATUS(s = OS_DriverClose(tstor_p->drv_usbh, OS_NULL)) {}
 #endif //(HAL_USBH_ENABLED)
 #if (HAL_USBD_ENABLED)
-            IF_STATUS(s = OS_DriverClose(tstor_p->drv_usbd, OS_NULL)) {}
+            IF_STATUS(s = OS_DriverClose(tstor_p->drv_usbd, OS_NULL)) {
+                if (S_OPENED == s) { s = S_OK; } //suppress status if the driver wasn't opened.
+            }
 #endif //(HAL_USBD_ENABLED)
             break;
         default:

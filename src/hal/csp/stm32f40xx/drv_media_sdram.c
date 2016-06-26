@@ -83,8 +83,12 @@ Status s = S_OK;
 /*****************************************************************************/
 Status SDRAM_Open(void* args_p)
 {
+const DrvGpioArgsIoCtlOpen drv_gpio_args = {
+    .gpio = args_init.gpio_led
+};
 Status s = S_UNDEF;
-    IF_STATUS(s = OS_DriverOpen(args_init.drv_gpio, OS_NULL)) {}
+    IF_OK(s = OS_DriverIoCtl(args_init.drv_gpio, DRV_REQ_GPIO_OPEN, (void*)&drv_gpio_args)) {
+    }
     return s;
 }
 
@@ -93,7 +97,8 @@ Status SDRAM_Close(void* args_p)
 {
 Status s = S_UNDEF;
     IF_OK(s = drv_media_sdram.IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {
-        IF_OK(s = OS_DriverClose(args_init.drv_gpio, OS_NULL)) {}
+        IF_OK(s = OS_DriverIoCtl(args_init.drv_gpio, DRV_REQ_GPIO_CLOSE, (void*)args_init.gpio_led)) {
+        }
     }
     return s;
 }

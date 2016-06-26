@@ -156,10 +156,6 @@ Status s = S_UNDEF;
     } else {
         cfg_dyn_p->args.stor_p = OS_NULL;
     }
-    const OS_QueueConfig que_cfg = {
-        .len        = (0 == cfg_p->stdin_len) ? 1 : cfg_p->stdin_len, //At least one item queue to create!
-        .item_size  = sizeof(OS_Message*)
-    };
     const TaskHandle_t task_hd_curr = xTaskGetCurrentTaskHandle();
     if (OS_NULL != task_hd_curr) {
         // TODO(A. Filyanov) Workaround for the sv task in startup sequence.
@@ -171,7 +167,13 @@ Status s = S_UNDEF;
         (0 == ++id_curr) ? ++id_curr : id_curr; // except zero id.
     }
     // Creating StdIo task queues.
-    IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdin_qhd))  { goto error; }
+    if (OS_FALSE == BIT_TEST(cfg_p->attrs, BIT(OS_TASK_ATTR_CUSTOM))) {
+        const OS_QueueConfig que_cfg = {
+            .len        = (0 < cfg_p->stdin_len) ? cfg_p->stdin_len : 1, //At least one item queue to create!
+            .item_size  = sizeof(OS_Message*)
+        };
+        IF_STATUS(s = OS_QueueCreate(&que_cfg, thd, &cfg_dyn_p->stdin_qhd))  { goto error; }
+    }
     cfg_dyn_p->cfg_p        = cfg_p;
     cfg_dyn_p->args.args_p  = (OS_NULL != args_p) ? args_p : cfg_p->args_p;
     cfg_dyn_p->id           = id_curr;

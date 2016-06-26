@@ -234,7 +234,6 @@ Status s = S_OK;
             IF_STATUS(s = OS_TaskInit(args_p)) {}
             break;
         case PWR_ON: {
-            IF_STATUS(s = OS_DriverOpen(tstor_p->drv_gpio, OS_NULL)) { goto error; }
             const DrvMediaArgsInit args = {
                 .drv_gpio = tstor_p->drv_gpio,
                 .gpio_led = GPIO_LED_FS
@@ -260,22 +259,32 @@ Status s = S_OK;
             }
             break;
         case PWR_STOP:
-        case PWR_SHUTDOWN:
+        case PWR_SHUTDOWN: {
+            OS_FileSystemMediaHd fs_media_hd = OS_NULL;
 #if defined(OS_MEDIA_VOL_SDRAM)
-            IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_sdram_hd)) { goto error; }
+                fs_media_hd = tstor_p->fs_media_sdram_hd;
+                if (BIT_TEST(OS_FileSystemMediaStateGet(fs_media_hd), BIT(OS_DRV_STATE_IS_INIT))) {
+                    IF_STATUS(s = OS_FileSystemMediaDeInit(fs_media_hd)) { goto error; }
+                }
 #endif //defined(OS_MEDIA_VOL_SDRAM)
 #if defined(OS_MEDIA_VOL_SDCARD)
-            IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_sdcard_hd)) { goto error; }
+                fs_media_hd = tstor_p->fs_media_sdcard_hd;
+                if (BIT_TEST(OS_FileSystemMediaStateGet(fs_media_hd), BIT(OS_DRV_STATE_IS_INIT))) {
+                    IF_STATUS(s = OS_FileSystemMediaDeInit(fs_media_hd)) { goto error; }
+                }
 #endif //defined(OS_MEDIA_VOL_SDCARD)
 #if defined(OS_MEDIA_VOL_USBH_FS)
-            IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_usbh_fs_hd)) { goto error; }
+                fs_media_hd = tstor_p->fs_media_usbh_fs_hd;
+                if (BIT_TEST(OS_FileSystemMediaStateGet(fs_media_hd), BIT(OS_DRV_STATE_IS_INIT))) {
+                    IF_STATUS(s = OS_FileSystemMediaDeInit(fs_media_hd)) { goto error; }
+                }
 #endif //defined(OS_MEDIA_VOL_USBH_FS)
 #if defined(OS_MEDIA_VOL_USBH_HS)
-            IF_STATUS(s = OS_FileSystemMediaDeInit(tstor_p->fs_media_usbh_hs_hd)) { goto error; }
+                fs_media_hd = tstor_p->fs_media_usbh_hs_hd;
+                if (BIT_TEST(OS_FileSystemMediaStateGet(fs_media_hd), BIT(OS_DRV_STATE_IS_INIT))) {
+                    IF_STATUS(s = OS_FileSystemMediaDeInit(fs_media_hd)) { goto error; }
+                }
 #endif //defined(OS_MEDIA_VOL_USBH_HS)
-            if (PWR_SHUTDOWN == state) {
-                //Led FS Close/Deinit
-                IF_STATUS(s = OS_DriverClose(tstor_p->drv_gpio, OS_NULL)) { goto error; }
             }
             break;
         default:

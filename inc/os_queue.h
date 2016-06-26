@@ -27,7 +27,7 @@ typedef struct {
 } OS_QueueConfig;
 
 typedef struct {
-    U32             sended;
+    U32             sent;
     U32             received;
 } OS_QueueStats;
 

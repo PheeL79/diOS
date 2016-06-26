@@ -21,6 +21,7 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
+typedef OS_DriverState OS_FileSystemMediaState;
 typedef void*   OS_FileSystemMediaHd;
 typedef FATFS*  OS_FileSystemHd;
 typedef FIL*    OS_FileHd;
@@ -235,6 +236,11 @@ Status          OS_FileSystemVolumeLabelGet(const OS_FileSystemMediaHd fs_media_
 /// @param[in]  label_p         Media volume label.
 /// @return     #Status.
 Status          OS_FileSystemVolumeLabelSet(const OS_FileSystemMediaHd fs_media_hd, StrP label_p);
+
+/// @brief      Get media volume state.
+/// @param[in]  fs_media_hd     Media handle.
+/// @return     #OS_FileSystemMediaState.
+OS_FileSystemMediaState OS_FileSystemMediaStateGet(const OS_FileSystemMediaHd fs_media_hd);
 
 /// @brief      Get media volume statistics.
 /// @param[in]  fs_media_hd     Media handle.

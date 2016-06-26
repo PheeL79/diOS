@@ -32,7 +32,7 @@ typedef struct {
     OS_DriverState      state; //Bit fields.
     OS_PowerState       power;
     U16                 owners;
-    U32                 sended;
+    U32                 sent;
     U32                 received;
     U32                 errors_cnt;
     Status              status_last;
@@ -137,7 +137,7 @@ OS_DriverHd     OS_DriverNextGet(const OS_DriverHd dhd);
 /// @brief      Get driver state.
 /// @param[in]  dhd            Driver's handle.
 /// @return     Driver state.
-OS_DriverState  OS_DriverStateStateGet(const OS_DriverHd dhd);
+OS_DriverState  OS_DriverStateGet(const OS_DriverHd dhd);
 
 /// @brief      Get driver stats.
 /// @param[in]  dhd            Driver's handle.

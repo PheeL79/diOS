@@ -442,6 +442,8 @@ Status s = S_UNDEF;
                     s = S_OK;
                     break;
                 case PWR_OFF:
+                case PWR_STOP:
+                case PWR_SHUTDOWN:
                     s = S_OK;
                     break;
                 default:

@@ -60,9 +60,6 @@
 #define IS_OVERFLOW_U(x, y, t)      (((t)(x) > (t)CONCAT(t, _MAX) - (t)(y)) || ((t)(x) < (t)CONCAT(t, _MIN) - (t)(y)))
 #define IS_POWER_OF_2(x)            (((x) != 0) && (((x) & ((~x) + 1)) == (x)))
 
-#define GENERATE_ENUM(ENUM)         ENUM,
-#define GENERATE_STRING(STRING)     #STRING,
-
 // Bit operations.
 // http://www.coranac.com/man/tonclib/group__grpCoreBit.htm
 #define BIT(n)                      ((unsigned)1 << (n))                ///< Create value with bit n set.

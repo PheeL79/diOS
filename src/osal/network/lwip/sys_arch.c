@@ -40,6 +40,7 @@
 #include "os_supervise.h"
 #include "os_debug.h"
 #include "os_mailbox.h"
+#include "os_signal.h"
 
 static u16_t s_nextthread = 0;
 
@@ -99,7 +100,6 @@ void sys_mbox_post(sys_mbox_t *mbox, void *data)
     OS_MessageSend(*mbox, (const OS_Message*)data, OS_BLOCK, OS_MSG_PRIO_NORMAL);
 }
 
-
 /*-----------------------------------------------------------------------------------*/
 //   Try to post the "msg" to the mailbox.
 err_t sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
@@ -137,6 +137,7 @@ err_t result;
 u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout)
 {
 void *dummyptr;
+OS_Message* msg_p;
 OS_Tick StartTime, EndTime, Elapsed;
 
 	StartTime = OS_TickCountGet();
@@ -359,7 +360,7 @@ OS_TaskHd CreatedTask = OS_NULL;
             task_lwip_cfg_p->func_main      = (void(*)(OS_TaskArgs*))thread;
             task_lwip_cfg_p->func_power     = OS_NULL;
             task_lwip_cfg_p->args_p         = OS_NULL;
-            task_lwip_cfg_p->attrs          = 0;
+            task_lwip_cfg_p->attrs          = BIT(OS_TASK_ATTR_CUSTOM);
             task_lwip_cfg_p->timeout        = 0;
             task_lwip_cfg_p->prio_init      = (DEFAULT_THREAD_PRIO + prio);
             task_lwip_cfg_p->prio_power     = OS_PWR_PRIO_MAX;

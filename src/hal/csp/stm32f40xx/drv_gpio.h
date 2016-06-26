@@ -18,6 +18,8 @@ enum {
     DRV_REQ_GPIO_PWM_SET,
     DRV_REQ_GPIO_EXTI_IRQ_ENABLE,
     DRV_REQ_GPIO_EXTI_IRQ_DISABLE,
+    DRV_REQ_GPIO_OPEN,
+    DRV_REQ_GPIO_CLOSE,
     DRV_REQ_GPIO_LAST
 };
 
@@ -28,7 +30,7 @@ typedef struct {
     U8              signal_id;
     U16             signal_data;
     void*           slot_qhd;
-} DrvGpioArgsOpen;
+} DrvGpioArgsIoCtlOpen;
 
 typedef struct {
     U32             pwm_pulse;

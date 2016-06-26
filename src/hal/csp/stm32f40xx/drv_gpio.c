@@ -18,6 +18,7 @@ typedef struct {
     OS_QueueHd      slot_qhd;
     OS_SignalId     signal_id;
     OS_SignalData   signal_data;
+    U16             owners;
 } DrvGpioConfigDyn;
 
 //-----------------------------------------------------------------------------
@@ -200,42 +201,13 @@ Status s = S_OK;
 Status GPIO_Open(void* args_p)
 {
 Status s = S_OK;
-    if (HAL_NULL != args_p) {
-        const DrvGpioArgsOpen* open_args_p = (DrvGpioArgsOpen*)args_p;
-        const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[open_args_p->gpio];
-        const U32 gpio_pin = Bit2PositionGet(gpio_v[open_args_p->gpio].init.Pin);
-        DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio_pin];
-
-        gpio_dyn_p->signal_id   = open_args_p->signal_id;
-        gpio_dyn_p->signal_data = open_args_p->signal_data;
-        gpio_dyn_p->slot_qhd    = open_args_p->slot_qhd;
-        if (0 != init_stc_p->exti.irq) {
-            __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
-            HAL_NVIC_EnableIRQ(init_stc_p->exti.irq);
-        }
-        if (HAL_NULL != init_stc_p->timer_hd_p) {
-            if (HAL_OK == HAL_TIM_PWM_Start(init_stc_p->timer_hd_p, init_stc_p->timer_channel)) {
-            } else { s = S_DRIVER_ERROR; }
-        }
-    }
     return s;
 }
 
 /*****************************************************************************/
 Status GPIO_Close(void* args_p)
 {
-const Gpio gpio = (Gpio)args_p;
-const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[gpio];
 Status s = S_OK;
-    if (0 != init_stc_p->exti.irq) {
-        HAL_NVIC_DisableIRQ(init_stc_p->exti.irq);
-    }
-    if (HAL_NULL != init_stc_p->timer_hd_p) {
-        if (HAL_OK == HAL_TIM_PWM_Stop(init_stc_p->timer_hd_p, init_stc_p->timer_channel)) {
-        } else { s = S_DRIVER_ERROR; }
-    }
-DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio];
-    gpio_dyn_p->slot_qhd = OS_NULL;
     return s;
 }
 
@@ -292,11 +264,8 @@ Status s = S_UNDEF;
             const DrvGpioArgsIoCtlPwm* io_pwm_args_p = (DrvGpioArgsIoCtlPwm*)args_p;
             const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[io_pwm_args_p->gpio];
                 s = S_OK;
-                if (HAL_NULL != init_stc_p->timer_hd_p) {
-                    __HAL_TIM_SET_COMPARE(init_stc_p->timer_hd_p, init_stc_p->timer_channel, io_pwm_args_p->pwm_pulse);
-                } else {
-                    s = S_INVALID_TIMER;
-                }
+                OS_ASSERT_DEBUG(OS_NULL != init_stc_p->timer_hd_p);
+                __HAL_TIM_SET_COMPARE(init_stc_p->timer_hd_p, init_stc_p->timer_channel, io_pwm_args_p->pwm_pulse);
             }
             break;
         case DRV_REQ_GPIO_EXTI_IRQ_ENABLE: {
@@ -315,6 +284,58 @@ Status s = S_UNDEF;
                 const Int gpio = (Int)args_p;
                 HAL_GPIO_TogglePin(gpio_v[gpio].port, gpio_v[gpio].init.Pin);
                 s = S_OK;
+            }
+            break;
+        case DRV_REQ_GPIO_OPEN: {
+                s = S_OK;
+                if (HAL_NULL != args_p) {
+                    const DrvGpioArgsIoCtlOpen* open_args_p = (DrvGpioArgsIoCtlOpen*)args_p;
+                    const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[open_args_p->gpio];
+                    const U32 gpio_pin = Bit2PositionGet(gpio_v[open_args_p->gpio].init.Pin);
+                    DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio_pin];
+
+                    if (0 != init_stc_p->exti.irq) {
+                        gpio_dyn_p->signal_id   = open_args_p->signal_id;
+                        gpio_dyn_p->signal_data = open_args_p->signal_data;
+                        gpio_dyn_p->slot_qhd    = open_args_p->slot_qhd;
+
+                        __HAL_GPIO_EXTI_CLEAR_IT(BIT(gpio_pin));
+                        HAL_NVIC_EnableIRQ(init_stc_p->exti.irq);
+                    }
+                    if (HAL_NULL != init_stc_p->timer_hd_p) {
+                        if (HAL_OK == HAL_TIM_PWM_Start(init_stc_p->timer_hd_p, init_stc_p->timer_channel)) {
+                        } else { s = S_DRIVER_ERROR; }
+                    }
+                    IF_OK(s) {
+                        gpio_dyn_p->owners++;
+                    }
+                }
+            }
+            break;
+        case DRV_REQ_GPIO_CLOSE: {
+            const Gpio gpio = (Gpio)args_p;
+            const U32 gpio_pin = Bit2PositionGet(gpio_v[gpio].init.Pin);
+            DrvGpioConfigDyn* gpio_dyn_p = (DrvGpioConfigDyn*)&gpio_dyn_v[gpio_pin];
+                s = S_OK;
+                if (1 == gpio_dyn_p->owners) {
+                    const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[gpio];
+                    if (0 != init_stc_p->exti.irq) {
+                        HAL_NVIC_DisableIRQ(init_stc_p->exti.irq);
+                    }
+                    if (HAL_NULL != init_stc_p->timer_hd_p) {
+                        if (HAL_OK == HAL_TIM_PWM_Stop(init_stc_p->timer_hd_p, init_stc_p->timer_channel)) {
+                        } else { s = S_DRIVER_ERROR; }
+                    }
+                    gpio_dyn_p->slot_qhd = OS_NULL;
+                }
+                IF_OK(s) {
+                    if (0 < gpio_dyn_p->owners) {
+                        gpio_dyn_p->owners--;
+                    } else {
+                        s = S_CLOSED;
+                        HAL_LOG_S(L_WARNING, s);
+                    }
+                }
             }
             break;
         default:
