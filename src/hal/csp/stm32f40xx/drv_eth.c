@@ -219,7 +219,6 @@ Status ETH_DMA_Read(void* data_in_p, Size size, void* args_p)
 {
 OS_NetworkBuf* p = OS_NULL;
 OS_NetworkBuf* q = OS_NULL;
-U8* buffer_p;
 HAL_IO ETH_DMADescTypeDef *rx_dma_desc;
 U32 buffer_offset = 0;
 U32 payload_offset = 0;
@@ -230,8 +229,9 @@ Status s = S_OK;
     if (HAL_OK != HAL_ETH_GetReceivedFrame_IT(&eth0_hd)) {
         return (s = S_HARDWARE_ERROR);
     }
+    U8* buffer_p = (U8*)eth0_hd.RxFrameInfos.buffer;
     /* Obtain the size of the packet and put it into the "len" variable. */
-    buffer_p = (U8*)eth0_hd.RxFrameInfos.buffer;
+    size = eth0_hd.RxFrameInfos.length;
     if (size > 0) {
         /* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
         p = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);

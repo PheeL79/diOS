@@ -213,6 +213,7 @@ Status s = S_UNDEF;
             OS_NetworkGateWay4 gateway4         = { 0 };
             U8 mac_addr[HAL_ETH_MAC_ADDR_SIZE]  = { 0 };
             OS_NetworkItfInitArgs net_itf_init_args = {
+                .host_name_p    = OS_NULL,
                 .mac_addr_p     = (OS_NetworkMacAddr*)&mac_addr,
                 .ip_addr4_p     = &ip_addr4,
                 .netmask4_p     = &netmask4,
@@ -224,6 +225,16 @@ Status s = S_UNDEF;
             OS_NETWORK_IP4_ADDR(&netmask4, 255, 0, 0, 0);
             OS_NETWORK_IP4_ADDR(&gateway4, 127, 0, 0, 1);
             net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_LO];
+            net_itf_init_args.host_name_p = (StrP)OS_Malloc(OS_NETWORK_ITF_HOST_NAME_LEN);
+            if (net_itf_init_args.host_name_p) {
+                ConstStrP localhost_sp = "localhost";
+                if (OS_NETWORK_ITF_HOST_NAME_LEN >= (OS_StrLen(localhost_sp) + 1)) {
+                    OS_StrCpy(net_itf_init_args.host_name_p, localhost_sp);
+                } else {
+                    s = S_INVALID_SIZE;
+                    goto error;
+                }
+            }
             IF_STATUS(s = OS_NetworkItfInit(net_itf_hd, &net_itf_init_args)) { goto error; }
             const OS_NetworkItfOpenArgs net_itf_open_args = {
                 .netd_stdin_qhd = OS_TaskStdInGet(OS_THIS_TASK)
@@ -237,6 +248,7 @@ Status s = S_UNDEF;
             OS_NETWORK_IP4_ADDR(&netmask4, 0, 0, 0, 0);
             OS_NETWORK_IP4_ADDR(&gateway4, 0, 0, 0, 0);
             net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_ETH0];
+            net_itf_init_args.host_name_p = (StrP)OS_Malloc(OS_NETWORK_ITF_HOST_NAME_LEN);
 #if (OS_SETTINGS_ENABLED)
             ConstStrP config_path_p = OS_EnvVariableGet("config_file");
             Str value[OS_SETTINGS_VALUE_LEN];
@@ -253,9 +265,22 @@ Status s = S_UNDEF;
 #else
                 IF_STATUS(s = OS_NetworkMacAddressStrToBin(value, OS_NETWORK_MAC_ADDR_DEFAULT)) { goto error; }
 #endif //(OS_SETTINGS_ENABLED)
+#if (OS_SETTINGS_ENABLED)
+                if (net_itf_init_args.host_name_p) {
+                    IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "host_name", &value[0])) { goto error; }
+                    if (OS_NETWORK_ITF_HOST_NAME_LEN >= (OS_StrLen(&value[0]) + 1)) {
+                        OS_StrCpy(net_itf_init_args.host_name_p, &value[0]);
+                    } else {
+                        s = S_INVALID_SIZE;
+                        goto error;
+                    }
+                }
+#endif //(OS_SETTINGS_ENABLED)
 #if (OS_NETWORK_DHCP)
+#   if (OS_SETTINGS_ENABLED)
                 IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "dhcp_client", &value[0])) { goto error; }
                 tstor_p->dhcp_client = (0 == OS_StrCmp(&value[0], OS_TRUE_STR)) ? OS_TRUE : OS_FALSE;
+#   endif //(OS_SETTINGS_ENABLED)
                 if (OS_TRUE != tstor_p->dhcp_client) {
 #endif //(OS_NETWORK_DHCP)
 #if (OS_SETTINGS_ENABLED)
@@ -266,6 +291,9 @@ Status s = S_UNDEF;
                     IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "gateway4", &value[0])) { goto error; }
                     IF_STATUS(s = OS_NetworkGateWay4StrToBin(&value[0], net_itf_init_args.gateway4_p)) { goto error; }
 #else
+                    if (hostname_p) {
+                        OS_StrCpy(hostname_p, OS_NETWORK_HOST_NAME);
+                    }
                     IF_STATUS(s = OS_NetworkIpAddress4StrToBin(OS_NETWORK_IP_ADDR4_DEFAULT, net_itf_init_args.ip_addr4_p)) { goto error; }
                     IF_STATUS(s = OS_NetworkNetMask4StrToBin(OS_NETWORK_NETMASK4_DEFAULT, net_itf_init_args.netmask4_p)) { goto error; }
                     IF_STATUS(s = OS_NetworkGateWay4StrToBin(OS_NETWORK_GATEWAY4_DEFAULT, net_itf_init_args.gateway4_p)) { goto error; }

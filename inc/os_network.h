@@ -97,6 +97,7 @@ typedef struct {
 } OS_NetworkItfStats;
 
 typedef struct {
+    StrP                    host_name_p;
     OS_NetworkMacAddr*      mac_addr_p;
     OS_NetworkIpAddr4*      ip_addr4_p;
     OS_NetworkNetMask4*     netmask4_p;

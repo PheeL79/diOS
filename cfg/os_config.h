@@ -112,6 +112,7 @@ static const OS_MemoryDesc memory_cfg_v[] = {
 #define OS_DRIVER_NAME_LEN                          9
 #define OS_AUDIO_DEVICE_NAME_LEN                    9
 #define OS_NETWORK_ITF_NAME_LEN                     9
+#define OS_NETWORK_ITF_HOST_NAME_LEN                16
 #define OS_TASK_NAME_LEN                            12
 #define OS_TIMER_NAME_LEN                           12
 

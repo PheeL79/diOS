@@ -167,6 +167,12 @@ Status s = S_UNDEF;
             net_itf_p->name[1] = 'o';
             net_itf_p->output = netif_loop_output;
             net_itf_p->mtu = U16_MAX;
+#if (OS_NETWORK_NETIF_HOSTNAME)
+            /* Initialize interface hostname */
+            if (init_args_p->host_name_p) {
+                net_itf_p->hostname = init_args_p->host_name_p;
+            }
+#endif //(OS_NETWORK_NETIF_HOSTNAME)
         } else {
             const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
             const OS_DriverState drv_net_itf_state = OS_DriverStateGet(drv_net_itf_hd);
@@ -214,7 +220,9 @@ Status s = S_UNDEF;
                 net_itf_p->linkoutput = low_level_output;
 #if (OS_NETWORK_NETIF_HOSTNAME)
                 /* Initialize interface hostname */
-                net_itf_p->hostname = OS_NETWORK_HOST_NAME;
+                if (init_args_p->host_name_p) {
+                    net_itf_p->hostname = init_args_p->host_name_p;
+                }
 #endif //(OS_NETWORK_NETIF_HOSTNAME)
                 /* Define those to better describe your network interface. */
                 net_itf_p->name[0]  = 'e';
@@ -247,6 +255,7 @@ Status s = S_UNDEF;
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+        OS_Free(cfg_dyn_p->net_itf_p->hostname);
         netif_remove(cfg_dyn_p->net_itf_p);
         if (OS_NULL != drv_net_itf_hd) {
             IF_STATUS(s = OS_DriverDeInit(drv_net_itf_hd, args_p)) {
@@ -594,7 +603,7 @@ Status s = S_UNDEF;
     if (ERR_OK != net_itf_p->input(buf_p, net_itf_p)) {
         pbuf_free(buf_p);
     }
-    OS_LOG(L_DEBUG_1, "read: 0x%X, size %u", net_itf_hd, size);
+    OS_LOG(L_DEBUG_1, "read: 0x%X, size %u", net_itf_hd, buf_p->tot_len);
     return s;
 }
 
