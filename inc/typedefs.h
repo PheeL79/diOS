@@ -41,7 +41,10 @@
     typedef unsigned int        UInt;
 
     typedef long                Long;
+    typedef long long           LongLong;
+
     typedef unsigned long       ULong;
+    typedef unsigned long long  ULongLong;
 
     typedef uint8_t             Bool;
 

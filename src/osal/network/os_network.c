@@ -4,8 +4,19 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include "lwip/tcpip.h"
-#include "lwip/dhcp.h"
-#include "lwip/snmp.h"
+#if (OS_NETWORK_DHCP)
+#   include "lwip/dhcp.h"
+#endif //(OS_NETWORK_DHCP)
+#if (OS_NETWORK_SNMP)
+#   include "lwip/snmp.h"
+#   include "lwip/apps/snmp.h"
+#endif //(OS_NETWORK_SNMP)
+#if (OS_NETWORK_SNTP)
+#   include "lwip/apps/sntp.h"
+#endif //(OS_NETWORK_SNTP)
+#if (OS_NETWORK_PERF)
+#   include "lwip/apps/lwiperf.h"
+#endif //(OS_NETWORK_PERF)
 #include "netif/etharp.h"
 #include "os_network.h"
 #include "os_debug.h"
@@ -29,6 +40,11 @@ typedef struct {
 /// @param[in]  net_itf_hd      Network interface.
 /// @return     #Status.
 Status          OS_NetworkItfAddress4Log(const OS_NetworkItfHd net_itf_hd);
+
+/// @brief      Translate LwIP stack error codes to OS status.
+/// @param[in]  err             Error code.
+/// @return     #Status.
+static Status   LwipErrTranslate(const err_t err);
 
 //------------------------------------------------------------------------------
 static OS_MutexHd os_net_mutex;
@@ -157,27 +173,29 @@ Status s = S_UNDEF;
         const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
         OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
         if (cfg_dyn_p->is_loopback) {
-            netif_add(net_itf_p, init_args_p->ip_addr4_p, init_args_p->netmask4_p, init_args_p->gateway4_p,
-                      OS_NULL, &dummy_init, &tcpip_input);
-            /* initialize the snmp variables and counters inside the struct netif
-            * ifSpeed: no assumption can be made!
-            */
-            NETIF_INIT_SNMP(net_itf_p, snmp_ifType_softwareLoopback, 0);
-            net_itf_p->name[0] = 'l';
-            net_itf_p->name[1] = 'o';
-            net_itf_p->output = netif_loop_output;
-            net_itf_p->mtu = U16_MAX;
-#if (OS_NETWORK_NETIF_HOSTNAME)
-            /* Initialize interface hostname */
-            if (init_args_p->host_name_p) {
-                net_itf_p->hostname = init_args_p->host_name_p;
+            if (netif_add(net_itf_p, init_args_p->ip_addr4_p, init_args_p->netmask4_p, init_args_p->gateway4_p,
+                          OS_NULL, &dummy_init, &tcpip_input)) {
+                extern err_t netif_loopif_init(struct netif *netif);
+                IF_OK(s = LwipErrTranslate(netif_loopif_init(net_itf_p))) {
+                    net_itf_p->mtu = U16_MAX;
+#if (OS_NETWORK_IP_V6)
+                    IP_ADDR6_HOST(net_itf_p->ip6_addr, 0, 0, 0, 0x00000001UL);
+                    net_itf_p->ip6_addr_state[0] = IP6_ADDR_VALID;
+#endif //(OS_NETWORK_IP_V6)
+                } else {
+                    OS_LOG_S(L_WARNING, s);
+                }
+            } else {
+                s = S_ITF_ERROR;
             }
-#endif //(OS_NETWORK_NETIF_HOSTNAME)
         } else {
             const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
             const OS_DriverState drv_net_itf_state = OS_DriverStateGet(drv_net_itf_hd);
             if (!BIT_TEST(drv_net_itf_state, BIT(OS_DRV_STATE_IS_INIT))) {
                 IF_OK(s = OS_NetworkItfDownSet(net_itf_hd)) {}
+#if (OS_NETWORK_MIB2_STATS)
+                MIB2_INIT_NETIF(net_itf_p, snmp_ifType_other, OS_NETWORK_LINK_SPEED);
+#endif //(OS_NETWORK_MIB2_STATS)
                 /* add the network interface */
                 /* - netif_add(struct netif *netif, struct ip_addr *ipaddr,
                 struct ip_addr *netmask, struct ip_addr *gw,
@@ -191,56 +209,71 @@ Status s = S_UNDEF;
 
                 The init function pointer must point to a initialization function for
                 your ethernet netif interface. The following code illustrates it's use.*/
-                netif_add(net_itf_p, init_args_p->ip_addr4_p, init_args_p->netmask4_p, init_args_p->gateway4_p,
-                          OS_NULL, &dummy_init, &tcpip_input);
-                if (OS_NULL == OS_NetworkItfDefaultGet()) {
-                    IF_STATUS(s = OS_NetworkItfDefaultSet(net_itf_hd)) {
+                if (netif_add(net_itf_p, init_args_p->ip_addr4_p, init_args_p->netmask4_p, init_args_p->gateway4_p,
+                              OS_NULL, &dummy_init, &tcpip_input)) {
+                    if (OS_NULL == OS_NetworkItfDefaultGet()) {
+                        IF_STATUS(s = OS_NetworkItfDefaultSet(net_itf_hd)) {
+                            OS_MutexRecursiveUnlock(os_net_mutex);
+                            return s;
+                        }
+                    }
+#if (OS_NETWORK_IP_V6)
+                    netif_create_ip6_linklocal_address(net_itf_p, OS_TRUE);
+                    IF_STATUS(s = LwipErrTranslate(netif_add_ip6_address(net_itf_p, init_args_p->ip_addr6_p, OS_NULL))) {
+                        return s;
+                    }
+                    netif_set_ip6_autoconfig_enabled(net_itf_p, OS_TRUE);
+#endif //(OS_NETWORK_IP_V6)
+                    /* set netif MAC hardware address length */
+                    net_itf_p->hwaddr_len = HAL_ETH_MAC_ADDR_SIZE;
+                    /* set netif MAC hardware address */
+                    OS_MemCpy(net_itf_p->hwaddr, init_args_p->mac_addr_p, sizeof(net_itf_p->hwaddr));
+                    /* set netif maximum transfer unit */
+                    net_itf_p->mtu = HAL_ETH_MTU_SIZE;
+                    /* We directly use etharp_output() here to save a function call.
+                    * You can instead declare your own function an call etharp_output()
+                    * from it if you have to do some checks before sending (e.g. if link
+                    * is available...) */
+#if ((OS_NETWORK_ARP) || (OS_NETWORK_ETHERNET))
+#if (OS_NETWORK_ARP)
+                    net_itf_p->output = etharp_output;
+#else
+                    /* The user should write ist own code in low_level_output_arp_off function */
+                    net_itf_p->output = low_level_output_arp_off;
+#endif //(OS_NETWORK_ARP)
+#endif //((OS_NETWORK_ARP) || (OS_NETWORK_ETHERNET))
+                    net_itf_p->linkoutput = low_level_output;
+                    /* Define those to better describe your network interface. */
+                    net_itf_p->name[0]  = 'e';
+                    net_itf_p->name[1]  = 't';
+                    net_itf_p->num      = cfg_dyn_p->net_itf_id;
+                    /* Accept broadcast address and ARP traffic */
+                    /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
+#if (OS_NETWORK_ARP)
+                    net_itf_p->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+#else
+                    net_itf_p->flags |= NETIF_FLAG_BROADCAST;
+#endif //(OS_NETWORK_ARP)
+#if (OS_NETWORK_IGMP)
+                    net_itf_p->flags |= NETIF_FLAG_IGMP;
+#endif //(OS_NETWORK_IGMP)
+                    IF_STATUS(s = OS_DriverInit(drv_net_itf_hd, (void*)init_args_p)) {
                         OS_MutexRecursiveUnlock(os_net_mutex);
                         return s;
                     }
-                }
-                /* set netif MAC hardware address length */
-                net_itf_p->hwaddr_len = HAL_ETH_MAC_ADDR_SIZE;
-                /* set netif MAC hardware address */
-                OS_MemCpy(net_itf_p->hwaddr, init_args_p->mac_addr_p, sizeof(net_itf_p->hwaddr));
-                /* set netif maximum transfer unit */
-                net_itf_p->mtu = HAL_ETH_MTU_SIZE;
-                /* We directly use etharp_output() here to save a function call.
-                * You can instead declare your own function an call etharp_output()
-                * from it if you have to do some checks before sending (e.g. if link
-                * is available...) */
-#if ((OS_NETWORK_ARP) || (OS_NETWORK_ETHERNET))
-#if (OS_NETWORK_ARP)
-                net_itf_p->output = etharp_output;
-#else
-                /* The user should write ist own code in low_level_output_arp_off function */
-                net_itf_p->output = low_level_output_arp_off;
-#endif //(OS_NETWORK_ARP)
-#endif //((OS_NETWORK_ARP) || (OS_NETWORK_ETHERNET))
-                net_itf_p->linkoutput = low_level_output;
-#if (OS_NETWORK_NETIF_HOSTNAME)
-                /* Initialize interface hostname */
-                if (init_args_p->host_name_p) {
-                    net_itf_p->hostname = init_args_p->host_name_p;
-                }
-#endif //(OS_NETWORK_NETIF_HOSTNAME)
-                /* Define those to better describe your network interface. */
-                net_itf_p->name[0]  = 'e';
-                net_itf_p->name[1]  = 't';
-                net_itf_p->num      = cfg_dyn_p->net_itf_id;
-                /* Accept broadcast address and ARP traffic */
-                /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
-#if (OS_NETWORK_ARP)
-                net_itf_p->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
-#else
-                net_itf_p->flags |= NETIF_FLAG_BROADCAST;
-#endif //(OS_NETWORK_ARP)
-                IF_STATUS(s = OS_DriverInit(drv_net_itf_hd, (void*)init_args_p)) {
-                    OS_MutexRecursiveUnlock(os_net_mutex);
-                    return s;
+                } else {
+                    s = S_ITF_ERROR;
                 }
             }
         }
+//Common interface data init.
+#if (OS_NETWORK_NETIF_HOSTNAME)
+        /* Initialize interface hostname */
+        if (init_args_p->host_name_p) {
+            net_itf_p->hostname = init_args_p->host_name_p;
+        }
+#endif //(OS_NETWORK_NETIF_HOSTNAME)
+
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
     return s;
@@ -255,7 +288,7 @@ Status s = S_UNDEF;
     const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
     const OS_DriverHd drv_net_itf_hd = cfg_dyn_p->dhd;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        OS_Free(cfg_dyn_p->net_itf_p->hostname);
+        OS_Free((void*)cfg_dyn_p->net_itf_p->hostname);
         netif_remove(cfg_dyn_p->net_itf_p);
         if (OS_NULL != drv_net_itf_hd) {
             IF_STATUS(s = OS_DriverDeInit(drv_net_itf_hd, args_p)) {
@@ -431,27 +464,73 @@ Status s = S_UNDEF;
     OS_LOG(L_DEBUG_1, "%s: DHCP client stopped", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
+
+/*****************************************************************************/
+Status OS_NetworkItfDhcpClientRenew(const OS_NetworkItfHd net_itf_hd)
+{
+const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
+Status s = S_UNDEF;
+    IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+        s = LwipErrTranslate(dhcp_renew(net_itf_p));
+        OS_MutexRecursiveUnlock(os_net_mutex);
+    }
+    OS_LOG(L_DEBUG_1, "%s: DHCP client renew lease", OS_NetworkItfNameGet(net_itf_hd));
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkItfDhcpClientRelease(const OS_NetworkItfHd net_itf_hd)
+{
+const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
+Status s = S_UNDEF;
+    IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+        s = LwipErrTranslate(dhcp_release(net_itf_p));
+        OS_MutexRecursiveUnlock(os_net_mutex);
+    }
+    OS_LOG(L_DEBUG_1, "%s: DHCP client release lease", OS_NetworkItfNameGet(net_itf_hd));
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkItfDhcpServerInform(const OS_NetworkItfHd net_itf_hd)
+{
+const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
+Status s = S_UNDEF;
+    IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
+        dhcp_inform(net_itf_p);
+        OS_MutexRecursiveUnlock(os_net_mutex);
+    }
+    OS_LOG(L_DEBUG_1, "%s: DHCP server inform", OS_NetworkItfNameGet(net_itf_hd));
+    return s;
+}
 #endif //(OS_NETWORK_DHCP)
 
 /*****************************************************************************/
 Status OS_NetworkItfStatsGet(const OS_NetworkItfHd net_itf_hd, OS_NetworkItfStats* net_itf_stats_p)
 {
 const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
+OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
 OS_DriverStats drv_stats;
 Status s = S_UNDEF;
     IF_OK(s = OS_DriverStatsGet(cfg_dyn_p->dhd, &drv_stats)) {
         net_itf_stats_p->received_octets    = drv_stats.received;
         net_itf_stats_p->sent_octets        = drv_stats.sent;
 #if (OS_NETWORK_SNMP)
+#if (OS_NETWORK_MIB2_STATS)
+        net_itf_stats_p->link_type          = net_itf_p->link_type;
         net_itf_stats_p->link_speed         = net_itf_p->link_speed;
-        net_itf_stats_p->packets_in         = net_itf_p->ifinnucastpkts;
-        net_itf_stats_p->packets_uni_in     = net_itf_p->ifinucastpkts;
-        net_itf_stats_p->packets_octets_in  = net_itf_p->ifinoctets;
-        net_itf_stats_p->packets_discard_in = net_itf_p->ifindiscards;
-        net_itf_stats_p->packets_out        = net_itf_p->ifoutnucastpkts;
-        net_itf_stats_p->packets_uni_out    = net_itf_p->ifoutucastpkts;
-        net_itf_stats_p->packets_octets_out = net_itf_p->ifoutoctets;
-        net_itf_stats_p->packets_discard_out= net_itf_p->ifoutdiscards;
+        net_itf_stats_p->packets_in         = net_itf_p->mib2_counters.ifinnucastpkts;
+        net_itf_stats_p->packets_uni_in     = net_itf_p->mib2_counters.ifinucastpkts;
+        net_itf_stats_p->packets_octets_in  = net_itf_p->mib2_counters.ifinoctets;
+        net_itf_stats_p->packets_discard_in = net_itf_p->mib2_counters.ifindiscards;
+        net_itf_stats_p->packets_out        = net_itf_p->mib2_counters.ifoutnucastpkts;
+        net_itf_stats_p->packets_uni_out    = net_itf_p->mib2_counters.ifoutucastpkts;
+        net_itf_stats_p->packets_octets_out = net_itf_p->mib2_counters.ifoutoctets;
+        net_itf_stats_p->packets_discard_out= net_itf_p->mib2_counters.ifoutdiscards;
+#endif //(OS_NETWORK_MIB2_STATS)
 #endif //(OS_NETWORK_SNMP)
     }
     return s;
@@ -688,6 +767,103 @@ Status OS_NetworkNetMask4StrToBin(ConstStrP netmask4_str_p, OS_NetworkNetMask4* 
 Status OS_NetworkGateWay4StrToBin(ConstStrP gateway4_str_p, OS_NetworkGateWay4* gateway4_p)
 {
     return OS_NetworkIpAddress4StrToBin(gateway4_str_p, gateway4_p);
+}
+
+#if (OS_NETWORK_PERF)
+/*****************************************************************************/
+Status OS_NetworkIperfStart(void** iperf_sess_pp)
+{
+Status s = S_OK;
+    OS_ASSERT_DEBUG(iperf_sess_pp);
+    OS_LOG(L_DEBUG_1, "IPERF start");
+    *iperf_sess_pp = lwiperf_start_tcp_server_default(OS_NULL, OS_NULL);
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkIperfStop(void* iperf_sess_p)
+{
+Status s = S_OK;
+    OS_ASSERT_DEBUG(iperf_sess_p);
+    OS_LOG(L_DEBUG_1, "IPERF stop");
+    lwiperf_abort(iperf_sess_p);
+    return s;
+}
+#endif //(OS_NETWORK_PERF)
+
+#if (OS_NETWORK_SNMP)
+/*****************************************************************************/
+Status OS_NetworkSnmpStart(void)
+{
+Status s = S_OK;
+    OS_LOG(L_DEBUG_1, "SNMP init");
+    snmp_init();
+    OS_LOG(L_DEBUG_1, "SNMP start");
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkSnmpStop(void)
+{
+Status s = S_OK;
+    OS_LOG(L_DEBUG_1, "SNMP stop");
+//    OS_TaskDelete(snmp_thd);
+    return s;
+}
+#endif //(OS_NETWORK_SNMP)
+
+#if (OS_NETWORK_SNTP)
+/*****************************************************************************/
+Status OS_NetworkSntpStart(void)
+{
+Status s = S_OK;
+    /* SNTP operating modes: default is to poll using unicast.
+        The mode has to be set before calling sntp_init(). */
+    sntp_setoperatingmode(SNTP_OPMODE);
+    OS_LOG(L_DEBUG_1, "SNTP init");
+    sntp_init();
+    OS_LOG(L_DEBUG_1, "SNTP start");
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkSntpStop(void)
+{
+Status s = S_OK;
+    OS_LOG(L_DEBUG_1, "SNTP stop");
+    sntp_stop();
+    return s;
+}
+
+/*****************************************************************************/
+Status OS_NetworkSntpDateTimeSet(const OS_TimeS utc_timestamp_s)
+{
+OS_DateTime date_time = { 0 };
+Status s = S_UNDEF;
+    IF_OK(s = OS_DateTimeUtcConvert(utc_timestamp_s, &date_time)) {
+        IF_OK(s = OS_DateSet(OS_DATE_UNDEF, &date_time)) {
+            IF_OK(s = OS_TimeSet(OS_TIME_LOCAL, &date_time)) {
+                OS_LOG(L_DEBUG_1, "SNTP client date time set");
+            }
+        }
+    }
+    return s;
+}
+#endif //(OS_NETWORK_SNTP)
+
+/******************************************************************************/
+Status LwipErrTranslate(const err_t err)
+{
+Status s = S_UNDEF;
+    switch (err) {
+        case ERR_OK:
+            s = S_OK;
+            break;
+        default:
+            OS_ASSERT(OS_FALSE);
+            break;
+    }
+    return s;
 }
 
 #endif //(OS_NETWORK_ENABLED)

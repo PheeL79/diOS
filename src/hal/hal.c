@@ -8,6 +8,9 @@
 #include <yfuns.h>
 #include <string.h>
 #include "hal.h"
+#if (HAL_TEST_ENABLED)
+#   include "test_hal.h"
+#endif //(HAL_TEST_ENABLED)
 #include "version.h"
 
 //-----------------------------------------------------------------------------
@@ -61,6 +64,11 @@ Status s = S_OK;
         HAL_LOG(L_INFO, "-------------------------------");
         //TODO(A. Filyanov) HAL_CSP_Init(); HAL_MSP_Init()?; HAL_BSP_Init();
         IF_STATUS(s = HAL_BSP_Init()) { return s; }
+#if (HAL_TEST_ENABLED)
+        // Tests.
+        HAL_LOG(L_INFO, "HAL tests run...\n");
+        TestsHalRun();
+#endif //(HAL_TEST_ENABLED)
         HAL_LOG(L_INFO, "-------------------------------");
         // Close and deinit STDIO stream(for init HAL output).
         // Stream will be open back again in OSAL init.
@@ -191,6 +199,20 @@ int getchar(void)
 U8 c;
     IF_STATUS(hal_env.stdio_p->Read((U8*)&c, 1, OS_NULL)) { return EOF; }
     return c;
+}
+
+/******************************************************************************/
+void HAL_putchar(int c);
+void HAL_putchar(int c)
+{
+    putchar(c);
+}
+
+/******************************************************************************/
+void HAL_fflush(void);
+void HAL_fflush(void)
+{
+    IF_STATUS(hal_env.stdio_p->IoCtl(DRV_REQ_STD_SYNC, OS_NULL)) {}
 }
 
 /******************************************************************************/

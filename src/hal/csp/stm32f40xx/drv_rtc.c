@@ -203,7 +203,7 @@ RTC_TimeTypeDef time;
     /*##-1- Configure the Date #################################################*/
     date.Year             = 0x00;
     date.Month            = RTC_MONTH_JANUARY;
-    date.Date             = 0x00;
+    date.Date             = 0x01;
     date.WeekDay          = RTC_WEEKDAY_SATURDAY;
 
     if (HAL_OK != HAL_RTC_SetDate(&rtc_handle, &date, FORMAT_BCD)) {
@@ -371,12 +371,12 @@ Status s = S_UNDEF;
             break;
         case DRV_REQ_RTC_TIME_GET: {
             RTC_TimeTypeDef time;
-            if (HAL_OK == HAL_RTC_GetTime(&rtc_handle, &time, FORMAT_BIN)) {
+            if (HAL_OK == HAL_RTC_GetTime(&rtc_handle, &time, RTC_FORMAT_BIN)) {
 // Workaround {
 //  * @note   Call HAL_RTC_GetDate() after HAL_RTC_GetTime() to unlock the values
 //  *         in the higher-order calendar shadow registers.
                 RTC_DateTypeDef date;
-                HAL_RTC_GetDate(&rtc_handle, &date, FORMAT_BIN);
+                HAL_RTC_GetDate(&rtc_handle, &date, RTC_FORMAT_BIN);
 // Workaround }
                 OS_DateTime* os_time_p = (OS_DateTime*)args_p;
                 if (OS_NULL != os_time_p) {
@@ -401,7 +401,7 @@ Status s = S_UNDEF;
                 time.DayLightSaving = os_time_p->daylight;
                 time.TimeFormat     = os_time_p->hourformat;
                 time.StoreOperation = RTC_STOREOPERATION_SET;
-                if (HAL_OK == HAL_RTC_SetTime(&rtc_handle, &time, FORMAT_BIN)) {
+                if (HAL_OK == HAL_RTC_SetTime(&rtc_handle, &time, RTC_FORMAT_BIN)) {
                     s = S_OK;
                 } else { s = S_HARDWARE_ERROR; }
             } else { s = S_INVALID_PTR; }
@@ -409,7 +409,7 @@ Status s = S_UNDEF;
             break;
         case DRV_REQ_RTC_DATE_GET: {
             RTC_DateTypeDef date;
-            if (HAL_OK == HAL_RTC_GetDate(&rtc_handle, &date, FORMAT_BIN)) {
+            if (HAL_OK == HAL_RTC_GetDate(&rtc_handle, &date, RTC_FORMAT_BIN)) {
                 OS_DateTime* os_date_p = (OS_DateTime*)args_p;
                 if (OS_NULL != os_date_p) {
                     os_date_p->year     = date.Year + HAL_RTC_YEAR_BASE;
@@ -430,7 +430,7 @@ Status s = S_UNDEF;
                 date.Month          = os_date_p->month;
                 date.WeekDay        = os_date_p->weekday;
                 date.Date           = os_date_p->day;
-                if (HAL_OK == HAL_RTC_SetDate(&rtc_handle, &date, FORMAT_BIN)) {
+                if (HAL_OK == HAL_RTC_SetDate(&rtc_handle, &date, RTC_FORMAT_BIN)) {
                     s = S_OK;
                 } else { s = S_HARDWARE_ERROR; }
             } else { s = S_INVALID_PTR; }

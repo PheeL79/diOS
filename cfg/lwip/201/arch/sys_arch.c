@@ -194,99 +194,99 @@ void sys_mbox_set_invalid(sys_mbox_t *mbox)
     *mbox = SYS_MBOX_NULL;
 }
 
-///*-----------------------------------------------------------------------------------*/
-////  Creates a new semaphore. The "count" argument specifies
-////  the initial state of the semaphore.
-//err_t sys_sem_new(sys_sem_t *sem, u8_t count)
-//{
-//	*sem = OS_SemaphoreCountingCreate(count, 0);
-//	if(!*sem) {
-//#if SYS_STATS
-//        ++lwip_stats.sys.sem.err;
-//#endif /* SYS_STATS */
-//		return ERR_MEM;
-//	}
-//
-//	if (!count) { // Means it can't be taken
-//		OS_SemaphoreLock(*sem, OS_NO_BLOCK);
-//	}
-//#if SYS_STATS
-//	++lwip_stats.sys.sem.used;
-// 	if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used) {
-//		lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
-//	}
-//#endif /* SYS_STATS */
-//	return ERR_OK;
-//}
-//
-///*-----------------------------------------------------------------------------------*/
-///*
-//  Blocks the thread while waiting for the semaphore to be
-//  signaled. If the "timeout" argument is non-zero, the thread should
-//  only be blocked for the specified time (measured in
-//  milliseconds).
-//
-//  If the timeout argument is non-zero, the return value is the number of
-//  milliseconds spent waiting for the semaphore to be signaled. If the
-//  semaphore wasn't signaled within the specified time, the return value is
-//  SYS_ARCH_TIMEOUT. If the thread didn't have to wait for the semaphore
-//  (i.e., it was already signaled), the function may return zero.
-//
-//  Notice that lwIP implements a function with a similar name,
-//  sys_sem_wait(), that uses the sys_arch_sem_wait() function.
-//*/
-//u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
-//{
-//OS_Tick StartTime, EndTime, Elapsed;
-//
-//	StartTime = OS_TickCountGet();
-//	if (timeout) {
-//        IF_OK(OS_SemaphoreLock(*sem, timeout)) {
-//			EndTime = OS_TickCountGet();
-//			Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
-//			return (Elapsed); // return time blocked TODO test
-//		} else {
-//			return SYS_ARCH_TIMEOUT;
-//		}
-//	} else { // must block without a timeout
-//		OS_SemaphoreLock(*sem, OS_BLOCK);
-//		EndTime = OS_TickCountGet();
-//		Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
-//		return (Elapsed); // return time blocked
-//	}
-//}
-//
-///*-----------------------------------------------------------------------------------*/
-//// Signals a semaphore
-//void sys_sem_signal(sys_sem_t *sem)
-//{
-//	OS_SemaphoreUnlock(*sem);
-//}
-//
-///*-----------------------------------------------------------------------------------*/
-//// Deallocates a semaphore
-//void sys_sem_free(sys_sem_t *sem)
-//{
-//#if SYS_STATS
-//    --lwip_stats.sys.sem.used;
-//#endif /* SYS_STATS */
-//	OS_SemaphoreDelete(*sem);
-//}
-//
-///*-----------------------------------------------------------------------------------*/
-//int sys_sem_valid(sys_sem_t *sem)
-//{
-//    if (SYS_SEM_NULL == *sem) {
-//        return 0;
-//    }
-//    return 1;
-//}
-//
-///*-----------------------------------------------------------------------------------*/
-//void sys_sem_set_invalid(sys_sem_t *sem)
-//{
-//    *sem = SYS_SEM_NULL;
-//}
+/*-----------------------------------------------------------------------------------*/
+//  Creates a new semaphore. The "count" argument specifies
+//  the initial state of the semaphore.
+err_t sys_sem_new(sys_sem_t *sem, u8_t count)
+{
+	*sem = OS_SemaphoreCountingCreate(count ? count : count + 1, 0);
+	if(!*sem) {
+#if SYS_STATS
+        ++lwip_stats.sys.sem.err;
+#endif /* SYS_STATS */
+		return ERR_MEM;
+	}
+
+	if (!count) { // Means it can't be taken
+		OS_SemaphoreLock(*sem, OS_NO_BLOCK);
+	}
+#if SYS_STATS
+	++lwip_stats.sys.sem.used;
+ 	if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used) {
+		lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
+	}
+#endif /* SYS_STATS */
+	return ERR_OK;
+}
+
+/*-----------------------------------------------------------------------------------*/
+/*
+  Blocks the thread while waiting for the semaphore to be
+  signaled. If the "timeout" argument is non-zero, the thread should
+  only be blocked for the specified time (measured in
+  milliseconds).
+
+  If the timeout argument is non-zero, the return value is the number of
+  milliseconds spent waiting for the semaphore to be signaled. If the
+  semaphore wasn't signaled within the specified time, the return value is
+  SYS_ARCH_TIMEOUT. If the thread didn't have to wait for the semaphore
+  (i.e., it was already signaled), the function may return zero.
+
+  Notice that lwIP implements a function with a similar name,
+  sys_sem_wait(), that uses the sys_arch_sem_wait() function.
+*/
+u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
+{
+OS_Tick StartTime, EndTime, Elapsed;
+
+	StartTime = OS_TickCountGet();
+	if (timeout) {
+        IF_OK(OS_SemaphoreLock(*sem, timeout)) {
+			EndTime = OS_TickCountGet();
+			Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
+			return (Elapsed); // return time blocked TODO test
+		} else {
+			return SYS_ARCH_TIMEOUT;
+		}
+	} else { // must block without a timeout
+		OS_SemaphoreLock(*sem, OS_BLOCK);
+		EndTime = OS_TickCountGet();
+		Elapsed = OS_TICKS_TO_MS(EndTime - StartTime);
+		return (Elapsed); // return time blocked
+	}
+}
+
+/*-----------------------------------------------------------------------------------*/
+// Signals a semaphore
+void sys_sem_signal(sys_sem_t *sem)
+{
+	OS_SemaphoreUnlock(*sem);
+}
+
+/*-----------------------------------------------------------------------------------*/
+// Deallocates a semaphore
+void sys_sem_free(sys_sem_t *sem)
+{
+#if SYS_STATS
+    --lwip_stats.sys.sem.used;
+#endif /* SYS_STATS */
+	OS_SemaphoreDelete(*sem);
+}
+
+/*-----------------------------------------------------------------------------------*/
+int sys_sem_valid(sys_sem_t *sem)
+{
+    if (SYS_SEM_NULL == *sem) {
+        return 0;
+    }
+    return 1;
+}
+
+/*-----------------------------------------------------------------------------------*/
+void sys_sem_set_invalid(sys_sem_t *sem)
+{
+    *sem = SYS_SEM_NULL;
+}
 
 /*-----------------------------------------------------------------------------------*/
 // Initialize sys arch

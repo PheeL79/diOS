@@ -79,7 +79,7 @@
 //#define                                             RTC_CLOCK_SOURCE_LSI
 #define                                             RTC_CLOCK_SOURCE_LSE
 #define HAL_RTC_BACKUP_REGS_MAX                     20
-#define HAL_RTC_YEAR_BASE                           2000U
+#define HAL_RTC_YEAR_BASE                           1970U
 
 // DMA
 //#define HAL_DMA_STREAM_MEM2MEM8                     DMA2_Stream7

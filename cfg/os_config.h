@@ -9,6 +9,7 @@
 #include "hal_config_prio.h"
 //Ensure that is only used by the compiler, and not the assembler.
 #ifdef __ICCARM__
+#include "common.h"
 #include "hal_config.h"
 #include "os_config_prio.h"
 #include "os_memory.h"
@@ -196,14 +197,33 @@ enum OS_AUDIO_DEV {
 };
 
 //Network
-//Look in lwip/opt.h for details
+//Look into lwip/opt.h for details
 #define OS_NETWORK_ENABLED                          1
+
+#define OS_NETWORK_DAEMON_QUEUE_LEN                 6
+#define OS_NETWORK_HOST_NAME                        HAL_MB_NAME
+
+#define OS_NETWORK_MAC_ADDR_DEFAULT                 "00:80:E1:00:00:00"
+//IPv4
+#define OS_NETWORK_IP_V4                            1
+#define OS_NETWORK_IP_ADDR4_SIZE                    4
+#define OS_NETWORK_IP_ADDR4_DEFAULT                 "10.137.2.64"
+#define OS_NETWORK_NETMASK4_DEFAULT                 "255.255.255.0"
+#define OS_NETWORK_GATEWAY4_DEFAULT                 "10.137.2.1"
+//IPv6
+#define OS_NETWORK_IP_V6                            0
+#define OS_NETWORK_IP_ADDR6_SIZE                    16
+#define OS_NETWORK_IP_ADDR6_DEFAULT                 "fe80::651c:fa43:b012:f989"
+#define OS_NETWORK_NETMASK6_DEFAULT                 "128"
+#define OS_NETWORK_GATEWAY6_DEFAULT                 "fe80::7db8:95ed:da70:641a"
 
 //Platform specific locking
 #define OS_NETWORK_SYS_LIGHTWEIGHT_PROT             0
 #define OS_NETWORK_NO_SYS                           0
-#define OS_NETWORK_NO_SYS_NO_TIMERS                 0
 #define OS_NETWORK_COMPAT_MUTEX                     0
+#define OS_NETWORK_TIMERS                           1
+#define OS_NETWORK_TIMERS_CUSTOM                    0
+#define OS_NETWORK_MPU_COMPATIBLE                   0
 #define OS_NETWORK_MEMCPY(dst, src, len)            OS_MemCpy(dst, src, len)
 #define OS_NETWORK_SMEMCPY(dst, src, len)           OS_MemCpy(dst, src, len)
 
@@ -211,7 +231,6 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_MEM_LIBC_MALLOC                  0
 #define OS_NETWORK_MEMP_MEM_MALLOC                  1
 #define OS_NETWORK_MEM_ALIGNMENT                    HAL_PLATFORM_MEM_ALIGN
-#define OS_NETWORK_MEMP_SEPARATE_POOLS              0
 #define OS_NETWORK_MEMP_OVERFLOW_CHECK              0
 #define OS_NETWORK_MEMP_SANITY_CHECK                0
 #define OS_NETWORK_MEM_USE_POOLS                    0
@@ -237,10 +256,6 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_MEMP_NUM_NETCONN                 4
 #define OS_NETWORK_MEMP_NUM_TCPIP_MSG_API           8
 #define OS_NETWORK_MEMP_NUM_TCPIP_MSG_INPKT         8
-#define OS_NETWORK_MEMP_NUM_SNMP_NODE               50
-#define OS_NETWORK_MEMP_NUM_SNMP_ROOTNODE           30
-#define OS_NETWORK_MEMP_NUM_SNMP_VARBIND            2
-#define OS_NETWORK_MEMP_NUM_SNMP_VALUE              3
 #define OS_NETWORK_MEMP_NUM_NETDB                   1
 #define OS_NETWORK_MEMP_NUM_LOCALHOSTLIST           1
 #define OS_NETWORK_MEMP_NUM_PPPOE_INTERFACES        1
@@ -248,37 +263,70 @@ enum OS_AUDIO_DEV {
 //ARP options
 #define OS_NETWORK_ARP                              1
 #define OS_NETWORK_ARP_TABLE_SIZE                   10
+#define OS_NETWORK_ARP_MAXAGE                       300
 #define OS_NETWORK_ARP_QUEUEING                     1
-#define OS_NETWORK_ETHARP_TRUST_IP_MAC              0
+#define OS_NETWORK_ARP_QUEUE_LEN                    3
 #define OS_NETWORK_ETHARP_SUPPORT_VLAN              1
 #define OS_NETWORK_ETHERNET                         (OS_NETWORK_ARP)
 #define OS_NETWORK_ETH_PAD_SIZE                     0
 #define OS_NETWORK_ETHARP_SUPPORT_STATIC_ENTRIES    1
+#define OS_NETWORK_ETHARP_TABLE_MATCH_NETIF         0
 
-//IP options
+//IPv4 options
 #define OS_NETWORK_IP_FORWARD                       0
 #define OS_NETWORK_IP_OPTIONS_ALLOWED               1
 #define OS_NETWORK_IP_REASSEMBLY                    1
 #define OS_NETWORK_IP_FRAG                          1
 #define OS_NETWORK_IP_REASS_MAXAGE                  3
 #define OS_NETWORK_IP_REASS_MAX_PBUFS               10
-#define OS_NETWORK_IP_FRAG_USES_STATIC_BUF          0
-
-#if (OS_NETWORK_IP_FRAG_USES_STATIC_BUF)
-#define OS_NETWORK_IP_FRAG_MAX_MTU                  HAL_ETH_MTU_SIZE
-#endif
-
 #define OS_NETWORK_IP_DEFAULT_TTL                   255
 #define OS_NETWORK_IP_SOF_BROADCAST                 0
 #define OS_NETWORK_IP_SOF_BROADCAST_RECV            0
 #define OS_NETWORK_IP_FORWARD_ALLOW_TX_ON_RX_NETIF  0
 #define OS_NETWORK_RANDOMIZE_INITIAL_LOCAL_PORTS    0
 
-//ICMP options
+//ICMPv4 options
 #define OS_NETWORK_ICMP                             1
 #define OS_NETWORK_ICMP_TTL                         (OS_NETWORK_IP_DEFAULT_TTL)
-#define OS_NETWORK_BROADCAST_PING                   0
-#define OS_NETWORK_MULTICAST_PING                   0
+#define OS_NETWORK_BROADCAST_PING                   1
+#define OS_NETWORK_MULTICAST_PING                   1
+
+//IPv6 options
+#define OS_NETWORK_IPV6_DHCP                        0 //not implemented yet!
+#define OS_NETWORK_IPV6_NUM_ADDRESSES               3
+#define OS_NETWORK_IPV6_FORWARD                     0
+#define OS_NETWORK_IPV6_FRAG                        1
+#define OS_NETWORK_IPV6_REASS                       (OS_NETWORK_IP_V6)
+#define OS_NETWORK_IPV6_SEND_ROUTER_SOLICIT         1
+#define OS_NETWORK_IPV6_AUTOCONFIG                  (OS_NETWORK_IP_V6)
+#define OS_NETWORK_IPV6_DUP_DETECT_ATTEMPTS         1
+
+//ICMPv6 options
+#define OS_NETWORK_ICMP6                            (OS_NETWORK_IP_V6)
+#define OS_NETWORK_ICMP6_DATASIZE                   8
+#define OS_NETWORK_ICMP6_HL                         255
+
+//Multicast listener discovery
+#define OS_NETWORK_IPV6_MLD                         (OS_NETWORK_IP_V6)
+#define OS_NETWORK_MEMP_NUM_MLD6_GROUP              4
+
+//Neighbor discovery
+#define OS_NETWORK_ND6_QUEUEING                     (OS_NETWORK_IP_V6)
+#define OS_NETWORK_MEMP_NUM_ND6_QUEUE               20
+#define OS_NETWORK_ND6_NUM_NEIGHBORS                10
+#define OS_NETWORK_ND6_NUM_DESTINATIONS             10
+#define OS_NETWORK_ND6_NUM_PREFIXES                 5
+#define OS_NETWORK_ND6_NUM_ROUTERS                  3
+#define OS_NETWORK_ND6_MAX_MULTICAST_SOLICIT        3
+#define OS_NETWORK_ND6_MAX_UNICAST_SOLICIT          3
+#define OS_NETWORK_ND6_MAX_ANYCAST_DELAY_TIME       1000
+#define OS_NETWORK_ND6_MAX_NEIGHBOR_ADVERTISEMENT   3
+#define OS_NETWORK_ND6_REACHABLE_TIME               30000
+#define OS_NETWORK_ND6_RETRANS_TIMER                1000
+#define OS_NETWORK_ND6_DELAY_FIRST_PROBE_TIME       5000
+#define OS_NETWORK_ND6_ALLOW_RA_UPDATES             1
+#define OS_NETWORK_ND6_TCP_REACHABILITY_HINTS       1
+#define OS_NETWORK_ND6_RDNSS_MAX_DNS_SERVERS        0
 
 //RAW options
 #define OS_NETWORK_RAW                              0
@@ -287,6 +335,11 @@ enum OS_AUDIO_DEV {
 //DHCP options
 #define OS_NETWORK_DHCP                             1
 #define OS_NETWORK_DHCP_DOES_ARP_CHECK              0
+#define	OS_NETWORK_DHCP_CHECK_LINK_UP               0
+#define	OS_NETWORK_DHCP_BOOTP_FILE                  0
+#define	OS_NETWORK_DHCP_GET_NTP_SRV                 1
+#define	OS_NETWORK_DHCP_MAX_NTP_SERVERS             1
+#define	OS_NETWORK_DHCP_MAX_DNS_SERVERS             OS_NETWORK_DNS_MAX_SERVERS
 
 //AUTOIP options
 #define OS_NETWORK_AUTOIP                           0
@@ -294,27 +347,29 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_DHCP_AUTOIP_COOP_TRIES           9
 
 //SNMP options
-#define OS_NETWORK_SNMP                             0
-#define OS_NETWORK_SNMP_CONCURRENT_REQUESTS         1
+#define OS_NETWORK_SNMP                             1
+#define OS_NETWORK_SNMP_USE_RAW                     0
+#define OS_NETWORK_SNMP_USE_NETCONN                 1
 #define OS_NETWORK_SNMP_TRAP_DESTINATIONS           1
-#define OS_NETWORK_SNMP_PRIVATE_MIB                 0
 #define OS_NETWORK_SNMP_SAFE_REQUESTS               1
 #define OS_NETWORK_SNMP_MAX_OCTET_STRING_LEN        127
+#define OS_NETWORK_SNMP_MIB2_CALLBACKS              0
 #define OS_NETWORK_SNMP_MAX_TREE_DEPTH              15
 #define OS_NETWORK_SNMP_MAX_VALUE_SIZE              MAX((OS_NETWORK_SNMP_MAX_OCTET_STRING_LEN) + 1, sizeof(S32) * (OS_NETWORK_SNMP_MAX_TREE_DEPTH))
 
 //IGMP options
-#define OS_NETWORK_IGMP                             0
+#define OS_NETWORK_IGMP                             1
 
 //DNS options
-#define OS_NETWORK_DNS                              0
+#define OS_NETWORK_DNS                              1
 #define OS_NETWORK_DNS_TABLE_SIZE                   4
 #define OS_NETWORK_DNS_MAX_NAME_LENGTH              256
 #define OS_NETWORK_DNS_MAX_SERVERS                  2
 #define OS_NETWORK_DNS_DOES_NAME_CHECK              1
-#define OS_NETWORK_DNS_MSG_SIZE                     512
 #define OS_NETWORK_DNS_LOCAL_HOSTLIST               0
 #define OS_NETWORK_DNS_LOCAL_HOSTLIST_IS_DYNAMIC    0
+#define OS_NETWORK_DNS_SECURE                       (OS_NETWORK_DNS_SECURE_RAND_XID | OS_NETWORK_DNS_SECURE_NO_MULTIPLE_OUTSTANDING | OS_NETWORK_DNS_SECURE_RAND_SRC_PORT)
+#define OS_NETWORK_DNS_SUPPORT_MDNS_QUERIES         1
 
 //UDP options
 #define OS_NETWORK_UDP                              1
@@ -341,13 +396,16 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_TCP_DEFAULT_LISTEN_BACKLOG       0xff
 #define OS_NETWORK_TCP_OVERSIZE                     (OS_NETWORK_TCP_MSS)
 #define OS_NETWORK_TCP_TIMESTAMPS                   0
+#define OS_NETWORK_TCP_CLOSE_TIMEOUT_MS_DEFAULT     20000
 #define OS_NETWORK_TCP_WND_UPDATE_THRESHOLD         (OS_NETWORK_TCP_WND / 4)
+#define OS_NETWORK_WND_SCALE                        0
 
 #define OS_NETWORK_EVENT_API                        0
 #define OS_NETWORK_CALLBACK_API                     1
 
 //Pbuf options
 #define OS_NETWORK_PBUF_LINK_HLEN                   (14 + OS_NETWORK_ETH_PAD_SIZE)
+#define OS_NETWORK_PBUF_LINK_ENCAPSULATION_HLEN     0u
 #define OS_NETWORK_PBUF_POOL_SIZE                   16
 #define OS_NETWORK_PBUF_POOL_BUFSIZE                MEM_ALIGN_SIZE(OS_NETWORK_TCP_MSS + 40 + OS_NETWORK_PBUF_LINK_HLEN, OS_NETWORK_MEM_ALIGNMENT)
 
@@ -362,12 +420,11 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_LOOPBACK_MAX_PBUFS               0
 #define OS_NETWORK_NETIF_LOOPBACK_MULTITHREADING    (0 == OS_NETWORK_NO_SYS)
 #define OS_NETWORK_NETIF_TX_SINGLE_PBUF             0
+#define OS_NETWORK_NUM_NETIF_CLIENT_DATA            0
 
 //LOOPIF options
 #define OS_NETWORK_HAVE_LOOPIF                      1
-
-//SLIPIF options
-#define OS_NETWORK_HAVE_SLIPIF                      0
+#define OS_NETWORK_LOOPIF_MULTICAST                 1
 
 //Thread options
 #define OS_NETWORK_SYS_THREAD_MAX                   6
@@ -380,9 +437,9 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_SLIPIF_THREAD_STACKSIZE          (OS_STACK_SIZE_MIN * 2)
 #define OS_NETWORK_SLIPIF_THREAD_PRIO               (OS_PRIO_TASK_SLIP)
 
-#define OS_NETWORK_PPP_THREAD_NAME                  "PppInputD"
-#define OS_NETWORK_PPP_THREAD_STACKSIZE             (OS_STACK_SIZE_MIN * 2)
-#define OS_NETWORK_PPP_THREAD_PRIO                  (OS_PRIO_TASK_PPP_INPUT)
+//#define OS_NETWORK_PPP_THREAD_NAME                  "PppInputD"
+//#define OS_NETWORK_PPP_THREAD_STACKSIZE             (OS_STACK_SIZE_MIN * 2)
+//#define OS_NETWORK_PPP_THREAD_PRIO                  (OS_PRIO_TASK_PPP_INPUT)
 
 #define OS_NETWORK_DEFAULT_THREAD_NAME              "LwIpD"
 #define OS_NETWORK_DEFAULT_THREAD_STACKSIZE         (OS_STACK_SIZE_MIN * 2)
@@ -394,22 +451,28 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_DEFAULT_ACCEPTMBOX_SIZE          2000
 
 //Sequential layer options
-#define OS_NETWORK_TCPIP_CORE_LOCKING               0
+#define OS_NETWORK_TCPIP_CORE_LOCKING               1
 #define OS_NETWORK_TCPIP_CORE_LOCKING_INPUT         0
 #define OS_NETWORK_NETCONN                          1
 #define OS_NETWORK_TCPIP_TIMEOUT                    1
+#define OS_NETWORK_NETCONN_SEM_PER_THREAD           0
+#define OS_NETWORK_NETCONN_FULLDUPLEX               0
 
 //Socket options
 #define OS_NETWORK_SOCKET                           0
 #define OS_NETWORK_COMPAT_SOCKETS                   0
 #define OS_NETWORK_POSIX_SOCKETS_IO_NAMES           1
+#define OS_NETWORK_SOCKET_OFFSET                    0
 #define OS_NETWORK_TCP_KEEPALIVE                    0
 #define OS_NETWORK_SO_SNDTIMEO                      0
 #define OS_NETWORK_SO_RCVTIMEO                      0
+#define OS_NETWORK_SO_SNDRCVTIMEO_NONSTANDARD       0
 #define OS_NETWORK_SO_RCVBUF                        0
+#define OS_NETWORK_SO_LINGER                        0
 #define OS_NETWORK_RECV_BUFSIZE_DEFAULT             INT_MAX
 #define OS_NETWORK_SO_REUSE                         0
 #define OS_NETWORK_SO_REUSE_RXTOALL                 0
+#define OS_NETWORK_FIONREAD_LINUXMODE               0
 
 //Statistics options
 #define OS_NETWORK_STATS                            1
@@ -428,6 +491,12 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_MEM_STATS                        ((0 == OS_NETWORK_MEM_LIBC_MALLOC) && (0 == OS_NETWORK_MEM_USE_POOLS))
 #define OS_NETWORK_MEMP_STATS                       (0 == OS_NETWORK_MEMP_MEM_MALLOC)
 #define OS_NETWORK_SYS_STATS                        (0 == OS_NETWORK_NO_SYS)
+#define OS_NETWORK_IP6_STATS                        (OS_NETWORK_IP_V6)
+#define OS_NETWORK_ICMP6_STATS                      (OS_NETWORK_IP_V6 && OS_NETWORK_ICMP6)
+#define OS_NETWORK_IP6_FRAG_STATS                   (OS_NETWORK_IP_V6 && (OS_NETWORK_IPV6_FRAG || OS_NETWORK_IPV6_REASS))
+#define OS_NETWORK_MLD6_STATS                       (OS_NETWORK_IP_V6 && OS_NETWORK_IPV6_MLD)
+#define OS_NETWORK_ND6_STATS                        (OS_NETWORK_IP_V6)
+#define OS_NETWORK_MIB2_STATS                       1
 
 #endif //(OS_NETWORK_STATS)
 
@@ -447,7 +516,6 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_CBCP_SUPPORT                     0
 #define OS_NETWORK_CCP_SUPPORT                      0
 #define OS_NETWORK_VJ_SUPPORT                       0
-#define OS_NETWORK_MD5_SUPPORT                      0
 
 //Timeouts
 #define OS_NETWORK_FSM_DEFTIMEOUT                   6       /* Timeout time in seconds */
@@ -469,9 +537,6 @@ enum OS_AUDIO_DEV {
  * (XXX - these constants should simply be shared by lcp.c instead
  *    of living in lcp.h)
  */
-#define OS_NETWORK_PPP_MTU                          HAL_ETH_MTU_SIZE    /* Default MTU (size of Info field) */
-#define OS_NETWORK_PPP_MAXMTU                       HAL_ETH_MTU_SIZE    /* Largest MTU we allow */
-#define OS_NETWORK_PPP_MINMTU                       64
 #define OS_NETWORK_PPP_MRU                          HAL_ETH_MTU_SIZE    /* default MRU = max length of info field */
 #define OS_NETWORK_PPP_MAXMRU                       HAL_ETH_MTU_SIZE    /* Largest MRU we allow */
 #define OS_NETWORK_PPP_DEFMRU                       296     /* Try for this */
@@ -488,10 +553,15 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_CHECKSUM_GEN_UDP                 1
 #define OS_NETWORK_CHECKSUM_GEN_TCP                 1
 #define OS_NETWORK_CHECKSUM_GEN_ICMP                1
+#define	OS_NETWORK_CHECKSUM_GEN_ICMP6               1
+#define OS_NETWORK_CHECKSUM_CHECK_ICMP6             1
 #define OS_NETWORK_CHECKSUM_CHECK_IP                1
 #define OS_NETWORK_CHECKSUM_CHECK_UDP               1
 #define OS_NETWORK_CHECKSUM_CHECK_TCP               1
+#define OS_NETWORK_CHECKSUM_CHECK_ICMP              1
+#define OS_NETWORK_CHECKSUM_CHECK_ICMP6             1
 #define OS_NETWORK_CHECKSUM_ON_COPY                 0
+#define OS_NETWORK_CHECKSUM_CTRL_PER_NETIF          0
 #endif //(HAL_CRC_ENABLED)
 
 //Debugging options
@@ -532,28 +602,33 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_DEBUG_SLIP                       OS_NETWORK_DEBUG_OFF
 #define OS_NETWORK_DEBUG_DHCP                       OS_NETWORK_DEBUG_OFF
 #define OS_NETWORK_DEBUG_AUTOIP                     OS_NETWORK_DEBUG_OFF
-#define OS_NETWORK_DEBUG_SNMP_MSG                   OS_NETWORK_DEBUG_OFF
 #define OS_NETWORK_DEBUG_SNMP_MIB                   OS_NETWORK_DEBUG_OFF
 #define OS_NETWORK_DEBUG_DNS                        OS_NETWORK_DEBUG_OFF
+#define OS_NETWORK_DEBUG_IP6                        OS_NETWORK_DEBUG_OFF
 
-#define OS_NETWORK_DAEMON_QUEUE_LEN                 6
-#define OS_NETWORK_HOST_NAME                        HAL_MB_NAME
+#define OS_NETWORK_PERF                             1
+#define OS_NETWORK_RAND()                           rand()
 
-#define OS_NETWORK_IP_V4                            4
-#define OS_NETWORK_IP_V6                            6
-#define OS_NETWORK_VERSION_DEFAULT                  (OS_NETWORK_IP_V4)
+//Network applications
+//SNTP
+#define OS_NETWORK_SNTP                             1
+#define SNTP_OPMODE                                 0
+#define SNTP_DEBUG                                  LWIP_DBG_OFF
+#define SNTP_PORT                                   123
+#define SNTP_SERVER_DNS                             1
+#define SNTP_SERVER_ADDRESS                         "pool.ntp.org"
+#define SNTP_CHECK_RESPONSE                         0
+#define SNTP_STARTUP_DELAY                          0
+#define SNTP_STARTUP_DELAY_FUNC                     ((60UL * MS) + (OS_NETWORK_RAND() % (240UL * MS)))
+#define SNTP_RECV_TIMEOUT                           (3 * MS)
+#define SNTP_UPDATE_DELAY                           (4 * 3600 * MS)
+#define SNTP_GET_SYSTEM_TIME(sec, us)               do { (sec) = (OS_TICKS_TO_MS(OS_TickCountGet()) / MS); (us) = (OS_TICKS_TO_MS(OS_TickCountGet()) * MS); } while(0)
+#define SNTP_SET_SYSTEM_TIME(sec)                   OS_NetworkSntpDateTimeSet(sec)
+#define SNTP_RETRY_TIMEOUT                          SNTP_RECV_TIMEOUT
+#define SNTP_RETRY_TIMEOUT_MAX                      (SNTP_RETRY_TIMEOUT * 10)
+#define SNTP_RETRY_TIMEOUT_EXP                      1
 
-#define OS_NETWORK_MAC_ADDR_DEFAULT                 "00:80:E1:00:00:00"
-//IPv4
-#define OS_NETWORK_IP_ADDR4_SIZE                    4
-#define OS_NETWORK_IP_ADDR4_DEFAULT                 "10.137.2.64"
-#define OS_NETWORK_NETMASK4_DEFAULT                 "255.255.255.0"
-#define OS_NETWORK_GATEWAY4_DEFAULT                 "10.137.2.1"
-//IPv6
-//#define OS_NETWORK_IP_ADDR6_SIZE                    16
-//#define OS_NETWORK_IP_ADDR6_DEFAULT                 "fe80::651c:fa43:b012:f989"
-//#define OS_NETWORK_NETMASK6_DEFAULT                 "128"
-//#define OS_NETWORK_GATEWAY6_DEFAULT                 "fe80::7db8:95ed:da70:641a"
+#define OS_NETWORK_LINK_SPEED                       ((HAL_ETH_SPEED == ETH_SPEED_10M) ? (U32)10000000UL : ((HAL_ETH_SPEED == ETH_SPEED_100M) ? (U32)100000000UL : (U32)0UL))
 
 enum OS_NETWORK_ITF {
         OS_NETWORK_ITF_ETH0,

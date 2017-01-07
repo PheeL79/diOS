@@ -32,6 +32,7 @@ typedef enum {
 
 typedef enum {
     OS_TIME_UNDEF,
+    OS_TIME_UTC,
     OS_TIME_GMT,
     OS_TIME_GMT_OFFSET,
     OS_TIME_LOCAL,
@@ -100,6 +101,12 @@ Status          OS_DateGet(const OS_DateFormat format, OS_DateTime* os_date_p);
 /// @param[in]  os_date_p       Date data.
 /// @return     #Status.
 Status          OS_DateSet(const OS_DateFormat format, OS_DateTime* os_date_p);
+
+/// @brief      Convert date and time from UTC timestamp to OS_DateTime format.
+/// @param[in]  utc_timestamp_s UTC timestamp in seconds.
+/// @param[out] os_date_time_p  Date/time data.
+/// @return     #Status.
+Status          OS_DateTimeUtcConvert(const OS_TimeS utc_timestamp_s, OS_DateTime* os_date_time_p);
 
 //Status          OS_AlarmGet(const OS_AlarmFormat format, /*const OS_AlarmEvent event,*/ OS_Alarm* os_alarm_p);
 //Status        OS_AlarmSet(const OS_AlarmFormat format, /*const OS_AlarmEvent event,*/ OS_Alarm* os_alarm_p);

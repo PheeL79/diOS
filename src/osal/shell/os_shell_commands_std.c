@@ -379,19 +379,18 @@ Status s = S_UNDEF;
         if (OS_NULL != net_itf_hd) {
             OS_NetworkItfDesc net_itf_desc = { 0 };
             IF_OK(s = OS_NetworkItfDescGet(net_itf_hd, &net_itf_desc)) {
-                printf("\nItf: %u, Name: %-" STRING(OS_NETWORK_ITF_NAME_LEN) "s, Hostname: %s\nStatus: %s\nLink: %s %s %s %s %s %s %s %s",
+                printf("\nItf: %u, Name: %-" STRING(OS_NETWORK_ITF_NAME_LEN) "s, Hostname: %s\nStatus: %s\nLink: %s%s%s%s%s%s%s",
                        net_itf_desc.id,
                        OS_NetworkItfNameGet(net_itf_hd),
                        net_itf_desc.hostname_sp,
                        (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_UP)) ? "up" : "down",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_LINK_UP)) ? "up" : "down",
-                       net_itf_desc.is_loopback ? "loopback" : "",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_ETHERNET)) ? "ethernet" : "",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_BROADCAST)) ? "broadcast" : "",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_POINTTOPOINT)) ? "point_to_point" : "",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_ETHARP)) ? "arp" : "",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_DHCP)) ? "dhcp" : "",
-                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_IGMP)) ? "igmp" : "");
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_LINK_UP)) ? "up " : "down ",
+                       net_itf_desc.is_loopback ? "loopback " : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_ETHERNET)) ? "ethernet " : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_BROADCAST)) ? "broadcast " : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_ETHARP)) ? "arp " : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_IGMP)) ? "igmp " : "",
+                       (BIT_TEST(net_itf_desc.flags, OS_NET_ITF_FLAG_MLD6)) ? "mld6 " : "");
                 {
                     U8 mac_addr[HAL_ETH_MAC_ADDR_SIZE] = { 0 };
                     IF_OK(s = OS_NetworkItfMacAddrGet(net_itf_hd, mac_addr)) {
@@ -400,9 +399,7 @@ Status s = S_UNDEF;
                                net_itf_desc.mtu);
                     }
                 }
-                {
-    //                printf("IP6Addr: %04X::%04X:%04X:%04X:%04X/%u\n");
-                }
+#if (OS_NETWORK_IP_V4)
                 {
                     OS_NetworkIpAddr4  ip_addr4 = { 0 };
                     OS_NetworkNetMask4 netmask4 = { 0 };
@@ -417,15 +414,26 @@ Status s = S_UNDEF;
                                     gateway4_p[0], gateway4_p[1], gateway4_p[2], gateway4_p[3]);
                     }
                 }
+#endif //(OS_NETWORK_IP_V4)
+#if (OS_NETWORK_IP_V6)
+                {
+//                    OS_NetworkIpAddr6  ip_addr6 = { 0 };
+//                    IF_OK(s = OS_NetworkItfAddress6Get(net_itf_hd, &ip_addr6)) {
+//                        const U8* ip_addr6_p = (U8*)&ip_addr6.addr;
+//                    printf("IP6Addr: %04X::%04X:%04X:%04X:%04X/%u\n");
+                }
+#endif //(OS_NETWORK_IP_V6)
                 {
                     OS_NetworkItfStats net_itf_stats = { 0 };
                     IF_OK(s = OS_NetworkItfStatsGet(net_itf_hd, &net_itf_stats)) {
 #if (OS_NETWORK_SNMP)   //extended statistics
-                        printf("SNMP statistics:"
-                               "\nLink speed: %u"
-                               "\nRX: bytes: %10u, packets: %10u, packets uni: %10u, discard: %10u"
-                               "\nTX: bytes: %10u, packets: %10u, packets uni: %10u, discard: %10u",
-                               net_itf_stats.link_speed,
+#if (OS_NETWORK_MIB2_STATS)
+                        printf("\nLink type : %u(RFC 1213)" \
+                               "\nLink speed: %u(Mbps)" \
+                               "\nRX: bytes: %10u, packets: %7u, packets uni: %7u, discard: %7u" \
+                               "\nTX: bytes: %10u, packets: %7u, packets uni: %7u, discard: %7u",
+                               net_itf_stats.link_type,
+                               net_itf_stats.link_speed / (U32)1000000U,
                                net_itf_stats.packets_octets_in,
                                net_itf_stats.packets_in,
                                net_itf_stats.packets_uni_in,
@@ -439,6 +447,7 @@ Status s = S_UNDEF;
                                "\nTX: bytes: %10u",
                                net_itf_stats.received_octets,
                                net_itf_stats.sent_octets);
+#endif //(OS_NETWORK_MIB2_STATS)
 #endif //(OS_NETWORK_SNMP)
                     }
                 }

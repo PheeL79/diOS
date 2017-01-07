@@ -4,6 +4,9 @@
 * @author  A. Filyanov
 *******************************************************************************/
 #include "lwip/tcpip.h"
+#if (OS_NETWORK_DHCP)
+#   include "lwip/dhcp.h"
+#endif //(OS_NETWORK_DHCP)
 #include "os_supervise.h"
 #include "os_environment.h"
 #include "os_driver.h"
@@ -20,8 +23,11 @@
 //-----------------------------------------------------------------------------
 #define MDL_NAME                    "network_d"
 
-#define OS_TIM_DHCP_CLIENT_PERIOD_MS   100
-#define OS_TIM_DHCP_CLIENT_TIMEOUT_MS  1000
+#if (OS_NETWORK_DHCP)
+#   define OS_TIM_DHCP_CLIENT_PERIOD_MS   DHCP_FINE_TIMER_MSECS
+#   define OS_TIM_DHCP_CLIENT_TIMEOUT_MS  DHCP_COARSE_TIMER_MSECS
+#endif //(OS_NETWORK_DHCP)
+
 enum {
     OS_TIM_ID_ETH0_DHCP_CLIENT = OS_TIM_ID_APP
 };
@@ -36,6 +42,9 @@ typedef struct {
     Bool            dhcp_client;
     OS_TimerHd      dhcp_cli_timer_hd;
 #endif //(OS_NETWORK_DHCP)
+#if (OS_NETWORK_PERF)
+    void*           iperf_sess_p;
+#endif //(OS_NETWORK_PERF)
 } TaskStorage;
 
 //------------------------------------------------------------------------------
@@ -60,9 +69,12 @@ TaskStorage* tstor_p = (TaskStorage*)args_p->stor_p;
 Status s = S_UNDEF;
 #if (OS_NETWORK_TCP)
     /* Create tcp_ip stack thread */
+    OS_LOG(L_DEBUG_1, "TCPIP init");
     tcpip_init(OS_NULL, OS_NULL);
 #endif //(OS_NETWORK_TCP)
+#if (OS_NETWORK_DHCP)
     tstor_p->dhcp_client = (1 == OS_NETWORK_DHCP) ? OS_TRUE : OS_FALSE;
+#endif //(OS_NETWORK_DHCP)
 #if (OS_NETWORK_HAVE_LOOPIF)
     {
         const OS_NetworkItfConfig net_itf_cfg = {
@@ -106,9 +118,7 @@ Status s = S_UNDEF;
 
 	for(;;) {
         IF_STATUS(s = OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            if (S_MODULE != s) {
-                OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
-            }
+            if (S_MODULE != s) { OS_LOG_S(L_WARNING, S_INVALID_MESSAGE); }
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
@@ -140,21 +150,18 @@ Status s = S_UNDEF;
                                                     };
                                                     IF_OK(s = OS_TimerCreate(&tim_cfg, &tstor_p->dhcp_cli_timer_hd)) {
                                                         IF_OK(s = OS_TimerStart(tstor_p->dhcp_cli_timer_hd, OS_TIM_DHCP_CLIENT_TIMEOUT_MS)) {
-                                                        } else {
-                                                            OS_LOG_S(L_WARNING, s);
-                                                        }
-                                                    } else {
-                                                        OS_LOG_S(L_WARNING, s);
-                                                    }
+                                                        } else { OS_LOG_S(L_WARNING, s); }
+                                                    } else { OS_LOG_S(L_WARNING, s); }
                                                 }
                                             }
                                         }
+                                    } else {
+                                        //Inform network DHCP server about our interface manual configuration.
+                                        s = OS_NetworkItfDhcpServerInform(net_itf_hd);
                                     }
 #endif //(OS_NETWORK_DHCP)
                                 }
-                            } else {
-                                OS_LOG_S(L_WARNING, s);
-                            }
+                            } else { OS_LOG_S(L_WARNING, s); }
                         }
                         break;
                     case OS_SIG_TIMER:
@@ -172,9 +179,7 @@ Status s = S_UNDEF;
                                                 }
                                             }
                                         }
-                                    } else {
-                                        OS_LOG(L_DEBUG_1, "%s: DHCP client timeout!", OS_NetworkItfNameGet(net_itf_hd));
-                                    }
+                                    } else { OS_LOG(L_DEBUG_1, "%s: DHCP client timeout!", OS_NetworkItfNameGet(net_itf_hd)); }
                                 }
                             }
                         }
@@ -208,16 +213,30 @@ Status s = S_UNDEF;
             break;
         case PWR_ON:
             {
+#if (OS_NETWORK_IP_V4)
             OS_NetworkIpAddr4  ip_addr4         = { 0 };
             OS_NetworkNetMask4 netmask4         = { 0 };
             OS_NetworkGateWay4 gateway4         = { 0 };
+#endif //(OS_NETWORK_IP_V4)
+#if (OS_NETWORK_IP_V6)
+            OS_NetworkIpAddr6  ip_addr6         = { 0 };
+//            OS_NetworkNetMask6 netmask6         = { 0 };
+//            OS_NetworkGateWay6 gateway6         = { 0 };
+#endif //(OS_NETWORK_IP_V6)
             U8 mac_addr[HAL_ETH_MAC_ADDR_SIZE]  = { 0 };
             OS_NetworkItfInitArgs net_itf_init_args = {
-                .host_name_p    = OS_NULL,
-                .mac_addr_p     = (OS_NetworkMacAddr*)&mac_addr,
-                .ip_addr4_p     = &ip_addr4,
-                .netmask4_p     = &netmask4,
-                .gateway4_p     = &gateway4
+                .host_name_p= OS_NULL,
+                .mac_addr_p = (OS_NetworkMacAddr*)&mac_addr,
+#if (OS_NETWORK_IP_V4)
+                .ip_addr4_p = &ip_addr4,
+                .netmask4_p = &netmask4,
+                .gateway4_p = &gateway4,
+#endif //(OS_NETWORK_IP_V4)
+#if (OS_NETWORK_IP_V6)
+                .ip_addr6_p = &ip_addr6,
+//                .netmask6_p = &netmask6,
+//                .gateway6_p = &gateway6,
+#endif //(OS_NETWORK_IP_V6)
             };
             OS_NetworkItfHd net_itf_hd = OS_NULL;
 #if (OS_NETWORK_HAVE_LOOPIF)
@@ -258,6 +277,7 @@ Status s = S_UNDEF;
                 goto error;
             }
 #endif //(OS_SETTINGS_ENABLED)
+
             {
 #if (OS_SETTINGS_ENABLED)
                 IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "mac_addr", &value[0])) { goto error; }
@@ -265,8 +285,8 @@ Status s = S_UNDEF;
 #else
                 IF_STATUS(s = OS_NetworkMacAddressStrToBin(value, OS_NETWORK_MAC_ADDR_DEFAULT)) { goto error; }
 #endif //(OS_SETTINGS_ENABLED)
-#if (OS_SETTINGS_ENABLED)
                 if (net_itf_init_args.host_name_p) {
+#if (OS_SETTINGS_ENABLED)
                     IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "host_name", &value[0])) { goto error; }
                     if (OS_NETWORK_ITF_HOST_NAME_LEN >= (OS_StrLen(&value[0]) + 1)) {
                         OS_StrCpy(net_itf_init_args.host_name_p, &value[0]);
@@ -274,8 +294,12 @@ Status s = S_UNDEF;
                         s = S_INVALID_SIZE;
                         goto error;
                     }
-                }
+#else
+                    if (hostname_p) {
+                        OS_StrCpy(hostname_p, OS_NETWORK_HOST_NAME);
+                    }
 #endif //(OS_SETTINGS_ENABLED)
+                }
 #if (OS_NETWORK_DHCP)
 #   if (OS_SETTINGS_ENABLED)
                 IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "dhcp_client", &value[0])) { goto error; }
@@ -283,6 +307,7 @@ Status s = S_UNDEF;
 #   endif //(OS_SETTINGS_ENABLED)
                 if (OS_TRUE != tstor_p->dhcp_client) {
 #endif //(OS_NETWORK_DHCP)
+#if (OS_NETWORK_IP_V4)
 #if (OS_SETTINGS_ENABLED)
                     IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "ip_addr4", &value[0])) { goto error; }
                     IF_STATUS(s = OS_NetworkIpAddress4StrToBin(&value[0], net_itf_init_args.ip_addr4_p)) { goto error; }
@@ -291,16 +316,37 @@ Status s = S_UNDEF;
                     IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "gateway4", &value[0])) { goto error; }
                     IF_STATUS(s = OS_NetworkGateWay4StrToBin(&value[0], net_itf_init_args.gateway4_p)) { goto error; }
 #else
-                    if (hostname_p) {
-                        OS_StrCpy(hostname_p, OS_NETWORK_HOST_NAME);
-                    }
                     IF_STATUS(s = OS_NetworkIpAddress4StrToBin(OS_NETWORK_IP_ADDR4_DEFAULT, net_itf_init_args.ip_addr4_p)) { goto error; }
                     IF_STATUS(s = OS_NetworkNetMask4StrToBin(OS_NETWORK_NETMASK4_DEFAULT, net_itf_init_args.netmask4_p)) { goto error; }
                     IF_STATUS(s = OS_NetworkGateWay4StrToBin(OS_NETWORK_GATEWAY4_DEFAULT, net_itf_init_args.gateway4_p)) { goto error; }
 #endif //(OS_SETTINGS_ENABLED)
+#endif //(OS_NETWORK_IP_V4)
+
+#if (OS_NETWORK_IP_V6)
+#if (OS_SETTINGS_ENABLED)
+                    IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "ip_addr6", &value[0])) { goto error; }
+//                    IF_STATUS(s = OS_NetworkIpAddress6StrToBin(&value[0], net_itf_init_args.ip_addr6_p)) { goto error; }
+//                    IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "netmask6", &value[0])) { goto error; }
+//                    IF_STATUS(s = OS_NetworkNetMask6StrToBin(&value[0], net_itf_init_args.netmask6_p)) { goto error; }
+//                    IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "gateway6", &value[0])) { goto error; }
+//                    IF_STATUS(s = OS_NetworkGateWay6StrToBin(&value[0], net_itf_init_args.gateway6_p)) { goto error; }
+#else
+//                    IF_STATUS(s = OS_NetworkIpAddress6StrToBin(OS_NETWORK_IP_ADDR6_DEFAULT, net_itf_init_args.ip_addr6_p)) { goto error; }
+//                    IF_STATUS(s = OS_NetworkNetMask6StrToBin(OS_NETWORK_NETMASK6_DEFAULT, net_itf_init_args.netmask6_p)) { goto error; }
+//                    IF_STATUS(s = OS_NetworkGateWay6StrToBin(OS_NETWORK_GATEWAY6_DEFAULT, net_itf_init_args.gateway6_p)) { goto error; }
+#endif //(OS_SETTINGS_ENABLED)
+#endif //(OS_NETWORK_IP_V6)
+
 #if (OS_NETWORK_DHCP)
                 }
 #endif //(OS_NETWORK_DHCP)
+
+//DEBUG!!!
+//IP6_ADDR_PART(net_itf_init_args.ip_addr6_p, 0, 0x20, 0x01, 0x0d, 0xb8);
+//IP6_ADDR_PART(net_itf_init_args.ip_addr6_p, 1, 0x85, 0xa3, 0x08, 0xd3);
+//IP6_ADDR_PART(net_itf_init_args.ip_addr6_p, 2, 0x13, 0x19, 0x8a, 0x2e);
+//IP6_ADDR_PART(net_itf_init_args.ip_addr6_p, 3, 0x03, 0x70, 0x73, 0x48);
+//DEBUG!!!
                 IF_STATUS(s = OS_NetworkItfInit(net_itf_hd, &net_itf_init_args)) { goto error; }
                 const OS_DriverHd drv_gpio_dhd = OS_DriverGpioGet();
                 const OS_QueueHd stdin_qhd = OS_TaskStdInGet(OS_TaskByNameGet(task_net_cfg.name));
@@ -320,6 +366,15 @@ Status s = S_UNDEF;
                 };
                 IF_STATUS(s = OS_NetworkItfOpen(net_itf_hd, &net_itf_open_args)) { goto error; }
             }
+#if (OS_NETWORK_PERF)
+            IF_STATUS(s = OS_NetworkIperfStart(&tstor_p->iperf_sess_p)) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_PERF)
+#if (OS_NETWORK_SNMP)
+            IF_STATUS(s = OS_NetworkSnmpStart()) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_SNMP)
+#if (OS_NETWORK_SNTP)
+            IF_STATUS(s = OS_NetworkSntpStart()) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_SNTP)
             }
             break;
         case PWR_STOP:
@@ -331,6 +386,20 @@ Status s = S_UNDEF;
                     IF_OK(s = OS_NetworkItfDeInit(net_itf_hd, OS_NULL)) {
 #endif //(OS_NETWORK_HAVE_LOOPIF)
                         net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_ETH0];
+#if (OS_NETWORK_PERF)
+                        IF_STATUS(s = OS_NetworkIperfStop(tstor_p->iperf_sess_p)) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_PERF)
+#if (OS_NETWORK_SNMP)
+                        IF_STATUS(s = OS_NetworkSnmpStop()) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_SNMP)
+#if (OS_NETWORK_SNTP)
+                        IF_STATUS(s = OS_NetworkSntpStop()) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_SNTP)
+#if (OS_NETWORK_DHCP)
+                        if (OS_TRUE == tstor_p->dhcp_client) {
+                            IF_STATUS(s = OS_NetworkItfDhcpClientRelease(net_itf_hd)) { OS_LOG_S(L_WARNING, s); }
+                        }
+#endif //(OS_NETWORK_DHCP)
                         IF_OK(s = OS_NetworkItfClose(net_itf_hd, OS_NULL)) {
                             IF_OK(s = OS_NetworkItfDeInit(net_itf_hd, OS_NULL)) {
                                 const OS_DriverHd drv_gpio_dhd = OS_DriverGpioGet();

@@ -1,33 +1,26 @@
 //-----------------------------------------------------------------------------
-#include "os_config.h"
+#include "hal_config.h"
 
-#ifdef TEST
+#ifdef HAL_TEST_ENABLED
 #include <stdlib.h>
 #include "unity.h"
 #include "common.h"
 #include "hal.h"
-#include "test_main.h"
-#include "os_debug.h"
-#include "os_list.h"
-#include "os_memory.h"
+#include "test_hal.h"
 
 //-----------------------------------------------------------------------------
 extern void setUp(void);
 extern void tearDown(void);
-
-static void TestList(void);
-static void TestListSort(const OS_List* list_p, const SortDirection sort_dir);
-static void TestListLog(const OS_List* list_p);
 
 //-----------------------------------------------------------------------------
 static void runTest(UnityTestFunction test);
 void resetTest(void);
 
 /******************************************************************************/
-void TestsRun(void)
+void TestsHalRun(void)
 {
-    UnityBegin();
-    RUN_TEST(TestList, 1);
+    UnityBegin("test_hal.c");
+//    RUN_TEST(TestList, 1);
     UnityEnd();
 }
 
@@ -60,4 +53,4 @@ void resetTest(void)
     setUp();
 }
 
-#endif // TEST
+#endif //HAL_TEST_ENABLED

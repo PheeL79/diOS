@@ -3803,7 +3803,7 @@
       <name>$PROJ_DIR$\..\..\..\..\src\tst\test_main.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\unity\src\unity.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\ext\unity\240\src\unity.c</name>
     </file>
   </group>
 </project>

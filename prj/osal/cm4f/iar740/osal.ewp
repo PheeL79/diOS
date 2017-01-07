@@ -188,6 +188,7 @@
           <state>CM4F</state>
           <state>STM32F407xx</state>
           <state>USE_HAL_DRIVER</state>
+          <state>UNITY_INCLUDE_CONFIG_H</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -330,14 +331,15 @@
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\HID\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\MSC\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\AUDIO\Inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include\ipv4</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include\netif</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include\ipv4</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include\netif</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.11a\src</state>
           <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
-          <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\ext\unity\240\src</state>
           <state>$PROJ_DIR$\..\..\..\..\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\src</state>
+          <state>$PROJ_DIR$\..\..\..\..\src\tst</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp</state>
           <state>$PROJ_DIR$\..\..\..\..\src\hal\bsp\olimex_stm32_p407</state>
@@ -351,8 +353,9 @@
           <state>$PROJ_DIR$\..\..\..\..\src\osal\settings\min_ini</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
-          <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\141_101</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\201</state>
           <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.11a</state>
+          <state>$PROJ_DIR$\..\..\..\..\cfg\unity\240</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2156,12 +2159,12 @@
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\HID\Inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\MSC\Inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\AUDIO\Inc</state>
-                <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include</state>
-                <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include\ipv4</state>
-                <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include\netif</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include\ipv4</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include\netif</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.11a\src</state>
                 <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
-                <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
+                <state>$PROJ_DIR$\..\..\..\..\ext\unity\240\src</state>
                 <state>$PROJ_DIR$\..\..\..\..\inc</state>
                 <state>$PROJ_DIR$\..\..\..\..\src</state>
                 <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
@@ -2177,7 +2180,7 @@
                 <state>$PROJ_DIR$\..\..\..\..\src\osal\settings\min_ini</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
-                <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\141_101</state>
+                <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\201</state>
                 <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.11a</state>
               </option>
               <option>
@@ -2320,115 +2323,343 @@
       <group>
         <name>api</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\api_lib.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\api_lib.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\api_msg.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\api_msg.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\err.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\err.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\netbuf.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\netbuf.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\netdb.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\netdb.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\netifapi.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\netifapi.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\sockets.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\sockets.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\api\tcpip.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\api\tcpip.c</name>
         </file>
+      </group>
+      <group>
+        <name>apps</name>
+        <group>
+          <name>lwiperf</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\lwiperf\lwiperf.c</name>
+          </file>
+        </group>
+        <group>
+          <name>snmp</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_asn1.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_asn1.h</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_core.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_core_priv.h</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_icmp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_interfaces.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_ip.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_snmp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_system.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_tcp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_mib2_udp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_msg.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_msg.h</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_netconn.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_pbuf_stream.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_pbuf_stream.h</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_scalar.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_table.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_threadsync.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmp_traps.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmpv3.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmpv3_dummy.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmpv3_mbedtls.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\snmp\snmpv3_priv.h</name>
+          </file>
+        </group>
+        <group>
+          <name>sntp</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\apps\sntp\sntp.c</name>
+          </file>
+        </group>
       </group>
       <group>
         <name>core</name>
         <group>
           <name>ipv4</name>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\autoip.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\autoip.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\icmp.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\dhcp.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\igmp.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\etharp.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\inet.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\icmp.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\inet_chksum.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\igmp.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\ip.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\ip4.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\ip_addr.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\ip4_addr.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\ipv4\ip_frag.c</name>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv4\ip4_frag.c</name>
+          </file>
+        </group>
+        <group>
+          <name>ipv6</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\dhcp6.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\ethip6.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\icmp6.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\inet6.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\ip6.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\ip6_addr.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\ip6_frag.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\mld6.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ipv6\nd6.c</name>
           </file>
         </group>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\def.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\def.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\dhcp.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\dns.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\dns.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\inet_chksum.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\init.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\init.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\lwip_timers.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\ip.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\mem.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\mem.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\memp.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\memp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\netif.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\netif.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\pbuf.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\pbuf.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\raw.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\raw.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\stats.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\stats.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\sys.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\sys.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\tcp.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\tcp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\tcp_in.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\tcp_in.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\tcp_out.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\tcp_out.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\core\udp.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\timeouts.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\core\udp.c</name>
         </file>
       </group>
       <group>
         <name>netif</name>
+        <group>
+          <name>ppp</name>
+          <group>
+            <name>polarssl</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\polarssl\arc4.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\polarssl\des.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\polarssl\md4.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\polarssl\md5.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\polarssl\sha1.c</name>
+            </file>
+          </group>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\auth.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\ccp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\chap-md5.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\chap-new.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\chap_ms.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\demand.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\eap.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\ecp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\eui64.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\fsm.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\ipcp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\ipv6cp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\lcp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\magic.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\mppe.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\multilink.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\ppp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\pppapi.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\pppcrypt.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\pppoe.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\pppol2tp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\pppos.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\upap.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\utils.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ppp\vj.c</name>
+          </file>
+        </group>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\netif\etharp.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\ethernet.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\src\osal\network\lwip\sys_arch.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\lowpan6.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\netif\slipif.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\cfg\lwip\201\arch\sys_arch.c</name>
         </file>
       </group>
     </group>
@@ -2602,12 +2833,12 @@
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\HID\Inc</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\MSC\Inc</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\csp\stm32f4xx\STM32_USB_Device_Library\241\Class\AUDIO\Inc</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include\ipv4</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\lwip\141_101\src\include\netif</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include\ipv4</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\lwip\201\src\include\netif</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\fat_fs\0.11a\src</state>
               <state>$PROJ_DIR$\..\..\..\..\ext\minini\1_2b</state>
-              <state>$PROJ_DIR$\..\..\..\..\ext\unity\210\src</state>
+              <state>$PROJ_DIR$\..\..\..\..\ext\unity\240\src</state>
               <state>$PROJ_DIR$\..\..\..\..\inc</state>
               <state>$PROJ_DIR$\..\..\..\..\src</state>
               <state>$PROJ_DIR$\..\..\..\..\src\hal</state>
@@ -2623,7 +2854,7 @@
               <state>$PROJ_DIR$\..\..\..\..\src\osal\settings\min_ini</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\freertos\800</state>
-              <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\141_101</state>
+              <state>$PROJ_DIR$\..\..\..\..\cfg\lwip\201</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\fat_fs\0.11a</state>
               <state>$PROJ_DIR$\..\..\..\..\cfg\olimex_stm32_p407</state>
             </option>
@@ -2757,9 +2988,6 @@
     <name>test</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\tst\test_hal.c</name>
-      <excluded>
-        <configuration>Debug</configuration>
-      </excluded>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\src\tst\test_main.c</name>
@@ -2771,7 +2999,7 @@
       </excluded>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\ext\unity\210\src\unity.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\ext\unity\240\src\unity.c</name>
     </file>
   </group>
   <group>

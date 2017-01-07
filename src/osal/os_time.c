@@ -32,12 +32,13 @@ Status s = S_OK;
 /******************************************************************************/
 Status OS_TimeGet(const OS_TimeFormat format, OS_DateTime* os_time_p)
 {
-Status s;
+Status s = S_UNDEF;
     if (OS_NULL == os_time_p) { return S_INVALID_PTR; }
     IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_TIME_GET, (void*)os_time_p)) { return s; }
     //Convert time to specified format.
     switch (format) {
         case OS_TIME_UNDEF:
+        case OS_TIME_UTC:
         case OS_TIME_GMT:
         case OS_TIME_GMT_OFFSET:
         case OS_TIME_LOCAL:
@@ -53,7 +54,7 @@ Status s;
 /******************************************************************************/
 Status OS_TimeSet(const OS_TimeFormat format, OS_DateTime* os_time_p)
 {
-Status s;
+Status s = S_UNDEF;
     if (OS_NULL == os_time_p) { return S_INVALID_PTR; }
     if (OS_TRUE != OS_TimeIsValid(os_time_p->hours, os_time_p->minutes, os_time_p->seconds)) {
         return S_INVALID_VALUE;
@@ -75,7 +76,7 @@ Bool OS_TimeIsValid(const U8 hours, const U8 minutes, const U8 seconds)
 /******************************************************************************/
 Status OS_DateGet(const OS_DateFormat format, OS_DateTime* os_date_p)
 {
-Status s;
+Status s = S_UNDEF;
     if (OS_NULL == os_date_p) { return S_INVALID_PTR; }
     IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_DATE_GET, (void*)os_date_p)) { return s; }
     return s;
@@ -92,6 +93,87 @@ Status s = S_OK;
     os_date_p->weekday = OS_DateWeekDayGet(os_date_p->year, os_date_p->month, os_date_p->day);
     if (OS_TRUE != OS_DateIsWeekDay(os_date_p->weekday)) { return S_INVALID_VALUE; }
     IF_STATUS(s = OS_DriverIoCtl(os_env.drv_rtc, DRV_REQ_RTC_DATE_SET, (void*)os_date_p)) { return s; }
+    return s;
+}
+
+/******************************************************************************/
+//Code was taken from "musl" - an implementation of the standard library for Linux-based systems
+Status OS_DateTimeUtcConvert(const OS_TimeS utc_timestamp_s, OS_DateTime* os_date_time_p)
+{
+#define DAYS_PER_400Y   ((365 * 400) + 97)
+#define DAYS_PER_100Y   ((365 * 100) + 24)
+#define DAYS_PER_4Y     ((365 * 4)   + 1)
+
+#define SECS_IN_DAY     86400
+#define DAYS_IN_YEAR    365
+
+static const U8 days_in_month[] = { 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29 };
+LongLong days, secs;
+Int remdays, remsecs, remyears;
+Int qc_cycles, c_cycles, q_cycles;
+LongLong years;
+Int months;
+Int yday, leap;
+Status s = S_OK;
+    if (OS_NULL == os_date_time_p) { return S_INVALID_PTR; }
+	/* Reject time_t values whose year would overflow int */
+	secs = utc_timestamp_s;
+	if ((secs < (INT_MIN * 31622400LL)) || (secs > (INT_MAX * 31622400LL)))
+		return S_INVALID_VALUE;
+
+	days = secs / SECS_IN_DAY;
+	remsecs = secs % SECS_IN_DAY;
+	if (remsecs < 0) {
+		remsecs += SECS_IN_DAY;
+		days--;
+	}
+
+	qc_cycles = days / DAYS_PER_400Y;
+	remdays = days % DAYS_PER_400Y;
+	if (remdays < 0) {
+		remdays += DAYS_PER_400Y;
+		qc_cycles--;
+	}
+
+	c_cycles = remdays / DAYS_PER_100Y;
+	if (c_cycles == 4) c_cycles--;
+	remdays -= c_cycles * DAYS_PER_100Y;
+
+	q_cycles = remdays / DAYS_PER_4Y;
+	if (q_cycles == 25) q_cycles--;
+	remdays -= q_cycles * DAYS_PER_4Y;
+
+	remyears = remdays / DAYS_IN_YEAR;
+	if (remyears == 4) remyears--;
+	remdays -= remyears * DAYS_IN_YEAR;
+
+	leap = !remyears && (q_cycles || !c_cycles);
+	yday = remdays + 31 + 28 + leap;
+	if (yday >= (DAYS_IN_YEAR + leap)) yday -= (DAYS_IN_YEAR + leap);
+
+	years = remyears + (4 * q_cycles) + (100 * c_cycles) + (400 * qc_cycles);
+
+	for (months = 0; days_in_month[months] <= remdays; months++) {
+		remdays -= days_in_month[months];
+    }
+
+	if (((years + 100) > INT_MAX) || ((years + 100) < INT_MIN)) {
+		return S_INVALID_VALUE;
+    }
+
+	os_date_time_p->year  = years + HAL_RTC_YEAR_BASE;
+	os_date_time_p->month = months + 1;
+	if (os_date_time_p->month >= 12) {
+		os_date_time_p->month -= 12;
+		os_date_time_p->year++;
+	}
+	os_date_time_p->day     = remdays;
+	os_date_time_p->weekday = OS_DateWeekDayGet(os_date_time_p->year, os_date_time_p->month, os_date_time_p->day);
+
+	os_date_time_p->hours   = remsecs / 3600;
+	os_date_time_p->minutes = remsecs / 60 % 60;
+	os_date_time_p->seconds = remsecs % 60;
+
     return s;
 }
 
