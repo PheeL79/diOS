@@ -20,6 +20,10 @@ extern "C" {
 */
 //------------------------------------------------------------------------------
 typedef void* OS_QueueHd;
+#if (OS_QUEUE_SET_ENABLED)
+typedef void* OS_QueueSetHd;
+typedef void* OS_QueueSetItemHd;
+#endif //(OS_QUEUE_SET_ENABLED)
 
 typedef struct {
     U16             len;
@@ -43,6 +47,13 @@ Status          OS_QueueCreate(const OS_QueueConfig* cfg_p, OS_TaskHd parent_thd
 /// @param[in]  qhd             Queue handle.
 /// @return     #Status.
 Status          OS_QueueDelete(const OS_QueueHd qhd);
+
+/// @brief      Peek the item.
+/// @param[in]  qhd             Receiver queue handle.
+/// @param[out] item_p          Item.
+/// @param[in]  timeout         Item receiving timeout.
+/// @return     #Status.
+Status          OS_QueuePeek(const OS_QueueHd qhd, void* item_p, const OS_TimeMs timeout);
 
 /// @brief      Receive the item.
 /// @param[in]  qhd             Receiver queue handle.
@@ -99,6 +110,18 @@ U32             OS_QueuesCountGet(void);
 /// @return     Queue handle.
 OS_QueueHd      OS_QueueNextGet(const OS_QueueHd qhd);
 
+#if (OS_QUEUE_SET_ENABLED)
+Status          OS_QueueSetCreate(const Size combined_size, OS_QueueSetHd* qshd_p);
+
+Status          OS_QueueSetDelete(const OS_QueueSetHd qshd);
+
+Status          OS_QueueSetItemAppend(const OS_QueueSetHd qshd, const OS_QueueSetItemHd item_qshd);
+
+Status          OS_QueueSetItemRemove(const OS_QueueSetHd qshd, const OS_QueueSetItemHd item_qshd);
+
+OS_QueueSetItemHd OS_QueueSetReceive(const OS_QueueSetHd qshd, const OS_TimeMs timeout);
+#endif //(OS_QUEUE_SET_ENABLED)
+
 /**
 * \addtogroup OS_ISR_Queue ISR specific functions.
 * @{
@@ -127,6 +150,10 @@ Status          OS_ISR_QueueSend(const OS_QueueHd qhd, const void* item_p, const
 /// @param[in]  qhd             Queue handle.
 /// @return     Items count.
 U32             OS_ISR_QueueItemsCountGet(const OS_QueueHd qhd);
+
+#if (OS_QUEUE_SET_ENABLED)
+OS_QueueSetItemHd OS_ISR_QueueSetReceive(const OS_QueueSetHd qshd);
+#endif //(OS_QUEUE_SET_ENABLED)
 
 /**@}*/ //OS_ISR_Queue
 

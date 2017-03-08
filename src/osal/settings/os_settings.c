@@ -74,7 +74,8 @@ Status s = S_OK;
 Status OS_SettingsItemsRead(ConstStrP file_path_p, OS_SettingsItem items[])
 {
 OS_SettingsItem* items_it = &items[0];
-Status s;
+Status s = S_IS_EMPTY;
+    OS_ASSERT_DEBUG(items_it);
     while (items_it++) {
         if (OS_NULL == items_it->key_p) { break; }
         IF_STATUS(s = OS_SettingsRead(file_path_p, items_it->section_p, items_it->key_p, &items_it->value[0])) { break; }
@@ -86,7 +87,8 @@ Status s;
 Status OS_SettingsItemsWrite(ConstStrP file_path_p, OS_SettingsItem items[])
 {
 OS_SettingsItem* items_it = &items[0];
-Status s;
+Status s = S_IS_EMPTY;
+    OS_ASSERT_DEBUG(items_it);
     while (items_it++) {
         if (OS_NULL == items_it->key_p) { break; }
         IF_STATUS(s = OS_SettingsWrite(file_path_p, items_it->section_p, items_it->key_p, &items_it->value[0])) { break; }

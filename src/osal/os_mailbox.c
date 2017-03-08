@@ -120,6 +120,12 @@ signal_filter: //Prevent recursion calls.
 }
 
 /******************************************************************************/
+Status OS_MessagePeek(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout)
+{
+    return OS_QueuePeek(qhd, msg_pp, timeout);
+}
+
+/******************************************************************************/
 void SignalSend(const OS_TaskId src_tid, const Status status, const OS_SignalId signal_id)
 {
     if (0 != src_tid) {

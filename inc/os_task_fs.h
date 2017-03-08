@@ -12,7 +12,7 @@
 
 #if (OS_FILE_SYSTEM_ENABLED)
 #define OS_DAEMON_NAME_FS           "FileSysD"
-#define OS_SIG_FSD_READY            OS_SIG_USB_LAST
+#define OS_SIG_FS_DAEMON_READY      OS_SIG_USB_LAST
 #endif //(OS_FILE_SYSTEM_ENABLED)
 
 #endif // _OS_TASK_FS_H_

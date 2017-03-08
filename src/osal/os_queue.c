@@ -78,7 +78,6 @@ error:
 Status OS_QueueDelete(const OS_QueueHd qhd)
 {
 Status s = S_OK;
-
     if (OS_NULL == qhd) { return S_INVALID_QUEUE; }
     IF_OK(s = OS_MutexRecursiveLock(os_queue_mutex, OS_TIMEOUT_MUTEX_LOCK)) {  // os_list protection;
         OS_ListItem* item_l_p = (OS_ListItem*)qhd;
@@ -93,10 +92,22 @@ Status s = S_OK;
 }
 
 /******************************************************************************/
+Status OS_QueuePeek(const OS_QueueHd qhd, void* item_p, const OS_TimeMs timeout)
+{
+const OS_Tick ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
+    if (OS_NULL == qhd) { return S_INVALID_QUEUE; }
+    QueueHandle_t queue_hd = (QueueHandle_t)OS_ListItemOwnerGet((OS_ListItem*)qhd);
+    OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_ListItemValueGet((OS_ListItem*)qhd);
+    if (pdTRUE != xQueuePeek(queue_hd, item_p, ticks)) {
+        return S_MODULE;
+    }
+    return S_OK;
+}
+
+/******************************************************************************/
 Status OS_QueueReceive(const OS_QueueHd qhd, void* item_p, const OS_TimeMs timeout)
 {
 const OS_Tick ticks = ((OS_BLOCK == timeout) || (OS_NO_BLOCK == timeout)) ? timeout : OS_MS_TO_TICKS(timeout);
-
     if (OS_NULL == qhd) { return S_INVALID_QUEUE; }
     QueueHandle_t queue_hd = (QueueHandle_t)OS_ListItemOwnerGet((OS_ListItem*)qhd);
     OS_QueueConfigDyn* cfg_dyn_p = (OS_QueueConfigDyn*)OS_ListItemValueGet((OS_ListItem*)qhd);
@@ -124,7 +135,7 @@ Status s = S_OK;
         } else if (OS_MSG_PRIO_NORMAL == priority) {
             os_s = xQueueSendToBack(queue_hd, item_p, ticks);
         } else {
-            Status s = S_INVALID_ARG;
+            s = S_INVALID_ARG;
             OS_LOG_S(L_WARNING, s);
             return s;
         }
@@ -227,6 +238,64 @@ OS_ListItem* iter_li_p = (OS_ListItem*)qhd;
     return (OS_QueueHd)iter_li_p;
 }
 
+#if (OS_QUEUE_SET_ENABLED)
+/******************************************************************************/
+Status OS_QueueSetCreate(const Size combined_size, OS_QueueSetHd* const qshd_p)
+{
+Status s = S_OK;
+    if (qshd_p) {
+        if (combined_size) {
+            *qshd_p = xQueueCreateSet(combined_size);
+            if (OS_NULL == *qshd_p) { s = S_OUT_OF_MEMORY; }
+        } else { s = S_INVALID_SIZE; }
+    } else { s = S_INVALID_PTR; }
+    return s;
+}
+
+/******************************************************************************/
+Status OS_QueueSetDelete(const OS_QueueSetHd qshd)
+{
+Status s = S_OK;
+    //TODO(A. Filyanov) Resources free implementation.
+    return s;
+}
+
+/******************************************************************************/
+Status OS_QueueSetItemAppend(const OS_QueueSetHd qshd, const OS_QueueSetItemHd item_qshd)
+{
+Status s = S_OK;
+    OS_ASSERT_DEBUG(qshd);
+    OS_ASSERT_DEBUG(item_qshd);
+    if (pdPASS != xQueueAddToSet(OS_ListItemOwnerGet((OS_ListItem*)item_qshd), qshd)) {
+        s = S_MODULE;
+    }
+    return s;
+}
+
+/******************************************************************************/
+Status OS_QueueSetItemRemove(const OS_QueueSetHd qshd, const OS_QueueSetItemHd item_qshd)
+{
+Status s = S_OK;
+    OS_ASSERT_DEBUG(qshd);
+    OS_ASSERT_DEBUG(item_qshd);
+    if (pdPASS != xQueueAddToSet(OS_ListItemOwnerGet((OS_ListItem*)item_qshd), qshd)) {
+        s = S_MODULE;
+    }
+    return s;
+}
+
+/******************************************************************************/
+OS_QueueSetItemHd OS_QueueSetReceive(const OS_QueueSetHd qshd, const OS_TimeMs timeout)
+{
+    OS_ASSERT_DEBUG(qshd);
+    const OS_QueueSetItemHd item_qshd = xQueueSelectFromSet(qshd, timeout);
+    if (item_qshd) {
+        return OS_ListItemByOwnerGet(&os_queues_list, item_qshd);
+    }
+    return OS_NULL;
+}
+#endif //(OS_QUEUE_SET_ENABLED)
+
 //------------------------------------------------------------------------------
 /// @brief ISR specific functions.
 
@@ -265,7 +334,7 @@ Status s = S_OK;
         } else if (OS_MSG_PRIO_NORMAL == priority) {
             os_s = xQueueSendToBackFromISR(queue_hd, item_p, &xHigherPriorityTaskWoken);
         } else {
-            Status s = S_INVALID_ARG;
+            s = S_INVALID_ARG;
             //OS_ISR_Log(L_WARNING, s);
             return s;
         }
@@ -296,3 +365,12 @@ U32 OS_ISR_QueueItemsCountGet(const OS_QueueHd qhd)
     QueueHandle_t queue_hd = (QueueHandle_t)OS_ListItemOwnerGet((OS_ListItem*)qhd);
     return (U32)uxQueueMessagesWaitingFromISR(queue_hd);
 }
+
+#if (OS_QUEUE_SET_ENABLED)
+/******************************************************************************/
+//OS_QueueSetItemHd OS_ISR_QueueSetReceive(const OS_QueueSetHd qshd)
+//{
+//    OS_ASSERT_DEBUG(qshd);
+//    return xQueueSelectFromSetFromISR(qshd);
+//}
+#endif //(OS_QUEUE_SET_ENABLED)

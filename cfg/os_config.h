@@ -101,6 +101,9 @@ static const OS_MemoryDesc memory_cfg_v[] = {
     { 0,                        0,                      0,                      OS_MEM_LAST,            ""          }
 };
 
+//Queues
+#define OS_QUEUE_SET_ENABLED                        1
+
 // Timers
 #define OS_TIMERS_ENABLED                           1
 #define OS_TIMERS_QUEUE_LEN                         10
@@ -201,7 +204,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_ENABLED                          1
 
 #define OS_NETWORK_DAEMON_QUEUE_LEN                 6
-#define OS_NETWORK_HOST_NAME                        HAL_MB_NAME
+#define OS_NETWORK_HOST_NAME                        "OLIMEXP407"
 
 #define OS_NETWORK_MAC_ADDR_DEFAULT                 "00:80:E1:00:00:00"
 //IPv4
@@ -610,6 +613,10 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_RAND()                           rand()
 
 //Network applications
+//NetBIOS
+#define OS_NETWORK_NETBIOS                          0
+#define OS_NETWORK_NETBIOS_NAME                     OS_NETWORK_HOST_NAME
+
 //SNTP
 #define OS_NETWORK_SNTP                             1
 #define SNTP_OPMODE                                 0
@@ -627,6 +634,11 @@ enum OS_AUDIO_DEV {
 #define SNTP_RETRY_TIMEOUT                          SNTP_RECV_TIMEOUT
 #define SNTP_RETRY_TIMEOUT_MAX                      (SNTP_RETRY_TIMEOUT * 10)
 #define SNTP_RETRY_TIMEOUT_EXP                      1
+
+//HTTPD
+#define OS_NETWORK_HTTPD                            0
+#define OS_NETWORK_HTTPD_DYNAMIC_FILE_READ          1
+
 
 #define OS_NETWORK_LINK_SPEED                       ((HAL_ETH_SPEED == ETH_SPEED_10M) ? (U32)10000000UL : ((HAL_ETH_SPEED == ETH_SPEED_100M) ? (U32)100000000UL : (U32)0UL))
 

@@ -132,6 +132,7 @@ enum StatusType {
     S_INVALID_SIGNAL,           //Invalid signal
     S_INVALID_MESSAGE,          //Invalid message
     S_INVALID_QUEUE,            //Invalid queue
+    S_INVALID_QUEUE_SET,        //Invalid queue set
     S_INVALID_TASK,             //Invalid task
     S_INVALID_TIMER,            //Invalid timer
     S_INVALID_TRIGGER,          //Invalid trigger

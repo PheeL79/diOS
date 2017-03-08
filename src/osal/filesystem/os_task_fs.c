@@ -125,7 +125,7 @@ Status s = S_OK;
     const OS_SignalSrc usb_tid = OS_TaskIdGet(usb_thd);
 
     OS_ASSERT(S_OK == OS_TasksConnect(OS_THIS_TASK, usb_thd));
-    OS_SignalEmit(OS_SignalCreate(OS_SIG_FSD_READY, 0), OS_MSG_PRIO_NORMAL);
+    OS_SignalEmit(OS_SignalCreate(OS_SIG_FS_DAEMON_READY, 0), OS_MSG_PRIO_NORMAL);
 #endif //(HAL_USBH_ENABLED) || (HAL_USBD_ENABLED)
     return s;
 }

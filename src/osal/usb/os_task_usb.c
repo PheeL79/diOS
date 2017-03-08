@@ -220,7 +220,7 @@ Status s = S_UNDEF;
                 }
 #endif //(HAL_USBD_AUDIO_ENABLED)
 #if (OS_FILE_SYSTEM_ENABLED)
-                else if (OS_SIG_FSD_READY == sig_id) {
+                else if (OS_SIG_FS_DAEMON_READY == sig_id) {
                     const OS_TaskHd fs_thd = OS_TaskByNameGet(OS_DAEMON_NAME_FS);
                     OS_ASSERT(S_OK == OS_TasksConnect(OS_THIS_TASK, fs_thd));
 #if (HAL_USBD_ENABLED)

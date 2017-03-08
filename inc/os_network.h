@@ -79,13 +79,13 @@ typedef U8 OS_NetworkItfFlags;
 
 enum {
 //ETH Common
-    OS_SIG_ETH_LINK_UP = OS_SIG_APP,
-    OS_SIG_ETH_LINK_DOWN,
-    OS_SIG_ETH_LINK_STATE_CHANGED,
-    OS_SIG_ETH_CONN_STATE_CHANGED,
-    OS_SIG_ETH_RX,
-    OS_SIG_ETH_TX,
-    OS_SIG_ETH_LAST
+    OS_SIG_NET_ETH_LINK_UP = OS_SIG_APP,
+    OS_SIG_NET_ETH_LINK_DOWN,
+    OS_SIG_NET_ETH_LINK_STATE_CHANGED,
+    OS_SIG_NET_ETH_CONN_STATE_CHANGED,
+    OS_SIG_NET_ETH_RX,
+    OS_SIG_NET_ETH_TX,
+    OS_SIG_NET_LAST
 };
 
 typedef struct {
@@ -330,6 +330,11 @@ Status          OS_NetworkGateWay4StrToBin(ConstStrP gateway4_str_p, OS_NetworkG
 Status          OS_NetworkIpAddress6StrToBin(ConstStrP ip_addr6_str_p, OS_NetworkIpAddr6* ip_addr6_p);
 #endif //(OS_NETWORK_IP_V6)
 
+#if (OS_NETWORK_NETBIOS)
+Status          OS_NetworkNetBiosStart(void);
+Status          OS_NetworkNetBiosStop(void);
+#endif //(OS_NETWORK_NETBIOS)
+
 #if (OS_NETWORK_PERF)
 Status          OS_NetworkIperfStart(void** iperf_sess_pp);
 Status          OS_NetworkIperfStop(void* iperf_sess_p);
@@ -345,6 +350,11 @@ Status          OS_NetworkSntpStart(void);
 Status          OS_NetworkSntpStop(void);
 Status          OS_NetworkSntpDateTimeSet(const OS_TimeS utc_timestamp_s);
 #endif //(OS_NETWORK_SNTP)
+
+#if (OS_NETWORK_HTTPD)
+Status          OS_NetworkHttpDStart(void);
+Status          OS_NetworkHttpDStop(void);
+#endif //(OS_NETWORK_HTTPD)
 
 /**@}*/ //OS_Network
 

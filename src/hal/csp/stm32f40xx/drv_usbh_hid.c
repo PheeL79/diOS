@@ -68,7 +68,7 @@ OS_Message* msg_p;
         OS_LOG(L_WARNING, "Unknown HID type!");
         OS_ASSERT(OS_FALSE);
     }
-    OS_ASSERT_DEBUG(OS_NULL != msg_p);
+    OS_ASSERT_DEBUG(msg_p);
     OS_ASSERT(S_OK == OS_MessageEmit(msg_p, OS_TIMEOUT_DRIVER, OS_MSG_PRIO_NORMAL));
 }
 

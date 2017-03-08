@@ -440,7 +440,7 @@ Status s = S_UNDEF;
   */
 void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *eth0_hd_p)
 {
-const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_ETH_RX, (OS_SignalData)eth0_hd.RxFrameInfos.length);
+const OS_Signal signal = OS_ISR_SignalCreate(DRV_ID_ETH0, OS_SIG_NET_ETH_RX, (OS_SignalData)eth0_hd.RxFrameInfos.length);
     OS_ISR_ContextSwitchForce(OS_ISR_SignalSend(netd_stdin_qhd, signal, OS_MSG_PRIO_HIGH));
 }
 

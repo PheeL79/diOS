@@ -282,7 +282,7 @@ OS_Message* msg_p;
     } else {
         is_idle = OS_FALSE;
         if (OS_NULL != deadlock_thd) {
-            //If the deadlock task released cpu - reset timeout counter.
+            //If the deadlock task released CPU - reset timeout counter.
             OS_TaskTimeoutReset(deadlock_thd);
             deadlock_thd = OS_NULL;
         }

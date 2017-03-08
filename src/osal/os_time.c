@@ -107,7 +107,7 @@ Status OS_DateTimeUtcConvert(const OS_TimeS utc_timestamp_s, OS_DateTime* os_dat
 #define SECS_IN_DAY     86400
 #define DAYS_IN_YEAR    365
 
-static const U8 days_in_month[] = { 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29 };
+static const U8 days_in_month[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 LongLong days, secs;
 Int remdays, remsecs, remyears;
 Int qc_cycles, c_cycles, q_cycles;

@@ -264,7 +264,7 @@ Status s = S_UNDEF;
             const DrvGpioArgsIoCtlPwm* io_pwm_args_p = (DrvGpioArgsIoCtlPwm*)args_p;
             const HAL_GPIO_InitStruct* init_stc_p = (HAL_GPIO_InitStruct*)&gpio_v[io_pwm_args_p->gpio];
                 s = S_OK;
-                OS_ASSERT_DEBUG(OS_NULL != init_stc_p->timer_hd_p);
+                OS_ASSERT_DEBUG(init_stc_p->timer_hd_p);
                 __HAL_TIM_SET_COMPARE(init_stc_p->timer_hd_p, init_stc_p->timer_channel, io_pwm_args_p->pwm_pulse);
             }
             break;

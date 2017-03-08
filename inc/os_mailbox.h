@@ -83,6 +83,13 @@ Status          OS_MessageMulticastSend(const OS_List* slots_qhd_l_p, OS_Message
 /// @return     #Status.
 Status          OS_MessageReceive(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout);
 
+/// @brief      Peek the message.
+/// @param[in]  qhd             Receiver (task) queue handle.
+/// @param[out] msg_pp          Message.
+/// @param[in]  timeout         Message receiving timeout.
+/// @return     #Status.
+Status          OS_MessagePeek(const OS_QueueHd qhd, OS_Message** msg_pp, const OS_TimeMs timeout);
+
 /**
 * \addtogroup OS_ISR_Mailbox ISR specific functions.
 * @{

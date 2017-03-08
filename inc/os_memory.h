@@ -18,6 +18,10 @@ extern "C" {
 * @{
 */
 //------------------------------------------------------------------------------
+#define OS_FREE_SAFE(a)         OS_Free(a); a = OS_NULL
+#define OS_FREE_EX_SAFE(a, p)   OS_FreeEx(a, p); a = OS_NULL
+
+//------------------------------------------------------------------------------
 typedef U32 OS_MemoryPool;
 
 /// @brief   Memory description.

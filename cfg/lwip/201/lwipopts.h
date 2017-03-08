@@ -450,6 +450,10 @@
 //#define	LWIP_HOOK_MEMP_AVAILABLE(memp_t_type)
 //#define	LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(pbuf, netif)
 
+#define NETBIOS_LWIP_NAME               OS_NETWORK_NETBIOS_NAME
+
+#define LWIP_HTTPD_DYNAMIC_FILE_READ    OS_NETWORK_HTTPD_DYNAMIC_FILE_READ
+
 #define LWIP_PERF                       OS_NETWORK_PERF
 #define LWIP_RAND()                     OS_NETWORK_RAND()
 

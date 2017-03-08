@@ -350,6 +350,12 @@ Status          OS_FileLSeek(const OS_FileHd fhd, const U32 offset);
 /// @param[in]  fhd             File handle.
 /// @return     Offset (bytes).
 U32             OS_FileTell(const OS_FileHd fhd);
+
+/// @brief      Get file size.
+/// @param[in]  fhd             File handle.
+/// @return     Size (bytes).
+U32             OS_FileSizeGet(const OS_FileHd fhd);
+
 /**@}*/ //OS_FileSystemFilesOps
 
 /**

@@ -22,8 +22,8 @@ const OS_TaskConfig task_net_cfg = {
     .args_p         = OS_NULL,
     .attrs          = BIT(OS_TASK_ATTR_RECREATE),
     .timeout        = 1,
-    .prio_init      = OS_TASK_PRIO_D,
-    .prio_power     = OS_TASK_PRIO_PWR_D,
+    .prio_init      = OS_PRIO_TASK_D,
+    .prio_power     = OS_PRIO_PWR_TASK_D,
     .storage_size   = sizeof(TaskStorage),
     .stack_size     = OS_STACK_SIZE_MIN,
     .stdin_len      = 0,
@@ -34,7 +34,7 @@ Status OS_TaskInit(OS_TaskArgs* args_p)
 {
 TaskStorage* tstor_p = (TaskStorage*)args_p->stor_p;
 Status s = S_UNDEF;
-    OS_LOG(D_INFO, "Init");
+    OS_LOG(L_INFO, "Init");
     return s;
 }
 
@@ -48,18 +48,18 @@ Status s = S_UNDEF;
 
 	for(;;) {
         IF_STATUS(OS_MessageReceive(stdin_qhd, &msg_p, OS_BLOCK)) {
-            OS_LOG_S(D_WARNING, S_UNDEF_MSG);
+            OS_LOG_S(L_WARNING, S_INVALID_MESSAGE);
         } else {
             if (OS_SignalIs(msg_p)) {
                 switch (OS_SignalIdGet(msg_p)) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_SIG);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_SIGNAL);
                         break;
                 }
             } else {
                 switch (msg_p->id) {
                     default:
-                        OS_LOG_S(D_DEBUG, S_UNDEF_MSG);
+                        OS_LOG_S(L_DEBUG_1, S_INVALID_MESSAGE);
                         break;
                 }
                 OS_MessageDelete(msg_p); // free message allocated memory
