@@ -155,13 +155,11 @@ Status s = S_UNDEF;
                                        &tstor_p->ip_addr4,
                                        &tstor_p->netmask4,
                                        &tstor_p->gateway4)) {
-        if (0 != tstor_p->ip_addr4.addr) {
-            IF_OK(s = OS_NetworkItfDhcpClientStop(tstor_p->net_itf_hd)) {
-                OS_LOG(L_DEBUG_1, "%s: DHCP client setup done", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
-                IF_OK(s = OS_TimerDelete(tstor_p->dhcp_cli_timer_hd, OS_TIM_DHCP_CLIENT_TIMEOUT_MS)) {
-                    IF_OK(s = OS_NetworkItfAddress4Log(tstor_p->net_itf_hd)) {
-                        IF_STATUS(s = OS_TaskDelete(OS_THIS_TASK)) {}
-                    }
+        if (tstor_p->ip_addr4.addr) {
+            OS_LOG(L_DEBUG_1, "%s: DHCP client setup done", OS_NetworkItfNameGet(tstor_p->net_itf_hd));
+            IF_OK(s = OS_TimerDelete(tstor_p->dhcp_cli_timer_hd, OS_TIM_DHCP_CLIENT_TIMEOUT_MS)) {
+                IF_OK(s = OS_NetworkItfAddress4Log(tstor_p->net_itf_hd)) {
+                    IF_STATUS(s = OS_TaskDelete(OS_THIS_TASK)) {}
                 }
             }
         } else { OS_LOG(L_DEBUG_1, "%s: DHCP client timeout!", OS_NetworkItfNameGet(tstor_p->net_itf_hd)); }

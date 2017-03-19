@@ -33,7 +33,7 @@ extern Status OS_NetworkItfAddress4Log(const OS_NetworkItfHd net_itf_hd);
 typedef struct {
     OS_QueueHd      netd_qhd;
     OS_QueueSetHd   netd_qshd;
-    OS_NetworkItfHd net_itf_hd[OS_NETWORK_ITF_LAST];
+    OS_NetworkItfHd net_itf_hd_v[OS_NETWORK_ITF_LAST];
     Bool            dhcp_client;
 #if (OS_NETWORK_PERF)
     void*           iperf_sess_p;
@@ -90,7 +90,7 @@ static const OS_QueueConfig que_cfg = {
             .net_itf_id = OS_NETWORK_ITF_LO,
             .is_loopback= OS_TRUE
         };
-        IF_STATUS(s = OS_NetworkItfCreate(&net_itf_cfg, &tstor_p->net_itf_hd[OS_NETWORK_ITF_LO])) { return s; }
+        IF_STATUS(s = OS_NetworkItfCreate(&net_itf_cfg, &tstor_p->net_itf_hd_v[OS_NETWORK_ITF_LO])) { return s; }
     }
 #endif //(OS_NETWORK_HAVE_LOOPIF)
     {
@@ -105,7 +105,7 @@ static const OS_QueueConfig que_cfg = {
             .net_itf_id = OS_NETWORK_ITF_ETH0,
             .is_loopback= OS_FALSE
         };
-        IF_STATUS(s = OS_NetworkItfCreate(&net_itf_cfg, &tstor_p->net_itf_hd[OS_NETWORK_ITF_ETH0])) { return s; }
+        IF_STATUS(s = OS_NetworkItfCreate(&net_itf_cfg, &tstor_p->net_itf_hd_v[OS_NETWORK_ITF_ETH0])) { return s; }
     }
     return s;
 }
@@ -224,7 +224,7 @@ Status s = S_UNDEF;
     OS_NETWORK_IP4_ADDR(&ip_addr4, 127, 0, 0, 1);
     OS_NETWORK_IP4_ADDR(&netmask4, 255, 0, 0, 0);
     OS_NETWORK_IP4_ADDR(&gateway4, 127, 0, 0, 1);
-    net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_LO];
+    net_itf_hd = tstor_p->net_itf_hd_v[OS_NETWORK_ITF_LO];
     net_itf_init_args.host_name_p = (StrP)OS_Malloc(OS_NETWORK_ITF_HOST_NAME_LEN);
     if (net_itf_init_args.host_name_p) {
         ConstStrP localhost_sp = "localhost";
@@ -247,7 +247,7 @@ Status s = S_UNDEF;
     OS_NETWORK_IP4_ADDR(&ip_addr4, 0, 0, 0, 0);
     OS_NETWORK_IP4_ADDR(&netmask4, 0, 0, 0, 0);
     OS_NETWORK_IP4_ADDR(&gateway4, 0, 0, 0, 0);
-    net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_ETH0];
+    net_itf_hd = tstor_p->net_itf_hd_v[OS_NETWORK_ITF_ETH0];
     net_itf_init_args.host_name_p = (StrP)OS_Malloc(OS_NETWORK_ITF_HOST_NAME_LEN);
 #if (OS_SETTINGS_ENABLED)
     ConstStrP config_path_p = OS_EnvVariableGet("config_file");
@@ -360,15 +360,15 @@ Status OS_TaskPowerShutdown(TaskStorage* const tstor_p)
 {
 Status s = S_UNDEF;
 OS_NetworkItfHd net_itf_hd = OS_NULL;
-#if (OS_NETWORK_DHCP)
-    IF_STATUS(s = OS_NetworkItfDhcpClientRelease(tstor_p->net_itf_hd)) { OS_LOG_S(L_WARNING, s); }
-#endif //(OS_NETWORK_DHCP)
 #if (OS_NETWORK_HAVE_LOOPIF)
-    net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_LO];
+    net_itf_hd = tstor_p->net_itf_hd_v[OS_NETWORK_ITF_LO];
     IF_OK(s = OS_NetworkItfClose(net_itf_hd, OS_NULL)) {
         IF_OK(s = OS_NetworkItfDeInit(net_itf_hd, OS_NULL)) {
 #endif //(OS_NETWORK_HAVE_LOOPIF)
-            net_itf_hd = tstor_p->net_itf_hd[OS_NETWORK_ITF_ETH0];
+            net_itf_hd = tstor_p->net_itf_hd_v[OS_NETWORK_ITF_ETH0];
+#if (OS_NETWORK_DHCP)
+            IF_STATUS(s = OS_NetworkItfDhcpClientReleaseStop(net_itf_hd)) { OS_LOG_S(L_WARNING, s); }
+#endif //(OS_NETWORK_DHCP)
             IF_OK(s = NetworkServicesStop(tstor_p)) {
                 IF_OK(s = OS_NetworkItfClose(net_itf_hd, OS_NULL)) {
                     IF_OK(s = OS_NetworkItfDeInit(net_itf_hd, OS_NULL)) {

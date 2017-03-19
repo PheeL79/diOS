@@ -10,9 +10,6 @@
 
 #if (OS_NETWORK_ENABLED)
 #define OS_DAEMON_NAME_NET          "NetD"
-//enum {
-//    OS_TIM_ID_ETH0_LINK_STATUS_REFRESH = OS_TIM_ID_APP
-//};
 #endif //(OS_NETWORK_ENABLED)
 
 #endif //_OS_TASK_NET_H_

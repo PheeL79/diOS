@@ -211,9 +211,8 @@ Status          OS_NetworkItfDownSet(const OS_NetworkItfHd net_itf_hd);
 
 #if (OS_NETWORK_DHCP)
 Status          OS_NetworkItfDhcpClientStart(const OS_NetworkItfHd net_itf_hd);
-Status          OS_NetworkItfDhcpClientStop(const OS_NetworkItfHd net_itf_hd);
+Status          OS_NetworkItfDhcpClientReleaseStop(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfDhcpClientRenew(const OS_NetworkItfHd net_itf_hd);
-Status          OS_NetworkItfDhcpClientRelease(const OS_NetworkItfHd net_itf_hd);
 Status          OS_NetworkItfDhcpServerInform(const OS_NetworkItfHd net_itf_hd);
 #endif //(OS_NETWORK_DHCP)
 

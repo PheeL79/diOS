@@ -458,13 +458,13 @@ Status s = S_UNDEF;
 }
 
 /*****************************************************************************/
-Status OS_NetworkItfDhcpClientStop(const OS_NetworkItfHd net_itf_hd)
+Status OS_NetworkItfDhcpClientReleaseStop(const OS_NetworkItfHd net_itf_hd)
 {
 const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
 OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
 Status s = S_UNDEF;
     IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        dhcp_stop(net_itf_p);
+        dhcp_release_and_stop(net_itf_p);
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
     OS_LOG(L_DEBUG_1, "%s: DHCP client stopped", OS_NetworkItfNameGet(net_itf_hd));
@@ -482,20 +482,6 @@ Status s = S_UNDEF;
         OS_MutexRecursiveUnlock(os_net_mutex);
     }
     OS_LOG(L_DEBUG_1, "%s: DHCP client renew lease", OS_NetworkItfNameGet(net_itf_hd));
-    return s;
-}
-
-/*****************************************************************************/
-Status OS_NetworkItfDhcpClientRelease(const OS_NetworkItfHd net_itf_hd)
-{
-const OS_NetworkItfConfigDyn* cfg_dyn_p = OS_NetworkItfConfigDynGet(net_itf_hd);
-OS_NetworkItf* net_itf_p = cfg_dyn_p->net_itf_p;
-Status s = S_UNDEF;
-    IF_OK(s = OS_MutexRecursiveLock(os_net_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
-        s = LwipErrTranslate(dhcp_release(net_itf_p));
-        OS_MutexRecursiveUnlock(os_net_mutex);
-    }
-    OS_LOG(L_DEBUG_1, "%s: DHCP client release lease", OS_NetworkItfNameGet(net_itf_hd));
     return s;
 }
 
@@ -879,6 +865,55 @@ Status s = S_UNDEF;
 #endif //(OS_NETWORK_SNTP)
 
 #if (OS_NETWORK_HTTPD)
+
+#include "os_file_system.h"
+#include "lwip/apps/fs.h"
+
+/*****************************************************************************/
+int fs_open_custom(struct fs_file *file, const char *name);
+int fs_open_custom(struct fs_file *file, const char *name)
+{
+OS_FileHd fhd;
+StrP file_path_sp = OS_Malloc(512);
+ConstStr volume_dir_cs[] = OS_NETWORK_HTTPD_PATH;
+Status s = S_UNDEF;
+    OS_StrCpy(file_path_sp, (char const*)&volume_dir_cs);
+    OS_StrCpy((file_path_sp + sizeof(volume_dir_cs) - 1), name);
+    IF_OK(s = OS_FileOpen(&fhd, name, BIT(OS_FS_FILE_OP_MODE_READ))) {
+        file->data      = OS_NULL;
+        file->len       = (Int)OS_FileSizeGet(fhd);
+        file->index     = 0;
+        file->pextension= fhd;
+        return 1;
+    }
+    OS_LOG_S(L_WARNING, s);
+    return 0;
+}
+
+/*****************************************************************************/
+void fs_close_custom(struct fs_file *file);
+void fs_close_custom(struct fs_file *file)
+{
+Status s = S_UNDEF;
+    IF_STATUS(s = OS_FileClose((OS_FileHd*)&file->pextension)) { OS_LOG_S(L_WARNING, s); }
+}
+
+/*****************************************************************************/
+int fs_read_custom(struct fs_file *file, char *buffer, int count);
+int fs_read_custom(struct fs_file *file, char *buffer, int count)
+{
+    if (file->index < file->len) {
+        IF_OK(OS_FileRead(file->pextension, buffer, count)) {
+            file->index += count;
+        } else {
+            count = 0;
+        }
+    } else {
+        count = FS_READ_EOF;
+    }
+    return count;
+}
+
 /*****************************************************************************/
 Status OS_NetworkHttpDStart(void)
 {

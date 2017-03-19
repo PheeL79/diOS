@@ -618,7 +618,7 @@ enum OS_AUDIO_DEV {
 #define OS_NETWORK_NETBIOS_NAME                     OS_NETWORK_HOST_NAME
 
 //SNTP
-#define OS_NETWORK_SNTP                             1
+#define OS_NETWORK_SNTP                             0
 #define SNTP_OPMODE                                 0
 #define SNTP_DEBUG                                  LWIP_DBG_OFF
 #define SNTP_PORT                                   123
@@ -630,15 +630,19 @@ enum OS_AUDIO_DEV {
 #define SNTP_RECV_TIMEOUT                           (3 * MS)
 #define SNTP_UPDATE_DELAY                           (4 * 3600 * MS)
 #define SNTP_GET_SYSTEM_TIME(sec, us)               do { (sec) = (OS_TICKS_TO_MS(OS_TickCountGet()) / MS); (us) = (OS_TICKS_TO_MS(OS_TickCountGet()) * MS); } while(0)
-#define SNTP_SET_SYSTEM_TIME(sec)                   OS_NetworkSntpDateTimeSet(sec)
+#if (OS_NETWORK_SNTP)
+#   define SNTP_SET_SYSTEM_TIME(sec)                OS_NetworkSntpDateTimeSet(sec)
+#endif //(OS_NETWORK_SNTP)
 #define SNTP_RETRY_TIMEOUT                          SNTP_RECV_TIMEOUT
 #define SNTP_RETRY_TIMEOUT_MAX                      (SNTP_RETRY_TIMEOUT * 10)
 #define SNTP_RETRY_TIMEOUT_EXP                      1
 
 //HTTPD
-#define OS_NETWORK_HTTPD                            0
+#define OS_NETWORK_HTTPD                            1
+#define OS_NETWORK_HTTPD_CUSTOM_FILES               1
 #define OS_NETWORK_HTTPD_DYNAMIC_FILE_READ          1
-
+#define OS_NETWORK_HTTPD_FS_ASYNC_READ              0
+#define OS_NETWORK_HTTPD_PATH                       "0:/httpd"
 
 #define OS_NETWORK_LINK_SPEED                       ((HAL_ETH_SPEED == ETH_SPEED_10M) ? (U32)10000000UL : ((HAL_ETH_SPEED == ETH_SPEED_100M) ? (U32)100000000UL : (U32)0UL))
 
