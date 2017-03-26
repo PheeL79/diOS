@@ -14,6 +14,7 @@
 #define OS_PRIO_TASK_USB                    (100)
 #define OS_PRIO_TASK_NET                    (120)
 #define OS_PRIO_TASK_NET_DHCP               (130)
+#define OS_PRIO_TASK_NET_HTTPD              (130)
 #define OS_PRIO_TASK_AUDIO                  (150)
 #define OS_PRIO_TASK_SHELL                  (10)
 //OS Network daemons
@@ -28,6 +29,7 @@
 #define OS_PRIO_PWR_TASK_USB                (OS_PWR_PRIO_MAX - 5)
 #define OS_PRIO_PWR_TASK_NET                (OS_PWR_PRIO_MAX - 5)
 #define OS_PRIO_PWR_TASK_NET_DHCP           (OS_PWR_PRIO_MAX - 4)
+#define OS_PRIO_PWR_TASK_NET_HTTPD          (OS_PWR_PRIO_MAX - 6)
 #define OS_PRIO_PWR_TASK_AUDIO              (OS_PWR_PRIO_MAX - 10)
 #define OS_PRIO_PWR_TASK_SHELL              (OS_PWR_PRIO_MAX - 30)
 

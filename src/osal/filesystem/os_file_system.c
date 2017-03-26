@@ -485,7 +485,10 @@ Status s;
     if (OS_NULL == fhd) { return S_OUT_OF_MEMORY; }
     s = FResultTranslate(f_open(fhd, (const char*)file_path_p, FOpenModeConvert(op_mode)));
     OS_LOG(L_DEBUG_1, "File open : 0x%X %s", fhd, file_path_p);
-    IF_STATUS(s) { OS_LOG_S(L_WARNING, s); }
+    IF_STATUS(s) {
+        OS_FREE_SAFE(*fhd_p);
+        OS_LOG_S(L_WARNING, s);
+    }
     return s;
 }
 
@@ -495,8 +498,7 @@ Status OS_FileClose(OS_FileHd* fhd_p)
 const OS_FileHd fhd = *fhd_p;
     OS_LOG(L_DEBUG_1, "File close: 0x%X", fhd);
 Status s = FResultTranslate(f_close(fhd));
-    OS_Free(fhd);
-    *fhd_p = OS_NULL;
+    OS_FREE_SAFE(*fhd_p);
     return s;
 }
 

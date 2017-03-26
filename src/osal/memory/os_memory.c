@@ -91,12 +91,12 @@ void* p = OS_NULL;
 //        }
 //        // ...otherwise - next descriptor.
 //    } while (OS_MEM_LAST != (++mem_desc_p)->pool);
-#if (OS_DEBUG_MEMORY)
-    OS_LOG(L_DEBUG_1, "malloc: 0x%04X", size);
-#endif //(OS_DEBUG_MEMORY)
     IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
         p = malloc_ex(size, (void*)mem_desc_p->addr);
         OS_MutexUnlock(os_mem_mutex);
+#if (OS_DEBUG_MEMORY)
+        OS_LOG(L_DEBUG_1, "malloc: 0x%08X 0x%04X", p, size);
+#endif //(OS_DEBUG_MEMORY)
     }
     return p;
 }
@@ -107,12 +107,12 @@ void* OS_MallocEx(const Size size, const OS_MemoryPool pool)
 const OS_MemoryDesc* mem_desc_p = OS_MemoryDescriptorGet(pool);
 void* p = OS_NULL;
     if (mem_desc_p) {
-#if (OS_DEBUG_MEMORY)
-        OS_LOG(L_DEBUG_1, "malloc_ex: 0x%04X, %s", size, mem_desc_p->name_p);
-#endif //(OS_DEBUG_MEMORY)
         IF_OK(OS_MutexLock(os_mem_mutex, OS_TIMEOUT_MUTEX_LOCK)) {
             p = malloc_ex(size, (void*)mem_desc_p->addr);
             OS_MutexUnlock(os_mem_mutex);
+#if (OS_DEBUG_MEMORY)
+            OS_LOG(L_DEBUG_1, "malloc_ex: 0x%08X 0x%04X, %s", p, size, mem_desc_p->name_p);
+#endif //(OS_DEBUG_MEMORY)
         }
     }
     return p;

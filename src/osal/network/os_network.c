@@ -869,24 +869,36 @@ Status s = S_UNDEF;
 #include "os_file_system.h"
 #include "lwip/apps/fs.h"
 
+typedef struct {
+    OS_FileHd   fhd;
+    Str         path[];
+} HttpDFile;
+
+static StrP httpd_path_p;
+
 /*****************************************************************************/
 int fs_open_custom(struct fs_file *file, const char *name);
 int fs_open_custom(struct fs_file *file, const char *name)
 {
-OS_FileHd fhd;
-StrP file_path_sp = OS_Malloc(512);
-ConstStr volume_dir_cs[] = OS_NETWORK_HTTPD_PATH;
+void* const httpd_file_p = OS_Malloc(sizeof(HttpDFile) + OS_StrLen(httpd_path_p) + OS_StrLen(name) + 1);
 Status s = S_UNDEF;
-    OS_StrCpy(file_path_sp, (char const*)&volume_dir_cs);
-    OS_StrCpy((file_path_sp + sizeof(volume_dir_cs) - 1), name);
-    IF_OK(s = OS_FileOpen(&fhd, name, BIT(OS_FS_FILE_OP_MODE_READ))) {
-        file->data      = OS_NULL;
-        file->len       = (Int)OS_FileSizeGet(fhd);
-        file->index     = 0;
-        file->pextension= fhd;
-        return 1;
-    }
+    if (httpd_file_p) {
+        StrP const path_p = ((HttpDFile*)httpd_file_p)->path;
+        if (path_p == OS_StrCpy(path_p, httpd_path_p)) {
+            if (path_p == OS_StrCat(path_p, name)) {
+                IF_OK(s = OS_FileOpen(&(((HttpDFile*)httpd_file_p)->fhd), path_p, BIT(OS_FS_FILE_OP_MODE_READ))) {
+                    file->data      = OS_NULL;
+                    file->len       = (Int)OS_FileSizeGet(((HttpDFile*)httpd_file_p)->fhd);
+                    file->index     = 0;
+                    file->pextension= httpd_file_p;
+                    return 1;
+                }
+            } else { s = S_INVALID_PTR; }
+        } else { s = S_INVALID_PTR; }
+    } else { s = S_OUT_OF_MEMORY; }
+
     OS_LOG_S(L_WARNING, s);
+    OS_Free(httpd_file_p);
     return 0;
 }
 
@@ -895,7 +907,8 @@ void fs_close_custom(struct fs_file *file);
 void fs_close_custom(struct fs_file *file)
 {
 Status s = S_UNDEF;
-    IF_STATUS(s = OS_FileClose((OS_FileHd*)&file->pextension)) { OS_LOG_S(L_WARNING, s); }
+    IF_STATUS(s = OS_FileClose(&((HttpDFile*)file->pextension)->fhd)) { OS_LOG_S(L_WARNING, s); }
+    OS_Free(file->pextension);
 }
 
 /*****************************************************************************/
@@ -903,7 +916,7 @@ int fs_read_custom(struct fs_file *file, char *buffer, int count);
 int fs_read_custom(struct fs_file *file, char *buffer, int count)
 {
     if (file->index < file->len) {
-        IF_OK(OS_FileRead(file->pextension, buffer, count)) {
+        IF_OK(OS_FileRead(((HttpDFile*)file->pextension)->fhd, buffer, count)) {
             file->index += count;
         } else {
             count = 0;
@@ -914,13 +927,33 @@ int fs_read_custom(struct fs_file *file, char *buffer, int count)
     return count;
 }
 
+#include "os_environment.h"
+#include "os_settings.h"
 /*****************************************************************************/
 Status OS_NetworkHttpDStart(void)
 {
 Status s = S_OK;
     OS_LOG(L_DEBUG_1, "HTTPD init");
+#if (OS_SETTINGS_ENABLED)
+    ConstStrP config_path_p = OS_EnvVariableGet("config_file");
+    Str value[OS_SETTINGS_VALUE_LEN];
+    Str net_itf_sect_str[0x10] = OS_NETWORK_SETTINGS_SECT;
+    if (net_itf_sect_str != OS_StrCat(net_itf_sect_str, OS_NETWORK_HTTPD_SETTINGS_SECT)) {
+        s = S_INVALID_PTR;
+        goto error;
+    }
+    IF_STATUS(s = OS_SettingsRead(config_path_p, (ConstStrP)net_itf_sect_str, "server_path", &value[0])) { goto error; }
+    if (httpd_path_p = OS_Malloc(OS_StrLen(&value[0]) + 1)) {
+        if (httpd_path_p != OS_StrCpy(httpd_path_p, &value[0])) { s = S_INVALID_PTR; goto error; }
+    } else { s = S_OUT_OF_MEMORY; goto error; }
+#else
+    if (httpd_path_p = OS_Malloc(OS_StrLen(OS_NETWORK_HTTPD_PATH) + 1)) {
+        if (httpd_path_p != OS_StrCpy(httpd_path_p, OS_NETWORK_HTTPD_PATH) { s = S_INVALID_PTR; goto error; }
+    } else { s = S_OUT_OF_MEMORY; goto error; }
+#endif //(OS_SETTINGS_ENABLED)
     httpd_init();
     OS_LOG(L_DEBUG_1, "HTTPD start");
+error:
     return s;
 }
 
@@ -929,6 +962,7 @@ Status OS_NetworkHttpDStop(void)
 {
 Status s = S_OK;
     OS_LOG(L_DEBUG_1, "HTTPD stop");
+    OS_Free(httpd_path_p);
     return s;
 }
 #endif //(OS_NETWORK_HTTPD)

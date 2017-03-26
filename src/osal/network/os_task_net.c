@@ -23,8 +23,6 @@
 //------------------------------------------------------------------------------
 #define MDL_NAME                        "network_d"
 
-#define SETTINGS_NETWORK_SECT           "Network\\"
-
 //------------------------------------------------------------------------------
 extern Status OS_NetworkItfAddress4Log(const OS_NetworkItfHd net_itf_hd);
 
@@ -252,7 +250,7 @@ Status s = S_UNDEF;
 #if (OS_SETTINGS_ENABLED)
     ConstStrP config_path_p = OS_EnvVariableGet("config_file");
     Str value[OS_SETTINGS_VALUE_LEN];
-    Str net_itf_sect_str[0x10] = SETTINGS_NETWORK_SECT;
+    Str net_itf_sect_str[0x10] = OS_NETWORK_SETTINGS_SECT;
     if (net_itf_sect_str != OS_StrCat(net_itf_sect_str, OS_NetworkItfNameGet(net_itf_hd))) {
         s = S_INVALID_PTR;
         goto error;

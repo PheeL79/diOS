@@ -639,12 +639,18 @@ enum OS_AUDIO_DEV {
 
 //HTTPD
 #define OS_NETWORK_HTTPD                            1
+#define OS_NETWORK_HTTPD_PRIO                       OS_PRIO_TASK_NET_HTTPD
+#define OS_NETWORK_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED 1
+#define OS_NETWORK_HTTPD_DYNAMIC_HEADERS            1
 #define OS_NETWORK_HTTPD_CUSTOM_FILES               1
 #define OS_NETWORK_HTTPD_DYNAMIC_FILE_READ          1
 #define OS_NETWORK_HTTPD_FS_ASYNC_READ              0
 #define OS_NETWORK_HTTPD_PATH                       "0:/httpd"
+#define OS_NETWORK_HTTPD_SETTINGS_SECT              "http_server"
 
 #define OS_NETWORK_LINK_SPEED                       ((HAL_ETH_SPEED == ETH_SPEED_10M) ? (U32)10000000UL : ((HAL_ETH_SPEED == ETH_SPEED_100M) ? (U32)100000000UL : (U32)0UL))
+
+#define OS_NETWORK_SETTINGS_SECT                    "Network\\"
 
 enum OS_NETWORK_ITF {
         OS_NETWORK_ITF_ETH0,
